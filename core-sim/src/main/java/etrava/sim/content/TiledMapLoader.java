@@ -14,8 +14,7 @@ import java.util.Map;
 /**
  * Lê mapas do Tiled exportados em JSON (.tmj) — D-010.
  * Camadas reconhecidas: {@code terrain} e {@code collision} (tiles);
- * {@code props}, {@code spots} e {@code spawns} (objetos; em {@code spawns}, a classe
- * {@code figurante} cria um personagem que anda entre pontos).
+ * {@code props}, {@code spots} e {@code spawns} (objetos).
  * Exigências: tileset embutido no mapa e camadas de tile em formato CSV, sem compressão.
  */
 public final class TiledMapLoader {
@@ -50,7 +49,6 @@ public final class TiledMapLoader {
         List<PropPlacement> props = new ArrayList<>();
         Map<String, Point> spots = new LinkedHashMap<>();
         Map<String, Point> spawns = new LinkedHashMap<>();
-        List<ActorSpawn> actors = new ArrayList<>();
 
         for (JsonNode layer : root.path("layers")) {
             String name = layer.path("name").asText();
@@ -78,22 +76,13 @@ public final class TiledMapLoader {
                             props.add(new PropPlacement(propId, key, x, y, obj.path("rotation").asDouble()));
                         }
                         case "spots" -> spots.put(objName, new Point(x, y));
-                        case "spawns" -> {
-                            if ("figurante".equals(objClass)) {
-                                String patrol = property(obj, "patrol");
-                                List<String> stops = patrol == null || patrol.isBlank()
-                                        ? List.of() : List.of(patrol.trim().split("\\s*,\\s*"));
-                                actors.add(new ActorSpawn(objName, property(obj, "sprite"), x, y, stops));
-                            } else {
-                                spawns.put(objName, new Point(x, y));
-                            }
-                        }
+                        case "spawns" -> spawns.put(objName, new Point(x, y));
                         default -> { /* camada de objetos ainda não usada */ }
                     }
                 }
             }
         }
-        return new AreaDef(id, width, height, terrain, collision, List.copyOf(props), spots, spawns, List.copyOf(actors));
+        return new AreaDef(id, width, height, terrain, collision, List.copyOf(props), spots, spawns);
     }
 
     private static String property(JsonNode node, String name) {

@@ -1,0 +1,10 @@
+# Glossário único de nomes próprios do jogo (PRD 20.3). Todo nome novo é provisório
+# até o diretor aprovar. Nomes vindos da lore ficam marcados com `fonte: lore`.
+
+lugares:
+  - {nome: Etrava, tipo: mundo, fonte: lore}
+  - {nome: Pedra-Mansa, tipo: vilarejo, fonte: lore}
+
+pessoas: []
+# Os NPCs do M2 (ferreiro, taberneira, moleiro, aldeã, viajante) são provisórios e
+# ainda não têm nome próprio: aparecem só pelo ofício.

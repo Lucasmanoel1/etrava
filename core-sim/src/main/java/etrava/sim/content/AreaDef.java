@@ -19,8 +19,7 @@ public record AreaDef(
         boolean[] collision,
         List<PropPlacement> props,
         Map<String, Point> spots,
-        Map<String, Point> spawns,
-        List<ActorSpawn> actors) {
+        Map<String, Point> spawns) {
 
     public static final String PLAYER_SPAWN = "jogador";
     public static final String NO_TERRAIN = "vazio";

@@ -12,6 +12,15 @@ public sealed interface Command {
     /** Andar numa direção do mundo (WASD). (0, 0) para parar. */
     record MoveDir(double dx, double dy) implements Command {}
 
+    /** Esperar de 1 a 12 horas de jogo (RF-322). */
+    record Wait(int hours) implements Command {}
+
+    /** Dormir até a manhã seguinte, 06:00 (RF-322). */
+    record Sleep() implements Command {}
+
+    /** Ir para outra área, entrando pelo ponto de chegada indicado. */
+    record EnterArea(String areaId, String spawn) implements Command {}
+
     /** Depuração: teletransporta o jogador. */
     record Teleport(double x, double y) implements Command {}
 

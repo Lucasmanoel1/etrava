@@ -53,3 +53,13 @@ tasks.register<JavaExec>("licensesStrict") {
     jvmArgs("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
+
+tasks.register<JavaExec>("simulate") {
+    group = "verification"
+    description = "Simulação headless: gradlew simulate --args=\"--dias 30 --semente 42 --politica parado\""
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.Simulate")
+    workingDir = rootDir
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}

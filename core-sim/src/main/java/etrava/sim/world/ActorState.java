@@ -1,24 +1,35 @@
 package etrava.sim.world;
 
 import etrava.sim.api.ActorView;
+import etrava.sim.nav.Pathfinder.Point;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
-/** Estado de um personagem no mundo (jogador ou figurante). */
+/** Estado de um personagem no mundo (jogador ou NPC). Tudo aqui vai para o save. */
 public final class ActorState implements ActorView {
     public final String id;
     public final String sprite;
+    public String areaId;
     public double x;
     public double y;
-    public double facing;
+    public double facing = Math.PI / 4; // virado para a câmera
     public boolean moving;
-    /** Figurantes: ticks parado antes de seguir para o próximo ponto. */
-    public int waitTicks;
+    /** Caminho em andamento, em pontos de mundo. */
+    public final Deque<Point> path = new ArrayDeque<>();
 
-    public ActorState(String id, String sprite, double x, double y) {
+    // ---- só NPCs
+    /** Destino atual da agenda, "area/ponto". */
+    public String target;
+    /** O que está fazendo (chave da agenda), ou "andando". */
+    public String activity = "";
+    /** Dentro de uma construção sem interior jogável: não aparece nem bloqueia. */
+    public boolean hidden;
+    /** Ao chegar ao fim do caminho, some desta área e reaparece no destino. */
+    public boolean leaving;
+
+    public ActorState(String id, String sprite) {
         this.id = id;
         this.sprite = sprite;
-        this.x = x;
-        this.y = y;
-        this.facing = Math.PI / 4; // virado para a câmera
     }
 
     @Override public String id() { return id; }
@@ -27,4 +38,5 @@ public final class ActorState implements ActorView {
     @Override public double y() { return y; }
     @Override public double facing() { return facing; }
     @Override public boolean moving() { return moving; }
+    @Override public String activity() { return activity; }
 }

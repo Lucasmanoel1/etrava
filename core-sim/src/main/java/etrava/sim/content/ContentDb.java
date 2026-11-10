@@ -27,6 +27,7 @@ public final class ContentDb {
     private final Map<String, PropDef> props = new LinkedHashMap<>();
     private final Map<String, AreaDef> areas = new LinkedHashMap<>();
     private final Map<String, AreaEntry> areaEntries = new LinkedHashMap<>();
+    private final Map<String, NpcDef> npcs = new LinkedHashMap<>();
     private final List<String> problems = new ArrayList<>();
 
     public static ContentDb load(Path contentDir) {
@@ -60,8 +61,31 @@ public final class ContentDb {
                 db.problem("areas/" + entry.map(), "não foi possível ler: " + e.getMessage());
             }
         }
+        db.loadNpcs(contentDir.resolve("npcs"));
         for (String p : db.problems) LOG.warn("Conteúdo: {}", p);
         return db;
+    }
+
+    /** Um arquivo por NPC em content/npcs/, lidos em ordem alfabética (ordem estável = determinismo). */
+    private void loadNpcs(Path dir) {
+        if (!Files.isDirectory(dir)) return;
+        List<Path> files;
+        try (java.util.stream.Stream<Path> stream = Files.list(dir)) {
+            files = stream.filter(p -> p.getFileName().toString().endsWith(".yaml")).sorted().toList();
+        } catch (java.io.IOException e) {
+            problem("npcs", "não foi possível listar: " + e.getMessage());
+            return;
+        }
+        for (Path file : files) {
+            String name = "npcs/" + file.getFileName();
+            try {
+                NpcDef def = YAML.readValue(file.toFile(), NpcDef.class);
+                if (def == null || def.id() == null) problem(name, "NPC sem id");
+                else if (npcs.put(def.id(), def) != null) problem(name, "NPC duplicado: " + def.id());
+            } catch (Exception e) {
+                problem(name, "não foi possível ler: " + e.getMessage());
+            }
+        }
     }
 
     private void problem(String file, String message) {
@@ -72,6 +96,7 @@ public final class ContentDb {
     public Map<String, AreaDef> areas() { return areas; }
     public AreaEntry areaEntry(String id) { return areaEntries.get(id); }
     public AreaDef area(String id) { return areas.get(id); }
+    public Map<String, NpcDef> npcs() { return npcs; }
     /** Problemas encontrados durante o carregamento (arquivo: mensagem). */
     public List<String> problems() { return problems; }
 }

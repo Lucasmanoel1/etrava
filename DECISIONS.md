@@ -173,3 +173,31 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Decisão:** mapas podem ter, na camada `spawns`, objetos de classe `figurante` que andam entre pontos sorteados pelo RNG da simulação.
 - **Motivo:** o M1 pede dois personagens animados na cena; agendas de NPC só existem no M2.
 - **Situação:** substituído pelas agendas no M2.
+
+## D-028 — Portão visual do vilarejo aprovado com arte provisória
+- **Data:** 2026-11-10
+- **Decisão:** o diretor aprovou o clima (luz, paleta, noite) e aceitou seguir com a arte provisória. O M1 fica concluído quanto ao vilarejo; as capturas de taverna por dentro, estrutura enterrada e Posto (AT-15) serão avaliadas quando essas áreas existirem.
+- **Pendência registrada:** o MCP da Dreamina não está disponível para o Claude Code nesta máquina (não há servidor MCP configurado além de Claude Docs e Google Drive). A arte definitiva segue dependendo disso ou de outra fonte.
+- **Regra mantida:** nada de produção de arte em massa enquanto a arte definitiva não tiver uma amostra aprovada.
+
+## D-029 — Agendas conferidas a cada 10 minutos de jogo; todo o estado mora no `World`
+- **Data:** 2026-11-10
+- **Decisão:** as agendas dos NPCs são avaliadas a cada 10 minutos de jogo (250 ticks), para o mundo inteiro. Caminhos em andamento, direção do teclado e fila de eventos ficam no `World` e vão para o save; a `Simulation` só guarda o que dá para recalcular.
+- **Motivo:** 10 minutos é fino o bastante para blocos que começam em horas quebradas e barato o bastante (30 dias headless em centésimos de segundo). Guardar tudo no `World` é o que faz "salvar, carregar e continuar" dar exatamente o mesmo resultado (AT-05).
+- **Alternativa descartada:** avaliar por hora cheia (a SPEC original; perderia blocos às :30); recalcular caminhos ao carregar (quebraria a igualdade de estado).
+
+## D-030 — NPC "dentro de casa" fica oculto; entra e sai da área pelo ponto `entrada`
+- **Data:** 2026-11-10
+- **Decisão:** um bloco de agenda pode ter `hidden: true`: o NPC vai até a porta e deixa de aparecer (está dentro de uma construção sem interior jogável). Para trocar de área, o NPC anda até o ponto `entrada` do mapa, se houver, e some; ao chegar, aparece nele.
+- **Motivo:** consequência da D-023 (interiores são outras áreas). Mantém o vilarejo coerente antes de os interiores existirem.
+- **Revisar:** M7, quando os interiores existirem — o NPC passará a estar de fato na área interna.
+
+## D-031 — Troca de área por comando; gatilhos de porta ficam para depois
+- **Data:** 2026-11-10
+- **Decisão:** existe o comando `EnterArea` na simulação (usado pelo console `area ID`), mas ainda não há gatilhos no mapa (portas, fim da estrada).
+- **Motivo:** o M2 só precisava de duas áreas para provar a simulação fora da área carregada e o salvamento automático na troca. Os gatilhos entram com os interiores.
+
+## D-032 — Save sem miniatura por enquanto
+- **Data:** 2026-11-10
+- **Decisão:** o `.etrava` tem `meta.json` e `state.json`; a `thumb.png` prevista na SPEC entra junto com a tela de salvar/carregar (M7).
+- **Motivo:** sem tela de saves, a miniatura não teria uso.

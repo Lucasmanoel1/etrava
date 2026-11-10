@@ -1,0 +1,11 @@
+# NPC provisório do M2.
+id: moleiro
+name: Moleiro
+layer: B
+sprite: personagem.moleiro
+schedule:
+  - {from: "21:00", to: "05:00", do: dormir,    at: vila_ref/moinho_porta, hidden: true}
+  - {from: "05:00", to: "11:00", do: trabalhar, at: vila_ref/moinho_porta}
+  - {from: "11:00", to: "12:00", do: comer,     at: vila_ref/praca}
+  - {from: "12:00", to: "18:00", do: trabalhar, at: vila_ref/feno}
+  - {from: "18:00", to: "21:00", do: conversar, at: vila_ref/taverna_fora}

@@ -1,9 +1,9 @@
 package etrava.sim.validation;
 
-import etrava.sim.content.ActorSpawn;
 import etrava.sim.content.AreaDef;
 import etrava.sim.content.AssetManifest;
 import etrava.sim.content.ContentDb;
+import etrava.sim.content.NpcDef;
 import etrava.sim.content.PropDef;
 import etrava.sim.content.PropPlacement;
 import etrava.sim.nav.NavGrid;
@@ -49,16 +49,8 @@ public final class ContentValidator {
             NavGrid nav = area.buildNavGrid(db.props());
             checkPoints(problems, file, "spawn", area.spawns(), nav);
             checkPoints(problems, file, "ponto", area.spots(), nav);
-            for (ActorSpawn actor : area.actors()) {
-                if (actor.id().isBlank()) problems.add(file + ": figurante sem nome");
-                if (nav.isBlockedAt(actor.x(), actor.y()))
-                    problems.add(file + ": figurante '" + actor.id() + "' está em local bloqueado");
-                for (String stop : actor.patrol()) {
-                    if (!area.spots().containsKey(stop))
-                        problems.add(file + ": figurante '" + actor.id() + "' usa ponto inexistente '" + stop + "'");
-                }
-            }
         }
+        for (NpcDef npc : db.npcs().values()) checkNpc(problems, db, npc);
         return problems;
     }
 
@@ -79,10 +71,11 @@ public final class ContentValidator {
             for (String terrain : area.terrainsUsed()) {
                 requireAsset(errors, manifest, file, "terreno '" + terrain + "'", "tile." + terrain);
             }
-            for (ActorSpawn actor : area.actors()) {
-                if (actor.sprite() == null) errors.add(file + ": figurante '" + actor.id() + "' sem sprite");
-                else requireAsset(errors, manifest, file, "figurante '" + actor.id() + "'", actor.sprite());
-            }
+        }
+        for (NpcDef npc : db.npcs().values()) {
+            String file = "npcs/" + npc.id() + ".yaml";
+            if (npc.sprite() == null) errors.add(file + ": NPC sem sprite");
+            else requireAsset(errors, manifest, file, "NPC '" + npc.id() + "'", npc.sprite());
         }
         for (AssetManifest.Entry entry : manifest.entries().values()) {
             for (String f : entry.allFiles()) {
@@ -94,6 +87,34 @@ public final class ContentValidator {
                 warnings.add("asset '" + entry.id() + "': sem origem/licença registrada (RF-426)");
         }
         return new Report(errors, warnings);
+    }
+
+    /** Agenda: blocos bem formados, apontando para pontos que existem, cobrindo as 24 horas. */
+    private static void checkNpc(List<String> problems, ContentDb db, NpcDef npc) {
+        String file = "npcs/" + npc.id() + ".yaml";
+        if (npc.blocks().isEmpty()) {
+            problems.add(file + ": NPC sem agenda");
+            return;
+        }
+        boolean wellFormed = true;
+        for (NpcDef.Block b : npc.blocks()) {
+            if (!b.wellFormed()) {
+                problems.add(file + ": bloco de agenda inválido (" + b.from() + "–" + b.to() + " em '" + b.at() + "')");
+                wellFormed = false;
+                continue;
+            }
+            AreaDef area = db.area(b.area());
+            if (area == null) problems.add(file + ": agenda usa área inexistente '" + b.area() + "'");
+            else if (!area.spots().containsKey(b.spot()))
+                problems.add(file + ": agenda usa ponto inexistente '" + b.at() + "'");
+        }
+        if (!wellFormed) return;
+        for (int minute = 0; minute < 1440; minute += 10) {
+            if (npc.blockAt(minute) == null) {
+                problems.add(file + String.format(": agenda sem bloco às %02d:%02d", minute / 60, minute % 60));
+                return;
+            }
+        }
     }
 
     private static void requireAsset(List<String> errors, AssetManifest manifest, String file, String what, String id) {

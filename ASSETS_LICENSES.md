@@ -21,5 +21,9 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `prop.casa_moinho` | sprite | props/casa_moinho.png<br>props/casa_moinho_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.aprendiz` | spritesheet | personagens/aprendiz.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.aldea` | spritesheet | personagens/aldea.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.ferreiro` | spritesheet | personagens/ferreiro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.taberneira` | spritesheet | personagens/taberneira.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.moleiro` | spritesheet | personagens/moleiro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.viajante` | spritesheet | personagens/viajante.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.bancada` | sprite | props/bancada.png | — | — | sem arquivo (placeholder) |
 | `prop.estaca` | sprite | props/estaca.png | — | — | sem arquivo (placeholder) |

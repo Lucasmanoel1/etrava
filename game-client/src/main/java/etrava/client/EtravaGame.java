@@ -23,18 +23,23 @@ import etrava.client.render.SceneRenderer;
 import etrava.client.render.SceneRenderer.ActorDraw;
 import etrava.sim.api.ActorView;
 import etrava.sim.api.Command;
+import etrava.sim.api.SimEvent;
 import etrava.sim.api.Simulation;
 import etrava.sim.api.WorldView;
 import etrava.sim.content.ContentDb;
 import etrava.sim.nav.NavGrid;
+import etrava.sim.rules.Effect;
+import etrava.sim.save.SaveGame;
 import etrava.sim.validation.ContentValidator;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.zip.Deflater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +60,7 @@ public final class EtravaGame extends ApplicationAdapter {
     private Simulation sim;
     private Assets assets;
     private SceneRenderer scene;
+    private DayNight dayNight;
     private CameraRig camera;
     private ShapeRenderer shapes;
     private SpriteBatch batch;
@@ -70,8 +76,11 @@ public final class EtravaGame extends ApplicationAdapter {
     private long lastDragTick = -1;
     private int frame;
     private final double[] worldPoint = new double[2];
-    /** Posições do tick anterior, para interpolar o desenho: jogador primeiro, depois figurantes. */
-    private final List<double[]> previous = new ArrayList<>();
+    /** Posições do tick anterior, por personagem, para interpolar o desenho. */
+    private final Map<String, double[]> previous = new HashMap<>();
+    private String notice = "";
+    private float noticeTime;
+    private int autosaveCount;
     private final List<ActorDraw> draws = new ArrayList<>();
 
     public EtravaGame(LaunchOptions options) {
@@ -101,12 +110,10 @@ public final class EtravaGame extends ApplicationAdapter {
         LOG.info("Novo jogo: semente={}, área={}", seed, areaId);
 
         assets = new Assets(options.assetsDir());
-        scene = new SceneRenderer(sim.area(), content.props(), assets, DayNight.load(options.assetsDir()));
+        dayNight = DayNight.load(options.assetsDir());
         camera = new IsoCameraRig();
         camera.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        WorldView v = sim.view();
-        camera.snapTo(v.playerX(), v.playerY());
-        capturePrevious(v);
+        rebuildScene();
 
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
@@ -142,10 +149,13 @@ public final class EtravaGame extends ApplicationAdapter {
             accumulator += dt * timeScale;
             while (accumulator >= Simulation.DT) {
                 capturePrevious(v);
-                sim.step();
+                List<SimEvent> events = sim.step();
                 accumulator -= (float) Simulation.DT;
+                if (!events.isEmpty()) handleEvents(events);
+                v = sim.view();
             }
         }
+        v = sim.view();
         float alpha = paused ? 1f : (float) (accumulator / Simulation.DT);
         buildDraws(v, alpha);
         ActorDraw player = draws.get(0);
@@ -170,14 +180,43 @@ public final class EtravaGame extends ApplicationAdapter {
         }
     }
 
-    private void capturePrevious(WorldView v) {
-        int n = 1 + v.actors().size();
-        while (previous.size() < n) previous.add(new double[2]);
-        store(previous.get(0), v.player());
-        for (int i = 0; i < v.actors().size(); i++) store(previous.get(i + 1), v.actors().get(i));
+    /** Monta o cenário da área atual (novo jogo, troca de área, jogo carregado). */
+    private void rebuildScene() {
+        if (scene != null) scene.dispose();
+        scene = new SceneRenderer(sim.area(), content.props(), assets, dayNight);
+        scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
+        WorldView v = sim.view();
+        camera.snapTo(v.playerX(), v.playerY());
+        previous.clear();
+        capturePrevious(v);
+        accumulator = 0;
     }
 
-    private static void store(double[] slot, ActorView a) {
+    private void handleEvents(List<SimEvent> events) {
+        for (SimEvent e : events) {
+            switch (e) {
+                case SimEvent.AreaChanged a -> {
+                    rebuildScene();
+                    autosave();
+                }
+                case SimEvent.TimeSkipped t -> {
+                    previous.clear(); // todo mundo mudou de lugar: nada de deslizar pela tela
+                    capturePrevious(sim.view());
+                    if (t.interrupted()) showNotice("Algo interrompeu " + (t.slept() ? "o sono." : "a espera."));
+                    if (t.slept()) autosave();
+                }
+                default -> { /* nada a fazer na apresentação */ }
+            }
+        }
+    }
+
+    private void capturePrevious(WorldView v) {
+        store(v.player());
+        for (ActorView a : v.actors()) store(a);
+    }
+
+    private void store(ActorView a) {
+        double[] slot = previous.computeIfAbsent(a.id(), id -> new double[2]);
         slot[0] = a.x();
         slot[1] = a.y();
     }
@@ -186,16 +225,63 @@ public final class EtravaGame extends ApplicationAdapter {
         int n = 1 + v.actors().size();
         while (draws.size() < n) draws.add(new ActorDraw());
         while (draws.size() > n) draws.remove(draws.size() - 1);
-        fill(draws.get(0), v.player(), previous.get(0), alpha);
-        for (int i = 0; i < v.actors().size(); i++) fill(draws.get(i + 1), v.actors().get(i), previous.get(i + 1), alpha);
+        fill(draws.get(0), v.player(), alpha);
+        for (int i = 0; i < v.actors().size(); i++) fill(draws.get(i + 1), v.actors().get(i), alpha);
     }
 
-    private static void fill(ActorDraw d, ActorView a, double[] prev, float alpha) {
+    private void fill(ActorDraw d, ActorView a, float alpha) {
+        double[] prev = previous.get(a.id());
+        double px = prev != null ? prev[0] : a.x(), py = prev != null ? prev[1] : a.y();
         d.sprite = a.sprite();
-        d.x = prev[0] + (a.x() - prev[0]) * alpha;
-        d.y = prev[1] + (a.y() - prev[1]) * alpha;
+        d.x = px + (a.x() - px) * alpha;
+        d.y = py + (a.y() - py) * alpha;
         d.facing = a.facing();
         d.moving = a.moving();
+    }
+
+    // ---------------------------------------------------------------- salvar e carregar
+
+    private void showNotice(String message) {
+        notice = message;
+        noticeTime = 4f;
+        LOG.info(message);
+    }
+
+    private Path savePath(String name) {
+        return UserDirs.saves().resolve(name + SaveGame.EXTENSION);
+    }
+
+    private String saveGame(String name) {
+        try {
+            sim.save(savePath(name), LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            return "Jogo salvo: " + name;
+        } catch (SaveGame.SaveException e) {
+            LOG.warn("Falha ao salvar '{}'", name, e);
+            return e.getMessage();
+        }
+    }
+
+    /** Carrega um save. Se der errado, o jogo atual continua como estava (RF-365). */
+    private String loadGame(String name) {
+        try {
+            sim = Simulation.load(content, savePath(name));
+            rebuildScene();
+            lastDirX = lastDirY = 0;
+            return "Jogo carregado: " + name + " (" + sim.view().clock().format() + ")";
+        } catch (SaveGame.SaveException e) {
+            LOG.warn("Falha ao carregar '{}'", name, e);
+            return e.getMessage();
+        } catch (RuntimeException e) {
+            LOG.warn("Falha ao carregar '{}'", name, e);
+            return "Não foi possível carregar o jogo: " + e.getMessage();
+        }
+    }
+
+    /** Salvamento automático rotativo em 3 arquivos, ao dormir e ao trocar de área (RF-361). */
+    private void autosave() {
+        String name = "auto_" + (autosaveCount++ % 3 + 1);
+        String result = saveGame(name);
+        LOG.info("Salvamento automático: {}", result);
     }
 
     private void drawHud(WorldView v) {
@@ -203,6 +289,10 @@ public final class EtravaGame extends ApplicationAdapter {
         float top = Gdx.graphics.getHeight() - 12;
         font.setColor(0.93f, 0.89f, 0.78f, 1f);
         font.draw(batch, v.clock().format() + (paused ? "   [PAUSADO]" : ""), 14, top);
+        if (noticeTime > 0) {
+            noticeTime -= Gdx.graphics.getDeltaTime();
+            font.draw(batch, notice, 14, top - (options.dev() ? 40 : 20));
+        }
         if (options.dev()) {
             font.setColor(0.7f, 0.7f, 0.7f, 1f);
             font.draw(batch, String.format(Locale.ROOT, "FPS %d   pos (%.1f, %.1f)   semente %d   vel x%.1f   F1 console",
@@ -274,6 +364,14 @@ public final class EtravaGame extends ApplicationAdapter {
                     else Gdx.app.exit();
                     return true;
                 }
+                case Input.Keys.F5 -> {
+                    showNotice(saveGame("rapido"));
+                    return true;
+                }
+                case Input.Keys.F9 -> {
+                    showNotice(loadGame("rapido"));
+                    return true;
+                }
                 case Input.Keys.F12 -> {
                     String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
                     saveScreenshot(UserDirs.screenshots().resolve("etrava-" + stamp + ".png"));
@@ -291,6 +389,10 @@ public final class EtravaGame extends ApplicationAdapter {
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.SPACE) {
                 paused = !paused;
+                return true;
+            }
+            if (keycode == Input.Keys.T && !paused) { // esperar uma hora
+                sim.submit(new Command.Wait(1));
                 return true;
             }
             return false;
@@ -328,8 +430,9 @@ public final class EtravaGame extends ApplicationAdapter {
         WorldView v = sim.view();
         switch (p[0].toLowerCase(Locale.ROOT)) {
             case "ajuda":
-                return "pos | tp X Y | ir X Y | hora [H] | avancar HORAS | vel FATOR | zoom VALOR | semente\n"
-                        + "luz on/off | pos-fx on/off | colisao | hud | validar | console | sair";
+                return "pos | tp X Y | ir X Y | area ID | hora [H] | avancar HORAS | esperar HORAS | dormir\n"
+                        + "salvar [NOME] | carregar [NOME] | saves | npcs | cronica | agendar HORAS TEXTO\n"
+                        + "vel FATOR | zoom VALOR | semente | luz on/off | pos-fx on/off | colisao | hud | validar | sair";
             case "pos":
                 return String.format(Locale.ROOT, "(%.2f, %.2f) em %s", v.playerX(), v.playerY(), v.areaId());
             case "tp":
@@ -345,6 +448,58 @@ public final class EtravaGame extends ApplicationAdapter {
                     sim.fastForward(Math.round(delta * v.clock().ticksPerHour()));
                 }
                 return v.clock().format() + " (tick " + v.clock().tick() + ")";
+            case "esperar":
+                sim.submit(new Command.Wait((int) num(p, 1)));
+                return "esperando";
+            case "dormir":
+                sim.submit(new Command.Sleep());
+                return "dormindo até de manhã";
+            case "area":
+                if (p.length < 2) return "áreas: " + String.join(", ", content.areas().keySet());
+                if (content.area(p[1]) == null) return "área inexistente: " + p[1];
+                sim.submit(new Command.EnterArea(p[1], null));
+                return "indo para " + p[1];
+            case "salvar":
+                return saveGame(p.length > 1 ? p[1] : "manual");
+            case "carregar":
+                return loadGame(p.length > 1 ? p[1] : "manual");
+            case "saves": {
+                StringBuilder sb = new StringBuilder();
+                java.io.File[] files = UserDirs.saves().toFile().listFiles((d, n) -> n.endsWith(SaveGame.EXTENSION));
+                if (files != null) {
+                    for (java.io.File f : files) {
+                        SaveGame.Meta m = SaveGame.readMeta(f.toPath());
+                        sb.append(f.getName().replace(SaveGame.EXTENSION, "")).append(": ")
+                                .append(m == null ? "ilegível" : "Dia " + m.day() + ", " + m.time() + ", " + m.areaId())
+                                .append("\n");
+                    }
+                }
+                return sb.length() == 0 ? "nenhum save" : sb.toString().trim();
+            }
+            case "npcs": {
+                StringBuilder sb = new StringBuilder();
+                for (String id : content.npcs().keySet()) {
+                    ActorView n = v.npc(id);
+                    sb.append(String.format(Locale.ROOT, "%s: %s em %s (%.1f, %.1f)%n", id, n.activity(),
+                            v.npcArea(id), n.x(), n.y()));
+                }
+                return sb.toString().trim();
+            }
+            case "cronica": {
+                StringBuilder sb = new StringBuilder();
+                List<etrava.sim.world.ChronicleEntry> all = v.chronicle();
+                for (int i = Math.max(0, all.size() - 10); i < all.size(); i++) {
+                    sb.append("tick ").append(all.get(i).tick()).append(" [").append(all.get(i).type()).append("] ")
+                            .append(all.get(i).text()).append("\n");
+                }
+                return sb.length() == 0 ? "crônica vazia" : sb.toString().trim();
+            }
+            case "agendar": { // agendar HORAS TEXTO — cria um evento que interrompe sono e espera
+                long at = v.clock().tick() + Math.round(num(p, 1) * v.clock().ticksPerHour());
+                String text = p.length > 2 ? String.join(" ", java.util.Arrays.copyOfRange(p, 2, p.length)) : "evento";
+                sim.schedule(at, true, List.of(new Effect.Chronicle("depuracao", "", text)));
+                return "agendado para daqui a " + p[1] + " h";
+            }
             case "avancar":
                 sim.fastForward((long) (num(p, 1) * v.clock().ticksPerHour()));
                 return "agora: " + v.clock().format();

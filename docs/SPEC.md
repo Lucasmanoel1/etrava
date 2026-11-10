@@ -1,6 +1,6 @@
 # SPEC — ETRAVA (especificação técnica do MVP)
 
-**Versão:** 0.3 · **Data:** 2026-11-10 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
+**Versão:** 0.4 · **Data:** 2026-11-10 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
 **Base:** `docs/PRD.md` v0.1 (seção 20.1), `docs/ponto-seguro.md`, `docs/lore-etrava.md`
 **Escopo:** só o MVP (Origem I + Capítulo I + Pedra-Mansa). Itens [PÓS]/[LP] aparecem apenas como "não fechar a porta".
 
@@ -120,10 +120,10 @@ Dependências: `game-client → core-sim` e `tools → core-sim`. Nunca o contr�
 | Escala | Quando roda | O que faz |
 |---|---|---|
 | **Detalhada** | todo tick, só na área carregada | movimento, navegação, combate, percepção/testemunho, conversas ambientes, gatilhos de área |
-| **Por bloco** | a cada hora de jogo, para o mundo todo | agendas dos NPCs fora da área, troca de rumores, avaliação dos arcos; uma vez por dia: economia e reabastecimento |
+| **Por bloco** | a cada 10 minutos de jogo: agendas de todos os NPCs (D-029); a cada hora: troca de rumores e avaliação dos arcos; uma vez por dia: economia e reabastecimento | o mundo todo |
 | **Agendada** | no tick exato marcado | efeitos tardios (RF-162), prazos de arcos, eventos externos |
 
-**Avanço rápido** (esperar, dormir, simulação headless): não roda ticks detalhados. Pula de fronteira em fronteira — próxima hora cheia ou próximo evento agendado, o que vier primeiro — processando tudo **na ordem** `(tick, sequência de inserção)`. Um evento marcado para 03:00 dispara mesmo que o jogador durma a noite inteira (AT-07). Um efeito marcado como `interrupts` encerra o avanço rápido naquele ponto (RF-323).
+**Avanço rápido** (esperar, dormir, simulação headless): não roda ticks detalhados. Pula de fronteira em fronteira — próximos 10 minutos de jogo ou próximo evento agendado, o que vier primeiro — processando tudo **na ordem** `(tick, sequência de inserção)`. Um evento marcado para 03:00 dispara mesmo que o jogador durma a noite inteira (AT-07). Um efeito marcado como `interrupts` encerra o avanço rápido naquele ponto (RF-323).
 
 ### 3.3 Determinismo (RF-144, AT-03)
 
@@ -275,7 +275,7 @@ topics:                     # "perguntar sobre" um fato do caderno (RF-126)
   mir: {goto: desconversa_mir}
 ```
 
-- **Agenda:** blocos de horário apontando para pontos nomeados dos mapas. Na área carregada o NPC anda até lá; fora dela, é posicionado direto a cada bloco (RF-081/082). Arcos sobrepõem a agenda com `override` (RF-083).
+- **Agenda:** blocos de horário apontando para pontos nomeados dos mapas, cobrindo as 24 horas (o validador confere). Na área carregada o NPC anda até lá; fora dela, é posicionado direto (RF-081/082). `hidden: true` = dentro de uma construção sem interior jogável; troca de área pelo ponto `entrada` do mapa (D-030). Arcos sobrepõem a agenda com `override` (RF-083, M4).
 - **Memória:** lista circular com limite configurável (RF-084).
 - **Ausência persistente:** `departed`/`dead` tira o NPC das agendas, e as conversas ambientes condicionadas a isso passam a comentar (RF-087).
 - **Camada C** não tem arquivo próprio: sai de modelos em `npcs/_figurantes.yaml`.
@@ -372,7 +372,7 @@ Regras do motor:
 | `spots` | pontos | lugares nomeados usados por agendas e arcos (`oficina_bancada`) |
 | `triggers` | retângulos | transição de área, descoberta de local, zona de telhado, zona de perigo |
 | `lights` | pontos | luzes soltas no mapa (ainda não implementada; hoje as luzes vêm dos props) |
-| `spawns` | pontos | entrada do jogador, encontros; classe `figurante` = personagem de ronda (provisório, D-027) |
+| `spawns` | pontos | entrada do jogador, encontros |
 
 - `props.yaml`: para cada prop, o asset, a pegada de colisão, se é inspecionável/contêiner e suas **variantes** (`viva`, `morta`, `cortada`). O estado fica em `World.areas[..]` e muda só por efeito `setProp` (RF-043).
 - **Terreno plano no MVP** (D-010): desnível, quando existir, é pintado na arte, não simulado.
@@ -401,7 +401,7 @@ Regras do motor:
 |---|---|
 | `meta.json` | versão do esquema, versão do jogo, dia/hora de jogo, local, tempo jogado, data real |
 | `state.json` | o `World` inteiro |
-| `thumb.png` | miniatura para a tela de carregar |
+| `thumb.png` | miniatura para a tela de carregar (entra no M7, com a tela — D-032) |
 
 - Slots: manuais (livres), `quicksave`, e 3 automáticos rotativos — ao dormir e ao trocar de área (RF-360/361).
 - **Escrita atômica:** grava em `nome.etrava.tmp` e renomeia por cima (RF-365). O estado é copiado no tick; a compressão e a escrita vão para uma thread à parte, para não travar a tela (RNF-022).

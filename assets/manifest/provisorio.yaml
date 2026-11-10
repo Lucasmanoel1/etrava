@@ -137,3 +137,51 @@
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
+- id: personagem.ferreiro
+  type: spritesheet
+  file: personagens/ferreiro.png
+  frame: [96, 128]
+  anchor: [48, 112]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.taberneira
+  type: spritesheet
+  file: personagens/taberneira.png
+  frame: [96, 128]
+  anchor: [48, 112]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.moleiro
+  type: spritesheet
+  file: personagens/moleiro.png
+  frame: [96, 128]
+  anchor: [48, 112]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.viajante
+  type: spritesheet
+  file: personagens/viajante.png
+  frame: [96, 128]
+  anchor: [48, 112]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+

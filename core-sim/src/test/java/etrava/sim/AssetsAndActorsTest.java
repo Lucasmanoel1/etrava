@@ -2,8 +2,6 @@ package etrava.sim;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import etrava.sim.api.ActorView;
-import etrava.sim.api.Command;
 import etrava.sim.api.Simulation;
 import etrava.sim.content.AreaDef;
 import etrava.sim.content.AssetManifest;
@@ -16,7 +14,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** Manifesto de assets, cena de referência e figurantes (M1). */
+/** Manifesto de assets e cena de referência (M1). */
 class AssetsAndActorsTest {
     private static final String AREA = "vila_ref";
     private static Path contentDir, assetsDir;
@@ -109,10 +107,8 @@ class AssetsAndActorsTest {
         AreaDef area = content.area(AREA);
         assertEquals(List.of("grama", "pedra", "terra"), List.copyOf(area.terrainsUsed()));
         assertTrue(area.props().stream().anyMatch(p -> p.propId().equals("casa_taverna")));
-        assertEquals(1, area.actors().size());
-        assertEquals("aldea", area.actors().get(0).id());
-        assertEquals("personagem.aldea", area.actors().get(0).sprite());
-        assertTrue(area.actors().get(0).patrol().contains("poco"));
+        assertTrue(area.spots().containsKey("entrada"));
+        assertEquals("personagem.aldea", content.npcs().get("aldea").sprite());
     }
 
     @Test
@@ -120,42 +116,6 @@ class AssetsAndActorsTest {
         Simulation sim = Simulation.newGame(content, 1, AREA);
         assertTrue(sim.nav().isBlockedAt(14.5, 15.5), "centro da oficina");
         assertFalse(sim.nav().isBlockedAt(14.5, 19.2), "diante da porta");
-    }
-
-    // ---------- figurantes ----------
-
-    @Test
-    void figuranteAndaEntreOsPontosSemAtravessarObstaculos() {
-        Simulation sim = Simulation.newGame(content, 42, AREA);
-        ActorView actor = sim.view().actors().get(0);
-        double startX = actor.x(), startY = actor.y();
-        double farthest = 0;
-        boolean walked = false;
-        for (int i = 0; i < 30 * 120; i++) {
-            sim.step();
-            walked |= actor.moving();
-            farthest = Math.max(farthest, Math.hypot(actor.x() - startX, actor.y() - startY));
-            assertFalse(sim.nav().isBlockedAt(actor.x(), actor.y()), "figurante dentro de obstáculo no tick " + i);
-        }
-        assertTrue(walked);
-        assertTrue(farthest > 3, "em dois minutos o figurante deveria ter saído do lugar");
-        assertEquals("personagem.aldea", actor.sprite());
-        assertEquals("aldea", actor.id());
-    }
-
-    @Test
-    void figurantesSaoDeterministicosPelaSemente() {
-        double[] a = strollAndReport(7), b = strollAndReport(7), c = strollAndReport(8);
-        assertArrayEquals(a, b);
-        assertFalse(java.util.Arrays.equals(a, c), "sementes diferentes levam a passeios diferentes");
-    }
-
-    private static double[] strollAndReport(long seed) {
-        Simulation sim = Simulation.newGame(content, seed, AREA);
-        sim.submit(new Command.MoveTo(22.0, 30.0));
-        for (int i = 0; i < 30 * 90; i++) sim.step();
-        ActorView actor = sim.view().actors().get(0);
-        return new double[] {actor.x(), actor.y(), actor.facing(), sim.view().player().x(), sim.view().player().y()};
     }
 
     @Test

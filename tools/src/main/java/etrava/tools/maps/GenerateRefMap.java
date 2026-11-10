@@ -99,9 +99,12 @@ public final class GenerateRefMap {
         spot("estrada_sul", 24.5, 38.5);
         spot("moinho_porta", 35.0, 37.0);
         spot("casa_porta", 17.0, 32.5);
-        spawn("jogador", "", 24.5, 29.5, null, null);
-        spawn("aldea", "figurante", 30.5, 22.5, "personagem.aldea",
-                "praca,poco,taverna_porta,estrada_sul,moinho_porta,casa_porta,oficina_porta");
+        spot("entrada", 24.5, 45.0);
+        spot("praca_banco", 21.0, 27.5);
+        spot("taverna_fora", 31.0, 20.0);
+        spot("oficina_fora", 16.2, 20.0);
+        spot("feno", 20.5, 33.0);
+        spawn("jogador", 24.5, 29.5);
 
         ObjectNode map = JSON.createObjectNode();
         map.put("type", "map").put("version", "1.10").put("tiledversion", "1.11.0")
@@ -135,15 +138,8 @@ public final class GenerateRefMap {
         spots.add(point(name, "", x, y));
     }
 
-    private void spawn(String name, String type, double x, double y, String sprite, String patrol) {
-        ObjectNode obj = point(name, type, x, y);
-        if (sprite != null) {
-            ArrayNode properties = JSON.createArrayNode();
-            properties.add(JSON.createObjectNode().put("name", "sprite").put("type", "string").put("value", sprite));
-            properties.add(JSON.createObjectNode().put("name", "patrol").put("type", "string").put("value", patrol));
-            obj.set("properties", properties);
-        }
-        spawns.add(obj);
+    private void spawn(String name, double x, double y) {
+        spawns.add(point(name, "", x, y));
     }
 
     /** Em mapas isométricos do Tiled, a posição dos objetos usa a altura do tile nos dois eixos. */

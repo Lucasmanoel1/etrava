@@ -3,64 +3,62 @@
 Última atualização: 2026-11-10
 
 ## Estado atual
-- **Marco em andamento:** M1 — Fatia visual.
-- **Status:** **PARADO no portão visual (AT-15).** A parte técnica do M1 está pronta; a arte é provisória (gerada por código). Falta a avaliação visual do usuário.
-- Marcos concluídos: M0.
+- **Marco concluído:** M2 — Simulação básica.
+- **Status:** **PARADO no fim do M2**, aguardando o usuário mandar continuar para o M3 (Conhecimento e diálogo).
+- Marcos concluídos: M0, M1 (portão visual do vilarejo aprovado com arte provisória — D-028), M2.
 
-## Feito no M1
-- **Pipeline de assets:** manifesto por ID (`assets/manifest/*.yaml`), placeholder automático com aviso no log, arte definitiva substitui a provisória só repetindo o ID em outro manifesto. `gradlew licenses` gera `ASSETS_LICENSES.md`; o empacotamento falha se houver asset sem origem/licença.
-- **Renderizador 2D isométrico:** chão em tiles com mistura entre terrenos, sprites ordenados de trás para a frente, sombras, objetos que cobrem o jogador ficam translúcidos.
-- **Luz:** ciclo dia/noite por tabela editável (`assets/config/daynight.yaml`), luzes de janelas e lamparinas à noite, brilho próprio das vidraças, pós-processamento (saturação, contraste, vinheta).
-- **Personagens animados:** folhas de sprites em 8 direções (parado e andando); jogador + uma figurante que anda pela praça.
-- **Arte provisória por código** (`gradlew generateArt`): 3 terrenos, 4 construções, árvores, poço, lampião, barril, caixote, feno, 2 personagens.
-- **Cena de referência:** `content/areas/vila_ref.tmj` (praça com poço, oficina, taverna, casa, moinho) — é a área que abre por padrão.
-- **`STYLE.md` v1:** regras, paleta, especificação dos arquivos, modelos de prompt para IA e como trocar a arte provisória.
-- Validador passou a conferir referências a assets; 36 testes no `core-sim`.
+## Feito no M2
+- **Tempo:** esperar (1–12 h) e dormir (até 06:00) saltam o tempo processando tudo em ordem; eventos podem interromper.
+- **Eventos agendados:** fila por (tick, ordem de criação), com efeitos `setFlag`, `setVar` e `chronicle`.
+- **Estado do mundo:** flags, variáveis, crônica interna, NPCs de todas as áreas.
+- **NPCs com agenda:** 5 NPCs provisórios (`content/npcs/`) com blocos de horário; andam na área carregada, são posicionados direto fora dela; entram em casa (somem) e trocam de área pelo ponto `entrada`.
+- **Save/load versionado:** arquivo `.etrava` (ZIP com `meta.json` e `state.json`) em `%APPDATA%\Etrava\saves`, escrita atômica, hash de estado, migrações em cadeia, erros tratados.
+- **Cliente:** F5/F9 (salvar/carregar rápido), T (esperar 1 h), salvamento automático rotativo em 3 arquivos ao dormir e ao trocar de área, avisos na tela.
+- **Simulação headless:** `gradlew simulate`.
+- Os figurantes de ronda do M1 saíram; o validador passou a conferir agendas.
+
+## Testes de aceitação do marco
+| AT | Situação | Teste |
+|---|---|---|
+| AT-03 determinismo | passa | `mesmaSementeEMesmosComandosDaoCronicaEEstadoIdenticos` |
+| AT-05 salvar/carregar | passa | `salvarECarregarPreservaOEstadoEOFuturo` |
+| AT-06 versão antiga e corrompido | passa | `saveDeVersaoAntigaEhMigradoOuRecusado`, `saveCorrompidoGeraErroTratado` |
+| AT-07 evento durante o sono | passa | `eventoDas3DaManhaAconteceMesmoDormindo` |
+
+`gradlew build`: 52 testes, cobertura do `core-sim` acima de 70%, validador sem erros (2 avisos esperados de imagens pendentes).
+30 dias headless rodam em menos de 1 segundo; duas execuções com a mesma semente dão o mesmo hash.
 
 ## Como rodar e testar
 | Comando | Faz |
 |---|---|
 | `gradlew run` | abre o jogo na cena de referência |
-| `gradlew run --args="--area=area_teste"` | abre a área de teste do M0 (mostra placeholders) |
 | `gradlew build` | compila, testa, confere cobertura e valida conteúdo e assets |
-| `gradlew generateArt` | regenera a arte provisória |
-| `gradlew generateRefMap` | regenera o mapa da cena de referência (sobrescreve edições feitas no Tiled) |
-| `gradlew licenses` | atualiza `ASSETS_LICENSES.md` |
+| `gradlew simulate --args="--dias 30 --semente 42 --politica parado"` | simulação headless com relatório |
 | `gradlew distWin` | gera o `Etrava.exe` e o ZIP |
+| `gradlew generateArt` / `generateRefMap` / `licenses` | arte provisória, mapa de referência, relatório de licenças |
 
-Controles: clique esquerdo anda · WASD anda · roda do mouse dá zoom · Espaço pausa · F1 console · F12 captura · Esc sai.
-Console (novos): `hora H` pula para a hora H (ex.: `hora 22`), `luz on/off`, `pos-fx on/off`, `colisao`, `hud`, `zoom VALOR`.
+Controles: clique esquerdo anda · WASD anda · roda do mouse dá zoom · Espaço pausa · **T espera 1 h** · **F5 salva** · **F9 carrega** · F1 console · F12 captura · Esc sai.
+Console (novos): `esperar H`, `dormir`, `area ID`, `salvar [NOME]`, `carregar [NOME]`, `saves`, `npcs`, `cronica`, `agendar HORAS TEXTO`.
 
-Capturas da cena: `docs/capturas/m1/` (`dia`, `tarde`, `noite`, `noite_taverna`).
-
-## Verificado
-- `gradlew build`: 36 testes passando, cobertura do `core-sim` acima de 70%, validador sem erros (2 avisos esperados de imagens pendentes).
-- Jogo rodando na cena de referência de dia, ao entardecer e à noite; figurante andando; placeholders funcionando na área de teste.
-- `Etrava.exe` do ZIP roda sem Java no PATH, nas duas áreas.
-
-## Portão visual — o que o usuário precisa decidir
-1. O **clima** (luz, paleta, noite com janelas acesas) está no caminho certo?
-2. A **arte provisória** basta como base para seguir, com a definitiva entrando aos poucos, ou é preciso arte definitiva antes de continuar?
-3. **Personagens:** aceitar o boneco atual como provisório e melhorá-lo depois, ou investir agora?
+Roteiro rápido para ver o M2: `gradlew run` → F1 → `npcs` → `hora 17.9` → fechar o console e ver os moradores irem para a taverna às 18:00 → F5 → `dormir` → F9 (volta para antes do sono).
 
 ## Problemas conhecidos / pendências
-- Toda a arte é provisória. Nada é definitivo ainda.
-- Personagens têm cara de manequim e só duas animações (parado, andar); faltam as outras do RF-424.
-- Bordas entre terrenos ainda aparecem em degraus.
-- A luz atravessa objetos e não projeta sombras (D-026).
-- Um objeto grande fica translúcido quando o jogador passa atrás da área do sprite, mesmo sem estar de fato coberto.
-- AT-15 pede 5 capturas (vilarejo dia/noite, taverna, estrutura enterrada, Posto); taverna por dentro, estrutura e Posto ainda não existem como áreas. Este portão cobre o vilarejo.
-- Não medi FPS com muitos NPCs nem no hardware mínimo (AT-17 é do fim do MVP).
-- Fonte da interface ainda é a padrão do libGDX.
+- **Arte definitiva:** o MCP da Dreamina não está acessível ao Claude Code nesta máquina. Toda a arte segue provisória.
+- Personagens com cara de manequim e só duas animações.
+- NPCs atravessam uns aos outros e o jogador (não há colisão entre personagens).
+- Troca de área só pelo console (`area ID`); não há portas nem saída pela estrada ainda (D-031).
+- Sem tela de salvar/carregar e sem miniatura no save (M7, D-032).
+- Só existe a política headless `parado`.
+- A crônica ainda registra pouco (virada de dia, sono, troca de área, eventos agendados).
+- Bordas entre terrenos em degraus; luz atravessa objetos.
 - AT-18 segue parcial: executável testado só nesta máquina.
-- Os mapas gerados ainda não foram abertos no Tiled para conferir.
-- Camada `lights` dos mapas não implementada (as luzes vêm dos props).
+- Mapas gerados ainda não foram abertos no Tiled.
+- `CONTENT.md` (como criar NPCs, fatos, diálogos, arcos) ainda não existe; começa no M3.
 
-## Próximo passo
-- Com a aprovação do portão: **M2 — Simulação básica** (tempo, esperar/dormir, estado do mundo, save/load versionado, NPCs com agenda, simulação headless; AT-03, AT-05, AT-06, AT-07).
-- Se o portão for reprovado: iterar no visual antes de seguir.
+## Próximo passo — M3 (Conhecimento e diálogo), só com o "continue" do usuário
+Fatos e conhecimento, caderno, diálogos com condições e efeitos, conversas ambientes, propagação de rumores, validador narrativo, retratos. Critério: AT-04 e AT-08 passando e um diálogo de exemplo com 3 ramificações.
 
 ## Paradas obrigatórias (lembrete)
 - Fim de cada marco (M0…M8).
-- M1: portão visual — sem assets em massa sem aprovação explícita.
+- Sem arte em massa antes de uma amostra de arte definitiva aprovada.
 - Antes de decisão irreversível ou de alto impacto narrativo/visual.

@@ -71,6 +71,19 @@ public final class GenerateArt {
                 new Color(0xB98A6A), new Color(0x5A3A28), new Color(0x7A3F2C), new Color(0x57503F),
                 new Color(0x2E2420), true, 0.42));
 
+        character("personagem.ferreiro", "personagens/ferreiro.png", new CharacterArt.Look(
+                new Color(0xB07F5E), new Color(0x2A2320), new Color(0x4F4A44), new Color(0x3A3430),
+                new Color(0x241C18), false, 0.30));
+        character("personagem.taberneira", "personagens/taberneira.png", new CharacterArt.Look(
+                new Color(0xD0A283), new Color(0x7A4A2A), new Color(0x8C7A52), new Color(0x5C5240),
+                new Color(0x2E2420), false, 0.46));
+        character("personagem.moleiro", "personagens/moleiro.png", new CharacterArt.Look(
+                new Color(0xC4967A), new Color(0x8E8A82), new Color(0xA69C84), new Color(0x4A4038),
+                new Color(0x2E2420), false, 0.20));
+        character("personagem.viajante", "personagens/viajante.png", new CharacterArt.Look(
+                new Color(0xA87858), new Color(0x1E1A18), new Color(0x4E5A4A), new Color(0x3C3A34),
+                new Color(0x241C18), true, 0.50));
+
         Path file = assets.resolve("manifest/provisorio.yaml");
         Files.createDirectories(file.getParent());
         Files.writeString(file, manifest.toString(), StandardCharsets.UTF_8);

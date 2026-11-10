@@ -1,0 +1,12 @@
+# NPC provisório do M2.
+id: aldea
+name: Aldeã
+layer: B
+sprite: personagem.aldea
+schedule:
+  - {from: "22:00", to: "06:00", do: dormir,      at: vila_ref/casa_porta, hidden: true}
+  - {from: "06:00", to: "09:00", do: buscar_agua, at: vila_ref/poco}
+  - {from: "09:00", to: "12:00", do: trabalhar,   at: vila_ref/feno}
+  - {from: "12:00", to: "14:00", do: comer,       at: vila_ref/casa_porta, hidden: true}
+  - {from: "14:00", to: "18:00", do: conversar,   at: vila_ref/praca_banco}
+  - {from: "18:00", to: "22:00", do: conversar,   at: vila_ref/taverna_fora}

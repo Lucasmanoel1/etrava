@@ -1,0 +1,10 @@
+# NPC provisório do M2: passa o dia em outra área, para exercitar a simulação fora da área carregada.
+id: viajante
+name: Viajante
+layer: C
+sprite: personagem.viajante
+schedule:
+  - {from: "20:00", to: "07:00", do: dormir,    at: vila_ref/taverna_porta, hidden: true}
+  - {from: "07:00", to: "08:00", do: conversar, at: vila_ref/praca}
+  - {from: "08:00", to: "17:00", do: viajar,    at: area_teste/praca}
+  - {from: "17:00", to: "20:00", do: conversar, at: vila_ref/taverna_fora}

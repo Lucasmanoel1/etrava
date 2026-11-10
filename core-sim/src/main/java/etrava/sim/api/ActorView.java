@@ -10,4 +10,6 @@ public interface ActorView {
     /** Direção para onde está virado, em radianos no plano do mundo. */
     double facing();
     boolean moving();
+    /** O que está fazendo, segundo a agenda (vazio para o jogador). */
+    String activity();
 }
