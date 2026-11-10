@@ -1,0 +1,17 @@
+# Ciclo de luz do dia (RF-027). O jogo interpola entre as linhas pela hora.
+#   ambient:    cor que multiplica a cena inteira (a "luz do céu")
+#   night:      0 = dia, 1 = noite — o quanto lamparinas e janelas aparecem acesas
+#   saturation: 1 = cores normais; menor = mais apagado
+#   contrast:   1 = normal
+#   vignette:   escurecimento das bordas da tela
+
+- {hour: 0.0,  ambient: [0.27, 0.32, 0.50], night: 1.0,  saturation: 0.80, contrast: 1.06, vignette: 0.50}
+- {hour: 4.5,  ambient: [0.29, 0.34, 0.52], night: 1.0,  saturation: 0.80, contrast: 1.06, vignette: 0.50}
+- {hour: 6.0,  ambient: [0.66, 0.56, 0.58], night: 0.45, saturation: 0.92, contrast: 1.03, vignette: 0.38}
+- {hour: 7.5,  ambient: [0.96, 0.90, 0.80], night: 0.0,  saturation: 1.00, contrast: 1.02, vignette: 0.28}
+- {hour: 12.0, ambient: [1.00, 0.98, 0.93], night: 0.0,  saturation: 1.00, contrast: 1.02, vignette: 0.24}
+- {hour: 16.5, ambient: [1.00, 0.92, 0.78], night: 0.0,  saturation: 1.04, contrast: 1.03, vignette: 0.28}
+- {hour: 18.5, ambient: [0.92, 0.62, 0.46], night: 0.35, saturation: 1.05, contrast: 1.05, vignette: 0.36}
+- {hour: 19.5, ambient: [0.50, 0.40, 0.52], night: 0.85, saturation: 0.90, contrast: 1.06, vignette: 0.45}
+- {hour: 21.0, ambient: [0.27, 0.32, 0.50], night: 1.0,  saturation: 0.80, contrast: 1.06, vignette: 0.50}
+- {hour: 24.0, ambient: [0.27, 0.32, 0.50], night: 1.0,  saturation: 0.80, contrast: 1.06, vignette: 0.50}

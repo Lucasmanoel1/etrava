@@ -142,3 +142,34 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-09
 - **Decisão:** `content/areas/area_teste.tmj` foi gerado por script, não desenhado à mão; o formato é o do Tiled, mas ainda não foi aberto no Tiled para conferir.
 - **Motivo:** rapidez no M0; é uma área descartável, só para provar movimento, colisão e câmera.
+
+## D-023 — Construções são um sprite só por fora; o interior é outra área
+- **Data:** 2026-11-10
+- **Decisão:** no exterior, cada construção é um prop grande, com um único sprite e base que bloqueia a passagem. Entrar pela porta carrega o interior como área separada (RF-005).
+- **Motivo:** é o jeito simples e bonito de fazer prédios em 2D isométrico; evita montar paredes e telhados em peças que precisam sumir. O PRD 6.3 já lista os interiores como áreas próprias. O "telhado some ao entrar" (RF-006) fica atendido pela troca de área.
+- **Alternativa descartada:** interiores na mesma área, com telhado e paredes da frente recortados.
+- **Consequência:** quem está na rua não vê quem está dentro. Aceito para o MVP.
+
+## D-024 — Arte provisória gerada por código
+- **Data:** 2026-11-10
+- **Decisão:** toda a arte da cena de referência (tiles, objetos, casas, personagens) é desenhada por código Java em `tools` (`gradlew generateArt`), com manifesto próprio (`provisorio.yaml`). Qualquer outro manifesto que repita um ID tem prioridade.
+- **Motivo:** eu não gero imagens por IA; a arte definitiva depende do usuário. Com arte provisória coerente dá para validar luz, escala, ordem de desenho e clima agora, e trocar arquivo por arquivo depois. Sem ferramenta externa: é Java puro, roda pelo Gradle.
+- **Alternativa descartada:** seguir só com caixas coloridas até a arte chegar (não permitiria avaliar o visual); baixar pacotes de arte de terceiros (licenças e estilo misturado — risco R2).
+
+## D-025 — Personagens: boneco articulado desenhado por código (forma atual da D-019)
+- **Data:** 2026-11-10
+- **Decisão:** as folhas de sprites dos personagens saem de um boneco 3D simples (segmentos articulados) projetado nas 8 direções e em cada quadro, dentro do `generateArt`. Não há modelo 3D externo nem gdx-gltf no projeto.
+- **Motivo:** dá a consistência entre direções e quadros que a D-019 buscava, sem depender de modelos de terceiros. O visual é de manequim — serve como provisório.
+- **Situação:** a qualidade final dos personagens continua em aberto e é o ponto mais fraco do visual. Opções para depois do portão: melhorar o boneco (roupas, volumes, mais animações) ou pré-renderizar modelos 3D licenciados.
+
+## D-026 — Luz 2D: buffer de luz multiplicado + buffer de brilho
+- **Data:** 2026-11-10
+- **Decisão:** a cena é desenhada num buffer; outro buffer recebe a cor do céu e as manchas de luz e é multiplicado sobre ela; um terceiro recebe só o que brilha (janelas, chamas), com os demais sprites em preto para tapar o que está atrás, e é somado no fim. Depois vem um passe de saturação, contraste e vinheta.
+- **Motivo:** dá noite com luz quente localizada usando só sprites e três buffers, sem normal maps.
+- **Limite conhecido:** a luz não respeita paredes (atravessa objetos) e não projeta sombras.
+
+## D-027 — Figurantes de ronda, provisórios
+- **Data:** 2026-11-10
+- **Decisão:** mapas podem ter, na camada `spawns`, objetos de classe `figurante` que andam entre pontos sorteados pelo RNG da simulação.
+- **Motivo:** o M1 pede dois personagens animados na cena; agendas de NPC só existem no M2.
+- **Situação:** substituído pelas agendas no M2.

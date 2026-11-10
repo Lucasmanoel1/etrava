@@ -1,0 +1,139 @@
+# GERADO por `gradlew generateArt` — não edite à mão.
+# Arte provisória feita por código. Para trocar uma imagem pela definitiva,
+# copie a entrada para outro arquivo de manifesto desta pasta (ele tem prioridade)
+# ou simplesmente substitua o PNG mantendo nome, tamanho e ponto de apoio.
+
+- id: tile.grama
+  type: tile
+  files: [tiles/grama_1.png, tiles/grama_2.png, tiles/grama_3.png]
+  priority: 3
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: tile.terra
+  type: tile
+  files: [tiles/terra_1.png, tiles/terra_2.png, tiles/terra_3.png]
+  priority: 2
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: tile.pedra
+  type: tile
+  files: [tiles/pedra_1.png, tiles/pedra_2.png]
+  priority: 1
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.arvore
+  type: sprite
+  file: props/arvore.png
+  anchor: [150, 320]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.arvore_b
+  type: sprite
+  file: props/arvore_b.png
+  anchor: [150, 320]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.arvore_morta
+  type: sprite
+  file: props/arvore_morta.png
+  anchor: [150, 320]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.barril
+  type: sprite
+  file: props/barril.png
+  anchor: [55, 100]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.caixote
+  type: sprite
+  file: props/caixote.png
+  anchor: [85, 100]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.poco
+  type: sprite
+  file: props/poco.png
+  anchor: [130, 230]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.lampiao
+  type: sprite
+  file: props/lampiao.png
+  anchor: [60, 195]
+  emissive: props/lampiao_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.feno
+  type: sprite
+  file: props/feno.png
+  anchor: [110, 140]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_oficina
+  type: sprite
+  file: props/casa_oficina.png
+  anchor: [445, 544]
+  emissive: props/casa_oficina_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_taverna
+  type: sprite
+  file: props/casa_taverna.png
+  anchor: [541, 631]
+  emissive: props/casa_taverna_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_pequena
+  type: sprite
+  file: props/casa_pequena.png
+  anchor: [381, 495]
+  emissive: props/casa_pequena_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_moinho
+  type: sprite
+  file: props/casa_moinho.png
+  anchor: [413, 606]
+  emissive: props/casa_moinho_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.aprendiz
+  type: spritesheet
+  file: personagens/aprendiz.png
+  frame: [96, 128]
+  anchor: [48, 112]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.aldea
+  type: spritesheet
+  file: personagens/aldea.png
+  frame: [96, 128]
+  anchor: [48, 112]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+

@@ -4,6 +4,8 @@ import etrava.sim.nav.NavGrid;
 import etrava.sim.nav.Pathfinder.Point;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Área jogável, lida de um mapa do Tiled (.tmj). Grade em tiles de 1 m;
@@ -17,7 +19,8 @@ public record AreaDef(
         boolean[] collision,
         List<PropPlacement> props,
         Map<String, Point> spots,
-        Map<String, Point> spawns) {
+        Map<String, Point> spawns,
+        List<ActorSpawn> actors) {
 
     public static final String PLAYER_SPAWN = "jogador";
     public static final String NO_TERRAIN = "vazio";
@@ -31,6 +34,13 @@ public record AreaDef(
     public boolean collisionAt(int tx, int ty) {
         if (tx < 0 || ty < 0 || tx >= width || ty >= height) return true;
         return collision[ty * width + tx];
+    }
+
+    /** Tipos de terreno usados no mapa, em ordem alfabética. */
+    public Set<String> terrainsUsed() {
+        Set<String> used = new TreeSet<>();
+        for (String t : terrain) if (t != null) used.add(t);
+        return used;
     }
 
     /** Monta a grade de navegação: colisão do mapa + base dos props que bloqueiam. */

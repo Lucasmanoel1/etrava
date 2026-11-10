@@ -1,17 +1,21 @@
 package etrava.sim.api;
 
+import etrava.sim.content.ActorSpawn;
 import etrava.sim.content.AreaDef;
 import etrava.sim.content.ContentDb;
 import etrava.sim.nav.NavGrid;
 import etrava.sim.nav.Pathfinder;
 import etrava.sim.nav.Pathfinder.Point;
 import etrava.sim.time.GameClock;
+import etrava.sim.world.ActorState;
 import etrava.sim.world.World;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Fachada da simulação. A apresentação envia {@link Command}s, chama
@@ -21,8 +25,10 @@ import java.util.List;
 public final class Simulation {
     /** Duração de um tick em segundos reais. */
     public static final double DT = 1.0 / GameClock.TICKS_PER_SECOND;
-    /** Velocidade de caminhada, em metros por segundo. */
+    /** Velocidade de caminhada do jogador, em metros por segundo. */
     public static final double WALK_SPEED = 3.5;
+    /** Figurantes andam sem pressa. */
+    public static final double STROLL_SPEED = 1.5;
 
     private final ContentDb content;
     private final World world;
@@ -31,7 +37,8 @@ public final class Simulation {
 
     private final List<Command> pending = new ArrayList<>();
     private final List<Command.Timed> commandLog = new ArrayList<>();
-    private final Deque<Point> path = new ArrayDeque<>();
+    private final Map<ActorState, Deque<Point>> paths = new IdentityHashMap<>();
+    private final Map<ActorState, ActorSpawn> spawns = new IdentityHashMap<>();
     private double dirX, dirY;
 
     private Simulation(ContentDb content, World world) {
@@ -53,9 +60,20 @@ public final class Simulation {
         world.areaId = areaId;
         Point p = def.spawns().get(spawn);
         if (p == null) p = new Point(def.width() / 2.0, def.height() / 2.0);
-        world.playerX = p.x();
-        world.playerY = p.y();
-        stop();
+        world.player.x = p.x();
+        world.player.y = p.y();
+        paths.clear();
+        spawns.clear();
+        paths.put(world.player, new ArrayDeque<>());
+        world.actors.clear();
+        for (ActorSpawn s : def.actors()) {
+            ActorState actor = new ActorState(s.id(), s.sprite(), s.x(), s.y());
+            actor.waitTicks = 30 + world.rng.nextInt(90);
+            world.actors.add(actor);
+            paths.put(actor, new ArrayDeque<>());
+            spawns.put(actor, s);
+        }
+        stopPlayer();
     }
 
     public WorldView view() { return world; }
@@ -78,26 +96,29 @@ public final class Simulation {
         }
         pending.clear();
         movePlayer(events);
+        for (ActorState actor : world.actors) stroll(actor);
         world.clock.advance(1);
         return events;
     }
 
     /**
-     * Avanço rápido (esperar, dormir, headless). No M0 só o relógio anda; a
+     * Avanço rápido (esperar, dormir, headless). Por enquanto só o relógio anda; a
      * partir do M2 processa blocos de hora e eventos agendados, em ordem.
      */
     public void fastForward(long ticks) {
         if (ticks < 0) throw new IllegalArgumentException("ticks negativo");
-        stop();
+        stopPlayer();
         world.clock.advance(ticks);
     }
 
     private void apply(Command c, List<SimEvent> events) {
+        ActorState player = world.player;
+        Deque<Point> path = paths.get(player);
         switch (c) {
             case Command.MoveTo m -> {
                 dirX = dirY = 0;
                 path.clear();
-                path.addAll(Pathfinder.findPath(nav, world.playerX, world.playerY, m.x(), m.y()));
+                path.addAll(Pathfinder.findPath(nav, player.x, player.y, m.x(), m.y()));
                 if (path.isEmpty()) {
                     world.hasDestination = false;
                 } else {
@@ -121,69 +142,91 @@ public final class Simulation {
                 }
             }
             case Command.Teleport t -> {
-                stop();
+                stopPlayer();
                 if (!nav.isBlockedAt(t.x(), t.y())) {
-                    world.playerX = t.x();
-                    world.playerY = t.y();
+                    player.x = t.x();
+                    player.y = t.y();
                 }
             }
         }
     }
 
-    private void stop() {
-        path.clear();
+    private void stopPlayer() {
+        paths.get(world.player).clear();
         dirX = dirY = 0;
         world.hasDestination = false;
-        world.playerMoving = false;
+        world.player.moving = false;
     }
 
     private void movePlayer(List<SimEvent> events) {
+        ActorState player = world.player;
         double step = WALK_SPEED * DT;
         if (dirX != 0 || dirY != 0) {
-            double nx = world.playerX + dirX * step, ny = world.playerY + dirY * step;
+            double nx = player.x + dirX * step, ny = player.y + dirY * step;
             boolean moved = false;
             // desliza ao longo de paredes: tenta o movimento inteiro, depois cada eixo
             if (!nav.isBlockedAt(nx, ny)) {
-                world.playerX = nx;
-                world.playerY = ny;
+                player.x = nx;
+                player.y = ny;
                 moved = true;
-            } else if (dirX != 0 && !nav.isBlockedAt(nx, world.playerY)) {
-                world.playerX = nx;
+            } else if (dirX != 0 && !nav.isBlockedAt(nx, player.y)) {
+                player.x = nx;
                 moved = true;
-            } else if (dirY != 0 && !nav.isBlockedAt(world.playerX, ny)) {
-                world.playerY = ny;
+            } else if (dirY != 0 && !nav.isBlockedAt(player.x, ny)) {
+                player.y = ny;
                 moved = true;
             }
-            world.playerFacing = Math.atan2(dirY, dirX);
-            world.playerMoving = moved;
+            player.facing = Math.atan2(dirY, dirX);
+            player.moving = moved;
             return;
         }
-        if (path.isEmpty()) {
-            world.playerMoving = false;
-            return;
+        boolean wasWalking = !paths.get(player).isEmpty();
+        boolean arrived = followPath(player, step);
+        if (wasWalking && arrived) {
+            world.hasDestination = false;
+            events.add(new SimEvent.PlayerArrived(player.x, player.y));
         }
+    }
+
+    /** Anda pelo caminho do personagem. Devolve true quando não há mais caminho. */
+    private boolean followPath(ActorState actor, double step) {
+        Deque<Point> path = paths.get(actor);
         double remaining = step;
         while (remaining > 0 && !path.isEmpty()) {
             Point target = path.peekFirst();
-            double dx = target.x() - world.playerX, dy = target.y() - world.playerY;
+            double dx = target.x() - actor.x, dy = target.y() - actor.y;
             double dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > 1e-9) world.playerFacing = Math.atan2(dy, dx);
+            if (dist > 1e-9) actor.facing = Math.atan2(dy, dx);
             if (dist <= remaining) {
-                world.playerX = target.x();
-                world.playerY = target.y();
+                actor.x = target.x();
+                actor.y = target.y();
                 remaining -= dist;
                 path.pollFirst();
             } else {
-                world.playerX += dx / dist * remaining;
-                world.playerY += dy / dist * remaining;
+                actor.x += dx / dist * remaining;
+                actor.y += dy / dist * remaining;
                 remaining = 0;
             }
         }
-        world.playerMoving = true;
-        if (path.isEmpty()) {
-            world.playerMoving = false;
-            world.hasDestination = false;
-            events.add(new SimEvent.PlayerArrived(world.playerX, world.playerY));
+        actor.moving = !path.isEmpty();
+        return path.isEmpty();
+    }
+
+    /** Figurante: espera um pouco, escolhe outro ponto da ronda e vai até lá. */
+    private void stroll(ActorState actor) {
+        Deque<Point> path = paths.get(actor);
+        if (!path.isEmpty()) {
+            if (followPath(actor, STROLL_SPEED * DT)) actor.waitTicks = 90 + world.rng.nextInt(240);
+            return;
         }
+        if (actor.waitTicks > 0) {
+            actor.waitTicks--;
+            return;
+        }
+        List<String> stops = spawns.get(actor).patrol();
+        actor.waitTicks = 60;
+        if (stops.isEmpty()) return;
+        Point target = area.spots().get(stops.get(world.rng.nextInt(stops.size())));
+        if (target != null) path.addAll(Pathfinder.findPath(nav, actor.x, actor.y, target.x(), target.y()));
     }
 }

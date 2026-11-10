@@ -10,6 +10,7 @@ dependencies {
     implementation("com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion")
     runtimeOnly("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop")
     implementation("org.slf4j:slf4j-api:2.0.20")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.23.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.5.38")
 }
 
@@ -39,11 +40,14 @@ val stagePackage = tasks.register<Sync>("stagePackage") {
 tasks.register<Exec>("packageWin") {
     group = "distribution"
     description = "Gera build/package/out/Etrava com Etrava.exe e runtime embutido."
-    dependsOn(stagePackage)
+    dependsOn(stagePackage, ":tools:licensesStrict")
     val jdkHome = javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath.asFile
     val outDir = packageOut.get().asFile
     val jarName = tasks.jar.get().archiveFileName.get()
-    doFirst { outDir.deleteRecursively() }
+    doFirst {
+        // o runtime embutido tem arquivos somente leitura; sem isso o Windows não deixa apagar
+        outDir.walkBottomUp().forEach { it.setWritable(true); it.delete() }
+    }
     commandLine(
         File(jdkHome, "bin/jpackage").absolutePath,
         "--type", "app-image",

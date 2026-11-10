@@ -1,6 +1,6 @@
 # SPEC — ETRAVA (especificação técnica do MVP)
 
-**Versão:** 0.2 · **Data:** 2026-11-09 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
+**Versão:** 0.3 · **Data:** 2026-11-10 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
 **Base:** `docs/PRD.md` v0.1 (seção 20.1), `docs/ponto-seguro.md`, `docs/lore-etrava.md`
 **Escopo:** só o MVP (Origem I + Capítulo I + Pedra-Mansa). Itens [PÓS]/[LP] aparecem apenas como "não fechar a porta".
 
@@ -371,8 +371,8 @@ Regras do motor:
 | `props` | objetos | prop por ID, posição e rotação livres; `key` opcional para variantes |
 | `spots` | pontos | lugares nomeados usados por agendas e arcos (`oficina_bancada`) |
 | `triggers` | retângulos | transição de área, descoberta de local, zona de telhado, zona de perigo |
-| `lights` | pontos | lamparinas, fornos, velas (cor, raio, se acende só à noite) |
-| `spawns` | pontos | entrada do jogador, encontros |
+| `lights` | pontos | luzes soltas no mapa (ainda não implementada; hoje as luzes vêm dos props) |
+| `spawns` | pontos | entrada do jogador, encontros; classe `figurante` = personagem de ronda (provisório, D-027) |
 
 - `props.yaml`: para cada prop, o asset, a pegada de colisão, se é inspecionável/contêiner e suas **variantes** (`viva`, `morta`, `cortada`). O estado fica em `World.areas[..]` e muda só por efeito `setProp` (RF-043).
 - **Terreno plano no MVP** (D-010): desnível, quando existir, é pintado na arte, não simulado.
@@ -448,10 +448,10 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 
 - **Laço:** acumulador de tempo → N × `sim.step()` → consome `SimEvent`s → desenha com interpolação.
 - **Cena (D-018):** tudo é sprite 2D em projeção isométrica 2:1. Chão a partir da camada `terrain`; props, construções e personagens são sprites com ponto de apoio no chão, desenhados de trás para a frente pela profundidade (x + y). Sombra de contato é um sprite simples sob cada objeto.
-- **Dia/noite e luzes (RF-027):** tabela de pontos-chave por hora (cor ambiente, gradação, névoa) com interpolação, em dados, por área. As luzes dos mapas (lamparinas, fornos, velas) são manchas aditivas desenhadas num buffer de luz, multiplicado sobre a cena — o mesmo princípio do raio de luz dos isométricos clássicos. Sem normal maps no MVP.
+- **Dia/noite e luzes (RF-027):** tabela de pontos-chave por hora (cor ambiente, gradação, névoa) com interpolação, em dados, por área. As luzes (declaradas nos props: janelas, lamparinas) são manchas aditivas desenhadas num buffer de luz, multiplicado sobre a cena — o mesmo princípio do raio de luz dos isométricos clássicos. O que brilha sozinho (vidraça acesa, chama) vai num buffer de brilho somado no fim (D-026). Sem normal maps no MVP. A tabela fica em `assets/config/daynight.yaml`.
 - **Pós-processamento (RF-028):** um passe próprio de tela cheia — gradação de cor e vinheta; névoa como camada; bloom opcional. Cada efeito desliga nas opções.
 - **Câmera (DP-02):** interface `CameraRig`; implementação do MVP = isométrica 2D ortográfica, zoom limitado, segue com suavização. Interação usa **posição de mundo** (ponto da tela → ponto do chão), nunca coordenada de tela (RF-024). Rotação em 90° (RF-022, opcional no PRD) fica fora: em 2D exigiria quatro versões de cada arte.
-- **Oclusão (RF-006, RF-023):** construções são montadas em peças (paredes, telhado); a zona de telhado esconde o telhado e as paredes da frente quando o jogador entra; o que estiver na frente do jogador fica translúcido.
+- **Oclusão (RF-006, RF-023):** por fora, cada construção é um sprite só; o interior é outra área, carregada ao passar pela porta (D-023). O que estiver na frente do jogador e o cobrir fica translúcido.
 - **Escuridão (RF-008):** ambiente quase preto no buffer de luz + raio de luz no personagem, maior com lamparina equipada.
 - **UI:** scene2d, tema "papel e tinta" (PRD 10.1), fonte serifada via FreeType com 3 tamanhos (RNF-040). Telas do PRD 10.2. Nenhum marcador de objetivo em lugar nenhum.
 - **Áudio:** canais geral/música/ambiente/efeitos/interface (RF-403); ambiente por área × período com transição suave; música por contexto.
@@ -492,7 +492,7 @@ ID sem entrada no manifesto, arquivo ausente ou arquivo que falha ao carregar �
 
 - No jogo só entram **PNG** (sprites, tiles, retratos, ícones, ilustrações) e **OGG**. Sprites são empacotados em atlas pelo build. Cada sprite declara no manifesto o ponto de apoio no chão.
 - **Personagens:** folhas de sprites em **8 direções** com o conjunto de animações do RF-424 (parado, andar, correr, atacar, receber dano, cair, sentar, trabalhar, conversar). Todos os humanos seguem a mesma grade de quadros, para o código tratar qualquer personagem igual.
-- **Como os sprites de personagem são produzidos é decidido no M1**, dentro do portão visual (risco R8). Caminho principal (D-019): **pré-renderizar modelos 3D já animados** em folhas de sprites, com uma ferramenta nossa em `tools` — o método dos isométricos dos anos 90, que resolve a consistência entre direções e quadros. Os modelos 3D são só matéria-prima dessa ferramenta; não vão para o jogo. Sem Blender (RNF-006). Alternativa a testar no mesmo portão: sprites gerados por IA e retocados.
+- **Hoje** os personagens saem de um boneco articulado desenhado por código (D-025). **Como serão os sprites definitivos é decidido no portão visual** (risco R8). Caminho principal (D-019): **pré-renderizar modelos 3D já animados** em folhas de sprites, com uma ferramenta nossa em `tools` — o método dos isométricos dos anos 90, que resolve a consistência entre direções e quadros. Os modelos 3D são só matéria-prima dessa ferramenta; não vão para o jogo. Sem Blender (RNF-006). Alternativa a testar no mesmo portão: sprites gerados por IA e retocados.
 - **Cenário:** tiles, props e construções pintados, gerados por IA com os modelos de prompt do `STYLE.md`, sempre no mesmo ângulo isométrico 2:1.
 
 ### 7.4 Estilo e licenças

@@ -1,6 +1,63 @@
 # Props: objetos posicionáveis nos mapas. Dimensões em metros.
-# footprint: [largura (eixo x), profundidade (eixo y)] · blocks: impede a passagem.
-# No M0 todos aparecem como caixas coloridas (placeholders) pela categoria.
+#   footprint: [largura (eixo x), profundidade (eixo y)] da base
+#   blocks:    impede a passagem
+#   sprite:    ID do asset; se omitido, vale prop.<id>
+#   lights:    luzes acesas à noite; offset = [x, y, z] a partir do centro da base
+# Construções são props grandes: do lado de fora são um sprite só; o interior é outra área (D-023).
+
+# ---------- construções ----------
+- id: casa_oficina
+  category: construcao
+  footprint: [7.0, 5.0]
+  height: 5.0
+  blocks: true
+  lights:
+    - {offset: [-2.1, 3.0, 1.5], radius: 3.4, color: [1.0, 0.72, 0.42]}
+    - {offset: [2.2, 3.0, 1.5], radius: 3.4, color: [1.0, 0.72, 0.42]}
+    - {offset: [4.0, 0.0, 1.5], radius: 3.4, color: [1.0, 0.72, 0.42]}
+
+- id: casa_taverna
+  category: construcao
+  footprint: [9.0, 6.0]
+  height: 5.7
+  blocks: true
+  lights:
+    - {offset: [-2.2, 3.6, 1.5], radius: 4.2, color: [1.0, 0.70, 0.38]}
+    - {offset: [2.8, 3.6, 1.5], radius: 4.2, color: [1.0, 0.70, 0.38]}
+    - {offset: [5.1, 0.0, 1.5], radius: 4.2, color: [1.0, 0.70, 0.38]}
+
+- id: casa_pequena
+  category: construcao
+  footprint: [5.0, 5.0]
+  height: 4.7
+  blocks: true
+  lights:
+    - {offset: [0.0, 3.0, 1.5], radius: 3.2, color: [1.0, 0.74, 0.46]}
+    - {offset: [3.0, -1.8, 1.5], radius: 3.2, color: [1.0, 0.74, 0.46]}
+
+- id: casa_moinho
+  category: construcao
+  footprint: [5.0, 6.0]
+  height: 6.4
+  blocks: true
+  lights:
+    - {offset: [3.0, 1.1, 1.5], radius: 3.2, color: [1.0, 0.74, 0.46]}
+    - {offset: [3.0, -1.6, 1.5], radius: 3.2, color: [1.0, 0.74, 0.46]}
+
+# ---------- objetos ----------
+- id: poco
+  category: construcao
+  footprint: [2.0, 2.0]
+  height: 1.0
+  blocks: true
+
+- id: lampiao
+  category: objeto
+  footprint: [0.4, 0.4]
+  height: 2.5
+  blocks: true
+  lights:
+    - {offset: [0.17, -0.17, 2.1], radius: 5.5, color: [1.0, 0.74, 0.40]}
 
 - id: caixote
   category: objeto
@@ -14,16 +71,10 @@
   height: 1.1
   blocks: true
 
-- id: arvore
-  category: vegetacao
-  footprint: [1.0, 1.0]
-  height: 4.0
-  blocks: true
-
-- id: poco
-  category: construcao
-  footprint: [2.0, 2.0]
-  height: 1.0
+- id: feno
+  category: objeto
+  footprint: [1.6, 1.6]
+  height: 1.3
   blocks: true
 
 - id: bancada
@@ -37,3 +88,22 @@
   footprint: [0.4, 0.4]
   height: 1.2
   blocks: false
+
+# ---------- vegetação ----------
+- id: arvore
+  category: vegetacao
+  footprint: [0.8, 0.8]
+  height: 4.5
+  blocks: true
+
+- id: arvore_b
+  category: vegetacao
+  footprint: [0.8, 0.8]
+  height: 4.5
+  blocks: true
+
+- id: arvore_morta
+  category: vegetacao
+  footprint: [0.8, 0.8]
+  height: 4.0
+  blocks: true

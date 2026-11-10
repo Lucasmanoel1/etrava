@@ -13,19 +13,26 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
+import etrava.client.assets.Assets;
 import etrava.client.camera.CameraRig;
 import etrava.client.camera.IsoCameraRig;
 import etrava.client.debug.DebugConsole;
-import etrava.client.render.AreaRenderer;
+import etrava.client.render.DayNight;
+import etrava.client.render.IsoProjection;
+import etrava.client.render.SceneRenderer;
+import etrava.client.render.SceneRenderer.ActorDraw;
+import etrava.sim.api.ActorView;
 import etrava.sim.api.Command;
 import etrava.sim.api.Simulation;
 import etrava.sim.api.WorldView;
 import etrava.sim.content.ContentDb;
+import etrava.sim.nav.NavGrid;
 import etrava.sim.validation.ContentValidator;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.Deflater;
@@ -38,7 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class EtravaGame extends ApplicationAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(EtravaGame.class);
-    private static final String START_AREA = "area_teste";
+    private static final String DEFAULT_AREA = "vila_ref";
     private static final float MAX_FRAME_TIME = 0.25f;
 
     private static volatile String crashContext = "jogo ainda não iniciado";
@@ -46,7 +53,8 @@ public final class EtravaGame extends ApplicationAdapter {
     private final LaunchOptions options;
     private ContentDb content;
     private Simulation sim;
-    private AreaRenderer areaRenderer;
+    private Assets assets;
+    private SceneRenderer scene;
     private CameraRig camera;
     private ShapeRenderer shapes;
     private SpriteBatch batch;
@@ -56,11 +64,15 @@ public final class EtravaGame extends ApplicationAdapter {
     private float accumulator;
     private float timeScale = 1f;
     private boolean paused;
-    private double prevX, prevY;
+    private boolean showCollision;
+    private boolean showHud = true;
     private double lastDirX, lastDirY;
     private long lastDragTick = -1;
     private int frame;
     private final double[] worldPoint = new double[2];
+    /** Posições do tick anterior, para interpolar o desenho: jogador primeiro, depois figurantes. */
+    private final List<double[]> previous = new ArrayList<>();
+    private final List<ActorDraw> draws = new ArrayList<>();
 
     public EtravaGame(LaunchOptions options) {
         this.options = options;
@@ -75,19 +87,26 @@ public final class EtravaGame extends ApplicationAdapter {
     public void create() {
         content = ContentDb.load(options.contentDir());
         if (options.dev()) {
-            for (String p : ContentValidator.validate(content)) LOG.warn("Validador: {}", p);
+            ContentValidator.Report report = ContentValidator.validate(options.contentDir(), options.assetsDir());
+            for (String p : report.errors()) LOG.warn("Validador: {}", p);
         }
         long seed = options.seed() != null ? options.seed() : System.nanoTime();
-        sim = Simulation.newGame(content, seed, START_AREA);
-        LOG.info("Novo jogo: semente={}, área={}", seed, START_AREA);
+        String areaId = options.area() != null ? options.area() : DEFAULT_AREA;
+        if (content.area(areaId) == null && !content.areas().isEmpty()) {
+            String fallback = content.areas().keySet().iterator().next();
+            LOG.warn("Área '{}' não existe; abrindo '{}'", areaId, fallback);
+            areaId = fallback;
+        }
+        sim = Simulation.newGame(content, seed, areaId);
+        LOG.info("Novo jogo: semente={}, área={}", seed, areaId);
 
-        areaRenderer = new AreaRenderer(sim.area(), content.props());
+        assets = new Assets(options.assetsDir());
+        scene = new SceneRenderer(sim.area(), content.props(), assets, DayNight.load(options.assetsDir()));
         camera = new IsoCameraRig();
         camera.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         WorldView v = sim.view();
         camera.snapTo(v.playerX(), v.playerY());
-        prevX = v.playerX();
-        prevY = v.playerY();
+        capturePrevious(v);
 
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
@@ -108,6 +127,7 @@ public final class EtravaGame extends ApplicationAdapter {
     public void resize(int width, int height) {
         if (width == 0 || height == 0) return;
         camera.resize(width, height);
+        scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
         if (console != null) console.resize(width, height);
     }
@@ -121,29 +141,26 @@ public final class EtravaGame extends ApplicationAdapter {
             pollMovementKeys();
             accumulator += dt * timeScale;
             while (accumulator >= Simulation.DT) {
-                prevX = v.playerX();
-                prevY = v.playerY();
+                capturePrevious(v);
                 sim.step();
                 accumulator -= (float) Simulation.DT;
             }
         }
         float alpha = paused ? 1f : (float) (accumulator / Simulation.DT);
-        double px = prevX + (v.playerX() - prevX) * alpha;
-        double py = prevY + (v.playerY() - prevY) * alpha;
+        buildDraws(v, alpha);
+        ActorDraw player = draws.get(0);
         crashContext = "semente=" + v.seed() + ", " + v.clock().format() + ", área=" + v.areaId();
 
-        camera.update(dt, px, py);
+        camera.update(dt, player.x, player.y);
 
         ScreenUtils.clear(0.05f, 0.05f, 0.06f, 1f);
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        shapes.setProjectionMatrix(camera.combined());
-        shapes.begin(ShapeRenderer.ShapeType.Filled);
-        areaRenderer.render(shapes, camera.visibleBounds(), px, py, v.playerFacing(),
-                v.hasDestination(), v.destinationX(), v.destinationY());
-        shapes.end();
+        double hour = v.clock().minuteOfDay() / 60.0
+                + (v.clock().tick() % 25) / 25.0 / 60.0; // fração do minuto, para a luz mudar sem degraus
+        float animTime = (v.clock().tick() + alpha) / 30f;
+        scene.render(camera, draws, hour, animTime, v.hasDestination(), v.destinationX(), v.destinationY());
 
-        drawHud(v);
+        if (showCollision) drawCollisionOverlay();
+        if (showHud) drawHud(v);
         if (console != null) console.render(dt);
 
         frame++;
@@ -151,6 +168,34 @@ public final class EtravaGame extends ApplicationAdapter {
             saveScreenshot(options.screenshot());
             Gdx.app.exit();
         }
+    }
+
+    private void capturePrevious(WorldView v) {
+        int n = 1 + v.actors().size();
+        while (previous.size() < n) previous.add(new double[2]);
+        store(previous.get(0), v.player());
+        for (int i = 0; i < v.actors().size(); i++) store(previous.get(i + 1), v.actors().get(i));
+    }
+
+    private static void store(double[] slot, ActorView a) {
+        slot[0] = a.x();
+        slot[1] = a.y();
+    }
+
+    private void buildDraws(WorldView v, float alpha) {
+        int n = 1 + v.actors().size();
+        while (draws.size() < n) draws.add(new ActorDraw());
+        while (draws.size() > n) draws.remove(draws.size() - 1);
+        fill(draws.get(0), v.player(), previous.get(0), alpha);
+        for (int i = 0; i < v.actors().size(); i++) fill(draws.get(i + 1), v.actors().get(i), previous.get(i + 1), alpha);
+    }
+
+    private static void fill(ActorDraw d, ActorView a, double[] prev, float alpha) {
+        d.sprite = a.sprite();
+        d.x = prev[0] + (a.x() - prev[0]) * alpha;
+        d.y = prev[1] + (a.y() - prev[1]) * alpha;
+        d.facing = a.facing();
+        d.moving = a.moving();
     }
 
     private void drawHud(WorldView v) {
@@ -164,6 +209,32 @@ public final class EtravaGame extends ApplicationAdapter {
                     Gdx.graphics.getFramesPerSecond(), v.playerX(), v.playerY(), v.seed(), timeScale), 14, top - 20);
         }
         batch.end();
+    }
+
+    /** Depuração: pinta de vermelho as células onde não se anda. */
+    private void drawCollisionOverlay() {
+        NavGrid nav = sim.nav();
+        float[] b = camera.visibleBounds();
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        shapes.setProjectionMatrix(camera.combined());
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        shapes.setColor(0.9f, 0.15f, 0.1f, 0.35f);
+        double s = NavGrid.CELL_SIZE;
+        for (int cy = 0; cy < nav.height(); cy++) {
+            for (int cx = 0; cx < nav.width(); cx++) {
+                if (!nav.isBlocked(cx, cy)) continue;
+                double x = cx * s, y = cy * s;
+                float px = IsoProjection.sx(x, y), py = IsoProjection.sy(x, y, 0);
+                if (px < b[0] - 64 || px > b[2] + 64 || py < b[1] - 64 || py > b[3] + 64) continue;
+                float x2 = IsoProjection.sx(x + s, y), y2 = IsoProjection.sy(x + s, y, 0);
+                float x3 = IsoProjection.sx(x + s, y + s), y3 = IsoProjection.sy(x + s, y + s, 0);
+                float x4 = IsoProjection.sx(x, y + s), y4 = IsoProjection.sy(x, y + s, 0);
+                shapes.triangle(px, py, x2, y2, x3, y3);
+                shapes.triangle(px, py, x3, y3, x4, y4);
+            }
+        }
+        shapes.end();
     }
 
     // ---------------------------------------------------------------- entrada
@@ -257,7 +328,8 @@ public final class EtravaGame extends ApplicationAdapter {
         WorldView v = sim.view();
         switch (p[0].toLowerCase(Locale.ROOT)) {
             case "ajuda":
-                return "pos | tp X Y | ir X Y | hora | avancar HORAS | vel FATOR | semente | validar | sair";
+                return "pos | tp X Y | ir X Y | hora [H] | avancar HORAS | vel FATOR | zoom VALOR | semente\n"
+                        + "luz on/off | pos-fx on/off | colisao | hud | validar | console | sair";
             case "pos":
                 return String.format(Locale.ROOT, "(%.2f, %.2f) em %s", v.playerX(), v.playerY(), v.areaId());
             case "tp":
@@ -267,6 +339,11 @@ public final class EtravaGame extends ApplicationAdapter {
                 sim.submit(new Command.MoveTo(num(p, 1), num(p, 2)));
                 return "andando";
             case "hora":
+                if (p.length > 1) { // avança até a próxima vez que o relógio marcar essa hora
+                    double target = num(p, 1) % 24, now = v.clock().minuteOfDay() / 60.0;
+                    double delta = (target - now + 24) % 24;
+                    sim.fastForward(Math.round(delta * v.clock().ticksPerHour()));
+                }
                 return v.clock().format() + " (tick " + v.clock().tick() + ")";
             case "avancar":
                 sim.fastForward((long) (num(p, 1) * v.clock().ticksPerHour()));
@@ -274,11 +351,29 @@ public final class EtravaGame extends ApplicationAdapter {
             case "vel":
                 timeScale = (float) Math.max(0, Math.min(20, num(p, 1)));
                 return "velocidade x" + timeScale;
+            case "zoom":
+                camera.zoomBy(-100);
+                camera.zoomBy((float) num(p, 1) - IsoCameraRig.MIN_ZOOM);
+                return "zoom ajustado";
             case "semente":
                 return "semente " + v.seed();
+            case "luz":
+                scene.lightingEnabled = onOff(p);
+                return "luz " + (scene.lightingEnabled ? "ligada" : "desligada");
+            case "pos-fx":
+                scene.postEnabled = onOff(p);
+                return "pós-processamento " + (scene.postEnabled ? "ligado" : "desligado");
+            case "colisao":
+                showCollision = !showCollision;
+                return "";
+            case "hud":
+                showHud = !showHud;
+                return "";
             case "validar":
-                List<String> problems = ContentValidator.validate(ContentDb.load(options.contentDir()));
-                return problems.isEmpty() ? "conteúdo válido" : String.join("\n", problems);
+                ContentValidator.Report report = ContentValidator.validate(options.contentDir(), options.assetsDir());
+                List<String> out = new ArrayList<>(report.errors());
+                for (String w : report.warnings()) out.add("aviso: " + w);
+                return out.isEmpty() ? "conteúdo válido" : String.join("\n", out);
             case "console":
                 console.toggle();
                 return "";
@@ -288,6 +383,11 @@ public final class EtravaGame extends ApplicationAdapter {
             default:
                 return "comando desconhecido: " + p[0] + " (digite 'ajuda')";
         }
+    }
+
+    private static boolean onOff(String[] parts) {
+        if (parts.length < 2) throw new IllegalArgumentException("use on ou off");
+        return parts[1].equalsIgnoreCase("on");
     }
 
     private static double num(String[] parts, int index) {
@@ -318,6 +418,8 @@ public final class EtravaGame extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        scene.dispose();
+        assets.dispose();
         shapes.dispose();
         batch.dispose();
         font.dispose();

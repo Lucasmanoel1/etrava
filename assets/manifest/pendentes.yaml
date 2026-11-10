@@ -1,0 +1,13 @@
+# Assets que o conteúdo já usa mas que ainda não têm imagem.
+# O jogo mostra um placeholder e avisa no log (RF-421). Quando a imagem existir,
+# basta salvá-la no caminho indicado em `file`.
+
+- id: prop.bancada
+  type: sprite
+  file: props/bancada.png
+  anchor: [96, 110]
+
+- id: prop.estaca
+  type: sprite
+  file: props/estaca.png
+  anchor: [20, 80]

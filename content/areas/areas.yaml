@@ -3,3 +3,7 @@
 - id: area_teste
   name: Área de teste
   map: area_teste.tmj
+
+- id: vila_ref
+  name: Cena de referência (praça do vilarejo)
+  map: vila_ref.tmj

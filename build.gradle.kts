@@ -26,6 +26,7 @@ subprojects {
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
         systemProperty("etrava.content", rootProject.file("content").absolutePath)
+        systemProperty("etrava.assets", rootProject.file("assets").absolutePath)
     }
 }
 
