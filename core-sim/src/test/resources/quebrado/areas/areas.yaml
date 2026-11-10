@@ -1,0 +1,6 @@
+- id: ruim
+  name: Mapa com erros
+  map: ruim.tmj
+- id: sumida
+  name: Mapa que não existe
+  map: nao_existe.tmj

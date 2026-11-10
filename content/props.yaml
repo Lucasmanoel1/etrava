@@ -1,0 +1,39 @@
+# Props: objetos posicionáveis nos mapas. Dimensões em metros.
+# footprint: [largura (eixo x), profundidade (eixo y)] · blocks: impede a passagem.
+# No M0 todos aparecem como caixas coloridas (placeholders) pela categoria.
+
+- id: caixote
+  category: objeto
+  footprint: [1.0, 1.0]
+  height: 0.9
+  blocks: true
+
+- id: barril
+  category: objeto
+  footprint: [0.8, 0.8]
+  height: 1.1
+  blocks: true
+
+- id: arvore
+  category: vegetacao
+  footprint: [1.0, 1.0]
+  height: 4.0
+  blocks: true
+
+- id: poco
+  category: construcao
+  footprint: [2.0, 2.0]
+  height: 1.0
+  blocks: true
+
+- id: bancada
+  category: mobilia
+  footprint: [2.0, 1.0]
+  height: 0.9
+  blocks: true
+
+- id: estaca
+  category: objeto
+  footprint: [0.4, 0.4]
+  height: 1.2
+  blocks: false

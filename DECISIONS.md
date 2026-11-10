@@ -109,3 +109,36 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Decisão:** um passe de tela cheia próprio para gradação de cor e vinheta; névoa na cena; bloom opcional avaliado no M1.
 - **Motivo:** são poucos efeitos e simples; evita depender de biblioteca de efeitos cuja compatibilidade ainda não foi testada.
 - **Alternativa descartada:** adotar de saída uma biblioteca de pós-processamento.
+
+## D-018 — Visual 2D isométrico com sprites (substitui a DP-01 do PRD)
+- **Data:** 2026-11-09
+- **Decisão:** o jogo é **2D isométrico** (projeção 2:1, tile de 128×64 px), com cenário pintado e personagens em sprites de 8 direções. A DP-01 do PRD recomendava 3D estilizado com câmera isométrica.
+- **Motivo:** o diretor delegou a escolha e declarou preferência por um 2D bonito, no espírito dos isométricos de 1996 (instrução do usuário > PRD). Concordo com a troca por três razões: (1) cenário 2D pintado é onde a IA generativa de imagem rende mais, enquanto props 3D dependeriam de pacotes prontos — o risco R2, "cara de asset pack"; (2) variantes de estado (árvore viva/morta) viram troca de sprite; (3) o cliente fica mais simples (sem shaders PBR, sombras, importação de modelos em tempo de execução).
+- **O que se perde:** câmera livre, 3ª e 1ª pessoa (RF-026, [LP]) deixam de ser evolução natural; rotação de câmera em 90° (RF-022, opcional) sai; a luz dinâmica vira mapa de luz 2D, menos rica que luz 3D.
+- **Reversibilidade:** a simulação não conhece a apresentação (RNF-010); trocar o visual de novo não toca na lógica.
+- **Alternativa descartada:** 3D estilizado (DP-01).
+- **Revisar:** portão visual do M1.
+
+## D-019 — Sprites de personagem por pré-renderização de modelos 3D (hipótese, a confirmar no M1)
+- **Data:** 2026-11-09
+- **Decisão:** o caminho principal para personagens é renderizar modelos 3D já animados em folhas de sprites de 8 direções, com uma ferramenta própria em `tools`. Os modelos são matéria-prima; não vão para o jogo.
+- **Motivo:** o ponto fraco do 2D apontado pelo PRD (5.1) é manter o mesmo personagem consistente em 8 direções × várias animações com IA de imagem. A pré-renderização resolve isso e é o método histórico do gênero.
+- **Alternativa a testar no mesmo portão:** sprites gerados por IA e retocados.
+- **Situação:** hipótese de trabalho; a decisão final sai do portão visual, com imagem na tela.
+
+## D-020 — Versões fixadas no M0
+- **Data:** 2026-11-09
+- **Decisão:** Gradle 9.9.0 (wrapper), libGDX 1.14.2, Jackson 2.23.0, SLF4J 2.0.20, Logback 1.5.38, JUnit 5.14.4.
+- **Motivo:** versões estáveis atuais, testadas juntas no M0: build com o JDK 25 como padrão da máquina e toolchain 21, testes, execução e empacotamento.
+- **Observação:** o gdx-gltf saiu do cliente com a D-018; só volta, dentro de `tools`, se a D-019 for confirmada.
+
+## D-021 — Mapas do Tiled em orientação isométrica
+- **Data:** 2026-11-09
+- **Decisão:** os `.tmj` usam orientação isométrica (ajuste da D-010), com tileset embutido e camadas em CSV sem compressão.
+- **Motivo:** com o jogo em 2D isométrico, o Tiled mostra o mapa como ele aparece no jogo. A grade lógica continua a mesma (1 tile = 1 m).
+- **Alternativa descartada:** planta ortogonal (exigiria imaginar o resultado).
+
+## D-022 — Mapa de teste gerado por script
+- **Data:** 2026-11-09
+- **Decisão:** `content/areas/area_teste.tmj` foi gerado por script, não desenhado à mão; o formato é o do Tiled, mas ainda não foi aberto no Tiled para conferir.
+- **Motivo:** rapidez no M0; é uma área descartável, só para provar movimento, colisão e câmera.

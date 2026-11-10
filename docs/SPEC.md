@@ -1,6 +1,6 @@
 # SPEC — ETRAVA (especificação técnica do MVP)
 
-**Versão:** 0.1 · **Data:** 2026-11-09 · **Status:** aguardando aprovação do diretor
+**Versão:** 0.2 · **Data:** 2026-11-09 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
 **Base:** `docs/PRD.md` v0.1 (seção 20.1), `docs/ponto-seguro.md`, `docs/lore-etrava.md`
 **Escopo:** só o MVP (Origem I + Capítulo I + Pedra-Mansa). Itens [PÓS]/[LP] aparecem apenas como "não fechar a porta".
 
@@ -12,7 +12,7 @@ Cada escolha desta SPEC está registrada em `DECISIONS.md` (D-xxx). Versões exa
 
 ```
 ┌──────────────────────────── game-client (libGDX / LWJGL3) ────────────────────────────┐
-│  render 3D · câmera · entrada · UI (scene2d) · áudio · assets + placeholders · debug   │
+│  render 2D isométrico · câmera · entrada · UI (scene2d) · áudio · assets · debug       │
 └───────────────▲──────────────────────────────────────────────┬────────────────────────┘
                 │ lê estado (somente leitura) + SimEvents       │ envia Commands
 ┌───────────────┴──────────────────────────────────────────────▼────────────────────────┐
@@ -22,7 +22,7 @@ Cada escolha desta SPEC está registrada em `DECISIONS.md` (D-xxx). Versões exa
 └───────────────▲──────────────────────────────────────────────▲────────────────────────┘
                 │                                               │
         content/ (YAML + mapas .tmj)                      tools (CLI)
-        assets/  (GLB, PNG, OGG + manifesto)              validar · simular headless · licenças
+        assets/  (PNG, OGG + manifesto)                   validar · simular headless · licenças
 ```
 
 Três regras que sustentam tudo:
@@ -37,7 +37,8 @@ Três regras que sustentam tudo:
 |---|---|---|
 | Linguagem / build | Java 21 (toolchain), Gradle com wrapper | D-001 |
 | Framework | libGDX, backend LWJGL3 | DP-14 do PRD |
-| Modelos, animação, PBR, luz, névoa | extensão **gdx-gltf** | glTF/GLB (RF-422) |
+| Gráficos | **2D isométrico com sprites** (SpriteBatch e atlas de texturas do libGDX) | D-018 |
+| Luz | cor ambiente por hora + mapa de luz 2D (luzes aditivas num buffer à parte) | seção 6 |
 | UI | scene2d.ui + gdx-freetype | já vem com o libGDX |
 | Áudio | áudio do libGDX (OpenAL), OGG | posicional = volume/pan por distância |
 | Dados (conteúdo e save) | Jackson (YAML para conteúdo, JSON para save) | D-005 |
@@ -361,7 +362,7 @@ Regras do motor:
 ### 4.7 Mundo, áreas e mapas
 
 - `world/*.yaml`: civilizações (os 12 campos do RF-060; as 6 potências cadastradas), facções (as 4 do MVP), regiões e locais. **Existem como dado mesmo sem área jogável** (RF-040) — Fornal é só um registro e um assunto.
-- **Áreas são mapas do Tiled** (`.tmj`), planta ortogonal vista de cima, **1 tile = 1 metro**. O jogo monta a cena 3D a partir da planta. O `core-sim` lê o mesmo arquivo para colisão e pontos; o cliente lê para montar o visual.
+- **Áreas são mapas do Tiled** (`.tmj`) em orientação **isométrica**, **1 tile = 1 metro** (128×64 px na tela). O que se vê no Tiled é o que se vê no jogo. O `core-sim` lê o mesmo arquivo para colisão e pontos; o cliente lê para desenhar. Exigências: tileset embutido no mapa e camadas de tile em CSV sem compressão.
 
 | Camada no Tiled | Tipo | Uso |
 |---|---|---|
@@ -374,7 +375,7 @@ Regras do motor:
 | `spawns` | pontos | entrada do jogador, encontros |
 
 - `props.yaml`: para cada prop, o asset, a pegada de colisão, se é inspecionável/contêiner e suas **variantes** (`viva`, `morta`, `cortada`). O estado fica em `World.areas[..]` e muda só por efeito `setProp` (RF-043).
-- **Terreno plano no MVP** (D-010): relevo fica para depois do portão visual, se fizer falta.
+- **Terreno plano no MVP** (D-010): desnível, quando existir, é pintado na arte, não simulado.
 - **Navegação:** grade de 0,5 m derivada de `collision` + pegadas dos props; A* próprio no `core-sim` (D-011). Clique em ponto inalcançável leva ao ponto alcançável mais próximo (RF-001).
 
 ### 4.8 Itens, economia, trabalhos, combate, sobrenatural
@@ -446,12 +447,12 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 ## 6. Apresentação (`game-client`)
 
 - **Laço:** acumulador de tempo → N × `sim.step()` → consome `SimEvent`s → desenha com interpolação.
-- **Cena:** chão a partir da camada `terrain`; props e personagens em GLB via gdx-gltf; luz direcional (sol/lua) com sombra + luzes pontuais dos mapas, com limite de luzes ativas (risco R9).
-- **Dia/noite (RF-027):** tabela de pontos-chave por hora (direção e cor do sol, cor ambiente, névoa, gradação) com interpolação. Fica em dados, por área.
-- **Pós-processamento (RF-028):** um passe próprio de tela cheia — gradação de cor e vinheta; névoa na cena; bloom opcional. Cada efeito desliga nas opções.
-- **Câmera (DP-02):** interface `CameraRig`; implementação do MVP = isométrica, perspectiva de campo estreito, 35–50° de inclinação, zoom limitado, segue com suavização. Perspectiva × ortográfica é decidida no olho, no M1. Interação usa **posição de mundo** (raio da câmera → chão/objeto), nunca coordenada de tela (RF-024).
-- **Oclusão (RF-006, RF-023):** zona de telhado esconde o telhado quando o jogador entra; props entre a câmera e o jogador ficam translúcidos; silhueta de segurança.
-- **Escuridão (RF-008):** ambiente quase preto + luz no personagem, maior com lamparina equipada.
+- **Cena (D-018):** tudo é sprite 2D em projeção isométrica 2:1. Chão a partir da camada `terrain`; props, construções e personagens são sprites com ponto de apoio no chão, desenhados de trás para a frente pela profundidade (x + y). Sombra de contato é um sprite simples sob cada objeto.
+- **Dia/noite e luzes (RF-027):** tabela de pontos-chave por hora (cor ambiente, gradação, névoa) com interpolação, em dados, por área. As luzes dos mapas (lamparinas, fornos, velas) são manchas aditivas desenhadas num buffer de luz, multiplicado sobre a cena — o mesmo princípio do raio de luz dos isométricos clássicos. Sem normal maps no MVP.
+- **Pós-processamento (RF-028):** um passe próprio de tela cheia — gradação de cor e vinheta; névoa como camada; bloom opcional. Cada efeito desliga nas opções.
+- **Câmera (DP-02):** interface `CameraRig`; implementação do MVP = isométrica 2D ortográfica, zoom limitado, segue com suavização. Interação usa **posição de mundo** (ponto da tela → ponto do chão), nunca coordenada de tela (RF-024). Rotação em 90° (RF-022, opcional no PRD) fica fora: em 2D exigiria quatro versões de cada arte.
+- **Oclusão (RF-006, RF-023):** construções são montadas em peças (paredes, telhado); a zona de telhado esconde o telhado e as paredes da frente quando o jogador entra; o que estiver na frente do jogador fica translúcido.
+- **Escuridão (RF-008):** ambiente quase preto no buffer de luz + raio de luz no personagem, maior com lamparina equipada.
 - **UI:** scene2d, tema "papel e tinta" (PRD 10.1), fonte serifada via FreeType com 3 tamanhos (RNF-040). Telas do PRD 10.2. Nenhum marcador de objetivo em lugar nenhum.
 - **Áudio:** canais geral/música/ambiente/efeitos/interface (RF-403); ambiente por área × período com transição suave; música por contexto.
 - **Depuração (RF-440):** console e painéis em scene2d, só em build de desenvolvimento — avançar tempo, mexer em flags, teletransporte, ver arcos, conhecimento, opiniões e crônica.
@@ -467,7 +468,7 @@ O conteúdo só conhece **IDs** (`retrato.avel`, `prop.arvore_velha.viva`, `som.
 
 ```yaml
 - id: retrato.avel
-  type: portrait            # model | animation | texture | portrait | icon | illustration | sound | music | font
+  type: portrait            # sprite | spritesheet | tile | portrait | icon | illustration | sound | music | font
   file: portraits/avel.png
   source: "Gerado por IA (Dreamina), prompt em STYLE.md §3.1"
   license: proprio
@@ -479,9 +480,9 @@ Trocar um asset = trocar o arquivo e manter o ID (RF-423).
 
 | Tipo | Placeholder |
 |---|---|
-| modelo de personagem | cápsula colorida pela facção |
-| prop | caixa do tamanho da pegada, cor por categoria |
-| textura | xadrez |
+| sprite de personagem | boneco simples colorido pela facção |
+| prop / construção | caixa isométrica do tamanho da pegada, cor por categoria |
+| terreno | losango de cor lisa por tipo; magenta para tipo desconhecido |
 | retrato / ícone / ilustração | quadro liso com as iniciais ou o ID |
 | som / música | silêncio |
 
@@ -489,9 +490,10 @@ ID sem entrada no manifesto, arquivo ausente ou arquivo que falha ao carregar �
 
 ### 7.3 Formatos e personagens
 
-- GLB (modelos e animações), PNG, OGG (RF-422). Conversão de outros formatos acontece fora do jogo, por ferramenta de linha de comando — **sem Blender** (RNF-006).
-- **Esqueleto padrão único** para humanos, com o conjunto de animações do RF-424 em arquivos separados do modelo, para qualquer corpo compatível usar qualquer animação.
-- **A fonte de personagens/animações é escolhida no M1**, dentro do portão visual, com três critérios: proporções humanas naturais, licença que permita distribuição comercial e exportação para GLB sem Blender. Não é decidida agora de propósito (risco R8).
+- No jogo só entram **PNG** (sprites, tiles, retratos, ícones, ilustrações) e **OGG**. Sprites são empacotados em atlas pelo build. Cada sprite declara no manifesto o ponto de apoio no chão.
+- **Personagens:** folhas de sprites em **8 direções** com o conjunto de animações do RF-424 (parado, andar, correr, atacar, receber dano, cair, sentar, trabalhar, conversar). Todos os humanos seguem a mesma grade de quadros, para o código tratar qualquer personagem igual.
+- **Como os sprites de personagem são produzidos é decidido no M1**, dentro do portão visual (risco R8). Caminho principal (D-019): **pré-renderizar modelos 3D já animados** em folhas de sprites, com uma ferramenta nossa em `tools` — o método dos isométricos dos anos 90, que resolve a consistência entre direções e quadros. Os modelos 3D são só matéria-prima dessa ferramenta; não vão para o jogo. Sem Blender (RNF-006). Alternativa a testar no mesmo portão: sprites gerados por IA e retocados.
+- **Cenário:** tiles, props e construções pintados, gerados por IA com os modelos de prompt do `STYLE.md`, sempre no mesmo ângulo isométrico 2:1.
 
 ### 7.4 Estilo e licenças
 
@@ -557,7 +559,7 @@ Asset com ID no manifesto mas sem arquivo é **aviso**, não erro (vira placehol
 | Marco | Seções |
 |---|---|
 | M0 Fundação | 2, 3.1, 3.4 (esqueleto), 4.7 (área de teste), 6 (câmera, clique para mover, console), 7.2, 10 |
-| M1 Fatia visual | 6 (luz, pós, oclusão), 7 inteiro, `STYLE.md` — **portão visual** |
+| M1 Fatia visual | 6 (sprites, luz, pós, oclusão), 7 inteiro, `STYLE.md` — **portão visual** |
 | M2 Simulação básica | 3 inteiro, 4.3 (agendas), 5, 9 (AT-03/05/06/07) |
 | M3 Conhecimento e diálogo | 4.1, 4.2, 4.4, 8 |
 | M4 Mundo independente | 4.5, 4.6, variantes de props, memória/opinião |
@@ -571,12 +573,11 @@ Asset com ID no manifesto mas sem arquivo é **aviso**, não erro (vira placehol
 ## 12. Pontos a confirmar
 
 **No M0 (técnicos, eu resolvo e registro):**
-- Versões compatíveis entre libGDX, gdx-gltf, Gradle e JDK 21; Gradle rodando com o JDK 25 como padrão da máquina.
-- `jpackage` gerando o app-image a partir do build.
+- Resolvido no M0: Gradle 9.9.0 rodando com o JDK 25 e compilando com o toolchain 21; libGDX 1.14.2; `jpackage` gerando a pasta com `Etrava.exe` (D-020).
 
 **No M1 (visuais, dependem do diretor):**
-- Perspectiva de campo estreito × ortográfica.
-- Fonte dos personagens e animações.
-- Se o terreno plano basta ou se precisa de relevo.
+- Como produzir os sprites de personagem (pré-render de 3D × IA retocada) e de onde vêm os modelos.
+- Se a IA mantém ângulo e paleta consistentes entre tiles, props e construções.
+- Resolução dos sprites e distância padrão da câmera.
 
 **Narrativos (ficam para os marcos que o PRD indica):** Q-07 (o que há na estrutura enterrada, M6) e Q-08 (quem é o estranho, M7).

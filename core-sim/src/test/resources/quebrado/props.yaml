@@ -1,0 +1,6 @@
+# Conteúdo quebrado de propósito: usado pelos testes do validador (AT-04).
+- id: caixote
+  category: objeto
+  footprint: [1.0, 1.0]
+  height: 0.9
+  blocks: true

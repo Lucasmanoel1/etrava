@@ -1,0 +1,5 @@
+# Áreas jogáveis. Cada uma aponta para um mapa do Tiled (.tmj) nesta pasta.
+
+- id: area_teste
+  name: Área de teste
+  map: area_teste.tmj
