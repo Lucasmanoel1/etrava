@@ -1,0 +1,91 @@
+# Nalia muda de conversa conforme o arco A1. Em `nalia_piora` ela não sai de casa.
+id: nalia
+start:
+  - {when: {arc: {id: a1_nalia, stage: custo_dividido}}, goto: dormiu}
+  - {when: {arc: {id: a1_nalia, stage: [arvore_morre, pai_corta_arvore]}}, goto: sem_arvore}
+  - {when: {arc: {id: a1_nalia, stage: estabilizada}}, goto: estavel}
+  - {when: {arc: {id: a1_nalia, stage: impasse}}, goto: impasse}
+  - {when: {arc: {id: a1_nalia, stage: [insonia, vozes]}}, goto: cansada}
+  - {when: {arc: {id: a1_nalia, stage: restauracao}}, goto: feliz}
+  - {goto: antes}
+nodes:
+  antes:
+    text: "O pai mandou dizer que farinha, só amanhã."
+    choices:
+      - {text: "Você vive olhando aquela árvore seca.", goto: arvore_seca}
+      - {text: "Tá bom."}
+  arvore_seca:
+    text: "Minha mãe sentava ali. Dava sombra, naquele tempo."
+
+  feliz:
+    text: "Viu? Tem folha. Ontem não tinha."
+    choices:
+      - {text: "Como foi?", goto: como}
+      - {text: "Bonita.", goto: bonita}
+  como:
+    text: "Encostei nela e fiquei um tempo. Não sei explicar melhor que isso."
+    effects: [{learn: {who: player, fact: arvore_voltou, certainty: claim}}]
+  bonita:
+    text: "É."
+
+  cansada:
+    text: "Não é sono. É que de noite tem mais coisa para ouvir."
+    choices:
+      - {text: "Ouvir o quê?", goto: ouvir}
+      - text: "Vai dormir, menina."
+        effects: [{opinion: {npc: npc, add: -2}}]
+        goto: vou
+  ouvir:
+    text: "Folha. Só folha."
+  vou:
+    text: "Vou."
+
+  impasse:
+    text: "Se veio por causa do ferreiro, o machado dele fica onde está."
+    choices:
+      - text: "Ninguém vai cortar nada."
+        effects: [{opinion: {npc: npc, add: 5}}]
+        goto: senta
+      - text: "A curandeira fala em repartir o peso."
+        when: {knows: {who: player, fact: custo_pode_ser_dividido}}
+        goto: repartir
+      - text: "Ela está te gastando. Você sabe."
+        when: {knows: {who: player, fact: arvore_tira_algo}}
+        goto: gastando
+      - {text: "Só vim ver como você está."}
+  senta:
+    text: "Então senta. Ela gosta de companhia."
+  repartir:
+    text: "Repartir com quem? Ninguém aqui deve nada a ela."
+    choices:
+      - text: "Eu entro."
+        when: {not: {flag: vol_jogador}}
+        relevant: true
+        channels: [dialogue, npc, ambiente]
+        effects:
+          - {setFlag: vol_jogador}
+          - {addVar: {name: voluntarios, value: 1}}
+          - {opinion: {npc: npc, add: 10}}
+          - {remember: {npc: npc, type: ajuda, subject: player}}
+        goto: entra
+      - {text: "Vou perguntar por aí."}
+  entra:
+    text: "Você nem conheceu a minha mãe."
+  gastando:
+    text: "Sei."
+    choices:
+      - text: "Então solta."
+        relevant: true
+        channels: [ambiente, npc, dialogue]
+        effects: [{setFlag: ligacao_cortada}, {opinion: {npc: npc, add: -8}}]
+        goto: solta
+      - {text: "Desculpa. Não é da minha conta."}
+  solta:
+    text: "Fica aí enquanto eu solto. Não quero fazer isso sozinha."
+
+  dormiu:
+    text: "Dormi a noite inteira. Agora quem boceja é o vilarejo."
+  sem_arvore:
+    text: "Farinha, só amanhã."
+  estavel:
+    text: "O homem dos livros disse que agora ela tira devagar. Não disse de onde."

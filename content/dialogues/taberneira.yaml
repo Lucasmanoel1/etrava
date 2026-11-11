@@ -1,0 +1,30 @@
+# A taverna é onde os rumores se cruzam: o nó `novidades` conta o que ela ouviu e o jogador não.
+id: taberneira
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Balcão é lá dentro. Aqui fora eu só respiro."
+    choices:
+      - {text: "O que andam dizendo?", goto: novidades}
+      - text: "É sobre a menina do moinho. Repartir o peso entre três."
+        when: {all: [{knows: {who: player, fact: custo_pode_ser_dividido}}, {arc: {id: a1_nalia, stage: impasse}}, {not: {flag: vol_taberneira}}]}
+        goto: repartir
+      - {text: "Então respire."}
+  novidades:
+    gossip: nada
+    text: "No balcão, dizem:"
+    choices:
+      - {text: "E o que mais?", goto: novidades}
+      - {text: "Hm."}
+  nada:
+    text: "Hoje, só o de sempre."
+  repartir:
+    text: "Eu já durmo quatro horas. Tira de onde?"
+    choices:
+      - text: "Ela é daqui."
+        effects: [{setFlag: vol_taberneira}, {addVar: {name: voluntarios, value: 1}}]
+        goto: conta
+      - {text: "Deixa."}
+  conta:
+    text: "É. Põe na conta."

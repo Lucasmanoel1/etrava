@@ -53,8 +53,9 @@ public final class SceneRenderer implements Disposable {
 
     private record Lamp(double x, double y, double z, float radius, float r, float g, float b) {}
 
+    /** @param stateKey chave do prop com variantes (null = sempre o mesmo sprite); {@code def} é a definição dele */
     private record Static(Assets.Sprite sprite, double x, double y, double x0, double y0, double x1, double y1,
-            double key) {}
+            double key, String stateKey, PropDef def) {}
 
     private final Assets assets;
     private final DayNight dayNight;
@@ -70,6 +71,8 @@ public final class SceneRenderer implements Disposable {
     private int width, height;
     private final List<List<ActorDraw>> buckets = new ArrayList<>();
 
+    /** Como saber a variante atual de um prop com chave (árvore viva, morta, cortada); null = estado inicial. */
+    public java.util.function.Function<String, String> propState = key -> null;
     public boolean lightingEnabled = true;
     public boolean postEnabled = true;
 
@@ -92,8 +95,11 @@ public final class SceneRenderer implements Disposable {
         for (PropPlacement p : area.props()) {
             PropDef def = props.get(p.propId());
             double hw = def != null ? def.width() / 2 : 0.3, hd = def != null ? def.depth() / 2 : 0.3;
-            Assets.Sprite sprite = assets.sprite(def != null ? def.spriteId() : "prop." + p.propId());
-            statics.add(new Static(sprite, p.x(), p.y(), p.x() - hw, p.y() - hd, p.x() + hw, p.y() + hd, p.x() + p.y()));
+            boolean variants = def != null && p.key() != null && !def.stateMap().isEmpty();
+            Assets.Sprite sprite = assets.sprite(def == null ? "prop." + p.propId()
+                    : variants ? def.spriteFor(def.initialState()) : def.spriteId());
+            statics.add(new Static(sprite, p.x(), p.y(), p.x() - hw, p.y() - hd, p.x() + hw, p.y() + hd, p.x() + p.y(),
+                    variants ? p.key() : null, def));
             if (def == null) continue;
             for (PropDef.Light l : def.lightList()) {
                 double[] o = l.offset(), c = l.color();
@@ -301,6 +307,10 @@ public final class SceneRenderer implements Disposable {
             if (i == statics.size()) break;
             Static s = statics.get(i);
             Assets.Sprite sp = s.sprite();
+            if (s.stateKey() != null) { // o estado mora na simulação; aqui só se escolhe a imagem (RF-043)
+                String state = propState.apply(s.stateKey());
+                if (state != null) sp = assets.sprite(s.def().spriteFor(state));
+            }
             TextureRegion region = sp.region();
             float w = sp.region().getRegionWidth() * ART, h = sp.region().getRegionHeight() * ART;
             float left = snap(sx(s.x(), s.y()) - sp.anchorX() * ART);

@@ -107,3 +107,15 @@
   footprint: [0.8, 0.8]
   height: 4.0
   blocks: true
+
+# Árvore com variantes (RF-043): o estado fica no mundo e muda pelo efeito `setProp`.
+# `states` = estado → asset; o primeiro é o estado inicial. No mapa, o objeto precisa da propriedade `key`.
+- id: arvore_velha
+  category: vegetacao
+  footprint: [0.8, 0.8]
+  height: 4.5
+  blocks: true
+  states:
+    morta: prop.arvore_morta
+    viva: prop.arvore
+    cortada: prop.toco

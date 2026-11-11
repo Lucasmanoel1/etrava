@@ -29,4 +29,10 @@ public sealed interface SimEvent {
 
     /** O jogador mudou de área; a apresentação precisa recarregar o cenário. */
     record AreaChanged(String fromArea, String toArea) implements SimEvent {}
+
+    /** Um objeto do cenário mudou de variante (a árvore brotou, foi cortada…). */
+    record PropChanged(String key, String state) implements SimEvent {}
+
+    /** O capítulo terminou: a apresentação mostra o epílogo (RF-163). O jogo continua depois. */
+    record ChapterEnded(java.util.List<String> epilogue) implements SimEvent {}
 }

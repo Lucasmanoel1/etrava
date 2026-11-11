@@ -11,3 +11,12 @@
   type: sprite
   file: props/estaca.png
   anchor: [20, 80]
+
+# Retratos ainda não gerados (os NPCs entraram no M4).
+- id: retrato.nalia
+  type: portrait
+  file: retratos/nalia.png
+
+- id: retrato.curandeira
+  type: portrait
+  file: retratos/curandeira.png

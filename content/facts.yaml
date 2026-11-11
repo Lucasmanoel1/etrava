@@ -4,7 +4,8 @@
 #   spread: o quanto vira rumor entre NPCs — none | local | wide
 #   versions: como o fato é contado; a primeira é a padrão. O texto é o que vai para o caderno,
 #             depois de "Fulano disse:" — por isso é uma afirmação, nunca uma instrução.
-# Conteúdo de exemplo do M3 (arco da árvore e notícias de fora); o conteúdo final é do M7.
+# Fatos do arco A1 (Nalia e a árvore), dos eventos externos E1–E5 e dos atos do jogador.
+# O texto é provisório até a leitura de tom do diretor; o conteúdo final é do M7.
 
 - id: arvore_voltou
   layer: V0
@@ -66,3 +67,173 @@
   tags: [estrada]
   versions:
     - {id: base, text: "Um homem de fora andou perguntando por gente que chegou aqui anos atrás."}
+
+# ---------- A1: Nalia e a árvore ----------
+- id: nalia_ouve_vozes
+  layer: V0
+  truth: true
+  spread: local
+  tags: [arvore, moinho]
+  versions:
+    - {id: base, text: "A menina do moinho ouve vozes de noite, perto da árvore."}
+    - {id: exagero, text: "A árvore do moinho fala com a menina, com a voz da mãe."}
+
+- id: arvore_tira_algo
+  layer: V1
+  truth: unknown
+  spread: local
+  tags: [arvore, moinho, custo]
+  versions:
+    - {id: base, text: "A curandeira diz que a árvore tira alguma coisa da menina, toda noite."}
+    - {id: medo, text: "A árvore do moinho está comendo a menina aos poucos."}
+
+- id: ferreiro_quer_cortar
+  layer: V0
+  truth: true
+  spread: local
+  tags: [arvore, moinho]
+  versions:
+    - {id: base, text: "O ferreiro acha que o jeito é cortar a árvore do moinho."}
+
+- id: custo_pode_ser_dividido
+  layer: V1
+  truth: unknown
+  spread: none
+  tags: [custo]
+  versions:
+    - {id: base, text: "O que uma coisa dessas tira de uma pessoa, talvez possa ser tirado de várias, um pouco de cada."}
+
+- id: vizinhos_dormem_mal
+  layer: V0
+  truth: true
+  spread: local
+  tags: [arvore, moinho, custo]
+  versions:
+    - {id: base, text: "Três pessoas do vilarejo passaram a dormir mal, e a menina do moinho voltou a dormir."}
+
+- id: arvore_secou_de_novo
+  layer: V0
+  truth: true
+  spread: local
+  tags: [arvore, moinho]
+  versions:
+    - {id: base, text: "A árvore do moinho secou de novo, de um dia para o outro."}
+
+- id: arvore_cortada
+  layer: V0
+  truth: true
+  spread: local
+  tags: [arvore, moinho]
+  versions:
+    - {id: base, text: "O moleiro cortou a árvore do quintal."}
+    - {id: ferreiro, text: "O ferreiro cortou a árvore do moinho, e o moleiro deixou."}
+
+- id: nalia_de_cama
+  layer: V0
+  truth: true
+  spread: local
+  tags: [moinho]
+  versions:
+    - {id: base, text: "A menina do moinho não sai mais de casa."}
+
+- id: estudioso_no_posto
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [posto, estrada]
+  versions:
+    - {id: base, text: "Um homem de livros parou no Posto e anda perguntando por coisas estranhas."}
+
+- id: estudioso_no_moinho
+  layer: V0
+  truth: true
+  spread: local
+  tags: [moinho]
+  versions:
+    - {id: base, text: "Um homem de fora está hospedado no moinho e passa o dia olhando a árvore."}
+
+# ---------- notícias de fora (E1–E5) ----------
+- id: ferrovia_aprovada
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [caldris, ferrovia]
+  versions:
+    - {id: base, text: "Caldris aprovou os primeiros trechos da ferrovia."}
+    - {id: exagero, text: "Os trilhos de Caldris já estão vindo para cá."}
+
+- id: sacerdote_sumiu
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [orra]
+  versions:
+    - {id: base, text: "Um sacerdote importante de Orra sumiu na estrada."}
+    - {id: levado, text: "Levaram um sacerdote de Orra no meio da viagem."}
+
+- id: berta_atravessou_fogo
+  layer: V0
+  truth: partial
+  spread: wide
+  tags: [berta, incendio]
+  versions:
+    - {id: base, text: "Numa vila de longe, uma senhora atravessou um incêndio sem se queimar."}
+    - {id: santa, text: "Uma senhora andou no meio do fogo e saiu limpa. Foi graça."}
+
+- id: berta_vizinhos_queimados
+  layer: V1
+  truth: unknown
+  spread: wide
+  tags: [berta, incendio, custo]
+  versions:
+    - {id: base, text: "A senhora do incêndio saiu sem marca, mas os vizinhos, que estavam longe do fogo, apareceram queimados."}
+
+- id: berta_foi_embora
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [berta, incendio]
+  versions:
+    - {id: base, text: "A senhora do incêndio largou a casa e foi embora sem avisar ninguém."}
+
+- id: berta_memorial
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [berta, incendio]
+  versions:
+    - {id: base, text: "Vão erguer um memorial para a senhora que atravessou o incêndio."}
+
+- id: pedagio_estrada
+  layer: V0
+  truth: partial
+  spread: wide
+  tags: [estrada]
+  versions:
+    - {id: base, text: "Tem um homem cobrando pela segurança da estrada."}
+    - {id: tirano, text: "Um ex-chefe de milícia está cobrando imposto de quem usa a estrada."}
+
+# ---------- atos do jogador (deeds.yaml) ----------
+- id: jogador_roubou
+  layer: V0
+  truth: true
+  spread: local
+  tags: [jogador]
+  versions:
+    - {id: base, text: "O aprendiz da oficina andou pegando o que não é dele."}
+
+- id: jogador_invadiu
+  layer: V0
+  truth: true
+  spread: local
+  tags: [jogador]
+  versions:
+    - {id: base, text: "O aprendiz da oficina entrou onde não foi chamado."}
+
+- id: jogador_agrediu
+  layer: V0
+  truth: true
+  spread: local
+  tags: [jogador]
+  versions:
+    - {id: base, text: "O aprendiz da oficina levantou a mão para gente daqui."}

@@ -1,0 +1,35 @@
+# Arcos quebrados de propósito, para o teste do validador (AT-04).
+- id: sem_prazo
+  major: true
+  start: espera
+  stages:
+    espera:
+      transitions:
+        - {when: {flag: algo}, to: lugar_nenhum}
+    fim:
+      terminal: true
+      outcome: feliz_demais
+
+- id: em_circulo
+  start: a
+  stages:
+    a:
+      onEnter:
+        - {setProp: {key: porta_fantasma, state: aberta}}
+        - {deed: feitico}
+      timeout: {after: {days: 1}, to: b}
+    b:
+      timeout:
+        after: {days: 1}
+        choose:
+          - {when: {flag: x}, to: a}
+          - {when: {flag: y}, weight: 2, to: a}
+
+- id: so_tragedia
+  start: a
+  stages:
+    a:
+      timeout: {after: {days: 1}, to: fim}
+    fim:
+      terminal: true
+      outcome: tragico

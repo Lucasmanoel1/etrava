@@ -168,7 +168,7 @@ public final class EtravaGame extends ApplicationAdapter {
         float dt = Math.min(Gdx.graphics.getDeltaTime(), MAX_FRAME_TIME);
         WorldView v = sim.view();
 
-        if (!paused) {
+        if (!paused && !ui.epilogueOpen()) { // o epílogo é lido com o mundo parado
             pollMovementKeys();
             accumulator += dt * timeScale;
             while (accumulator >= Simulation.DT) {
@@ -217,6 +217,7 @@ public final class EtravaGame extends ApplicationAdapter {
     private void rebuildScene() {
         if (scene != null) scene.dispose();
         scene = new SceneRenderer(sim.area(), content.props(), assets, dayNight);
+        scene.propState = key -> sim.view().propState(key);
         scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         WorldView v = sim.view();
         camera.snapTo(v.playerX(), v.playerY());
@@ -243,6 +244,10 @@ public final class EtravaGame extends ApplicationAdapter {
                     balloons.add(new Object[] {l.npcId(), l.text(), 2.2f + l.text().length() * 0.045f});
                 }
                 case SimEvent.FactLearned f -> showNotice(texts.get("caderno.atualizado"));
+                case SimEvent.ChapterEnded c -> {
+                    ui.showEpilogue(c.epilogue());
+                    autosave();
+                }
                 default -> { /* nada a fazer na apresentação */ }
             }
         }
@@ -470,6 +475,7 @@ public final class EtravaGame extends ApplicationAdapter {
                 }
                 case Input.Keys.ESCAPE -> {
                     if (console != null && console.isOpen()) console.toggle();
+                    else if (ui.epilogueOpen()) ui.closeEpilogue();
                     else if (sim.view().dialogue() != null) sim.submit(new Command.LeaveDialogue());
                     else if (ui.notebookOpen()) ui.closeNotebook();
                     else Gdx.app.exit();
@@ -498,6 +504,10 @@ public final class EtravaGame extends ApplicationAdapter {
     private final class GameInput extends InputAdapter {
         @Override
         public boolean keyDown(int keycode) {
+            if (ui.epilogueOpen()) {
+                if (keycode == Input.Keys.SPACE || keycode == Input.Keys.ENTER) ui.closeEpilogue();
+                return true;
+            }
             if (sim.view().dialogue() != null) { // na conversa, o teclado só escolhe falas
                 if (keycode >= Input.Keys.NUM_1 && keycode <= Input.Keys.NUM_9) chooseDialogue(keycode - Input.Keys.NUM_1);
                 else if (keycode == Input.Keys.SPACE || keycode == Input.Keys.ENTER) chooseDialogue(0);
@@ -522,7 +532,7 @@ public final class EtravaGame extends ApplicationAdapter {
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             if (button != Input.Buttons.LEFT || paused) return false;
-            if (sim.view().dialogue() != null || ui.notebookOpen()) return true;
+            if (sim.view().dialogue() != null || ui.notebookOpen() || ui.epilogueOpen()) return true;
             if (hoverNpc != null) sim.submit(new Command.Talk(hoverNpc));
             else moveToScreenPoint(screenX, screenY);
             return true;
@@ -557,6 +567,7 @@ public final class EtravaGame extends ApplicationAdapter {
                 return "pos | tp X Y | ir X Y | area ID | hora [H] | avancar HORAS | esperar HORAS | dormir\n"
                         + "salvar [NOME] | carregar [NOME] | saves | npcs | cronica | agendar HORAS TEXTO\n"
                         + "falar NPC | escolher N | caderno | sabe NPC\n"
+                        + "arcos | arco ID ESTAGIO | prop CHAVE ESTADO | status NPC SITUACAO | ato ID | epilogo\n"
                         + "vel FATOR | zoom VALOR | semente | luz on/off | pos-fx on/off | colisao | hud | validar | sair";
             case "pos":
                 return String.format(Locale.ROOT, "(%.2f, %.2f) em %s", v.playerX(), v.playerY(), v.areaId());
@@ -583,9 +594,52 @@ public final class EtravaGame extends ApplicationAdapter {
             case "caderno":
                 ui.toggleNotebook();
                 return "";
+            case "arcos": {
+                StringBuilder sb = new StringBuilder();
+                GameClockStamp stamp = new GameClockStamp(v);
+                for (var def : content.arcs().values()) {
+                    var state = v.arcs().get(def.id());
+                    String outcome = sim.arcOutcome(def.id());
+                    sb.append(def.id()).append(": ").append(state.stage()).append(outcome != null
+                            ? " (desfecho " + outcome + ")" : " (prazo: " + stamp.format(state.deadline()) + ")").append("\n");
+                }
+                return sb.length() == 0 ? "nenhum arco" : sb.toString().trim();
+            }
+            case "arco":
+                if (p.length < 3) return "use: arco ID ESTAGIO";
+                if (!content.arcs().containsKey(p[1])) return "arco inexistente: " + p[1];
+                if (content.arcs().get(p[1]).stage(p[2]) == null)
+                    return "estágios de " + p[1] + ": " + String.join(", ", content.arcs().get(p[1]).stages().keySet());
+                sim.applyNow(List.of(new Effect.Arc(p[1], p[2])));
+                return p[1] + " agora em " + v.arcs().get(p[1]).stage();
+            case "prop":
+                if (p.length < 3) return "use: prop CHAVE ESTADO";
+                if (content.keyedProp(p[1]) == null) return "nenhum prop com a chave " + p[1];
+                if (!content.keyedProp(p[1]).stateMap().containsKey(p[2]))
+                    return "estados de " + p[1] + ": " + String.join(", ", content.keyedProp(p[1]).stateMap().keySet());
+                sim.applyNow(List.of(new Effect.SetProp(p[1], p[2])));
+                return p[1] + ": " + p[2];
+            case "status":
+                if (p.length < 3 || !content.npcs().containsKey(p[1])) return "use: status NPC present|away|departed|dead";
+                if (!etrava.sim.content.NpcDef.STATUSES.contains(p[2])) return "situação inválida: " + p[2];
+                sim.applyNow(List.of(new Effect.NpcStatus(p[1], p[2])));
+                return p[1] + ": " + v.npcStatus(p[1]);
+            case "ato": // comete um ato onde o jogador está: só pesa para quem estiver vendo
+                if (p.length < 2 || !content.deeds().containsKey(p[1]))
+                    return "atos: " + String.join(", ", content.deeds().keySet());
+                sim.applyNow(List.of(new Effect.Deed(p[1])));
+                return v.chronicle().get(v.chronicle().size() - 1).text();
+            case "epilogo": {
+                List<String> lines = v.epilogue().isEmpty() ? sim.previewEpilogue() : v.epilogue();
+                if (lines.isEmpty()) return "sem epílogo no conteúdo";
+                ui.showEpilogue(lines);
+                return v.epilogue().isEmpty() ? "prévia: o capítulo ainda não terminou" : "";
+            }
             case "sabe": {
                 if (p.length < 2) return "use: sabe NPC";
-                StringBuilder sb = new StringBuilder("opinião " + v.opinion(p[1]) + "\n");
+                StringBuilder sb = new StringBuilder("opinião " + v.opinion(p[1]) + " · " + v.npcStatus(p[1]) + "\n");
+                v.memories(p[1]).forEach(m -> sb.append("lembra: ").append(m.type()).append(" (").append(m.subject())
+                        .append(", dia ").append(m.day()).append(")\n"));
                 v.npcKnowledge(p[1]).values().forEach(k -> sb.append(k.fact()).append(" (").append(k.version())
                         .append(", ").append(k.certainty()).append(", ").append(k.source()).append(")\n"));
                 return sb.toString().trim();
@@ -678,6 +732,20 @@ public final class EtravaGame extends ApplicationAdapter {
                 return "";
             default:
                 return "comando desconhecido: " + p[0] + " (digite 'ajuda')";
+        }
+    }
+
+    /** Escreve um tick como "Dia N, HH:MM" (para o console). */
+    private static final class GameClockStamp {
+        private final etrava.sim.time.GameClock clock;
+
+        GameClockStamp(WorldView v) {
+            clock = new etrava.sim.time.GameClock(v.clock().ticksPerDay());
+        }
+
+        String format(long tick) {
+            clock.setTick(tick);
+            return clock.format();
         }
     }
 

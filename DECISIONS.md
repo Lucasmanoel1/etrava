@@ -236,3 +236,44 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-11
 - **Decisão:** numa conversa, até 3 fatos que o jogador marcou no caderno aparecem como opções de pergunta. O NPC responde com a versão que conhece (o jogador anota como afirmação dele) ou diz que não sabe.
 - **Motivo:** cumpre o RF-126 na forma simples, sem tela extra, e dá uso à marcação do caderno.
+
+## D-039 — A árvore começa morta; o conteúdo do M3 passou a depender do arco
+- **Data:** 2026-11-11
+- **Decisão:** o jogo começa com a árvore do moinho morta e o arco A1 em `antes`. O que os NPCs sabem sobre a árvore deixou de vir do arquivo deles: é o arco que ensina, estágio a estágio. Diálogos e conversas ambientes do M3 só oferecem esses assuntos quando o NPC já sabe.
+- **Motivo:** o PRD põe a restauração por volta do dia 2, e ver a árvore mudar é a prova mais clara de "o mundo mudou sem mim" (AT-10). Com o conteúdo antigo, todo mundo já comentava a árvore às 6 h do dia 1.
+- **Alternativa descartada:** começar com a árvore já viva (menos trabalho, mas o jogador nunca veria a mudança).
+
+## D-040 — Arco sobrepõe agenda por bloco com condição, não por efeito `override`
+- **Data:** 2026-11-11
+- **Decisão:** um bloco de agenda pode ter `when`; vale o primeiro bloco da lista que contém a hora e cuja condição passa. O efeito `override` da SPEC não foi implementado.
+- **Motivo:** cumpre o RF-083 sem estado novo no save: "Nalia passa a noite na árvore enquanto o arco está em insônia" é uma linha no arquivo dela, e some sozinha quando o estágio muda.
+- **Alternativa descartada:** efeito `override` com prazo (precisa guardar sobreposições por NPC e não expressa bem "toda noite, enquanto durar").
+
+## D-041 — Desfecho de A1 sem o jogador depende de um viajante e de um rumor
+- **Data:** 2026-11-11
+- **Decisão:** um arco à parte sorteia se um estudioso passa pelo Posto (2 chances em 5). Ele só estabiliza a árvore se, além disso, o viajante tiver ouvido que a menina escuta vozes — isto é, se o rumor saiu do vilarejo. Senão, sorteio: o pai corta a árvore (peso 2) ou Nalia piora (peso 1). Em 20 sementes: 7 estabilizada, 7 cortada, 6 piora.
+- **Motivo:** o PRD pede desfecho "decidido pelo estado do mundo" e ao menos um não trágico sem o jogador. Amarrar o final à rede de rumores faz os sistemas do M3 e do M4 conversarem.
+- **Ajustável:** pesos e prazos estão em `content/arcs/`.
+- **[A APROVAR] (narrativo):** os dois caminhos exclusivos do jogador (dividir o custo entre 3 voluntários; convencer Nalia a soltar a árvore) e o texto de todos os desfechos são proposta minha.
+
+## D-042 — Reação a atos: efeito `deed` pronto; os gatilhos de jogo vêm depois
+- **Data:** 2026-11-11
+- **Decisão:** o M4 entrega o mecanismo (testemunhas, opinião, memória, rumor do ato, recusa de conversa com opinião ≤ −40), acionado por efeito de conteúdo ou pelo console (`ato roubo`). Furto, invasão e agressão como ações do jogador entram com inventário (M5) e combate (M6). Confronto e expulsão ficam para o M6.
+- **Motivo:** hoje o jogador não tem como roubar nem bater; inventar um gatilho provisório seria trabalho jogado fora. O RF-089 é MVP-S.
+
+## D-043 — Notícias chegam ao jogador por um nó de "novidades"
+- **Data:** 2026-11-11
+- **Decisão:** um nó de diálogo com `gossip` conta o fato mais recente que o NPC sabe e o jogador não. O viajante e a taberneira têm esse nó. Os eventos externos E1–E5 só ensinam o fato ao viajante; o resto é a rede de rumores.
+- **Motivo:** cumpre o RF-125 sem escrever um diálogo por notícia, e a versão que o jogador ouve depende de quem conta.
+- **Limite:** o validador não conta essa fonte na regra das 2 fontes (ele não sabe o que cada NPC vai saber), então fato que destrava caminho continua precisando de 2 fontes escritas.
+
+## D-044 — Save na versão 3, sem migração da 2
+- **Data:** 2026-11-11
+- **Decisão:** o M4 acrescentou arcos, variantes de props, memórias, situação dos NPCs, ritmo e epílogo ao save. `SCHEMA_VERSION` = 3; saves da versão 2 são recusados com mensagem clara.
+- **Motivo:** o mesmo da D-035 — ainda não há save que valha migrar. Além disso, um save antigo começaria os arcos no meio do mês.
+
+## D-045 — Epílogo ao fim do dia 30; ritmo Contemplativo sem tela ainda
+- **Data:** 2026-11-11
+- **Decisão:** o Capítulo I termina quando o dia 30 acaba (meia-noite): o epílogo é montado uma vez, aparece numa tela de papel e o jogo continua. A outra saída do PRD (deixar a região com intenção declarada) entra no M7, com a estrada. O ritmo Contemplativo (prazos ×2) já funciona na simulação e no `simulate --ritmo contemplativo`; a escolha no início do jogo entra com o menu (M7).
+- **Motivo:** sem a área da estrada e sem menu, as duas coisas não teriam onde aparecer.
+- **Observação:** em Contemplativo, A1 pode não ter terminado no dia 30; o epílogo usa então o fragmento "ainda não acabou".

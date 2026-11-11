@@ -199,8 +199,9 @@ Todo texto exibido vem desses arquivos (RF-382). Cada texto tem um endereço est
 | `time` | `{time: {dayMin: 8, hourFrom: 18, hourTo: 23}}` |
 | `has` | `{has: {item: carta_iria}}` · `{has: {money: 20}}` |
 | `arc` | `{arc: {id: a1_nalia, stage: vozes}}` |
-| `npc` | `{npc: {id: moleiro, status: present}}` · `{npc: {id: nalia, at: moinho}}` |
+| `npc` | `{npc: {id: moleiro, status: present}}` · `{npc: {id: nalia, area: vila_ref}}` |
 | `prop` | `{prop: {key: arvore_nalia, state: viva}}` |
+| `remembers` | `{remembers: {npc: nalia, type: ajuda, subject: player}}` |
 | `chapter` · `reputation` · `chance` | `{chance: 0.3}` usa o RNG da simulação |
 
 **Efeitos:**
@@ -214,13 +215,16 @@ Todo texto exibido vem desses arquivos (RF-382). Cada texto tem um endereço est
 | `arc` | avança ou muda o estágio de um arco |
 | `setProp` | troca a variante de um prop (árvore `viva → morta`) |
 | `npcStatus` | `present`, `away`, `departed`, `dead` |
-| `override` | sobrepõe a agenda de um NPC com prioridade e prazo |
+| `remember` | o NPC guarda um acontecimento na memória (RF-084) |
+| `deed` | o jogador comete um ato de `deeds.yaml`; só pesa para quem viu ou ficou sabendo (RF-089) |
 | `approach` | NPC vai até o jogador e inicia conversa (RF-108) |
 | `priceMod` | altera modificador de preço de uma categoria/região |
 | `faction` | altera relação entre facções |
 | `schedule` | agenda efeitos para daqui a X horas/dias (RF-162) |
 | `startCombat` · `startTrade` · `startJob` · `endDialogue` | abrem outros modos |
 | `chronicle` | escreve na crônica |
+
+**Implementado até o M4:** condições `flag`, `var`, `knows`, `opinion`, `time`, `npc` (área ou situação), `arc`, `prop`, `remembers`, `chance`, `all/any/not`; efeitos `setFlag`, `setVar`, `addVar`, `learn`, `opinion`, `chronicle`, `schedule`, `setProp`, `arc`, `npcStatus`, `remember`, `deed`. Os demais entram com os sistemas deles (itens, economia, combate). A sobreposição de agenda não é um efeito: é um bloco de agenda com condição (4.3, D-040).
 
 Condições e efeitos são **dados estruturados**, não uma linguagem de script. É isso que permite ao validador analisar o conteúdo sem executá-lo. Tipo novo só entra quando uma história realmente não couber nos existentes (PRD 20.2).
 
@@ -275,9 +279,11 @@ topics:                     # "perguntar sobre" um fato do caderno (RF-126)
   mir: {goto: desconversa_mir}
 ```
 
-- **Agenda:** blocos de horário apontando para pontos nomeados dos mapas, cobrindo as 24 horas (o validador confere). Na área carregada o NPC anda até lá; fora dela, é posicionado direto (RF-081/082). `hidden: true` = dentro de uma construção sem interior jogável; troca de área pelo ponto `entrada` do mapa (D-030). Arcos sobrepõem a agenda com `override` (RF-083, M4).
-- **Memória:** lista circular com limite configurável (RF-084).
-- **Ausência persistente:** `departed`/`dead` tira o NPC das agendas, e as conversas ambientes condicionadas a isso passam a comentar (RF-087).
+- **Agenda:** blocos de horário apontando para pontos nomeados dos mapas, cobrindo as 24 horas (o validador confere). Na área carregada o NPC anda até lá; fora dela, é posicionado direto (RF-081/082). `hidden: true` = dentro de uma construção sem interior jogável; troca de área pelo ponto `entrada` do mapa (D-030).
+- **Sobreposição por arco (RF-083, D-040):** um bloco pode ter `when` (qualquer condição da 4.1). Vale o **primeiro** bloco que contém a hora e cuja condição passa; por isso os blocos condicionais vêm antes da rotina normal. A rotina normal (blocos sem `when`) precisa cobrir as 24 horas sozinha. A agenda é reavaliada na hora em que um arco muda de estágio.
+- **Memória:** lista com limite (20 lembranças; a mais antiga some) de `{tipo, sujeito, dia, lugar}` (RF-084). Entra por efeito `remember` e pelos atos do jogador.
+- **Relações** (`relations`, RF-086): `familia`/`amizade` multiplicam por 1,5 a chance de contar um rumor; `rivalidade`, por 0,4.
+- **Situação** (`status`): `present`, `away`, `departed`, `dead`. Quem não está presente sai das agendas, das conversas e da troca de rumores, e não aparece (RF-087). Muda por efeito `npcStatus`; `status:` no arquivo define a inicial (ex.: alguém que só chega depois).
 - **Camada C** não tem arquivo próprio: sai de modelos em `npcs/_figurantes.yaml`.
 
 ### 4.4 Diálogos
@@ -348,16 +354,22 @@ stages:
 
 Regras do motor:
 - **Todo estágio não terminal tem `timeout`**, e a cadeia de timeouts sempre chega a um estágio terminal. É a garantia de que nenhum arco trava e de que o mundo anda sozinho (RF-141, risco R6). O validador confere.
-- Prazos usam o RNG com semente para variar (`jitter`) e são multiplicados pelo **ritmo de eventos** — *Normal* ×1, *Contemplativo* ×2 (RF-145).
-- Um estágio pode declarar `requires: [npc]` com `ifUnavailable: <estágio>` para lidar com NPC morto ou ausente.
-- Todo desfecho tem `outcome` (`leve`, `ambiguo`, `tragico`) — usado pelo teste de tom (AT-21) e pelo AT-02.
-- Arcos são avaliados a cada hora de jogo e imediatamente quando um efeito mexe em algo que eles observam.
+- Prazos usam o RNG com semente para variar (`jitterHours`: folga de 0 até esse valor) e são multiplicados pelo **ritmo de eventos** — *Normal* ×1, *Contemplativo* ×2 (RF-145).
+- **Saída pelo prazo:** `to: estágio`, ou `choose: [...]`. Em `choose`, uma opção com `when` e sem `weight` é de **prioridade** (a primeira que passar vence); as demais entram num sorteio por `weight`. Tem de existir pelo menos uma opção sem condição.
+- Todo desfecho tem `outcome` (`leve`, `ambiguo`, `tragico`; `neutro` para notícia de fora) — usado pelo teste de tom (AT-21) e pelo AT-02.
+- Arcos são avaliados a cada hora de jogo e imediatamente depois de qualquer efeito (escolha de diálogo, efeito agendado). Por isso `chance` não deve ser usada em `transitions`: seria sorteada a cada avaliação.
+- Cada mudança de estágio entra na crônica (`[arco]`), com o texto do campo `chronicle` do estágio.
+- Estado no mundo: `arcs[id] = {estágio, tick de entrada, tick do prazo}`. Não há variáveis locais de arco: usam-se flags e variáveis globais.
+- `requires`/`ifUnavailable` (NPC morto ou ausente) fica para quando um arco precisar; hoje a condição `npc: {status}` numa transição resolve.
 
 ### 4.6 Capítulos, origem e epílogo
 
 - `chapters.yaml`: capítulo = estado global com condição de entrada, **camadas de verdade permitidas** e condição de saída. Capítulo I permite V0 e V1; sai ao deixar a região com intenção declarada ou no dia 30 (PRD 8.6). Quantidade de capítulos não é fixa.
 - `origins/pedra_mansa.yaml`: pacote de dados — local inicial, itens, habilidades, relações e conhecimentos iniciais, arcos pessoais (PRD 8.4). Outra origem = outro arquivo.
-- `epilogues/cap1.yaml`: fragmentos com `slot` (ordem), `priority`, `when`, `text`, `illustration`. Em cada `slot` vence o primeiro fragmento cuja condição passa; os slots de A1, A2 e A3 têm obrigatoriamente um fragmento sem condição, para sempre haver texto mesmo se o jogador nunca participou (RF-163).
+- `epilogues/cap1.yaml`: `endDay` (último dia do capítulo), `slots` (a ordem do texto) e `fragments` com `slot`, `priority`, `when`, `text`. Em cada espaço entra o fragmento de maior prioridade cuja condição passa (empate: ordem do arquivo); espaço sem fragmento válido não aparece. Espaço ligado a um arco (`{id, arc}`) tem obrigatoriamente um fragmento sem condição, e todo arco `major` precisa de um espaço assim — sempre há texto mesmo se o jogador nunca participou (RF-163). Ilustração por fragmento fica para o M7.
+- **Fim do capítulo (M4):** ao terminar o dia `endDay`, a simulação monta o epílogo uma vez, guarda o texto no mundo, marca a flag `capitulo1_encerrado`, interrompe sono/espera e emite `ChapterEnded`. O jogo continua. `chapters.yaml`, a saída do capítulo "deixando a região" e o pacote de origem entram no M7.
+- **Atos do jogador** (`deeds.yaml`, RF-089/281): `{id, fact, witness, hearsay}`. Quem está a até 10 m, acordado e à vista, muda de opinião (`witness`), guarda na memória e passa a saber o `fact` como `witnessed`; quem ouve o rumor depois muda menos (`hearsay`). Com opinião ≤ −40 o NPC recusa conversa.
+- **Novidades** (RF-125): um nó de diálogo com `gossip: <nó de reserva>` conta ao jogador o fato mais recente que o NPC sabe e ele não (só fatos que viram rumor, até a camada V1). As notícias de fora chegam assim, pelo viajante e pela taberneira.
 
 ### 4.7 Mundo, áreas e mapas
 
@@ -374,7 +386,7 @@ Regras do motor:
 | `lights` | pontos | luzes soltas no mapa (ainda não implementada; hoje as luzes vêm dos props) |
 | `spawns` | pontos | entrada do jogador, encontros |
 
-- `props.yaml`: para cada prop, o asset, a pegada de colisão, se é inspecionável/contêiner e suas **variantes** (`viva`, `morta`, `cortada`). O estado fica em `World.areas[..]` e muda só por efeito `setProp` (RF-043).
+- `props.yaml`: para cada prop, o asset, a pegada de colisão e suas **variantes** — `states: {morta: prop.arvore_morta, viva: prop.arvore, cortada: prop.toco}` (estado → asset; o primeiro é o inicial). Só tem estado o prop posicionado no mapa com a propriedade `key`. O estado fica em `World.props[key]` e muda só por efeito `setProp` (RF-043); a colisão não muda com a variante.
 - **Terreno plano no MVP** (D-010): desnível, quando existir, é pintado na arte, não simulado.
 - **Navegação:** grade de 0,5 m derivada de `collision` + pegadas dos props; A* próprio no `core-sim` (D-011). Clique em ponto inalcançável leva ao ponto alcançável mais próximo (RF-001).
 
@@ -437,7 +449,7 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 
 ### 5.3 Versão, migração e integridade
 
-- `schemaVersion` inteiro (hoje 2 — D-035). Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
+- `schemaVersion` inteiro (hoje 3 — D-035, D-044). O M4 acrescentou `arcs`, `props`, `memories`, `epilogue`, a situação dos NPCs e o ritmo de eventos. Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
 - Arquivo ilegível → erro tratado e volta ao menu, nunca crash (RF-365).
 - ID que sumiu do conteúdo (NPC ou item removido entre versões) → ignorado com aviso no log.
 - **Hash de estado:** SHA-256 do `state.json` em forma canônica (chaves ordenadas). É o que os testes AT-03 e AT-05 comparam.
@@ -512,11 +524,12 @@ Roda no build, no boot em modo desenvolvimento e sob demanda. Cada erro aponta *
 | Referências a IDs inexistentes (fatos, NPCs, itens, arcos, props, pontos, diálogos, assets) | RF-442 |
 | Nós de diálogo inalcançáveis; `goto` para nó inexistente | RF-442 |
 | Estágio de arco sem `timeout`, ou cadeia de timeouts que não chega a um terminal | RF-141 |
-| Arco sem nenhum desfecho que não seja `tragico` | PRD 20.3 |
+| Arco sem nenhum desfecho que não seja `tragico`; saída de prazo sem opção incondicional | PRD 20.3, RF-141 |
+| Chave ou variante de prop inexistente; situação de NPC, relação ou ato inválidos | RF-442 |
 | Fato usado em condição `knows` do jogador com menos de **2 fontes distintas** (fala, conversa ambiente, documento, objeto, efeito de arco) | RF-123 |
 | Fato V2/V3 que o jogador consegue aprender no Capítulo I; fato V1 entregue com certeza `verified` | PRD 8.2 |
 | Escolha `relevant` com menos de 2 canais, ou canal declarado sem nada que reaja ao que a escolha altera | RF-161 |
-| Epílogo: slots de A1–A3 sem fragmento de reserva; menos de 15 fragmentos | RF-163 |
+| Epílogo: espaço de arco sem fragmento de reserva; arco maior sem espaço; menos de 15 fragmentos (aviso) | RF-163 |
 | Texto do caderno/fato no imperativo ("Vá até…", "Fale com…") — aviso | AT-20 |
 | Nome próprio fora do `glossario.yaml` — aviso | PRD 20.3 |
 

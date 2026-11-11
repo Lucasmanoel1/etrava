@@ -42,6 +42,17 @@ public final class World implements WorldView {
     /** Opinião de cada NPC sobre o jogador, de -100 a 100. */
     public final Map<String, Integer> opinions = new TreeMap<>();
 
+    /** Estado dos arcos de mundo, na ordem do conteúdo. */
+    public final Map<String, ArcState> arcs = new LinkedHashMap<>();
+    /** Variante atual dos props com chave; só os que já mudaram (os demais estão no estado inicial). */
+    public final Map<String, String> props = new TreeMap<>();
+    /** Lembranças de cada NPC, da mais antiga para a mais nova (RF-084). */
+    public final Map<String, List<MemoryEntry>> memories = new TreeMap<>();
+    /** Multiplicador dos prazos dos arcos: 1 = Normal, 2 = Contemplativo (RF-145). */
+    public double pace = 1.0;
+    /** Texto do epílogo do capítulo, depois de montado; vazio enquanto o capítulo corre. */
+    public final List<String> epilogue = new ArrayList<>();
+
     /** Conversa ambiente em andamento (null = nenhuma), próxima fala e quando ela sai. */
     public String ambientId;
     public int ambientLine;
@@ -95,6 +106,14 @@ public final class World implements WorldView {
     }
     @Override public boolean knows(String factId) {
         return playerKnowledge.stream().anyMatch(k -> k.fact().equals(factId));
+    }
+    @Override public Map<String, ArcState> arcs() { return arcs; }
+    @Override public String propState(String key) { return props.get(key); }
+    @Override public List<MemoryEntry> memories(String npcId) { return memories.getOrDefault(npcId, List.of()); }
+    @Override public List<String> epilogue() { return epilogue; }
+    @Override public String npcStatus(String id) {
+        ActorState n = npcs.get(id);
+        return n == null ? null : n.status;
     }
     @Override public String npcArea(String id) {
         ActorState n = npcs.get(id);

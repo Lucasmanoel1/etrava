@@ -8,7 +8,9 @@ Regras que o validador cobra (PRD 20.3):
 - Nada de camada **V2/V3** chega ao jogador no Capítulo I; **V1** só como pista (nunca `verified`).
 - Nenhum nó de diálogo inalcançável.
 - Escolha marcada `relevant` declara pelo menos 2 canais.
-- Agenda de NPC cobre as 24 horas.
+- Agenda de NPC cobre as 24 horas (contando só os blocos sem condição).
+- Todo estágio de arco que não é desfecho tem prazo, com uma saída sem condição; todo arco tem um desfecho não trágico.
+- Todo arco maior (`major: true`) tem um espaço no epílogo com fragmento sem condição.
 
 Tom: ver PRD 20.4 — falas curtas, subtexto, gente que fala de si e não do enredo.
 
@@ -46,6 +48,18 @@ schedule:                      # precisa cobrir o dia inteiro
 
 `at` é `área/ponto` (pontos são os objetos da camada `spots` do mapa). `hidden: true` = dentro de uma construção: o NPC vai até a porta e some. O retrato é o asset `retrato.<id>`.
 
+Campos opcionais:
+
+```yaml
+status: away                               # present (padrão) | away | departed | dead
+relations: [{npc: moleiro, kind: familia}] # familia | amizade | rivalidade — muda a quem conta rumores
+schedule:
+  # bloco com `when` vem ANTES e sobrepõe a rotina enquanto a condição valer
+  - {from: "21:00", to: "05:00", do: vigiar, at: vila_ref/quintal_moinho,
+     when: {arc: {id: a1_nalia, stage: [insonia, vozes, impasse]}}}
+  - {from: "21:00", to: "06:00", do: dormir, at: vila_ref/moinho_porta, hidden: true}
+```
+
 ## Diálogos — `content/dialogues/<id>.yaml`
 
 ```yaml
@@ -71,6 +85,18 @@ nodes:
 
 Campos de uma escolha: `text`, `when`, `tag` (rótulo entre colchetes, ex.: `Lábia`), `effects`, `goto`, `relevant` + `channels`.
 
+**Nó de novidades** — o NPC conta o fato mais recente que ele sabe e o jogador não (é assim que as notícias de fora chegam):
+
+```yaml
+  novidades:
+    gossip: nada                 # para onde ir quando ele não tem nada de novo
+    text: "Na estrada, dizem:"   # introdução; o texto do fato vem em seguida
+    choices:
+      - {text: "Mais alguma coisa?", goto: novidades}
+  nada:
+    text: "Nada que valha a viagem."
+```
+
 ## Conversas ambientes — `content/ambient/*.yaml`
 
 NPCs falando entre si, sem pausar o jogo. Só tocam com os participantes juntos e o jogador a até 9 m.
@@ -86,6 +112,77 @@ NPCs falando entre si, sem pausar o jogo. Só tocam com os participantes juntos 
   facts: [arvore_voltou]           # quem ouvir até o fim anota como rumor
 ```
 
+## Arcos de mundo — `content/arcs/*.yaml`
+
+Uma história que anda sozinha. Um arquivo pode ter um arco ou uma lista deles.
+
+```yaml
+id: a1_nalia
+name: Nalia e a árvore
+major: true                      # arco maior: precisa de espaço garantido no epílogo
+start: antes
+stages:
+  antes:
+    chronicle: a árvore está morta há anos        # o que a crônica registra
+    timeout: {after: {days: 1, jitterHours: 12}, to: restauracao}
+  restauracao:
+    onEnter:                                       # efeitos ao chegar (há também onExit)
+      - {setProp: {key: arvore_nalia, state: viva}}
+      - {learn: {who: moleiro, fact: arvore_voltou, certainty: witnessed}}
+    timeout: {after: {days: 2}, to: impasse}
+  impasse:
+    transitions:                                   # alguém mudou o mundo: vale a primeira que passar
+      - {when: {var: {name: voluntarios, min: 3}}, to: custo_dividido}
+    timeout:                                       # ninguém fez nada
+      after: {days: 7, jitterHours: 24}
+      choose:
+        - {when: {flag: estudioso_na_regiao}, to: estabilizada}   # com condição e sem peso: prioridade
+        - {weight: 2, to: pai_corta_arvore}                        # o resto vai a sorteio
+        - {weight: 1, to: nalia_piora}
+  custo_dividido: {terminal: true, outcome: leve}
+  nalia_piora:    {terminal: true, outcome: tragico}
+```
+
+- `outcome`: `leve`, `ambiguo`, `tragico` (ou `neutro`, para notícia de fora).
+- Não use `chance` em `transitions` (seria sorteada a cada hora); sorteio é no `choose`.
+- Evento externo é um arco curto que só deixa um fato com quem viaja (`arcs/mundo.yaml`).
+- Para testar: no console, `arcos` lista tudo; `arco a1_nalia impasse` pula para um estágio.
+
+## Cenário que muda — `props.yaml` + mapa
+
+```yaml
+- id: arvore_velha
+  footprint: [0.8, 0.8]
+  blocks: true
+  states: {morta: prop.arvore_morta, viva: prop.arvore, cortada: prop.toco}   # o primeiro é o inicial
+```
+
+No Tiled, o objeto ganha a propriedade `key` (ex.: `arvore_nalia`). Muda com `{setProp: {key: arvore_nalia, state: viva}}`.
+
+## Epílogo — `content/epilogues/cap1.yaml`
+
+```yaml
+endDay: 30
+slots: [abertura, {id: a1_nalia, arc: a1_nalia}, fecho]   # a ordem do texto
+fragments:
+  - slot: a1_nalia
+    priority: 10
+    when: {arc: {id: a1_nalia, stage: custo_dividido}}
+    text: "Nalia dorme. …"
+  - slot: a1_nalia                # sem `when`: garante texto mesmo sem o jogador
+    text: "No moinho, a história ainda não acabou."
+```
+
+Em cada espaço entra um fragmento: o de maior `priority` cuja condição passa. No console, `epilogo` mostra como sairia agora.
+
+## Atos do jogador — `content/deeds.yaml`
+
+```yaml
+- {id: roubo, name: Roubo, fact: jogador_roubou, witness: -30, hearsay: -12}
+```
+
+Disparado por `{deed: roubo}`. Quem viu perde `witness` de opinião e passa a contar; quem ouve o rumor perde `hearsay`. Quem não soube não muda.
+
 ## Condições (`when`)
 
 | Condição | Exemplo |
@@ -96,6 +193,10 @@ NPCs falando entre si, sem pausar o jogo. Só tocam com os participantes juntos 
 | opinião | `{opinion: {npc: moleiro, min: 10}}` |
 | tempo | `{time: {dayMin: 2, hourFrom: 18, hourTo: 20}}` |
 | NPC numa área | `{npc: {id: viajante, area: vila_ref}}` |
+| situação de NPC | `{npc: {id: estudioso, status: departed}}` |
+| arco | `{arc: {id: a1_nalia, stage: impasse}}` · `stage: [insonia, vozes]` · `{arc: {id: a1_nalia, outcome: tragico}}` |
+| cenário | `{prop: {key: arvore_nalia, state: viva}}` |
+| lembrança | `{remembers: {npc: nalia, type: ajuda, subject: player}}` |
 | sorte | `{chance: 0.3}` |
 | combinar | `{all: [...]}` · `{any: [...]}` · `{not: {...}}` |
 
@@ -108,6 +209,11 @@ NPCs falando entre si, sem pausar o jogo. Só tocam com os participantes juntos 
 | opinião | `{opinion: {npc: npc, add: -5}}` |
 | crônica | `{chronicle: {type: nota, text: "…"}}` |
 | mais tarde | `{schedule: {hours: 48, effects: [...]}}` |
+| cenário | `{setProp: {key: arvore_nalia, state: cortada}}` |
+| arco | `{arc: {id: a1_nalia, to: impasse}}` |
+| situação de NPC | `{npcStatus: {id: estudioso, status: present}}` |
+| lembrança | `{remember: {npc: npc, type: ajuda, subject: player}}` |
+| ato | `{deed: roubo}` |
 
 Graus de certeza: `rumor` (ouvi dizer), `claim` (me afirmaram), `witnessed` (vi), `read` (li), `verified` (conferi).
 

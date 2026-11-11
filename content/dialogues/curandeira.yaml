@@ -1,0 +1,44 @@
+# A curandeira é a primeira fonte de duas pistas do arco A1: a árvore tira algo da menina,
+# e o que se tira de um talvez possa ser tirado de vários (a segunda fonte é o viajante).
+id: curandeira
+start:
+  - {when: {arc: {id: a1_nalia, stage: impasse}}, goto: impasse}
+  - {goto: horta}
+nodes:
+  horta:
+    text: "Se é dor de dente, é o cravo. Se é outra coisa, fala logo, que a terra seca."
+    choices:
+      - text: "É a menina do moinho."
+        when: {arc: {id: a1_nalia, stage: [insonia, vozes]}}
+        goto: cedo
+      - {text: "Nada, não."}
+  cedo:
+    text: "Criança que não dorme, eu vejo toda semana. Árvore que acorda, nunca vi."
+
+  impasse:
+    text: "Já sei o que vai perguntar. Todo mundo pergunta, e ninguém gosta da resposta."
+    choices:
+      - {text: "O que a menina tem?", goto: tira}
+      - {text: "Bom dia para a senhora."}
+  tira:
+    text: "A menina não tem nada. A árvore é que tem a menina. Tira dela alguma coisa, toda noite."
+    effects: [{learn: {who: player, fact: arvore_tira_algo, certainty: claim}}]
+    choices:
+      - {text: "Tem jeito?", goto: jeito}
+      - {text: "Entendi."}
+  jeito:
+    text: "Minha avó contava de um poço que secava quem bebia dele. Juntaram seis casas para beber um gole cada. Ninguém secou. Ninguém dormiu direito, também."
+    effects: [{learn: {who: player, fact: custo_pode_ser_dividido, certainty: claim}}]
+    choices:
+      - {text: "E aqui, daria?", goto: daria}
+      - {text: "História de avó."}
+  daria:
+    text: "Com três, talvez. Eu não sou três."
+    choices:
+      - text: "Mas é uma."
+        when: {not: {flag: vol_curandeira}}
+        effects: [{setFlag: vol_curandeira}, {addVar: {name: voluntarios, value: 1}}]
+        goto: entra
+      - {text: "Vou pensar."}
+  entra:
+    text: "Já entrei em coisa pior por menos."

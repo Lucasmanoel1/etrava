@@ -1,11 +1,12 @@
-# NPC provisório do M2.
+# NPC provisório do M2; pai de Nalia no arco A1.
 id: moleiro
 name: Moleiro
 layer: B
 sprite: personagem.moleiro
 dialogue: moleiro
 opinion: 10
-knows: [arvore_voltou, nalia_nao_dorme, mo_parada, curandeira_olhou_arvore]
+knows: [mo_parada]          # o resto ele fica sabendo conforme o arco A1 anda
+relations: [{npc: nalia, kind: familia}]
 schedule:
   - {from: "21:00", to: "05:00", do: dormir,    at: vila_ref/moinho_porta, hidden: true}
   - {from: "05:00", to: "11:00", do: trabalhar, at: vila_ref/moinho_porta}

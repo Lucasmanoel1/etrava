@@ -2,12 +2,14 @@ package etrava.sim.api;
 
 import etrava.sim.content.AreaDef;
 import etrava.sim.content.ContentDb;
+import etrava.sim.content.EpilogueDef;
 import etrava.sim.content.NpcDef;
 import etrava.sim.nav.NavGrid;
 import etrava.sim.nav.Pathfinder;
 import etrava.sim.nav.Pathfinder.Point;
 import etrava.sim.rules.Effect;
 import etrava.sim.save.SaveGame;
+import etrava.sim.story.Arcs;
 import etrava.sim.story.Story;
 import etrava.sim.time.GameClock;
 import etrava.sim.world.ActorState;
@@ -25,9 +27,9 @@ import java.util.List;
  * Não depende de tela, som nem do relógio do sistema.
  *
  * <p>Duas escalas (SPEC 3.2): a cada tick, movimento na área carregada; a cada
- * 10 minutos de jogo, as agendas de todos os NPCs do mundo. Esperar, dormir e a
- * simulação headless pulam de fronteira em fronteira, disparando os eventos
- * agendados na ordem certa.
+ * 10 minutos de jogo, as agendas de todos os NPCs do mundo; a cada hora, os
+ * rumores e os arcos de mundo. Esperar, dormir e a simulação headless pulam de
+ * fronteira em fronteira, disparando os eventos agendados na ordem certa.
  */
 public final class Simulation {
     /** Duração de um tick em segundos reais. */
@@ -39,6 +41,10 @@ public final class Simulation {
     /** Ponto por onde NPCs entram e saem de uma área, se o mapa tiver um. */
     public static final String ENTRY_SPOT = "entrada";
     public static final String WALKING = "andando";
+    /** Ritmo de eventos (RF-145): multiplicador dos prazos dos arcos. */
+    public static final double PACE_NORMAL = 1.0, PACE_CONTEMPLATIVE = 2.0;
+    /** Flag que marca o fim do Capítulo I (o epílogo já foi montado). */
+    public static final String CHAPTER_ENDED = "capitulo1_encerrado";
     private static final int SLEEP_UNTIL_HOUR = 6;
 
     private final ContentDb content;
@@ -49,6 +55,7 @@ public final class Simulation {
     private final List<Command> pending = new ArrayList<>();
     private final List<Command.Timed> commandLog = new ArrayList<>();
     private final Story story;
+    private final Arcs arcs;
     /** Eventos gerados fora de um comando (efeitos agendados); saem no fim do próximo passo. */
     private final List<SimEvent> buffered = new ArrayList<>();
 
@@ -56,15 +63,26 @@ public final class Simulation {
         this.content = content;
         this.world = world;
         this.story = new Story(content, world, this::schedule);
+        this.arcs = new Arcs(content, world, story);
+        story.setArcs(arcs);
     }
 
     public static Simulation newGame(ContentDb content, long seed, String areaId) {
+        return newGame(content, seed, areaId, PACE_NORMAL);
+    }
+
+    /** @param pace ritmo de eventos: {@link #PACE_NORMAL} ou {@link #PACE_CONTEMPLATIVE} (RF-145) */
+    public static Simulation newGame(ContentDb content, long seed, String areaId, double pace) {
         World world = new World(seed, GameClock.DEFAULT_TICKS_PER_DAY);
+        world.pace = pace > 0 ? pace : PACE_NORMAL;
         for (NpcDef def : content.npcs().values()) world.npcs.put(def.id(), new ActorState(def.id(), def.sprite()));
         Simulation sim = new Simulation(content, world);
         for (NpcDef def : content.npcs().values()) sim.story.initNpc(def);
         sim.loadArea(areaId);
         sim.placePlayer(AreaDef.PLAYER_SPAWN);
+        sim.arcs.init(sim.buffered);
+        sim.story.takeDirty();
+        sim.story.takeAgendaDirty();
         sim.updateAgendas(true);
         sim.refreshVisible();
         return sim;
@@ -81,12 +99,14 @@ public final class Simulation {
                 sim.story.initNpc(def);
             }
         }
+        // arcos que entraram no conteúdo depois do save começam do início
+        sim.arcs.init(sim.buffered);
+        sim.story.takeDirty();
+        sim.story.takeAgendaDirty();
         // só os recém-chegados são posicionados: mexer nos demais mudaria o estado carregado
-        int minute = world.clock.minuteOfDay();
         for (ActorState npc : world.npcs.values()) {
-            NpcDef def = content.npcs().get(npc.id);
-            NpcDef.Block block = def == null ? null : def.blockAt(minute);
-            if (npc.areaId == null && block != null) {
+            NpcDef.Block block = sim.block(npc);
+            if (npc.areaId == null && npc.present() && block != null) {
                 npc.target = block.at();
                 sim.arriveAtTarget(npc);
             }
@@ -151,6 +171,7 @@ public final class Simulation {
             skipped |= apply(c, events);
         }
         pending.clear();
+        react(events, false);
         // durante uma conversa com o jogador o mundo fica parado (RF-105)
         if (!skipped && world.dialogue == null) { // um salto de tempo já consumiu este passo
             movePlayer(events);
@@ -181,6 +202,26 @@ public final class Simulation {
         refreshVisible();
     }
 
+    /**
+     * Aplica efeitos agora, fora de qualquer conversa. Para o console de
+     * depuração, ferramentas e testes — não é entrada do jogador nem fica no registro de comandos.
+     */
+    public void applyNow(List<Effect> effects) {
+        for (Effect e : effects) applyEffect(e);
+        react(buffered, false);
+        refreshVisible();
+    }
+
+    /** O epílogo como sairia agora, sem encerrar o capítulo (depuração). */
+    public List<String> previewEpilogue() {
+        return story.composeEpilogue();
+    }
+
+    /** Desfecho de um arco encerrado, ou null se ele ainda corre. */
+    public String arcOutcome(String arcId) {
+        return arcs.outcome(arcId);
+    }
+
     /** Agenda efeitos para um tick futuro (RF-162). */
     public void schedule(long atTick, boolean interrupts, List<Effect> effects) {
         long tick = Math.max(atTick, world.clock.tick() + 1);
@@ -202,11 +243,39 @@ public final class Simulation {
             interrupted |= s.interrupts();
         }
         if (target % agendaInterval() == 0) updateAgendas(snap);
-        if (target % world.clock.ticksPerHour() == 0) story.spreadRumors();
+        if (target % world.clock.ticksPerHour() == 0) {
+            story.spreadRumors();
+            arcs.evaluate(buffered); // prazos e transições, uma vez por hora (SPEC 3.2)
+        }
+        react(buffered, snap);
         if (target % world.clock.ticksPerDay() == 0) {
             chronicle("dia", "", "Dia " + world.clock.day());
+            interrupted |= endChapterIfDue();
         }
         return interrupted;
+    }
+
+    /**
+     * Depois de qualquer efeito: os arcos conferem na hora se algo que observam
+     * mudou (SPEC 4.5), e as agendas se ajustam ao novo estágio ou à ausência de alguém.
+     */
+    private void react(List<SimEvent> events, boolean snap) {
+        if (story.takeDirty()) {
+            arcs.evaluate(events);
+            story.takeDirty(); // os efeitos dos próprios arcos já foram considerados
+        }
+        if (story.takeAgendaDirty()) updateAgendas(snap);
+    }
+
+    /** No fim do último dia do capítulo, monta o epílogo e avisa a apresentação (RF-163, PRD 8.6). */
+    private boolean endChapterIfDue() {
+        EpilogueDef def = content.epilogue();
+        if (def == null || world.flag(CHAPTER_ENDED) || world.clock.day() <= def.endDay()) return false;
+        world.flags.put(CHAPTER_ENDED, true);
+        world.epilogue.addAll(story.composeEpilogue());
+        chronicle("capitulo", "1", "Fim do Capítulo I");
+        buffered.add(new SimEvent.ChapterEnded(List.copyOf(world.epilogue)));
+        return true;
     }
 
     private boolean skipTime(long ticks, boolean interruptible) {
@@ -248,7 +317,7 @@ public final class Simulation {
         switch (c) {
             case Command.Talk t -> {
                 ActorState npc = world.npcs.get(t.npcId());
-                if (npc == null || npc.hidden || !area.id().equals(npc.areaId)) return false;
+                if (npc == null || npc.hidden || !npc.present() || !area.id().equals(npc.areaId)) return false;
                 if (Math.hypot(npc.x - player.x, npc.y - player.y) <= Story.TALK_RANGE) {
                     beginTalk(npc, events);
                 } else {
@@ -425,11 +494,9 @@ public final class Simulation {
      * novo lugar; fora dela (ou com {@code snap}) são postos direto lá.
      */
     private void updateAgendas(boolean snap) {
-        int minute = world.clock.minuteOfDay();
         for (ActorState npc : world.npcs.values()) {
-            NpcDef def = content.npcs().get(npc.id);
-            if (def == null) continue; // NPC do save que saiu do conteúdo
-            NpcDef.Block block = def.blockAt(minute);
+            if (!npc.present()) continue; // partiu, morreu ou está fora: não segue agenda (RF-087)
+            NpcDef.Block block = block(npc); // null também para NPC do save que saiu do conteúdo
             if (block == null) continue;
             boolean placed = npc.areaId != null;
             if (placed && block.at().equals(npc.target)) {
@@ -500,11 +567,19 @@ public final class Simulation {
 
     /** Assume a atividade do bloco atual, se o NPC estiver onde o bloco manda. */
     private void settle(ActorState npc) {
-        NpcDef def = content.npcs().get(npc.id);
-        NpcDef.Block block = def == null ? null : def.blockAt(world.clock.minuteOfDay());
+        NpcDef.Block block = block(npc);
         boolean inPlace = block != null && block.at().equals(npc.target);
         npc.activity = inPlace ? block.activity() : "";
         npc.hidden = inPlace && block.hidden();
+    }
+
+    /**
+     * Bloco de agenda em vigor para o NPC agora: blocos com condição (estágio de
+     * arco, flag…) têm prioridade sobre a rotina normal (RF-083).
+     */
+    private NpcDef.Block block(ActorState npc) {
+        NpcDef def = content.npcs().get(npc.id);
+        return def == null ? null : def.blockAt(world.clock.minuteOfDay(), c -> story.test(c, npc.id));
     }
 
     private Point spot(String areaId, String name) {
@@ -517,7 +592,7 @@ public final class Simulation {
     private void refreshVisible() {
         world.visible.clear();
         for (ActorState npc : world.npcs.values()) {
-            if (!npc.hidden && area.id().equals(npc.areaId)) world.visible.add(npc);
+            if (!npc.hidden && npc.present() && area.id().equals(npc.areaId)) world.visible.add(npc);
         }
     }
 }

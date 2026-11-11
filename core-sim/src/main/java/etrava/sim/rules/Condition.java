@@ -34,6 +34,23 @@ public sealed interface Condition {
     /** O NPC está numa área. */
     record NpcIn(String npc, String area) implements Condition {}
 
+    /** O NPC está presente, fora (away), foi embora (departed) ou morreu (dead). */
+    record NpcStatus(String npc, String status) implements Condition {}
+
+    /**
+     * Estado de um arco de mundo.
+     *
+     * @param stages  o arco está num destes estágios (vazio = qualquer)
+     * @param outcome o arco terminou com este desfecho (null = não importa)
+     */
+    record Arc(String id, List<String> stages, String outcome) implements Condition {}
+
+    /** Um objeto do cenário com variantes está neste estado (árvore viva, morta, cortada). */
+    record Prop(String key, String state) implements Condition {}
+
+    /** O NPC guarda na memória um acontecimento deste tipo (e, se dito, com este sujeito). */
+    record Remembers(String npc, String type, String subject) implements Condition {}
+
     /** Verdadeira com a probabilidade dada; usa o gerador da simulação. */
     record Chance(double probability) implements Condition {}
 }

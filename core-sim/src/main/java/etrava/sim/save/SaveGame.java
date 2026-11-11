@@ -10,7 +10,9 @@ import etrava.sim.rules.Effect;
 import etrava.sim.rules.Rules;
 import etrava.sim.world.KnowledgeEntry;
 import etrava.sim.world.ActorState;
+import etrava.sim.world.ArcState;
 import etrava.sim.world.ChronicleEntry;
+import etrava.sim.world.MemoryEntry;
 import etrava.sim.world.Scheduled;
 import etrava.sim.world.World;
 import java.io.ByteArrayOutputStream;
@@ -37,7 +39,7 @@ import java.util.zip.ZipOutputStream;
  */
 public final class SaveGame {
     /** Aumenta a cada mudança incompatível no formato de state.json. */
-    public static final int SCHEMA_VERSION = 2;
+    public static final int SCHEMA_VERSION = 3;
     public static final String EXTENSION = ".etrava";
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -191,7 +193,8 @@ public final class SaveGame {
         root.put("schemaVersion", SCHEMA_VERSION);
         ObjectNode meta = root.putObject("meta");
         meta.put("seed", w.seed).put("rngState", w.rng.state()).put("tick", w.clock.tick())
-                .put("ticksPerDay", w.clock.ticksPerDay()).put("area", w.areaId).put("nextSeq", w.nextSeq);
+                .put("ticksPerDay", w.clock.ticksPerDay()).put("area", w.areaId).put("nextSeq", w.nextSeq)
+                .put("pace", w.pace);
 
         ObjectNode flags = root.putObject("flags");
         w.flags.forEach(flags::put);
@@ -208,7 +211,7 @@ public final class SaveGame {
             ObjectNode n = actor(e.getValue());
             n.put("sprite", e.getValue().sprite).put("target", e.getValue().target)
                     .put("activity", e.getValue().activity).put("hidden", e.getValue().hidden)
-                    .put("leaving", e.getValue().leaving);
+                    .put("leaving", e.getValue().leaving).put("status", e.getValue().status);
             npcs.set(e.getKey(), n);
         }
 
@@ -236,6 +239,24 @@ public final class SaveGame {
         w.ambientLast.forEach(ambientLast::put);
         story.put("ambientId", w.ambientId).put("ambientLine", w.ambientLine)
                 .put("ambientNextTick", w.ambientNextTick).put("pendingTalk", w.pendingTalk);
+
+        ObjectNode arcs = root.putObject("arcs");
+        for (Map.Entry<String, ArcState> e : w.arcs.entrySet()) {
+            arcs.putObject(e.getKey()).put("stage", e.getValue().stage()).put("entered", e.getValue().enteredTick())
+                    .put("deadline", e.getValue().deadline());
+        }
+        ObjectNode props = root.putObject("props");
+        w.props.forEach(props::put);
+        ObjectNode memories = root.putObject("memories");
+        for (Map.Entry<String, List<MemoryEntry>> e : w.memories.entrySet()) {
+            ArrayNode list = memories.putArray(e.getKey());
+            for (MemoryEntry m : e.getValue()) {
+                list.addObject().put("type", m.type()).put("subject", m.subject()).put("day", m.day())
+                        .put("place", m.place());
+            }
+        }
+        ArrayNode epilogue = root.putArray("epilogue");
+        w.epilogue.forEach(epilogue::add);
 
         ArrayNode chronicle = root.putArray("chronicle");
         for (ChronicleEntry c : w.chronicle) {
@@ -269,6 +290,7 @@ public final class SaveGame {
         w.clock.setTick(meta.path("tick").asLong());
         w.areaId = meta.path("area").asText();
         w.nextSeq = meta.path("nextSeq").asLong();
+        w.pace = meta.path("pace").asDouble(1.0);
 
         root.path("flags").properties().forEach(e -> w.flags.put(e.getKey(), e.getValue().asBoolean()));
         root.path("vars").properties().forEach(e -> w.vars.put(e.getKey(), e.getValue().asDouble()));
@@ -289,6 +311,7 @@ public final class SaveGame {
             npc.activity = n.path("activity").asText("");
             npc.hidden = n.path("hidden").asBoolean();
             npc.leaving = n.path("leaving").asBoolean();
+            npc.status = n.path("status").asText("present");
             w.npcs.put(e.getKey(), npc);
         });
 
@@ -315,6 +338,20 @@ public final class SaveGame {
         w.ambientLine = story.path("ambientLine").asInt();
         w.ambientNextTick = story.path("ambientNextTick").asLong();
         w.pendingTalk = text(story, "pendingTalk");
+
+        root.path("arcs").properties().forEach(e -> w.arcs.put(e.getKey(), new ArcState(
+                e.getValue().path("stage").asText(), e.getValue().path("entered").asLong(),
+                e.getValue().path("deadline").asLong(-1))));
+        root.path("props").properties().forEach(e -> w.props.put(e.getKey(), e.getValue().asText()));
+        root.path("memories").properties().forEach(e -> {
+            List<MemoryEntry> list = new ArrayList<>();
+            for (JsonNode n : e.getValue()) {
+                list.add(new MemoryEntry(n.path("type").asText(), n.path("subject").asText(), n.path("day").asInt(),
+                        text(n, "place")));
+            }
+            w.memories.put(e.getKey(), list);
+        });
+        for (JsonNode n : root.path("epilogue")) w.epilogue.add(n.asText());
 
         for (JsonNode n : root.path("chronicle")) {
             w.chronicle.add(new ChronicleEntry(n.path("tick").asLong(), n.path("type").asText(),

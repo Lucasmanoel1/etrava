@@ -1,0 +1,24 @@
+# Nalia, filha do moleiro (PRD 8.5, arco A1). Nome vindo da lore.
+# Os blocos com `when` vêm primeiro e sobrepõem a rotina normal conforme o estágio do arco (RF-083).
+id: nalia
+name: Nalia
+layer: A
+sprite: personagem.nalia
+dialogue: nalia
+opinion: 5
+relations: [{npc: moleiro, kind: familia}]
+schedule:
+  # se ninguém fez nada: não sai mais de casa
+  - {from: "00:00", to: "12:00", do: de_cama, at: vila_ref/moinho_porta, hidden: true, when: {arc: {id: a1_nalia, stage: nalia_piora}}}
+  - {from: "12:00", to: "00:00", do: de_cama, at: vila_ref/moinho_porta, hidden: true, when: {arc: {id: a1_nalia, stage: nalia_piora}}}
+  # sem dormir: passa a noite debaixo da árvore
+  - {from: "21:00", to: "05:00", do: vigiar, at: vila_ref/quintal_moinho, when: {arc: {id: a1_nalia, stage: [insonia, vozes, impasse]}}}
+  # enquanto a árvore vive, as tardes são dela
+  - {from: "14:00", to: "18:00", do: descansar, at: vila_ref/quintal_moinho, when: {prop: {key: arvore_nalia, state: viva}}}
+  # rotina normal
+  - {from: "21:00", to: "06:00", do: dormir,      at: vila_ref/moinho_porta, hidden: true}
+  - {from: "06:00", to: "08:00", do: buscar_agua, at: vila_ref/poco}
+  - {from: "08:00", to: "12:00", do: trabalhar,   at: vila_ref/moinho_porta}
+  - {from: "12:00", to: "13:00", do: comer,       at: vila_ref/moinho_porta, hidden: true}
+  - {from: "13:00", to: "18:00", do: trabalhar,   at: vila_ref/quintal_cerca}
+  - {from: "18:00", to: "21:00", do: em_casa,     at: vila_ref/moinho_porta, hidden: true}

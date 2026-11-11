@@ -1,0 +1,40 @@
+# O ferreiro propõe cortar a árvore (arco A1). O jogador pode apoiar, discordar ou pedir outra coisa.
+id: ferreiro
+start:
+  - {when: {arc: {id: a1_nalia, stage: impasse}}, goto: machado}
+  - {goto: forja}
+nodes:
+  forja:
+    text: "Ferradura é amanhã. Prego é hoje, se tiver o ferro."
+    choices:
+      - {text: "Só passando."}
+  machado:
+    text: "Árvore que come gente, a gente corta. Não precisa de curandeira para isso."
+    effects: [{learn: {who: player, fact: ferreiro_quer_cortar, certainty: claim}}]
+    choices:
+      - text: "Eu ajudo."
+        relevant: true
+        channels: [ambiente, npc, dialogue]
+        effects:
+          - {setFlag: jogador_apoiou_corte}
+          - {opinion: {npc: npc, add: 8}}
+          - {opinion: {npc: nalia, add: -30}}
+          - {remember: {npc: nalia, type: traicao, subject: player}}
+        goto: ajuda
+      - {text: "A menina não quer.", goto: nao_quer}
+      - text: "Tem outro jeito. Repartir o peso entre três."
+        when: {all: [{knows: {who: player, fact: custo_pode_ser_dividido}}, {not: {flag: vol_ferreiro}}]}
+        goto: reparte
+  ajuda:
+    text: "Amanhã cedo. Antes de a menina acordar. Se é que ela dorme."
+  nao_quer:
+    text: "Menina também não quer remédio."
+  reparte:
+    text: "Eu carrego ferro o dia inteiro. De noite eu quero é dormir."
+    choices:
+      - text: "Um terço de noite mal dormida. Pela filha do moleiro."
+        effects: [{setFlag: vol_ferreiro}, {addVar: {name: voluntarios, value: 1}}]
+        goto: terco
+      - {text: "Então não."}
+  terco:
+    text: "Um terço. Nem um dedo a mais."

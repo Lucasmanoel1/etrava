@@ -36,6 +36,16 @@ public interface WorldView {
     java.util.Map<String, etrava.sim.world.KnowledgeEntry> npcKnowledge(String npcId);
     /** Qualquer NPC do mundo, esteja onde estiver; null se não existir. */
     ActorView npc(String id);
+    /** Estado de cada arco de mundo (depuração e relatórios). */
+    java.util.Map<String, etrava.sim.world.ArcState> arcs();
+    /** Variante atual de um prop com chave; null = ainda no estado inicial. */
+    String propState(String key);
+    /** O que um NPC lembra (depuração). */
+    List<etrava.sim.world.MemoryEntry> memories(String npcId);
+    /** Texto do epílogo do capítulo; vazio enquanto ele não terminou. */
+    List<String> epilogue();
+    /** present | away | departed | dead; null se o NPC não existir. */
+    String npcStatus(String id);
     /** Área em que o NPC está agora; null se não existir. */
     String npcArea(String id);
 }

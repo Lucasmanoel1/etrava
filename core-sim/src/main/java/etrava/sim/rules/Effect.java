@@ -31,4 +31,19 @@ public sealed interface Effect {
 
     /** Agenda outros efeitos para daqui a algumas horas de jogo (consequência tardia, RF-162). */
     record Schedule(double hours, boolean interrupts, List<Effect> effects) implements Effect {}
+
+    /** Troca a variante de um objeto do cenário (RF-043). */
+    record SetProp(String key, String state) implements Effect {}
+
+    /** Leva um arco de mundo direto para um estágio. */
+    record Arc(String id, String to) implements Effect {}
+
+    /** Muda a situação de um NPC: present | away | departed | dead (RF-087). */
+    record NpcStatus(String npc, String status) implements Effect {}
+
+    /** O NPC guarda um acontecimento na memória (RF-084). */
+    record Remember(String npc, String type, String subject) implements Effect {}
+
+    /** O jogador comete um ato (content/deeds.yaml); só pesa para quem viu ou ficou sabendo (RF-089, RF-281). */
+    record Deed(String id) implements Effect {}
 }

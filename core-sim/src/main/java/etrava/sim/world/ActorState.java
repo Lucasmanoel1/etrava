@@ -26,6 +26,10 @@ public final class ActorState implements ActorView {
     public boolean hidden;
     /** Ao chegar ao fim do caminho, some desta área e reaparece no destino. */
     public boolean leaving;
+    /** present | away | departed | dead. Quem não está presente some das agendas e das conversas (RF-087). */
+    public String status = "present";
+
+    public boolean present() { return "present".equals(status); }
 
     public ActorState(String id, String sprite) {
         this.id = id;

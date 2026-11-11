@@ -1,0 +1,30 @@
+# O viajante traz as notícias de fora (RF-125): o nó `novidades` conta o que ele sabe e o
+# jogador ainda não. É também a segunda fonte da pista sobre repartir o custo.
+id: viajante
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Estrada boa é a que acaba em sopa."
+    choices:
+      - {text: "O que há de novo lá fora?", goto: novidades}
+      - text: "Já viu árvore morta voltar?"
+        when: {knows: {who: player, fact: arvore_voltou}}
+        goto: poco
+      - {text: "Boa sopa."}
+  novidades:
+    gossip: nada
+    text: "Na estrada, dizem:"
+    choices:
+      - {text: "Mais alguma coisa?", goto: novidades}
+      - {text: "Hm."}
+  nada:
+    text: "Nada que valha a viagem."
+  poco:
+    text: "Árvore, não. Vi um poço, no sul, que dava água boa e deixava a dona de cama. Seis famílias passaram a tirar um balde cada. A dona levantou."
+    effects: [{learn: {who: player, fact: custo_pode_ser_dividido, certainty: claim}}]
+    choices:
+      - {text: "E as seis famílias?", goto: familias}
+      - {text: "Hm."}
+  familias:
+    text: "Reclamavam de cansaço. Mas reclamavam em pé."

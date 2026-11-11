@@ -1,0 +1,10 @@
+# O estudioso de passagem: só aparece se o arco A1 terminar em `estabilizada`, e vai embora
+# três dias depois (RF-087). Começa fora do mundo (`status: away`).
+id: estudioso
+name: Homem de fora
+layer: C
+sprite: personagem.estudioso
+status: away
+schedule:
+  - {from: "21:00", to: "07:00", do: dormir,  at: vila_ref/moinho_porta, hidden: true}
+  - {from: "07:00", to: "21:00", do: estudar, at: vila_ref/quintal_cerca}

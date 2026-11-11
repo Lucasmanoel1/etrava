@@ -47,6 +47,7 @@ public final class GenerateArt {
         sprite("prop.arvore", "props/arvore.png", PropArt.tree(1, false));
         sprite("prop.arvore_b", "props/arvore_b.png", PropArt.tree(2, false));
         sprite("prop.arvore_morta", "props/arvore_morta.png", PropArt.tree(3, true));
+        sprite("prop.toco", "props/toco.png", PropArt.stump());
         sprite("prop.barril", "props/barril.png", PropArt.barrel());
         sprite("prop.caixote", "props/caixote.png", PropArt.crate());
         sprite("prop.poco", "props/poco.png", PropArt.well());
@@ -84,6 +85,16 @@ public final class GenerateArt {
         character("personagem.viajante", "personagens/viajante.png", new CharacterArt.Look(
                 new Color(0xA87858), new Color(0x1E1A18), new Color(0x4E5A4A), new Color(0x3C3A34),
                 new Color(0x241C18), true, 0.50));
+
+        character("personagem.nalia", "personagens/nalia.png", new CharacterArt.Look(
+                new Color(0xC9A084), new Color(0x4A2E20), new Color(0x6A6E58), new Color(0x4E463C),
+                new Color(0x2E2420), false, 0.40));
+        character("personagem.curandeira", "personagens/curandeira.png", new CharacterArt.Look(
+                new Color(0xAE8468), new Color(0x8E8A82), new Color(0x4A3F4E), new Color(0x3A3430),
+                new Color(0x241C18), true, 0.52));
+        character("personagem.estudioso", "personagens/estudioso.png", new CharacterArt.Look(
+                new Color(0xC2997C), new Color(0x2A2320), new Color(0x2E3440), new Color(0x2A2A2E),
+                new Color(0x1E1A18), false, 0.48));
 
         Path file = assets.resolve("manifest/provisorio.yaml");
         Files.createDirectories(file.getParent());

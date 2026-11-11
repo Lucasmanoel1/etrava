@@ -46,6 +46,13 @@
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
+- id: prop.toco
+  type: sprite
+  file: props/toco.png
+  anchor: [38, 80]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
 - id: prop.barril
   type: sprite
   file: props/barril.png
@@ -177,6 +184,42 @@
 - id: personagem.viajante
   type: spritesheet
   file: personagens/viajante.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.nalia
+  type: spritesheet
+  file: personagens/nalia.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.curandeira
+  type: spritesheet
+  file: personagens/curandeira.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.estudioso
+  type: spritesheet
+  file: personagens/estudioso.png
   frame: [24, 32]
   anchor: [12, 28]
   directions: 8

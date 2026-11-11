@@ -63,6 +63,46 @@ final class PropArt {
         return new BuildingArt.Art(c.image, c.ox, c.oy, null);
     }
 
+    /** Toco de árvore cortada, com o mesmo ponto de apoio da árvore inteira. */
+    static BuildingArt.Art stump() {
+        Canvas c = new Canvas(300, 360, 150, 320);
+        c.groundShadow(0.3, -0.05, 0.6, 0.38);
+        double topY = c.oy - 0.42 * Z_PX;
+        Path2D trunk = new Path2D.Double();
+        trunk.moveTo(c.ox - 15, c.oy + 3);
+        trunk.lineTo(c.ox - 11, topY);
+        trunk.lineTo(c.ox + 12, topY);
+        trunk.lineTo(c.ox + 17, c.oy + 3);
+        trunk.closePath();
+        c.g.setPaint(new GradientPaint((float) c.ox - 14, 0, shade(DARK_WOOD, 1.35), (float) c.ox + 14, 0,
+                shade(DARK_WOOD, 0.7)));
+        c.g.fill(trunk);
+        c.g.setStroke(new BasicStroke(1.2f));
+        c.g.setColor(alpha(OUTLINE, 0.6));
+        c.g.draw(trunk);
+        // o corte: madeira clara, com anéis
+        Color cut = mix(STRAW, OCHRE, 0.4);
+        c.g.setColor(cut);
+        c.g.fill(new Ellipse2D.Double(c.ox - 12, topY - 6, 25, 12));
+        c.g.setColor(alpha(shade(cut, 0.7), 0.8));
+        c.g.setStroke(new BasicStroke(1f));
+        c.g.draw(new Ellipse2D.Double(c.ox - 7, topY - 3.5, 15, 7));
+        c.g.draw(new Ellipse2D.Double(c.ox - 3, topY - 1.5, 7, 3));
+        c.g.setColor(alpha(OUTLINE, 0.6));
+        c.g.draw(new Ellipse2D.Double(c.ox - 12, topY - 6, 25, 12));
+        // raízes e lascas no chão
+        c.g.setColor(shade(DARK_WOOD, 0.9));
+        c.g.setStroke(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        c.g.draw(new Line2D.Double(c.ox - 13, c.oy, c.ox - 26, c.oy + 6));
+        c.g.draw(new Line2D.Double(c.ox + 14, c.oy, c.ox + 27, c.oy + 4));
+        c.g.setColor(cut);
+        c.g.setStroke(new BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        c.g.draw(new Line2D.Double(c.ox + 30, c.oy + 12, c.ox + 38, c.oy + 10));
+        c.g.draw(new Line2D.Double(c.ox - 34, c.oy + 14, c.ox - 28, c.oy + 17));
+        c.g.dispose();
+        return new BuildingArt.Art(c.image, c.ox, c.oy, null);
+    }
+
     private static void foliage(Canvas c, Random rnd, double lean) {
         record Blob(double x, double y, double z, double r, double depth) {}
         List<Blob> blobs = new ArrayList<>();

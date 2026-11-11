@@ -52,6 +52,8 @@ public final class GameUi implements Disposable {
 
     private final Table dialogueRoot = new Table();
     private final Table notebookRoot = new Table();
+    private final Table epilogueRoot = new Table();
+    private boolean epilogueOpen;
     private IntConsumer onChoice = i -> { };
     private Consumer<String> onToggleMark = f -> { };
     private Object dialogueShown;
@@ -86,8 +88,12 @@ public final class GameUi implements Disposable {
         notebookRoot.setFillParent(true);
         notebookRoot.center();
         notebookRoot.setVisible(false);
+        epilogueRoot.setFillParent(true);
+        epilogueRoot.center();
+        epilogueRoot.setVisible(false);
         stage.addActor(dialogueRoot);
         stage.addActor(notebookRoot);
+        stage.addActor(epilogueRoot);
     }
 
     public Stage stage() { return stage; }
@@ -102,6 +108,42 @@ public final class GameUi implements Disposable {
     }
 
     public void closeNotebook() { notebookOpen = false; }
+
+    public boolean epilogueOpen() { return epilogueOpen; }
+
+    public void closeEpilogue() {
+        epilogueOpen = false;
+        epilogueRoot.setVisible(false);
+    }
+
+    /** Tela do fim do capítulo (RF-163): os trechos do epílogo, um por parágrafo. O jogo continua depois. */
+    public void showEpilogue(List<String> lines) {
+        epilogueRoot.clearChildren();
+        Table page = new Table();
+        page.setBackground(paper);
+        page.pad(24).top();
+        page.add(new Label(texts.get("epilogo.titulo"), rust)).left().padBottom(14).row();
+        Table body = new Table();
+        body.top().left();
+        body.defaults().left().growX();
+        for (String line : lines) {
+            Label paragraph = new Label(line, ink);
+            paragraph.setWrap(true);
+            body.add(paragraph).padBottom(12).row();
+        }
+        ScrollPane scroll = new ScrollPane(body, new ScrollPane.ScrollPaneStyle());
+        scroll.setFadeScrollBars(false);
+        page.add(scroll).grow().row();
+        page.add(new Label(texts.get("epilogo.dica"), inkSoft)).right().padTop(10);
+        Table border = new Table();
+        border.setBackground(edge);
+        border.pad(3);
+        border.add(page).grow();
+        epilogueRoot.add(border).size(Math.min(stage.getWidth() - 60, 760), Math.min(stage.getHeight() - 60, 560));
+        epilogueRoot.setVisible(true);
+        epilogueOpen = true;
+        stage.setScrollFocus(scroll);
+    }
 
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -121,7 +163,7 @@ public final class GameUi implements Disposable {
             dialogueShown = d;
             dialogueLines = d.history().size();
         }
-        boolean showNotebook = notebookOpen && d == null;
+        boolean showNotebook = notebookOpen && d == null && !epilogueOpen;
         if (showNotebook && (view.knowledge().size() != notebookEntries || view.markedFacts().size() != notebookMarks)) {
             buildNotebook(view);
             notebookEntries = view.knowledge().size();

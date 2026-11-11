@@ -1,0 +1,128 @@
+# Epílogo do Capítulo I (RF-163, PRD 8.7). Aparece ao fim do dia `endDay`; o jogo continua depois.
+#
+# `slots` dá a ordem do texto. Em cada espaço entra UM fragmento: o de maior `priority`
+# cuja condição (`when`) passa; empate = o que vem primeiro no arquivo. Espaço que trata de
+# um arco (`arc`) precisa de um fragmento sem condição — o mundo tem desfecho mesmo sem o jogador.
+# Espaço sem fragmento válido simplesmente não aparece.
+#
+# Tom: o que ficou, não o que se devia ter feito. Nada de explicar o sobrenatural.
+
+endDay: 30
+
+slots:
+  - abertura
+  - {id: a1_nalia, arc: a1_nalia}
+  - arvore
+  - moinho
+  - ferrovia
+  - sal
+  - sacerdote
+  - berta
+  - estrada
+  - vizinhos
+  - caderno
+  - fecho
+
+fragments:
+  - slot: abertura
+    text: "Trinta dias em Pedra-Mansa. A oficina abriu e fechou trinta vezes, e quase tudo o que aconteceu, aconteceu do lado de fora."
+
+  # ---- A1: o destino de Nalia
+  - slot: a1_nalia
+    priority: 10
+    when: {arc: {id: a1_nalia, stage: custo_dividido}}
+    text: "Nalia dorme. Três pessoas do vilarejo passaram a dormir um pouco pior, e nenhuma delas reclama em voz alta. Ninguém sabe dizer direito o que foi repartido."
+  - slot: a1_nalia
+    priority: 10
+    when: {arc: {id: a1_nalia, stage: arvore_morre}}
+    text: "Nalia soltou a árvore, e a árvore secou em dois dias, como se nunca tivesse voltado. A menina dorme. Ainda senta debaixo dos galhos, de tarde."
+  - slot: a1_nalia
+    priority: 10
+    when: {arc: {id: a1_nalia, stage: estabilizada}}
+    text: "Um homem de livros ficou três dias no moinho e foi embora sem cobrar. A árvore continua de pé e Nalia voltou a dormir, pouco. Ele não explicou o que fez; talvez não soubesse."
+  - slot: a1_nalia
+    priority: 10
+    when: {arc: {id: a1_nalia, stage: pai_corta_arvore}}
+    text: "O moleiro cortou a árvore numa manhã, antes de a filha acordar. Nalia voltou a dormir e deixou de falar com ele por um tempo que ninguém mediu."
+  - slot: a1_nalia
+    priority: 10
+    when: {arc: {id: a1_nalia, stage: nalia_piora}}
+    text: "Ninguém cortou a árvore, e ninguém achou outro jeito. Ela está mais verde do que nunca. Nalia não sai mais de casa."
+  - slot: a1_nalia
+    text: "No moinho, a história da menina e da árvore ainda não acabou."
+
+  # ---- a árvore, vista de fora
+  - slot: arvore
+    when: {prop: {key: arvore_nalia, state: cortada}}
+    text: "No quintal do moinho ficou um toco claro, que escurece a cada chuva."
+  - slot: arvore
+    when: {all: [{prop: {key: arvore_nalia, state: viva}}, {flag: custo_foi_dividido}]}
+    text: "A árvore dá sombra de novo. Quem passa por ela boceja, e depois ri de ter bocejado."
+  - slot: arvore
+    when: {prop: {key: arvore_nalia, state: viva}}
+    text: "A árvore do moinho continua viva, e as pessoas aprenderam a dar a volta por fora do quintal."
+
+  # ---- o que o protagonista fez (ou não) no moinho
+  - slot: moinho
+    priority: 5
+    when: {flag: vol_jogador}
+    text: "Você também dorme um pouco pior agora. Não é sono ruim; é só mais curto, e de vez em quando tem folha nele."
+  - slot: moinho
+    priority: 5
+    when: {flag: jogador_apoiou_corte}
+    text: "O ferreiro ainda lhe agradece a ajuda com o machado. Nalia desvia o olhar quando você entra no moinho."
+  - slot: moinho
+    priority: 5
+    when: {flag: ligacao_cortada}
+    text: "Foi você quem disse a ela para soltar. Ela nunca lhe cobrou isso, o que é pior."
+  - slot: moinho
+    when: {not: {knows: {who: player, fact: arvore_voltou}}}
+    text: "Você soube de pouca coisa do que se passou no moinho. A farinha atrasou alguns dias; foi só o que chegou à oficina."
+
+  # ---- o mundo lá fora
+  - slot: ferrovia
+    when: {all: [{flag: ferrovia_aprovada}, {knows: {who: player, fact: ferrovia_aprovada}}]}
+    text: "Em Caldris aprovaram os primeiros trechos da ferrovia. Você ouviu a notícia e ainda não sabe se ela é boa."
+  - slot: ferrovia
+    when: {flag: ferrovia_aprovada}
+    text: "Longe dali, em Caldris, alguém assinou os primeiros papéis de uma ferrovia. A notícia ainda não chegou a você."
+
+  - slot: sal
+    when: {flag: sal_subiu}
+    text: "O sal de remédio subiu de preço no Posto, e a curandeira passou a contar os grãos."
+
+  - slot: sacerdote
+    when: {flag: sacerdote_sumiu}
+    text: "Um sacerdote de Orra sumiu na estrada. Em Pedra-Mansa ninguém sabia o nome dele, e mesmo assim se falou nisso por uma semana."
+
+  - slot: berta
+    when: {arc: {id: e4_berta, stage: foi_embora}}
+    text: "A mulher que atravessou o incêndio, dizem, largou a casa de porta aberta e foi embora. Cada viajante conta um motivo."
+  - slot: berta
+    when: {arc: {id: e4_berta, stage: memorial}}
+    text: "Dizem que vão erguer um memorial para a mulher que atravessou o incêndio. Dizem também que os vizinhos dela não foram convidados."
+  - slot: berta
+    when: {arc: {id: e4_berta, stage: [milagre, vizinhos]}}
+    text: "A história da mulher que atravessou o incêndio continua chegando, cada vez de um jeito."
+
+  - slot: estrada
+    when: {flag: estrada_cobrada}
+    text: "Na estrada, um homem passou a cobrar pela segurança de quem viaja. Uns chamam isso de roubo; outros, de governo."
+
+  # ---- como o vilarejo olha para o protagonista
+  - slot: vizinhos
+    priority: 5
+    when: {any: [{opinion: {npc: moleiro, max: -40}}, {opinion: {npc: aldea, max: -40}}, {opinion: {npc: taberneira, max: -40}}]}
+    text: "Há portas em Pedra-Mansa que se fecham quando você passa. Ninguém lhe disse por quê; não precisou."
+  - slot: vizinhos
+    when: {all: [{opinion: {npc: moleiro, min: 20}}, {opinion: {npc: nalia, min: 5}}]}
+    text: "No moinho, guardam um lugar para você no banco de fora."
+  - slot: vizinhos
+    text: "Para o vilarejo, você continua sendo o aprendiz da oficina: o que está sempre com graxa na cara."
+
+  - slot: caderno
+    when: {knows: {who: player, fact: custo_pode_ser_dividido}}
+    text: "No caderno ficou uma anotação que você relê às vezes: o que pesa sobre um, talvez possa pesar um pouco sobre vários. Ninguém lhe garantiu que é verdade."
+
+  - slot: fecho
+    text: "A estrada continua no mesmo lugar. O resto, não."

@@ -18,9 +18,9 @@ import java.util.Map;
 
 /**
  * Validador de conteúdo (RF-442). Cada problema aponta arquivo e item.
- * Cobre props, áreas e referências a assets. As regras narrativas (fontes de
- * fatos, camadas de verdade, desfecho padrão de arcos) entram com os sistemas
- * correspondentes (M3/M4).
+ * Cobre props, áreas, agendas e referências a assets; as regras narrativas
+ * (fontes de fatos, camadas de verdade, desfecho padrão de arcos, epílogo)
+ * ficam no {@code NarrativeValidator}.
  */
 public final class ContentValidator {
     /** Erros quebram o build; avisos não (ex.: asset no manifesto mas ainda sem arquivo). */
@@ -42,13 +42,20 @@ public final class ContentValidator {
     private static List<String> validate(ContentDb db, List<String> warnings) {
         List<String> problems = new ArrayList<>(db.problems());
         if (db.areas().isEmpty()) problems.add("areas/areas.yaml: nenhuma área carregada");
+        java.util.Set<String> keys = new java.util.HashSet<>();
 
         for (AreaDef area : db.areas().values()) {
             String file = "areas/" + db.areaEntry(area.id()).map();
             for (PropPlacement p : area.props()) {
-                if (!db.props().containsKey(p.propId()))
+                PropDef def = db.props().get(p.propId());
+                if (def == null)
                     problems.add(file + ": prop inexistente '" + p.propId() + "' em ("
                             + fmt(p.x()) + ", " + fmt(p.y()) + ")");
+                else if (p.key() != null && def.stateMap().isEmpty())
+                    problems.add(file + ": o prop '" + p.propId() + "' tem a chave '" + p.key()
+                            + "' mas não declara variantes ('states') em props.yaml");
+                if (p.key() != null && !keys.add(p.key()))
+                    problems.add(file + ": chave de prop repetida '" + p.key() + "'");
             }
             NavGrid nav = area.buildNavGrid(db.props());
             checkPoints(problems, file, "spawn", area.spawns(), nav);
@@ -68,7 +75,12 @@ public final class ContentValidator {
         errors.addAll(manifest.problems());
 
         for (PropDef prop : db.props().values()) {
-            requireAsset(errors, manifest, "props.yaml", "prop '" + prop.id() + "'", prop.spriteId());
+            if (prop.stateMap().isEmpty())
+                requireAsset(errors, manifest, "props.yaml", "prop '" + prop.id() + "'", prop.spriteId());
+            for (Map.Entry<String, String> state : prop.stateMap().entrySet()) {
+                requireAsset(errors, manifest, "props.yaml",
+                        "prop '" + prop.id() + "', variante '" + state.getKey() + "'", state.getValue());
+            }
         }
         requireAsset(errors, manifest, "(jogador)", "personagem do jogador", World.PLAYER_SPRITE);
         for (AreaDef area : db.areas().values()) {

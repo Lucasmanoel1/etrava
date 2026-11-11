@@ -1,0 +1,8 @@
+endDay: 30
+slots:
+  - {id: circulo, arc: em_circulo}
+  - {id: outro, arc: arco_fantasma}
+fragments:
+  - {slot: circulo, when: {flag: x}, text: "Só com condição."}
+  - {slot: outro, text: "Arco que não existe."}
+  - {slot: sumido, text: "Espaço que não existe."}

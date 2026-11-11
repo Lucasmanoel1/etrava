@@ -5,6 +5,8 @@ lugares:
   - {nome: Etrava, tipo: mundo, fonte: lore}
   - {nome: Pedra-Mansa, tipo: vilarejo, fonte: lore}
 
-pessoas: []
-# Os NPCs do M2 (ferreiro, taberneira, moleiro, aldeã, viajante) são provisórios e
+pessoas:
+  - {nome: Nalia, tipo: filha do moleiro, fonte: lore}
+  - {nome: Berta, tipo: a mulher do incêndio (só em rumores; o nome não é dito no jogo), fonte: lore}
+# Os demais NPCs (ferreiro, taberneira, moleiro, aldeã, viajante, curandeira) são provisórios e
 # ainda não têm nome próprio: aparecem só pelo ofício.

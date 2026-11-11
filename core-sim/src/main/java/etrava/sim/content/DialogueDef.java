@@ -23,9 +23,11 @@ public record DialogueDef(String id, List<Start> start, Map<String, Node> nodes)
      * @param effects aplicados ao entrar no nó
      * @param next    próximo nó quando não há escolhas; null encerra a conversa
      * @param onLeave aplicados se o jogador abandonar a conversa neste nó (RF-107)
+     * @param gossip  nó de novidades (RF-125): o NPC conta um fato que sabe e o jogador não; o texto do
+     *                nó vira a introdução. O valor é o nó para onde ir quando ele não tem nada de novo
      */
     public record Node(String id, String speaker, String text, List<Effect> effects, List<Choice> choices,
-            String next, List<Effect> onLeave) {}
+            String next, List<Effect> onLeave, String gossip) {}
 
     /**
      * @param tag      rótulo mostrado entre colchetes, ex.: "Lábia" (RF-103); nunca a consequência
@@ -54,8 +56,11 @@ public record DialogueDef(String id, List<Start> start, Map<String, Node> nodes)
                         text(c, "tag"), c.path("relevant").asBoolean(false), channels,
                         Rules.effects(c.get("effects")), text(c, "goto")));
             }
-            nodes.put(e.getKey(), new Node(e.getKey(), text(n, "speaker"), required(n, "text", where),
-                    Rules.effects(n.get("effects")), choices, text(n, "goto"), Rules.effects(n.get("onLeave"))));
+            String gossip = text(n, "gossip");
+            nodes.put(e.getKey(), new Node(e.getKey(), text(n, "speaker"),
+                    gossip != null ? n.path("text").asText("") : required(n, "text", where),
+                    Rules.effects(n.get("effects")), choices, text(n, "goto"), Rules.effects(n.get("onLeave")),
+                    gossip));
         }
         if (start.isEmpty()) throw new IllegalArgumentException("diálogo '" + id + "' sem 'start'");
         return new DialogueDef(id, start, nodes);

@@ -3,6 +3,7 @@ id: ferreiro
 name: Ferreiro
 layer: B
 sprite: personagem.ferreiro
+dialogue: ferreiro
 schedule:
   - {from: "21:30", to: "05:30", do: dormir,    at: vila_ref/oficina_porta, hidden: true}
   - {from: "05:30", to: "12:00", do: trabalhar, at: vila_ref/oficina_fora}

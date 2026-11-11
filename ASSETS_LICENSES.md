@@ -10,6 +10,7 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `prop.arvore` | sprite | props/arvore.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.arvore_b` | sprite | props/arvore_b.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.arvore_morta` | sprite | props/arvore_morta.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.toco` | sprite | props/toco.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.barril` | sprite | props/barril.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.caixote` | sprite | props/caixote.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.poco` | sprite | props/poco.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
@@ -25,8 +26,13 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `personagem.taberneira` | spritesheet | personagens/taberneira.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.moleiro` | spritesheet | personagens/moleiro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.viajante` | spritesheet | personagens/viajante.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.nalia` | spritesheet | personagens/nalia.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.curandeira` | spritesheet | personagens/curandeira.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.estudioso` | spritesheet | personagens/estudioso.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.bancada` | sprite | props/bancada.png | — | — | sem arquivo (placeholder) |
 | `prop.estaca` | sprite | props/estaca.png | — | — | sem arquivo (placeholder) |
+| `retrato.nalia` | portrait | retratos/nalia.png | — | — | sem arquivo (placeholder) |
+| `retrato.curandeira` | portrait | retratos/curandeira.png | — | — | sem arquivo (placeholder) |
 | `retrato.aldea` | portrait | retratos/aldea.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
 | `retrato.aprendiz` | portrait | retratos/aprendiz.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
 | `retrato.ferreiro` | portrait | retratos/ferreiro.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |

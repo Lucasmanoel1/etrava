@@ -1,0 +1,114 @@
+# A1 — Nalia e a árvore (PRD 8.5). Arco de referência do motor de arcos.
+#
+# O arco anda sozinho: todo estágio não terminal tem `timeout`. `transitions` são os
+# caminhos abertos por alguém (o jogador ou o próprio mundo). Prazos em dias de jogo,
+# com folga (`jitterHours`) sorteada pela semente.
+#
+# Desfechos:
+#   custo_dividido    leve     três voluntários repartem o que a árvore tira     (só com o jogador)
+#   arvore_morre      ambiguo  Nalia solta a ligação; a árvore morre de novo     (só com o jogador)
+#   estabilizada      ambiguo  um estudioso de passagem ajeita a situação        (sem o jogador, se ele passar
+#                                                                                 e a notícia tiver chegado à estrada)
+#   pai_corta_arvore  ambiguo  o pai corta a árvore; a menina melhora, de luto   (padrão)
+#   nalia_piora       tragico  ninguém faz nada                                  (padrão)
+id: a1_nalia
+name: Nalia e a árvore
+major: true
+start: antes
+stages:
+  antes:
+    chronicle: a árvore do quintal do moinho está morta há anos
+    timeout: {after: {days: 1, jitterHours: 12}, to: restauracao}
+
+  restauracao:
+    chronicle: Nalia fez a árvore brotar de novo
+    onEnter:
+      - {setProp: {key: arvore_nalia, state: viva}}
+      - {learn: {who: nalia, fact: arvore_voltou, certainty: witnessed}}
+      - {learn: {who: moleiro, fact: arvore_voltou, certainty: witnessed}}
+      - {learn: {who: aldea, fact: arvore_voltou, version: exagero, certainty: rumor}}
+      - {learn: {who: taberneira, fact: arvore_voltou, version: ceticismo, certainty: rumor}}
+    timeout: {after: {days: 2, jitterHours: 24}, to: insonia}
+
+  insonia:
+    chronicle: Nalia deixou de dormir
+    onEnter:
+      - {learn: {who: nalia, fact: nalia_nao_dorme, certainty: witnessed}}
+      - {learn: {who: moleiro, fact: nalia_nao_dorme, certainty: witnessed}}
+    timeout: {after: {days: 3, jitterHours: 24}, to: vozes}
+
+  vozes:
+    chronicle: Nalia ouve vozes à noite, perto da árvore
+    onEnter:
+      - {learn: {who: nalia, fact: nalia_ouve_vozes, certainty: witnessed}}
+      - {learn: {who: moleiro, fact: nalia_ouve_vozes, certainty: witnessed}}
+    timeout: {after: {days: 2, jitterHours: 12}, to: impasse}
+
+  impasse:
+    chronicle: a família procurou a curandeira; o ferreiro quer cortar a árvore; Nalia se recusa
+    onEnter:
+      - {learn: {who: curandeira, fact: arvore_tira_algo, certainty: witnessed}}
+      - {learn: {who: moleiro, fact: arvore_tira_algo, certainty: claim}}
+      - {learn: {who: moleiro, fact: curandeira_olhou_arvore, certainty: witnessed}}
+      - {learn: {who: ferreiro, fact: ferreiro_quer_cortar, certainty: witnessed}}
+      - {learn: {who: moleiro, fact: ferreiro_quer_cortar, certainty: claim}}
+    transitions:
+      - {when: {var: {name: voluntarios, min: 3}}, to: custo_dividido}
+      - {when: {flag: ligacao_cortada}, to: arvore_morre}
+      - {when: {flag: jogador_apoiou_corte}, to: pai_corta_arvore}
+    timeout:
+      after: {days: 7, jitterHours: 24}
+      choose:
+        # o estudioso só aparece no moinho se passou pela região E se a história chegou à estrada
+        - when: {all: [{flag: estudioso_na_regiao}, {knows: {who: viajante, fact: nalia_ouve_vozes}}]}
+          to: estabilizada
+        - {weight: 2, to: pai_corta_arvore}
+        - {weight: 1, to: nalia_piora}
+
+  custo_dividido:
+    terminal: true
+    outcome: leve
+    chronicle: três voluntários repartiram o que a árvore tirava de Nalia
+    onEnter:
+      - {setFlag: custo_foi_dividido}
+      - {learn: {who: curandeira, fact: vizinhos_dormem_mal, certainty: witnessed}}
+      - {learn: {who: moleiro, fact: vizinhos_dormem_mal, certainty: witnessed}}
+      - {learn: {who: nalia, fact: vizinhos_dormem_mal, certainty: witnessed}}
+
+  arvore_morre:
+    terminal: true
+    outcome: ambiguo
+    chronicle: Nalia soltou a ligação e a árvore morreu de novo
+    onEnter:
+      - {setProp: {key: arvore_nalia, state: morta}}
+      - {learn: {who: moleiro, fact: arvore_secou_de_novo, certainty: witnessed}}
+      - {learn: {who: nalia, fact: arvore_secou_de_novo, certainty: witnessed}}
+
+  estabilizada:
+    terminal: true
+    outcome: ambiguo
+    chronicle: um estudioso de passagem ficou uns dias no moinho; a árvore vive e Nalia voltou a dormir, pouco
+    onEnter:
+      - {npcStatus: {id: estudioso, status: present}}
+      - {learn: {who: moleiro, fact: estudioso_no_moinho, certainty: witnessed}}
+      - {learn: {who: nalia, fact: estudioso_no_moinho, certainty: witnessed}}
+      # consequência tardia (RF-162): ele vai embora três dias depois
+      - {schedule: {hours: 72, effects: [{npcStatus: {id: estudioso, status: departed}}]}}
+
+  pai_corta_arvore:
+    terminal: true
+    outcome: ambiguo
+    chronicle: o moleiro cortou a árvore; Nalia se recupera aos poucos, de luto
+    onEnter:
+      - {setProp: {key: arvore_nalia, state: cortada}}
+      - {learn: {who: moleiro, fact: arvore_cortada, certainty: witnessed}}
+      - {learn: {who: nalia, fact: arvore_cortada, certainty: witnessed}}
+      - {learn: {who: ferreiro, fact: arvore_cortada, certainty: witnessed}}
+
+  nalia_piora:
+    terminal: true
+    outcome: tragico
+    chronicle: ninguém fez nada; Nalia não sai mais de casa
+    onEnter:
+      - {learn: {who: moleiro, fact: nalia_de_cama, certainty: witnessed}}
+      - {learn: {who: curandeira, fact: nalia_de_cama, certainty: witnessed}}

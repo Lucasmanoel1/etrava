@@ -91,6 +91,8 @@ public final class GenerateRefMap {
         tree(rnd, 28.5, 30.5);
         tree(rnd, 9.5, 27.5);
         prop("arvore_morta", 21.5, 39.5);
+        // a árvore do quintal do moinho muda de estado com o arco A1 (RF-043)
+        keyedProp("arvore_velha", "arvore_nalia", 31.5, 38.5);
 
         spot("praca", 26.5, 27.0);
         spot("poco", 22.2, 25.6);
@@ -104,6 +106,9 @@ public final class GenerateRefMap {
         spot("taverna_fora", 31.0, 20.0);
         spot("oficina_fora", 16.2, 20.0);
         spot("feno", 20.5, 33.0);
+        spot("quintal_moinho", 32.8, 39.2);
+        spot("quintal_cerca", 30.2, 37.6);
+        spot("horta", 12.5, 37.0);
         spawn("jogador", 24.5, 29.5);
 
         ObjectNode map = JSON.createObjectNode();
@@ -132,6 +137,14 @@ public final class GenerateRefMap {
 
     private void prop(String id, double x, double y) {
         props.add(point("", id, x, y));
+    }
+
+    /** Prop com chave: o estado dele (variante) fica no mundo e muda por efeito {@code setProp}. */
+    private void keyedProp(String id, String key, double x, double y) {
+        ObjectNode obj = point("", id, x, y);
+        obj.set("properties", JSON.createArrayNode().add(JSON.createObjectNode()
+                .put("name", "key").put("type", "string").put("value", key)));
+        props.add(obj);
     }
 
     private void spot(String name, double x, double y) {

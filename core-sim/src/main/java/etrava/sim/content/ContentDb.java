@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 public final class ContentDb {
     private static final Logger LOG = LoggerFactory.getLogger(ContentDb.class);
     private static final ObjectMapper YAML = new ObjectMapper(new YAMLFactory());
+    public static final String EPILOGUE_FILE = "epilogues/cap1.yaml";
 
     /** Entrada de areas/areas.yaml. */
     public record AreaEntry(String id, String name, String map) {}
@@ -33,6 +34,10 @@ public final class ContentDb {
     private final Map<String, AmbientDef> ambients = new LinkedHashMap<>();
     private final Map<String, String> ambientFiles = new LinkedHashMap<>();
     private final Map<String, String> texts = new LinkedHashMap<>();
+    private final Map<String, ArcDef> arcs = new LinkedHashMap<>();
+    private final Map<String, String> arcFiles = new LinkedHashMap<>();
+    private final Map<String, DeedDef> deeds = new LinkedHashMap<>();
+    private EpilogueDef epilogue;
     private final List<String> problems = new ArrayList<>();
 
     public static ContentDb load(Path contentDir) {
@@ -68,6 +73,7 @@ public final class ContentDb {
         }
         db.loadNpcs(contentDir.resolve("npcs"));
         db.loadNarrative(contentDir);
+        db.loadWorld(contentDir);
         for (String p : db.problems) LOG.warn("Conteúdo: {}", p);
         return db;
     }
@@ -140,6 +146,43 @@ public final class ContentDb {
         }
     }
 
+    /** Arcos de mundo, atos e epílogo. Um arquivo de arcos pode trazer um arco ou uma lista deles. */
+    private void loadWorld(Path contentDir) {
+        for (Path file : yamlFiles(contentDir.resolve("arcs"), "arcs")) {
+            String name = "arcs/" + file.getFileName();
+            try {
+                com.fasterxml.jackson.databind.JsonNode root = YAML.readTree(file.toFile());
+                for (com.fasterxml.jackson.databind.JsonNode n : root.isArray() ? root : List.of(root)) {
+                    ArcDef def = ArcDef.parse(n);
+                    if (arcs.put(def.id(), def) != null) problem(name, "arco duplicado: " + def.id());
+                    arcFiles.put(def.id(), name);
+                }
+            } catch (Exception e) {
+                problem(name, "não foi possível ler: " + e.getMessage());
+            }
+        }
+        Path deedsFile = contentDir.resolve("deeds.yaml");
+        if (Files.exists(deedsFile)) {
+            try {
+                List<DeedDef> list = YAML.readValue(deedsFile.toFile(), new TypeReference<List<DeedDef>>() {});
+                for (DeedDef d : list == null ? List.<DeedDef>of() : list) {
+                    if (d.id() == null) problem("deeds.yaml", "ato sem id");
+                    else if (deeds.put(d.id(), d) != null) problem("deeds.yaml", "ato duplicado: " + d.id());
+                }
+            } catch (Exception e) {
+                problem("deeds.yaml", "não foi possível ler: " + e.getMessage());
+            }
+        }
+        Path epilogueFile = contentDir.resolve(EPILOGUE_FILE);
+        if (Files.exists(epilogueFile)) {
+            try {
+                epilogue = EpilogueDef.parse(YAML.readTree(epilogueFile.toFile()));
+            } catch (Exception e) {
+                problem(EPILOGUE_FILE, "não foi possível ler: " + e.getMessage());
+            }
+        }
+    }
+
     private List<Path> yamlFiles(Path dir, String label) {
         if (!Files.isDirectory(dir)) return List.of();
         try (java.util.stream.Stream<Path> stream = Files.list(dir)) {
@@ -166,6 +209,24 @@ public final class ContentDb {
     public Map<String, AmbientDef> ambients() { return ambients; }
     /** Arquivo em que uma conversa ambiente foi definida, para mensagens do validador. */
     public String ambientFile(String id) { return ambientFiles.getOrDefault(id, "ambient"); }
+    public Map<String, ArcDef> arcs() { return arcs; }
+    /** Arquivo em que um arco foi definido, para mensagens do validador. */
+    public String arcFile(String id) { return arcFiles.getOrDefault(id, "arcs"); }
+    public Map<String, DeedDef> deeds() { return deeds; }
+    /** O ato cujo rumor é este fato, ou null. */
+    public DeedDef deedByFact(String factId) {
+        for (DeedDef d : deeds.values()) if (factId.equals(d.fact())) return d;
+        return null;
+    }
+    /** Epílogo do Capítulo I, ou null se o conteúdo não tiver um. */
+    public EpilogueDef epilogue() { return epilogue; }
+    /** A definição do prop posicionado no mapa com esta chave, ou null se a chave não existe. */
+    public PropDef keyedProp(String key) {
+        for (AreaDef area : areas.values()) {
+            for (PropPlacement p : area.props()) if (key.equals(p.key())) return props.get(p.propId());
+        }
+        return null;
+    }
     /** Problemas encontrados durante o carregamento (arquivo: mensagem). */
     public List<String> problems() { return problems; }
 }

@@ -4,7 +4,7 @@
 
 - id: arvore_na_praca
   participants: [aldea, taberneira]
-  when: {time: {hourFrom: 14, hourTo: 15}}
+  when: {all: [{time: {hourFrom: 14, hourTo: 15}}, {knows: {who: aldea, fact: arvore_voltou}}]}
   cooldownHours: 0
   lines:
     - {speaker: aldea, text: "Passou no moinho hoje?"}
@@ -27,10 +27,32 @@
 
 - id: sal_no_posto
   participants: [viajante, aldea]
-  when: {time: {dayMin: 2, hourFrom: 18, hourTo: 20}}
+  when: {all: [{time: {hourFrom: 18, hourTo: 20}}, {knows: {who: viajante, fact: sal_subiu}}]}
   cooldownHours: 0
   lines:
     - {speaker: viajante, text: "No Posto, o sal de remédio dobrou."}
     - {speaker: aldea, text: "Dobrou de preço ou de tamanho?"}
     - {speaker: viajante, text: "De preço. O tamanho continua pequeno."}
   facts: [sal_subiu]
+
+- id: curandeira_no_banco
+  participants: [curandeira, aldea]
+  when: {all: [{time: {hourFrom: 17, hourTo: 18}}, {arc: {id: a1_nalia, stage: impasse}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: aldea, text: "E a menina?"}
+    - {speaker: curandeira, text: "A árvore tira dela. Toda noite um pouco."}
+    - {speaker: aldea, text: "Tira o quê?"}
+    - {speaker: curandeira, text: "Se eu soubesse o nome, cobrava mais caro."}
+  facts: [arvore_tira_algo]
+
+- id: toco_no_quintal
+  participants: [aldea, taberneira]
+  when: {all: [{time: {hourFrom: 14, hourTo: 15}}, {prop: {key: arvore_nalia, state: cortada}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: taberneira, text: "Cortou mesmo."}
+    - {speaker: aldea, text: "De manhã cedo. Nem esperou o orvalho."}
+    - {speaker: taberneira, text: "E a menina?"}
+    - {speaker: aldea, text: "Dormiu até o meio-dia. Depois chorou até a noite."}
+  facts: [arvore_cortada]

@@ -1,0 +1,7 @@
+id: andarilho
+name: Andarilho
+sprite: s
+status: evaporado
+relations: [{npc: andarilho, kind: inveja}]
+schedule:
+  - {from: "00:00", to: "23:59", do: ficar, at: a/centro}

@@ -1,4 +1,4 @@
-# Diálogo de exemplo do M3, com três caminhos: a mó, a árvore e a menina.
+# Três caminhos: a mó, a árvore e a menina. O que ele conta depende de até onde o arco A1 andou.
 # O caminho da árvore só abre para quem já ouviu falar dela (por duas fontes possíveis:
 # a conversa na praça ou a aldeã).
 id: moleiro
@@ -18,6 +18,9 @@ nodes:
         when: {knows: {who: player, fact: arvore_voltou}}
         goto: arvore
       - {text: "E a menina, como vai?", goto: menina}
+      - text: "É sobre a menina. Dá para repartir o que a árvore tira."
+        when: {all: [{knows: {who: player, fact: custo_pode_ser_dividido}}, {arc: {id: a1_nalia, stage: impasse}}, {not: {flag: vol_moleiro}}]}
+        goto: repartir
       - {text: "Volto amanhã, então."}
 
   mo:
@@ -44,18 +47,41 @@ nodes:
     text: "Dizem muita coisa. Ontem diziam que ia chover."
   arvore_tio:
     text: "É. Deve ser isso."
-    goto: nao_dorme
+    choices:
+      - text: "E a menina?"
+        when: {knows: {who: npc, fact: nalia_nao_dorme}}
+        goto: nao_dorme
+      - {text: "Deve."}
   nao_dorme:
     text: "Ela não dorme. Desde aquele dia. Fica olhando o quintal."
     effects: [{learn: {who: player, fact: nalia_nao_dorme, certainty: claim}}]
     onLeave: [{opinion: {npc: npc, add: -4}}]
     choices:
-      - {text: "Já chamaram a curandeira?", goto: curandeira}
+      - text: "Já chamaram a curandeira?"
+        when: {knows: {who: npc, fact: curandeira_olhou_arvore}}
+        goto: curandeira
+      - text: "Já chamaram a curandeira?"
+        when: {not: {knows: {who: npc, fact: curandeira_olhou_arvore}}}
+        goto: ainda_nao
       - text: "Criança é assim."
         effects: [{opinion: {npc: npc, add: -2}}]
+  ainda_nao:
+    text: "Para dizer o quê? Que a menina não dorme? Isso eu já sei."
   curandeira:
-    text: "Chamamos. Ela olhou a árvore mais do que olhou a menina."
-    effects: [{learn: {who: player, fact: curandeira_olhou_arvore, certainty: claim}}]
+    text: "Chamamos. Ela olhou a árvore mais do que olhou a menina. Disse que a árvore tira dela alguma coisa."
+    effects:
+      - {learn: {who: player, fact: curandeira_olhou_arvore, certainty: claim}}
+      - {learn: {who: player, fact: arvore_tira_algo, certainty: claim}}
+
+  repartir:
+    text: "Repartir. Como quem reparte saca."
+    choices:
+      - text: "Três pessoas. Um pouco de cada."
+        effects: [{setFlag: vol_moleiro}, {addVar: {name: voluntarios, value: 1}}, {opinion: {npc: npc, add: 10}}]
+        goto: pai
+      - {text: "Esquece."}
+  pai:
+    text: "Põe meu nome primeiro. Devia ter sido o primeiro desde o começo."
 
   menina:
     text: "Crescendo."

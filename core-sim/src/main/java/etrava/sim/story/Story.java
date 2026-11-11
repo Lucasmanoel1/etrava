@@ -3,14 +3,20 @@ package etrava.sim.story;
 import etrava.sim.api.DialogueView;
 import etrava.sim.api.SimEvent;
 import etrava.sim.content.AmbientDef;
+import etrava.sim.content.ArcDef;
 import etrava.sim.content.ContentDb;
+import etrava.sim.content.DeedDef;
 import etrava.sim.content.DialogueDef;
+import etrava.sim.content.EpilogueDef;
 import etrava.sim.content.FactDef;
 import etrava.sim.content.NpcDef;
+import etrava.sim.content.PropDef;
 import etrava.sim.rules.Condition;
 import etrava.sim.rules.Effect;
 import etrava.sim.world.ActorState;
+import etrava.sim.world.ArcState;
 import etrava.sim.world.ChronicleEntry;
+import etrava.sim.world.MemoryEntry;
 import etrava.sim.world.DialogueSession;
 import etrava.sim.world.KnowledgeEntry;
 import etrava.sim.world.World;
@@ -20,8 +26,9 @@ import java.util.List;
 
 /**
  * A parte narrativa da simulação: condições e efeitos, quem sabe o quê, rumores
- * entre NPCs, diálogos e conversas ambientes. Trabalha sempre sobre o
- * {@link World}; não guarda estado próprio.
+ * entre NPCs, memória e opinião, atos do jogador, diálogos, conversas ambientes
+ * e o epílogo. Trabalha sempre sobre o {@link World}; não guarda estado próprio
+ * além de dois avisos para a {@code Simulation} ("algo mudou", "reveja as agendas").
  */
 public final class Story {
     /** Distância, em metros, para conversar com alguém. */
@@ -32,6 +39,16 @@ public final class Story {
     public static final double GROUP_RANGE = 6.0;
     /** Chance de um NPC passar um rumor a outro a cada hora juntos, e de ele sair distorcido. */
     public static final double RUMOR_CHANCE = 0.5, DISTORT_CHANCE = 0.15;
+    /** Até onde alguém vê o que o jogador faz (RF-089). */
+    public static final double WITNESS_RANGE = 10.0;
+    /** Quantas lembranças um NPC guarda; as mais antigas somem (RF-084). */
+    public static final int MEMORY_LIMIT = 20;
+    /** Com opinião daqui para baixo, o NPC se recusa a conversar (RF-089). */
+    public static final int REFUSE_OPINION = -40;
+    /** Parentes e amigos contam mais um ao outro; rivais, menos (RF-086). */
+    public static final double CLOSE_FACTOR = 1.5, RIVAL_FACTOR = 0.4;
+    /** Fonte do conhecimento que vem de arcos e eventos, não de uma pessoa. */
+    public static final String WORLD = "mundo";
     private static final int LINE_TICKS = 80, AMBIENT_CHECK_TICKS = 25;
     private static final String PLAYER = "player", THIS_NPC = "npc", SLEEPING = "dormir";
 
@@ -43,12 +60,34 @@ public final class Story {
     private final ContentDb content;
     private final World world;
     private final Scheduler scheduler;
+    private Arcs arcs;
+    /** Um efeito mexeu no mundo desde a última vez que os arcos foram conferidos. */
+    private boolean dirty;
+    /** Algo de que as agendas dependem mudou (estágio de arco, situação de NPC). */
+    private boolean agendaDirty;
 
     public Story(ContentDb content, World world, Scheduler scheduler) {
         this.content = content;
         this.world = world;
         this.scheduler = scheduler;
     }
+
+    public void setArcs(Arcs arcs) { this.arcs = arcs; }
+
+    /** Devolve true (uma vez) se algum efeito foi aplicado desde a última consulta. */
+    public boolean takeDirty() {
+        boolean was = dirty;
+        dirty = false;
+        return was;
+    }
+
+    public boolean takeAgendaDirty() {
+        boolean was = agendaDirty;
+        agendaDirty = false;
+        return was;
+    }
+
+    void arcChanged() { agendaDirty = true; }
 
     // ---------------------------------------------------------------- condições
 
@@ -81,8 +120,36 @@ public final class Story {
                 ActorState actor = world.npcs.get(resolve(n.npc(), npc));
                 yield actor != null && n.area().equals(actor.areaId);
             }
+            case Condition.NpcStatus n -> {
+                ActorState actor = world.npcs.get(resolve(n.npc(), npc));
+                yield actor != null && n.status().equals(actor.status);
+            }
+            case Condition.Arc a -> {
+                ArcDef def = content.arcs().get(a.id());
+                ArcState state = world.arcs.get(a.id());
+                ArcDef.Stage stage = def == null || state == null ? null : def.stage(state.stage());
+                if (stage == null) yield false;
+                boolean stageOk = a.stages().isEmpty() || a.stages().contains(stage.id());
+                yield stageOk && (a.outcome() == null || (stage.terminal() && a.outcome().equals(stage.outcome())));
+            }
+            case Condition.Prop p -> p.state().equals(propState(p.key()));
+            case Condition.Remembers r -> {
+                boolean found = false;
+                for (MemoryEntry m : world.memories(resolve(r.npc(), npc))) {
+                    found |= m.type().equals(r.type()) && (r.subject() == null || r.subject().equals(m.subject()));
+                }
+                yield found;
+            }
             case Condition.Chance ch -> world.rng.chance(ch.probability());
         };
+    }
+
+    /** Variante atual de um prop com chave: a que o mundo guarda, ou a inicial do conteúdo. */
+    public String propState(String key) {
+        String state = world.props.get(key);
+        if (state != null) return state;
+        PropDef def = content.keyedProp(key);
+        return def == null ? null : def.initialState();
     }
 
     private static String resolve(String who, String npc) {
@@ -100,15 +167,27 @@ public final class Story {
      * @param source de onde vem o conhecimento que este efeito der ("npc:id", "conversa:id", "mundo")
      */
     public void apply(Effect effect, String npc, String source, List<SimEvent> events) {
+        dirty = true;
         switch (effect) {
             case Effect.SetFlag f -> world.flags.put(f.name(), f.value());
             case Effect.SetVar v -> world.vars.put(v.name(), v.value());
             case Effect.AddVar v -> world.vars.merge(v.name(), v.value(), Double::sum);
             case Effect.Learn l -> learn(resolve(l.who(), npc), l.fact(), l.version(), l.certainty(), source, events);
-            case Effect.Opinion o -> {
-                String id = resolve(o.npc(), npc);
-                world.opinions.put(id, Math.max(-100, Math.min(100, world.opinion(id) + o.add())));
+            case Effect.Opinion o -> addOpinion(resolve(o.npc(), npc), o.add());
+            case Effect.SetProp p -> {
+                if (!p.state().equals(propState(p.key()))) {
+                    world.props.put(p.key(), p.state());
+                    world.chronicle.add(new ChronicleEntry(world.clock.tick(), "prop", p.key(),
+                            p.key() + " agora está: " + p.state()));
+                    if (events != null) events.add(new SimEvent.PropChanged(p.key(), p.state()));
+                }
             }
+            case Effect.Arc a -> {
+                if (arcs != null) arcs.force(a.id(), a.to(), events);
+            }
+            case Effect.NpcStatus n -> setStatus(resolve(n.npc(), npc), n.status());
+            case Effect.Remember r -> remember(resolve(r.npc(), npc), r.type(), r.subject());
+            case Effect.Deed d -> deed(d.id());
             case Effect.Chronicle c ->
                     world.chronicle.add(new ChronicleEntry(world.clock.tick(), c.type(), c.ref(), c.text()));
             case Effect.Schedule s -> scheduler.schedule(
@@ -137,12 +216,102 @@ public final class Story {
         }
         if (!world.npcs.containsKey(who)) return false;
         // um NPC fica com a primeira versão que ouviu
-        return world.npcKnowledge.computeIfAbsent(who, k -> new LinkedHashMap<>()).putIfAbsent(factId, entry) == null;
+        boolean fresh = world.npcKnowledge.computeIfAbsent(who, k -> new LinkedHashMap<>())
+                .putIfAbsent(factId, entry) == null;
+        // quem fica sabendo de um ato do jogador por boca dos outros também muda de ideia, só que menos (RF-281)
+        DeedDef deed = fresh && !"witnessed".equals(certainty) ? content.deedByFact(factId) : null;
+        if (deed != null) {
+            addOpinion(who, deed.hearsay());
+            remember(who, "ouviu:" + deed.id(), PLAYER);
+        }
+        return fresh;
+    }
+
+    // ---------------------------------------------------------------- opinião, memória, atos
+
+    private void addOpinion(String npcId, int delta) {
+        world.opinions.put(npcId, Math.max(-100, Math.min(100, world.opinion(npcId) + delta)));
+    }
+
+    /** O NPC guarda um acontecimento; passando do limite, esquece o mais antigo (RF-084). */
+    public void remember(String npcId, String type, String subject) {
+        if (!world.npcs.containsKey(npcId)) return;
+        List<MemoryEntry> list = world.memories.computeIfAbsent(npcId, k -> new ArrayList<>());
+        list.add(new MemoryEntry(type, subject, world.clock.day(), world.npcs.get(npcId).areaId));
+        while (list.size() > MEMORY_LIMIT) list.remove(0);
+    }
+
+    /**
+     * O jogador comete um ato. Quem está por perto, acordado e à vista, vê: muda de
+     * opinião, guarda na memória e passa a poder contar aos outros. Sem testemunha,
+     * ninguém fica sabendo (RF-089, RF-281). Devolve quantos viram.
+     */
+    public int deed(String deedId) {
+        DeedDef def = content.deeds().get(deedId);
+        if (def == null) return 0;
+        List<String> witnesses = new ArrayList<>();
+        for (ActorState npc : world.npcs.values()) {
+            if (!npc.present() || npc.hidden || SLEEPING.equals(npc.activity) || !world.areaId.equals(npc.areaId)
+                    || Math.hypot(npc.x - world.player.x, npc.y - world.player.y) > WITNESS_RANGE) continue;
+            witnesses.add(npc.id);
+            addOpinion(npc.id, def.witness());
+            remember(npc.id, def.id(), PLAYER);
+            if (def.fact() != null) learn(npc.id, def.fact(), null, "witnessed", "viu", null);
+        }
+        world.chronicle.add(new ChronicleEntry(world.clock.tick(), "ato", def.id(), def.displayName()
+                + (witnesses.isEmpty() ? " — ninguém viu" : " — visto por " + String.join(", ", witnesses))));
+        return witnesses.size();
+    }
+
+    /** Um NPC parte, morre, some por um tempo ou volta (RF-087). */
+    private void setStatus(String npcId, String status) {
+        ActorState npc = world.npcs.get(npcId);
+        if (npc == null || status.equals(npc.status)) return;
+        npc.status = status;
+        npc.path.clear();
+        npc.moving = false;
+        npc.leaving = false;
+        npc.target = null; // ao voltar, a agenda decide de novo onde ele fica
+        npc.hidden = !npc.present();
+        npc.activity = "";
+        agendaDirty = true;
+        NpcDef def = content.npcs().get(npcId);
+        world.chronicle.add(new ChronicleEntry(world.clock.tick(), "npc", npcId,
+                (def != null ? def.displayName() : npcId) + ": " + status));
+    }
+
+    // ---------------------------------------------------------------- epílogo
+
+    /**
+     * Monta o epílogo do capítulo (RF-163): em cada espaço, o fragmento de maior
+     * prioridade cuja condição passa. Espaço sem fragmento válido fica de fora.
+     */
+    public List<String> composeEpilogue() {
+        EpilogueDef def = content.epilogue();
+        List<String> lines = new ArrayList<>();
+        if (def == null) return lines;
+        for (EpilogueDef.Slot slot : def.slots()) {
+            List<EpilogueDef.Fragment> candidates = new ArrayList<>();
+            for (EpilogueDef.Fragment f : def.fragments()) if (f.slot().equals(slot.id())) candidates.add(f);
+            candidates.sort((a, b) -> Integer.compare(b.priority(), a.priority())); // estável: empate = ordem do arquivo
+            for (EpilogueDef.Fragment f : candidates) {
+                if (test(f.when(), null)) {
+                    lines.add(f.text());
+                    break;
+                }
+            }
+        }
+        return lines;
     }
 
     /** O que um NPC já sabe e pensa ao começar o jogo. */
     public void initNpc(NpcDef def) {
         world.opinions.put(def.id(), def.opinion());
+        ActorState actor = world.npcs.get(def.id());
+        if (actor != null && NpcDef.STATUSES.contains(def.initialStatus())) {
+            actor.status = def.initialStatus();
+            actor.hidden = !actor.present();
+        }
         for (String ref : def.knowsList()) {
             learn(def.id(), AmbientDef.factId(ref), AmbientDef.factVersion(ref), "witnessed", "inicio", null);
         }
@@ -159,7 +328,8 @@ public final class Story {
         for (int i = 0; i < npcs.size(); i++) {
             for (int j = i + 1; j < npcs.size(); j++) {
                 ActorState a = npcs.get(i), b = npcs.get(j);
-                if (!together(a, b) || SLEEPING.equals(a.activity) || SLEEPING.equals(b.activity)) continue;
+                if (!a.present() || !b.present() || !together(a, b)
+                        || SLEEPING.equals(a.activity) || SLEEPING.equals(b.activity)) continue;
                 tell(a, b);
                 tell(b, a);
             }
@@ -171,7 +341,10 @@ public final class Story {
     }
 
     private void tell(ActorState speaker, ActorState listener) {
-        if (!world.rng.chance(RUMOR_CHANCE)) return;
+        NpcDef speakerDef = content.npcs().get(speaker.id);
+        String bond = speakerDef == null ? null : speakerDef.relationWith(listener.id);
+        double chance = RUMOR_CHANCE * (bond == null ? 1 : bond.equals("rivalidade") ? RIVAL_FACTOR : CLOSE_FACTOR);
+        if (!world.rng.chance(chance)) return;
         List<KnowledgeEntry> news = new ArrayList<>();
         for (KnowledgeEntry k : world.npcKnowledge(speaker.id).values()) {
             FactDef fact = content.facts().get(k.fact());
@@ -197,6 +370,10 @@ public final class Story {
             events.add(new SimEvent.AmbientLine(null, npcId, content.text("npc.sem_conversa", "…")));
             return false;
         }
+        if (world.opinion(npcId) <= REFUSE_OPINION) { // não quer conversa com quem fez o que fez (RF-089)
+            events.add(new SimEvent.AmbientLine(null, npcId, content.text("npc.recusa", "Com você eu não falo.")));
+            return false;
+        }
         DialogueSession session = new DialogueSession(dialogue.id(), npcId, def.displayName(), def.portraitId());
         world.dialogue = session;
         events.add(new SimEvent.DialogueOpened(npcId));
@@ -216,13 +393,25 @@ public final class Story {
             close(events);
             return;
         }
+        String text = node.text();
+        if (node.gossip() != null) { // nó de novidades: conta algo que o jogador ainda não sabe (RF-125)
+            KnowledgeEntry news = gossip(session.npcId);
+            DialogueDef.Node fallback = dialogue.nodes().get(node.gossip());
+            if (news == null) {
+                if (fallback != null && fallback.gossip() == null) enter(session, dialogue, node.gossip(), events);
+                else close(events);
+                return;
+            }
+            text = (text.isBlank() ? "" : text + " ") + content.facts().get(news.fact()).text(news.version());
+            learn(PLAYER, news.fact(), news.version(), "claim", "npc:" + session.npcId, events);
+        }
         session.nodeId = nodeId;
         String speaker = node.speaker() != null ? node.speaker() : session.npcId;
         applyAll(node.effects(), session.npcId, "npc:" + speaker, events);
         NpcDef speakerDef = content.npcs().get(speaker);
         session.speakerName = speakerDef != null ? speakerDef.displayName() : session.npcName;
-        session.text = node.text();
-        session.history.add(new DialogueView.Line(session.speakerName, node.text()));
+        session.text = text;
+        session.history.add(new DialogueView.Line(session.speakerName, text));
         session.choices.clear();
         session.choiceIndex.clear();
         for (int i = 0; i < node.choices().size(); i++) {
@@ -233,6 +422,20 @@ public final class Story {
             }
         }
         session.canContinue = session.choices.isEmpty();
+    }
+
+    /**
+     * A novidade mais recente que o NPC sabe e o jogador não: só o que vira rumor,
+     * nada além da camada V1, e nunca os atos do próprio jogador.
+     */
+    private KnowledgeEntry gossip(String npcId) {
+        KnowledgeEntry newest = null;
+        for (KnowledgeEntry k : world.npcKnowledge(npcId).values()) {
+            FactDef fact = content.facts().get(k.fact());
+            if (fact != null && fact.spreads() && fact.layerIndex() <= 1 && !world.knows(k.fact())
+                    && content.deedByFact(k.fact()) == null) newest = k;
+        }
+        return newest;
     }
 
     private DialogueDef.Node currentNode() {

@@ -7,10 +7,17 @@ nodes:
     text: "Você é o da oficina. Está sempre com graxa na cara."
     choices:
       - {text: "É para combinar com a oficina.", goto: combina}
-      - {text: "Alguma novidade?", goto: novidade}
+      - text: "Alguma novidade?"
+        when: {knows: {who: npc, fact: arvore_voltou}}
+        goto: novidade
+      - text: "Alguma novidade?"
+        when: {not: {knows: {who: npc, fact: arvore_voltou}}}
+        goto: sem_novidade
       - {text: "Bom dia para você também."}
   combina:
     text: "Combina."
+  sem_novidade:
+    text: "Novidade, aqui, é quando chove."
   novidade:
     text: "A árvore do moinho voltou. A menina encostou nela e pronto."
     effects: [{learn: {who: player, fact: arvore_voltou, version: exagero, certainty: claim}}]

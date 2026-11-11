@@ -41,6 +41,11 @@ class StoryTest {
         return Simulation.newGame(content, seed, "vila_ref");
     }
 
+    /** Leva o arco da árvore, estágio por estágio, até onde o teste precisa (cada um ensina fatos aos NPCs). */
+    private static void arc(Simulation sim, String... stages) {
+        for (String stage : stages) sim.applyNow(List.of(new Effect.Arc("a1_nalia", stage)));
+    }
+
     private static List<SimEvent> run(Simulation sim, int ticks) {
         List<SimEvent> all = new ArrayList<>();
         for (int i = 0; i < ticks; i++) all.addAll(sim.step());
@@ -137,8 +142,8 @@ class StoryTest {
         assertTrue(tree.spreads());
         assertFalse(content.facts().get("curandeira_olhou_arvore").spreads());
         assertEquals(1, content.facts().get("curandeira_olhou_arvore").layerIndex());
-        assertEquals(2, content.dialogues().size());
-        assertEquals(3, content.ambients().size());
+        assertEquals(7, content.dialogues().size());
+        assertEquals(5, content.ambients().size());
         assertEquals("Você", content.text("dialogo.voce", "?"));
         assertEquals("padrão", content.text("chave.que.nao.existe", "padrão"));
         assertEquals("retrato.moleiro", content.npcs().get("moleiro").portraitId());
@@ -147,6 +152,9 @@ class StoryTest {
     @Test
     void npcsComecamSabendoOQueOConteudoDiz() {
         Simulation sim = newSim(1);
+        assertEquals("base", sim.view().npcKnowledge("moleiro").get("mo_parada").version());
+        assertNull(sim.view().npcKnowledge("moleiro").get("arvore_voltou"), "a árvore ainda não voltou");
+        arc(sim, "restauracao"); // o arco ensina a cada um a sua versão
         assertEquals("base", sim.view().npcKnowledge("moleiro").get("arvore_voltou").version());
         assertEquals("exagero", sim.view().npcKnowledge("aldea").get("arvore_voltou").version());
         assertEquals("ceticismo", sim.view().npcKnowledge("taberneira").get("arvore_voltou").version());
@@ -197,6 +205,7 @@ class StoryTest {
     @Test
     void caminhoDaArvore_soAbreParaQuemJaOuviuFalar() {
         Simulation sim = newSim(1);
+        arc(sim, "restauracao");
         talk(sim, "aldea");
         choose(sim, "Alguma novidade?");
         assertEquals("exagero", entry(sim, "arvore_voltou", "npc:aldea").version());
@@ -221,6 +230,7 @@ class StoryTest {
     @Test
     void caminhoDaArvoreComJeito_levaAPistaDaCurandeira() {
         Simulation sim = newSim(1);
+        arc(sim, "restauracao", "insonia", "vozes", "impasse");
         talk(sim, "aldea");
         choose(sim, "Alguma novidade?");
         choose(sim, "Encostou e pronto?");
@@ -230,8 +240,7 @@ class StoryTest {
         choose(sim, "Ouvi falar da árvore.");
         choose(sim, "Meu tio diz que árvore velha engana. Parece morta e não está.");
         assertEquals("É. Deve ser isso.", sim.view().dialogue().text());
-        sim.submit(new Command.Advance());
-        sim.step();
+        choose(sim, "E a menina?");
         assertEquals("Ela não dorme. Desde aquele dia. Fica olhando o quintal.", sim.view().dialogue().text());
         assertNotNull(entry(sim, "nalia_nao_dorme", "npc:moleiro"));
         choose(sim, "Já chamaram a curandeira?");
@@ -239,20 +248,21 @@ class StoryTest {
         assertEquals("claim", clue.certainty(), "pista de camada V1 chega como afirmação de alguém, não como verdade");
         assertEquals(1, clue.day());
         assertEquals("vila_ref", clue.place());
+        assertEquals("claim", entry(sim, "arvore_tira_algo", "npc:moleiro").certainty());
         assertEquals(16, sim.view().opinion("moleiro"));
     }
 
     @Test
     void abandonarAConversaTemConsequencia() {
         Simulation sim = newSim(1);
+        arc(sim, "restauracao", "insonia");
         talk(sim, "aldea");
         choose(sim, "Alguma novidade?");
         choose(sim, "Hm.");
         talk(sim, "moleiro");
         choose(sim, "Ouvi falar da árvore.");
         choose(sim, "Meu tio diz que árvore velha engana. Parece morta e não está.");
-        sim.submit(new Command.Advance());
-        sim.step();
+        choose(sim, "E a menina?");
         sim.submit(new Command.LeaveDialogue()); // sai bem quando ele se abriu
         sim.step();
         assertNull(sim.view().dialogue());
@@ -262,6 +272,7 @@ class StoryTest {
     @Test
     void caminhoDaMenina_ePerguntarSobreFatosDoCaderno() {
         Simulation sim = newSim(1);
+        arc(sim, "restauracao");
         talk(sim, "moleiro");
         choose(sim, "E a menina, como vai?");
         assertEquals("Crescendo.", sim.view().dialogue().text());
@@ -302,14 +313,18 @@ class StoryTest {
     @Test
     void npcSemDialogoSoResmunga_eNaoSeSalvaNoMeioDeConversa(@TempDir Path dir) {
         Simulation sim = newSim(1);
-        sim.submit(new Command.Talk("ferreiro"));
-        List<SimEvent> events = run(sim, 30 * 30);
-        assertNull(sim.view().dialogue());
-        assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.AmbientLine l && l.npcId().equals("ferreiro")));
         sim.submit(new Command.Talk("ninguem"));
         sim.submit(new Command.Talk("viajante")); // dormindo dentro da taverna: não dá para falar
+        sim.submit(new Command.Talk("estudioso")); // ainda nem chegou ao vilarejo
         run(sim, 10);
         assertNull(sim.view().dialogue());
+        // o homem de fora não tem conversa escrita: só resmunga
+        sim.applyNow(List.of(new Effect.NpcStatus("estudioso", "present")));
+        sim.fastForward(hours(sim, 1.5));
+        sim.submit(new Command.Talk("estudioso"));
+        List<SimEvent> events = run(sim, 30 * 30);
+        assertNull(sim.view().dialogue());
+        assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.AmbientLine l && l.npcId().equals("estudioso")));
 
         talk(sim, "aldea");
         SaveException e = assertThrows(SaveException.class, () -> sim.save(dir.resolve("x.etrava"), ""));
@@ -321,6 +336,7 @@ class StoryTest {
     @Test
     void conversaAmbienteTocaPertoDoJogadorEViraRumorNoCaderno() {
         Simulation sim = newSim(1);
+        arc(sim, "restauracao");
         sim.fastForward(hours(sim, 8) + 30); // 14:00 e pouco: aldeã e taberneira na praça
         sim.submit(new Command.Teleport(24.0, 27.5));
         List<SimEvent> events = run(sim, 700);
@@ -395,6 +411,7 @@ class StoryTest {
     @Test
     void conhecimentoOpiniaoEConversaEmCursoSobrevivemAoSave(@TempDir Path dir) throws SaveException {
         Simulation original = newSim(9);
+        arc(original, "restauracao");
         talk(original, "aldea");
         choose(original, "Alguma novidade?");
         choose(original, "Hm.");

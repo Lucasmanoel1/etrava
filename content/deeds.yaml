@@ -1,0 +1,24 @@
+# Atos do jogador que os outros julgam (RF-089, RF-281).
+#   witness: quanto muda a opinião de quem VIU (perto, acordado, à vista)
+#   hearsay: quanto muda a opinião de quem só OUVIU FALAR (pelo rumor do `fact`)
+# Quem não viu nem ouviu não muda de atitude. Não há guarda no vilarejo: a reação é das pessoas.
+# Disparado pelo efeito {deed: <id>}. Os gatilhos de jogo (furto, invasão, briga) chegam com
+# inventário e combate (M5/M6); por ora o efeito existe para diálogos, arcos e o console.
+
+- id: roubo
+  name: Roubo
+  fact: jogador_roubou
+  witness: -30
+  hearsay: -12
+
+- id: invasao
+  name: Invasão
+  fact: jogador_invadiu
+  witness: -15
+  hearsay: -5
+
+- id: agressao
+  name: Agressão
+  fact: jogador_agrediu
+  witness: -45
+  hearsay: -20

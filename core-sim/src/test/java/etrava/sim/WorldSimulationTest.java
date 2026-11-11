@@ -58,7 +58,7 @@ class WorldSimulationTest {
 
     @Test
     void agendaDosNpcsCobreODiaInteiro() {
-        assertEquals(5, content.npcs().size());
+        assertEquals(8, content.npcs().size());
         for (NpcDef npc : content.npcs().values()) {
             for (int minute = 0; minute < 1440; minute += 5) {
                 assertNotNull(npc.blockAt(minute), npc.id() + " sem bloco no minuto " + minute);

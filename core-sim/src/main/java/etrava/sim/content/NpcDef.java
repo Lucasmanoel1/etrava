@@ -1,7 +1,11 @@
 package etrava.sim.content;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import etrava.sim.rules.Condition;
+import etrava.sim.rules.Rules;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Definição de um NPC (content/npcs/*.yaml).
@@ -13,9 +17,17 @@ import java.util.List;
  * @param opinion  opinião inicial sobre o jogador, de -100 a 100
  * @param knows    fatos que já conhece no início: "fato" ou "fato:versão"
  * @param schedule agenda: blocos de horário que cobrem o dia inteiro
+ * @param status    situação inicial: present (padrão) | away | departed | dead
+ * @param relations laços com outros NPCs: mudam com quem ele troca rumores (RF-086)
  */
 public record NpcDef(String id, String name, String layer, String sprite, String portrait, String dialogue,
-        int opinion, List<String> knows, List<Block> schedule) {
+        int opinion, List<String> knows, List<Block> schedule, String status, List<Relation> relations) {
+
+    public static final List<String> STATUSES = List.of("present", "away", "departed", "dead");
+    public static final List<String> RELATION_KINDS = List.of("familia", "amizade", "rivalidade");
+
+    /** @param kind familia | amizade | rivalidade */
+    public record Relation(String npc, String kind) {}
 
     /**
      * Um bloco da agenda.
@@ -25,8 +37,15 @@ public record NpcDef(String id, String name, String layer, String sprite, String
      * @param activity o que o NPC faz (chave {@code do} no arquivo)
      * @param at       onde: "area/ponto"
      * @param hidden   true quando o NPC está dentro de uma construção sem interior jogável
+     * @param when     condição para o bloco valer (ex.: estágio de um arco). Blocos com condição
+     *                 vêm antes na lista e sobrepõem a rotina normal (RF-083); null = sempre
      */
-    public record Block(String from, String to, @JsonProperty("do") String activity, String at, boolean hidden) {
+    public record Block(String from, String to, @JsonProperty("do") String activity, String at, boolean hidden,
+            JsonNode when) {
+
+        public boolean conditional() { return when != null && !when.isNull(); }
+
+        public Condition condition() { return Rules.condition(when); }
 
         public int fromMinute() { return minutes(from); }
         public int toMinute() { return minutes(to); }
@@ -62,9 +81,25 @@ public record NpcDef(String id, String name, String layer, String sprite, String
     public String portraitId() { return portrait != null ? portrait : "retrato." + id; }
     public String displayName() { return name != null ? name : id; }
 
-    /** Bloco em vigor num minuto do dia, ou null se a agenda tiver um buraco. */
+    public String initialStatus() { return status != null ? status : "present"; }
+    public List<Relation> relationList() { return relations != null ? relations : List.of(); }
+
+    /** Laço com outro NPC, ou null. */
+    public String relationWith(String npcId) {
+        for (Relation r : relationList()) if (npcId.equals(r.npc())) return r.kind();
+        return null;
+    }
+
+    /** Bloco da rotina normal (sem condição) num minuto do dia, ou null se a agenda tiver um buraco. */
     public Block blockAt(int minuteOfDay) {
-        for (Block b : blocks()) if (b.contains(minuteOfDay)) return b;
+        return blockAt(minuteOfDay, c -> false);
+    }
+
+    /** Bloco em vigor: o primeiro que contém o minuto e cuja condição, se houver, passa. */
+    public Block blockAt(int minuteOfDay, Predicate<Condition> test) {
+        for (Block b : blocks()) {
+            if (b.contains(minuteOfDay) && (!b.conditional() || test.test(b.condition()))) return b;
+        }
         return null;
     }
 }

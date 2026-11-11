@@ -46,7 +46,12 @@ public final class Rules {
             case "opinion" -> new Condition.Opinion(v.path("npc").asText("npc"), integer(v, "min"), integer(v, "max"));
             case "time" -> new Condition.Time(integer(v, "dayMin"), integer(v, "dayMax"),
                     number(v, "hourFrom"), number(v, "hourTo"));
-            case "npc" -> new Condition.NpcIn(text(v, "id"), text(v, "area"));
+            case "npc" -> v.has("status") ? new Condition.NpcStatus(text(v, "id"), text(v, "status"))
+                    : new Condition.NpcIn(text(v, "id"), text(v, "area"));
+            case "arc" -> new Condition.Arc(text(v, "id"), strings(v.get("stage")), optional(v, "outcome"));
+            case "prop" -> new Condition.Prop(text(v, "key"), text(v, "state"));
+            case "remembers" -> new Condition.Remembers(v.path("npc").asText("npc"), text(v, "type"),
+                    optional(v, "subject"));
             case "chance" -> new Condition.Chance(v.asDouble());
             default -> throw new IllegalArgumentException("condição desconhecida: '" + key + "'");
         };
@@ -85,6 +90,12 @@ public final class Rules {
                     text(v, "text"));
             case "schedule" -> new Effect.Schedule(v.path("hours").asDouble(), v.path("interrupts").asBoolean(false),
                     effects(v.path("effects")));
+            case "setProp" -> new Effect.SetProp(text(v, "key"), text(v, "state"));
+            case "arc" -> new Effect.Arc(text(v, "id"), text(v, "to"));
+            case "npcStatus" -> new Effect.NpcStatus(text(v, "id"), text(v, "status"));
+            case "remember" -> new Effect.Remember(v.path("npc").asText("npc"), text(v, "type"),
+                    v.path("subject").asText("player"));
+            case "deed" -> new Effect.Deed(v.isTextual() ? v.asText() : text(v, "id"));
             default -> throw new IllegalArgumentException("efeito desconhecido: '" + e.getKey() + "'");
         };
     }
@@ -109,6 +120,12 @@ public final class Rules {
                 ArrayNode list = n.putArray("effects");
                 for (Effect inner : s.effects()) list.add(toJson(inner));
             }
+            case Effect.SetProp p -> root.putObject("setProp").put("key", p.key()).put("state", p.state());
+            case Effect.Arc a -> root.putObject("arc").put("id", a.id()).put("to", a.to());
+            case Effect.NpcStatus n -> root.putObject("npcStatus").put("id", n.npc()).put("status", n.status());
+            case Effect.Remember r -> root.putObject("remember").put("npc", r.npc()).put("type", r.type())
+                    .put("subject", r.subject());
+            case Effect.Deed d -> root.putObject("deed").put("id", d.id());
         }
         return root;
     }
@@ -120,6 +137,15 @@ public final class Rules {
         if (v == null || v.isNull() || v.asText().isBlank())
             throw new IllegalArgumentException("falta o campo '" + field + "' em " + n);
         return v.asText();
+    }
+
+    /** Um texto ou uma lista de textos; ausente = lista vazia. */
+    private static List<String> strings(JsonNode n) {
+        List<String> list = new ArrayList<>();
+        if (n == null || n.isNull()) return list;
+        if (n.isArray()) n.forEach(x -> list.add(x.asText()));
+        else list.add(n.asText());
+        return list;
     }
 
     private static String optional(JsonNode n, String field) {

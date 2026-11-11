@@ -1,0 +1,116 @@
+# Eventos externos E1–E5 (PRD 8.5) e o estudioso de passagem. Usam o mesmo motor dos
+# arcos (D-009): acontecem fora de tela, em datas sorteadas pela semente, e só deixam
+# fatos com quem viaja — daí em diante é a rede de rumores que leva a notícia (RF-142, RF-125).
+
+- id: e1_ferrovia
+  name: A ferrovia de Caldris
+  start: projeto
+  stages:
+    projeto:
+      timeout: {after: {days: 5, jitterHours: 96}, to: aprovada}
+    aprovada:
+      terminal: true
+      outcome: neutro
+      chronicle: Caldris aprovou os primeiros projetos da ferrovia
+      onEnter:
+        - {setFlag: ferrovia_aprovada}
+        - {learn: {who: viajante, fact: ferrovia_aprovada, certainty: rumor}}
+
+- id: e2_sal
+  name: O preço do sal medicinal
+  start: estavel
+  stages:
+    estavel:
+      timeout: {after: {days: 2, jitterHours: 72}, to: subiu}
+    subiu:
+      terminal: true
+      outcome: neutro
+      chronicle: o preço do sal medicinal subiu
+      onEnter:
+        - {setFlag: sal_subiu}
+        - {learn: {who: viajante, fact: sal_subiu, certainty: witnessed}}
+
+- id: e3_sacerdote
+  name: O sacerdote de Orra
+  start: viagem
+  stages:
+    viagem:
+      timeout: {after: {days: 10, jitterHours: 120}, to: desaparecido}
+    desaparecido:
+      terminal: true
+      outcome: neutro
+      chronicle: um sacerdote importante de Orra desapareceu em viagem
+      onEnter:
+        - {setFlag: sacerdote_sumiu}
+        - {learn: {who: viajante, fact: sacerdote_sumiu, certainty: rumor}}
+
+# E4 evolui em outro lugar: a cada estágio chega uma história diferente sobre a mesma mulher.
+- id: e4_berta
+  name: A mulher que atravessou o incêndio
+  start: antes
+  stages:
+    antes:
+      timeout: {after: {days: 4, jitterHours: 48}, to: milagre}
+    milagre:
+      chronicle: chega a história da mulher que atravessou o incêndio
+      onEnter:
+        - {learn: {who: viajante, fact: berta_atravessou_fogo, certainty: rumor}}
+      timeout: {after: {days: 6, jitterHours: 48}, to: vizinhos}
+    vizinhos:
+      chronicle: a história muda — os vizinhos da mulher é que se queimaram
+      onEnter:
+        - {learn: {who: viajante, fact: berta_vizinhos_queimados, certainty: rumor}}
+      timeout:
+        after: {days: 6, jitterHours: 48}
+        choose:
+          - {weight: 1, to: foi_embora}
+          - {weight: 1, to: memorial}
+    foi_embora:
+      terminal: true
+      outcome: neutro
+      chronicle: dizem que a mulher do incêndio largou a casa e sumiu
+      onEnter:
+        - {learn: {who: viajante, fact: berta_foi_embora, certainty: rumor}}
+    memorial:
+      terminal: true
+      outcome: neutro
+      chronicle: dizem que vão erguer um memorial para a mulher do incêndio
+      onEnter:
+        - {learn: {who: viajante, fact: berta_memorial, certainty: rumor}}
+
+- id: e5_estrada
+  name: O homem que cobra pela estrada
+  start: boato
+  stages:
+    boato:
+      timeout: {after: {days: 8, jitterHours: 120}, to: cobranca}
+    cobranca:
+      terminal: true
+      outcome: neutro
+      chronicle: alguém passou a cobrar pela segurança da estrada
+      onEnter:
+        - {setFlag: estrada_cobrada}
+        - {learn: {who: viajante, fact: pedagio_estrada, certainty: rumor}}
+
+# Não é um dos cinco eventos: é a condição de mundo que pode dar a A1 um desfecho sem o jogador.
+- id: estudioso
+  name: O estudioso de passagem
+  start: longe
+  stages:
+    longe:
+      timeout:
+        after: {days: 8, jitterHours: 96}
+        choose:
+          - {weight: 2, to: no_posto}
+          - {weight: 3, to: outro_caminho}
+    no_posto:
+      terminal: true
+      outcome: neutro
+      chronicle: um estudioso parou no Posto
+      onEnter:
+        - {setFlag: estudioso_na_regiao}
+        - {learn: {who: viajante, fact: estudioso_no_posto, certainty: witnessed}}
+    outro_caminho:
+      terminal: true
+      outcome: neutro
+      chronicle: o estudioso tomou outro caminho e não passou pela região

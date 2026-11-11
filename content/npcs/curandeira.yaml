@@ -1,0 +1,14 @@
+# Curandeira do vilarejo (PRD 8.5, arco A1). Ainda sem nome próprio: aparece pelo ofício.
+id: curandeira
+name: Curandeira
+layer: A
+sprite: personagem.curandeira
+dialogue: curandeira
+schedule:
+  # chamada pela família: passa as manhãs no quintal do moinho
+  - {from: "09:00", to: "11:00", do: examinar, at: vila_ref/quintal_cerca, when: {arc: {id: a1_nalia, stage: impasse}}}
+  - {from: "20:00", to: "06:00", do: dormir,    at: vila_ref/casa_porta, hidden: true}
+  - {from: "06:00", to: "12:00", do: colher,    at: vila_ref/horta}
+  - {from: "12:00", to: "13:00", do: comer,     at: vila_ref/casa_porta, hidden: true}
+  - {from: "13:00", to: "17:00", do: colher,    at: vila_ref/horta}
+  - {from: "17:00", to: "20:00", do: conversar, at: vila_ref/praca_banco}
