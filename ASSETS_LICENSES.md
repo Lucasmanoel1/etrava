@@ -29,10 +29,20 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `personagem.nalia` | spritesheet | personagens/nalia.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.curandeira` | spritesheet | personagens/curandeira.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.estudioso` | spritesheet | personagens/estudioso.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.comerciante` | spritesheet | personagens/comerciante.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.saqueador` | spritesheet | personagens/saqueador.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.vulto` | spritesheet | personagens/vulto.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.lobo` | spritesheet | personagens/lobo.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.fibra` | sprite | props/fibra.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.entulho` | sprite | props/entulho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.laje_simbolos` | sprite | props/laje_simbolos.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.luz_buraco` | sprite | props/luz_buraco.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.buraco_terra` | sprite | props/buraco_terra.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.bancada` | sprite | props/bancada.png | — | — | sem arquivo (placeholder) |
 | `prop.estaca` | sprite | props/estaca.png | — | — | sem arquivo (placeholder) |
 | `retrato.nalia` | portrait | retratos/nalia.png | — | — | sem arquivo (placeholder) |
 | `retrato.curandeira` | portrait | retratos/curandeira.png | — | — | sem arquivo (placeholder) |
+| `retrato.comerciante_posto` | portrait | retratos/comerciante_posto.png | — | — | sem arquivo (placeholder) |
 | `retrato.aldea` | portrait | retratos/aldea.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
 | `retrato.aprendiz` | portrait | retratos/aprendiz.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
 | `retrato.ferreiro` | portrait | retratos/ferreiro.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |

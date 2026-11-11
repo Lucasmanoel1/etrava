@@ -335,3 +335,58 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-11
 - **Decisão:** o M5 acrescentou dinheiro, mochila, equipamento, habilidades, fome, trabalhos do dia, modificadores de preço, comerciantes e contêineres. `SCHEMA_VERSION` = 4; saves da versão 3 são recusados com mensagem clara.
 - **Motivo:** o mesmo da D-035/D-044. Um save antigo começaria sem nada no bolso e sem habilidades.
+
+## D-057 — Combate: números, golpe anunciado e esquiva
+- **Data:** 2026-11-11
+- **Decisão:** combate em tempo real na `core-sim` (classe `Combat`), só na área carregada. Vida = 100 + 0,5 × Vigor; fôlego idem. Golpe custa 10 de fôlego, esquiva 22 (2,6 m em 0,3 s, sem levar dano), golpe pesado 30 (× 2,2, recarga 6 s), empurrão 20 (2,5 m para trás e 1,4 s atordoado, recarga 8 s). O fôlego volta 24/s depois de 0,7 s sem esforço; faminto, pela metade. Chance de acertar = 0,72 + (Luta − Luta do alvo)/200; dano = arma × (1 + Luta/100) − proteção. O inimigo **anuncia** o golpe (`windup`, a barra dele acende) e só acerta se o jogador ainda estiver ao alcance e não estiver esquivando. Luta sobe a cada golpe que acerta e a cada inimigo abatido. A vida volta 3 a cada 10 minutos de jogo fora de combate; o unguento cura 20 (stat `cura`).
+- **Motivo:** PRD 7.3 pede "preparação importa, reflexo não". O aviso do golpe dá tempo de sobra para esquivar; o que decide é chegar descansado, armado, vestido e com luz.
+- **Controles:** clique no inimigo ataca, segurar continua (RF-220); Q golpe pesado, E empurrão, Shift esquiva (na direção do WASD, ou para trás), R render-se. Espaço já pausava o jogo (RF-226).
+- **Ajustável:** constantes no topo de `Combat`; inimigos em `content/enemies.yaml`.
+
+## D-058 — Inimigos só existem na área carregada
+- **Data:** 2026-11-11
+- **Decisão:** inimigos vivem em `World.enemies` enquanto o jogador está na área; ao sair, somem. Encontros (`encounters.yaml`) são sorteados ao chegar à área e a cada hora nela, inclusive dormindo ou esperando — e aí o ataque interrompe o descanso (RF-323). Cada encontro tem condição, chance e intervalo mínimo. Efeito `{encounter: id}` força um (RF-102, "iniciar combate").
+- **Motivo:** SPEC 3.2 já põe o combate na escala detalhada. Simular lobos fora de cena não muda nada que o jogador possa perceber no MVP.
+- **Alternativa descartada:** inimigos persistentes por área — estado e regras novas sem ganho visível.
+
+## D-059 — Derrota não letal: 4 a 8 horas, roubado, achado por alguém
+- **Data:** 2026-11-11
+- **Decisão:** vida zero fora de área ou inimigo letal = desmaio. Se havia saqueador na luta, levam 60% do dinheiro e até 2 itens da mochila (os mais valiosos, nunca o que está no corpo). O personagem acorda 4 a 8 horas depois (sorteado), no ponto `wakeAt` da área, com 30% da vida; o mundo andou nesse meio-tempo, como num sono. O NPC `finder` da área (se presente) fica sabendo (fato `jogador_achado_desacordado`) e lembra (`socorreu`) — o comerciante do Posto comenta. Sem saqueador (lobo), ninguém rouba.
+- **Motivo:** RF-340 e AT-14 ("acordar horas depois, roubado, com o mundo avançado"). O "achado por alguém" dá consequência social sem punir mais.
+
+## D-060 — Morte: área letal inteira, tela com o mundo e carregar
+- **Data:** 2026-11-11
+- **Decisão:** a estrutura enterrada é uma área `lethal`; o vulto também é `lethal`. Morrendo, o mundo para (a simulação não aceita mais nada), e a tela de morte mostra o epílogo como estaria agora ("o que aconteceu com o mundo", RF-341) e os saves que existem (rápido e automáticos) para carregar. Morto não salva.
+- **Motivo:** o PRD quer a morte rara e explícita. Uma área letal inteira é a regra mais legível: o jogador sabe que desce por conta própria.
+- **Alternativa descartada:** só o fundo da câmara letal — exigiria zonas dentro da área, que o MVP não tem.
+
+## D-061 — Fuga e rendição valem para os dois lados
+- **Data:** 2026-11-11
+- **Decisão:** inimigo com pouca vida (`flee`) foge; se for humano, pode se render (`surrender`). Rendido, o jogador decide numa folha: poupar, tomar o que ele leva, ou acabar com ele (ato `execucao`: −50 para quem viu, −20 para quem ouviu). O jogador também pode se render (R): saqueadores levam 60% do dinheiro e vão embora; lobo e vulto não aceitam. Fugir é correr: longe de casa (`leash`) ou do jogador, o inimigo desiste e volta.
+- **Motivo:** RF-224 e PRD 7.3 (poupar, roubar, ameaçar). Render-se e fugir são o "caminho pacífico" de um combate.
+
+## D-062 — Escuridão e luz também valem na simulação
+- **Data:** 2026-11-11
+- **Decisão:** área `dark` (a estrutura) tem raio de luz de 1,5 m; à noite (20 h–5 h), 4,5 m; cada ponto de `luz` equipado soma 0,75 m (lamparina: +4,5). No escuro sem luz, o jogador acerta 20% menos. O vulto teme a lamparina: dentro do raio dela fica mais lento, golpeia 2,5× menos, apanha 50% mais e causa 30% menos dano. O cliente desenha o mesmo raio, e só se mira em inimigo dentro dele.
+- **Motivo:** RF-008 e "preparação importa": descer sem lamparina é possível, mas é mais perigoso. A luz deixa de ser só enfeite.
+
+## D-063 — Q-07: o que há na estrutura enterrada (proposta, a aprovar)
+- **Data:** 2026-11-11
+- **Decisão provisória:** uma sala sob o buraco, um corredor com fibras petrificadas saindo das paredes (parecem raiz, são pedra), um nicho e uma câmara com uma laje riscada. No nicho: lascas de fibra mornas e uma placa com marcas que se repetem em grupos de nove. Na câmara mora o **vulto**: fibra escura e terra que se move no escuro, sem rosto, que recua da lamparina; ao perceber alguém, ouve-se "um som de voz, longe, chamando alguém por um nome que não é o seu" (o "eco"). Nada se explica; ninguém no Capítulo I sabe o que é. Camada V1: só "há algo sob a terra".
+- **Motivo:** PRD 6 e A3 pedem área curta, luz limitada, algum perigo, objetos, fragmentos e um eco inexplicável, coerentes com a Sutura (lore: rede de fibras orgânico-minerais) sem confirmá-la. Os nove remetem de longe à Concordata dos Nove — pista, não fato.
+- **Pendente:** aprovação do diretor (Q-07). Tudo está em dados (`enemies.yaml`, `items.yaml`, `containers.yaml`, mapa gerado), troca-se sem código. A aparição durante um trabalho e a reação de Avel são A3, no M7.
+
+## D-064 — Saídas de área por ponto; a estrutura se alcança pela área de teste até o M7
+- **Data:** 2026-11-11
+- **Decisão:** `areas.yaml` ganha `exits`: andar até o ponto leva à outra área (sem clique extra, como uma porta). A área de teste tem a boca do buraco (`buraco`) e a estrutura tem a escada de volta. A área de teste segue fazendo as vezes da estrada (encontros com lobos de noite e saqueadores no fim da tarde) até o mapa da estrada no M7.
+- **Motivo:** SPEC 4.7 previa `triggers` de transição; um ponto com raio dá o mesmo resultado com o que já existe no mapa.
+
+## D-065 — Agressão a morador é um empurrão, não uma luta
+- **Data:** 2026-11-11
+- **Decisão:** Ctrl + clique num NPC = empurrão (ato `agressao`, −45 para quem viu, inclusive o empurrado). NPCs não têm vida nem revidam no MVP.
+- **Motivo:** o PROGRESS do M5 prometia agressão no M6; matar moradores mexeria em arcos e agendas de um jeito que o MVP não precisa (P10). Fica a consequência social, que é o que o PRD pede (RF-224, RF-281).
+
+## D-066 — Save na versão 5, com a primeira migração
+- **Data:** 2026-11-11
+- **Decisão:** o M6 acrescenta o bloco `combat` (vida, fôlego, inimigos, recargas, encontros, morte). `SCHEMA_VERSION` = 5. Saves da versão 4 **são migrados**: entram com vida e fôlego cheios e ninguém por perto. Versões anteriores à 4 continuam recusadas.
+- **Motivo:** RF-363 pede migração ou recusa; aqui a migração é trivial e preserva os saves de quem testou o M5.

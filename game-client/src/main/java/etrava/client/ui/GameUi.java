@@ -68,7 +68,8 @@ public final class GameUi implements Disposable {
     /** O que estava na tela da última vez, para só remontar quando algo mudar. */
     private String inventoryShown = "", characterShown = "", tradeShown = "";
     private Consumer<Command> onCommand = c -> { };
-    private boolean epilogueOpen;
+    private boolean epilogueOpen, deathOpen;
+    private Consumer<String> onLoad = name -> { };
     private IntConsumer onChoice = i -> { };
     private Consumer<String> onToggleMark = f -> { };
     private Object dialogueShown;
@@ -156,20 +157,98 @@ public final class GameUi implements Disposable {
 
     public void closeNotebook() { notebookOpen = false; }
 
+    /**
+     * Uma folha por cima de tudo, com o jogo parado: epílogo, "você acorda", rendido, morte.
+     * (O nome ficou do M4, quando a única folha era o epílogo.)
+     */
     public boolean epilogueOpen() { return epilogueOpen; }
 
+    /** A tela de morte está aberta: só sai carregando um jogo (RF-341). */
+    public boolean deathOpen() { return deathOpen; }
+
+    /** Quem trata o pedido de carregar um save da tela de morte (recebe o nome do save). */
+    public void onLoad(Consumer<String> handler) { this.onLoad = handler; }
+
     public void closeEpilogue() {
+        if (deathOpen) return;
         epilogueOpen = false;
         epilogueRoot.setVisible(false);
     }
 
+    /** Fecha a tela de morte depois que um jogo foi carregado. */
+    public void closeDeath() {
+        deathOpen = false;
+        closeEpilogue();
+    }
+
     /** Tela do fim do capítulo (RF-163): os trechos do epílogo, um por parágrafo. O jogo continua depois. */
     public void showEpilogue(List<String> lines) {
+        showPage(texts.get("epilogo.titulo"), lines, texts.get("epilogo.dica"), null, 760, 560);
+    }
+
+    /** Derrota não letal (RF-340): o que se perdeu e onde se acordou. */
+    public void showWake(List<String> lines) {
+        showPage(texts.get("derrota.titulo"), lines, texts.get("derrota.dica"), null, 620, 340);
+    }
+
+    /**
+     * Morte (RF-341): o que aconteceu com o mundo, e os saves que dá para carregar.
+     *
+     * @param saves nome do save → como ele aparece ("Salvamento rápido — dia 3, 14:20")
+     */
+    public void showDeath(List<String> lines, Map<String, String> saves) {
+        Table options = new Table();
+        options.defaults().left().growX();
+        if (saves.isEmpty()) options.add(new Label(texts.get("morte.sem_save"), inkSoft)).row();
+        for (Map.Entry<String, String> e : saves.entrySet()) {
+            Label option = new Label("> " + e.getValue(), ink);
+            option.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    onLoad.accept(e.getKey());
+                }
+
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor from) {
+                    option.setColor(RUST);
+                }
+
+                @Override
+                public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor to) {
+                    option.setColor(INK);
+                }
+            });
+            options.add(option).padBottom(6).row();
+        }
+        showPage(texts.get("morte.titulo"), lines, texts.get("morte.dica"), options, 760, 560);
+        deathOpen = true;
+    }
+
+    /** Um inimigo rendido (RF-224): poupar, tomar o que ele leva ou acabar com ele. */
+    public void showResolve(String enemyId, String name, String line) {
+        Table options = new Table();
+        options.defaults().left().growX();
+        for (String action : List.of("poupar", "saquear", "executar")) {
+            Label option = clickable(texts.get("rendido." + action), new Command.Resolve(enemyId, action));
+            option.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    closeEpilogue();
+                }
+            });
+            options.add(option).padBottom(6).row();
+        }
+        List<String> lines = line == null ? List.of(texts.get("rendido.texto", name))
+                : List.of(texts.get("rendido.texto", name), "\"" + line + "\"");
+        showPage(texts.get("rendido.titulo"), lines, texts.get("rendido.dica"), options, 560, 320);
+    }
+
+    private void showPage(String title, List<String> lines, String hint, Table extra, float width, float height) {
         epilogueRoot.clearChildren();
         Table page = new Table();
         page.setBackground(paper);
         page.pad(24).top();
-        page.add(new Label(texts.get("epilogo.titulo"), rust)).left().padBottom(14).row();
+        page.add(new Label(title, rust)).left().padBottom(14).row();
         Table body = new Table();
         body.top().left();
         body.defaults().left().growX();
@@ -181,12 +260,13 @@ public final class GameUi implements Disposable {
         ScrollPane scroll = new ScrollPane(body, new ScrollPane.ScrollPaneStyle());
         scroll.setFadeScrollBars(false);
         page.add(scroll).grow().row();
-        page.add(new Label(texts.get("epilogo.dica"), inkSoft)).right().padTop(10);
+        if (extra != null) page.add(extra).growX().padTop(8).row();
+        page.add(new Label(hint, inkSoft)).right().padTop(10);
         Table border = new Table();
         border.setBackground(edge);
         border.pad(3);
         border.add(page).grow();
-        epilogueRoot.add(border).size(Math.min(stage.getWidth() - 60, 760), Math.min(stage.getHeight() - 60, 560));
+        epilogueRoot.add(border).size(Math.min(stage.getWidth() - 60, width), Math.min(stage.getHeight() - 60, height));
         epilogueRoot.setVisible(true);
         epilogueOpen = true;
         stage.setScrollFocus(scroll);

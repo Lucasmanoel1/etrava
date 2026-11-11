@@ -47,6 +47,8 @@ public final class SceneRenderer implements Disposable {
         public String sprite;
         public double x, y, facing;
         public boolean moving;
+        /** Acabou de levar um golpe (0 a 1): o sprite pisca avermelhado. */
+        public float flash;
     }
 
     private record TileDraw(int tx, int ty, TextureRegion region, int priority) {}
@@ -75,6 +77,13 @@ public final class SceneRenderer implements Disposable {
     public java.util.function.Function<String, String> propState = key -> null;
     public boolean lightingEnabled = true;
     public boolean postEnabled = true;
+    /** Área escura (ruína, porão): ambiente quase preto a qualquer hora, luzes sempre acesas (RF-008). */
+    public boolean darkArea;
+    /** Raio de luz do personagem, em metros, segundo a simulação; infinito = dia claro. */
+    public double playerLight = Double.POSITIVE_INFINITY;
+    /** O personagem leva uma lamparina: a luz dele é quente. */
+    public boolean playerLamp;
+    private static final float[] DARK_AMBIENT = {0.03f, 0.03f, 0.04f};
 
     public SceneRenderer(AreaDef area, Map<String, PropDef> props, Assets assets, DayNight dayNight) {
         this.assets = assets;
@@ -165,7 +174,7 @@ public final class SceneRenderer implements Disposable {
             boolean hasDestination, double destX, double destY) {
         if (sceneFbo == null) resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         DayNight.Key light = dayNight.at(hour);
-        float night = lightingEnabled ? (float) light.night() : 0f;
+        float night = lightingEnabled ? (darkArea ? 1f : (float) light.night()) : 0f;
         float[] bounds = camera.visibleBounds();
         ActorDraw player = actors.isEmpty() ? null : actors.get(0);
 
@@ -191,13 +200,18 @@ public final class SceneRenderer implements Disposable {
         // ---- 2. luz
         if (lightingEnabled) {
             lightFbo.begin();
-            ScreenUtils.clear((float) light.ambient()[0], (float) light.ambient()[1], (float) light.ambient()[2], 1f);
+            if (darkArea) ScreenUtils.clear(DARK_AMBIENT[0], DARK_AMBIENT[1], DARK_AMBIENT[2], 1f);
+            else ScreenUtils.clear((float) light.ambient()[0], (float) light.ambient()[1], (float) light.ambient()[2], 1f);
             if (night > 0.01f) {
                 batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
                 batch.begin();
                 for (Lamp l : lamps) drawLight(l.x(), l.y(), l.z(), l.radius(), l.r(), l.g(), l.b(), night, bounds);
-                // um resto de claridade em volta do jogador, para ele não sumir no escuro
-                if (player != null) drawLight(player.x, player.y, 1.0, 3.2f, 0.55f, 0.58f, 0.70f, night * 0.6f, bounds);
+                // o raio de luz do personagem (RF-008): um resto de claridade, ou a lamparina na mão
+                if (player != null) {
+                    float radius = Double.isInfinite(playerLight) ? 3.2f : (float) playerLight;
+                    if (playerLamp) drawLight(player.x, player.y, 1.0, radius, 1.0f, 0.74f, 0.42f, night, bounds);
+                    else drawLight(player.x, player.y, 1.0, radius, 0.55f, 0.58f, 0.70f, night * 0.6f, bounds);
+                }
                 batch.end();
             }
             lightFbo.end();
@@ -300,7 +314,9 @@ public final class SceneRenderer implements Disposable {
                 bucket.sort(Comparator.comparingDouble(a -> a.x + a.y));
                 for (ActorDraw a : bucket) {
                     if (glow) batch.setColor(0f, 0f, 0f, 1f);
+                    else if (a.flash > 0) batch.setColor(1f, 1f - a.flash * 0.55f, 1f - a.flash * 0.6f, 1f);
                     drawActor(a, animTime);
+                    if (!glow) batch.setColor(1f, 1f, 1f, 1f);
                     if (a == player) playerDrawn = true;
                 }
             }

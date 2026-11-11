@@ -181,7 +181,7 @@ Em cada espaço entra um fragmento: o de maior `priority` cuja condição passa.
 - {id: roubo, name: Roubo, fact: jogador_roubou, witness: -30, hearsay: -12}
 ```
 
-Disparado por `{deed: roubo}`. Quem viu perde `witness` de opinião e passa a contar; quem ouve o rumor perde `hearsay`. Quem não soube não muda.
+Disparado por `{deed: roubo}`. Quem viu perde `witness` de opinião e passa a contar; quem ouve o rumor perde `hearsay`. Quem não soube não muda. O jogo dispara sozinho três atos: `roubo` (pegar de contêiner com dono), `agressao` (empurrar um NPC, Ctrl + clique) e `execucao` (acabar com um inimigo rendido).
 
 ## Itens — `content/items.yaml`
 
@@ -196,7 +196,9 @@ Disparado por `{deed: roubo}`. Quem viu perde `witness` de opinião e passa a co
   food: 30                 # quanto a fome cai ao comer
   slot: mainHand           # mainHand | offHand | body | head | accessory — só para o que se veste ou empunha
   use: [{learn: {who: player, fact: x, certainty: read}}]   # efeitos ao usar (opcional)
-  stats: {dano: 3, protecao: 1, luz: 6, carga: 6}          # números do M6; `carga` já aumenta a capacidade
+  stats: {dano: 3, protecao: 1, luz: 6, carga: 6, cura: 20}
+  # dano: da arma na mão · protecao: soma do que se veste · luz: raio no escuro (×0,75 m)
+  # carga: capacidade extra · cura: vida devolvida ao usar (unguento)
 ```
 
 ## Comerciantes — `content/merchants.yaml`
@@ -245,6 +247,64 @@ Na conversa: escolha com `when: {job: oficina}` (só aparece se o trabalho pode 
   items: [{item: farinha, qty: 3}]
 ```
 
+## Inimigos — `content/enemies.yaml`
+
+```yaml
+- id: saqueador
+  name: Saqueador
+  kind: humano             # animal | humano | estranho — só humano se rende
+  sprite: personagem.saqueador
+  health: 40               # vida
+  damage: 8                # dano-base do golpe (a proteção do jogador desconta)
+  protection: 1            # desconta de cada golpe recebido
+  skill: 20                # "Luta" dele (0–100): mexe nas chances dos dois lados
+  speed: 3.6               # m/s correndo
+  reach: 1.5               # alcance do golpe
+  attackTime: 1.6          # segundos entre golpes
+  windup: 0.5              # o golpe é anunciado e sai depois disto: é a janela da esquiva
+  aggro: 8                 # a que distância percebe o jogador
+  leash: 20                # quanto se afasta de onde apareceu antes de desistir
+  flee: 0.35               # com 35% da vida, foge…
+  surrender: 0.6           # …ou se rende, com esta chance (só humano)
+  lethal: false            # true = vencer o jogador é matá-lo (RF-341)
+  robs: true               # vencendo (ou se o jogador se render), leva dinheiro e coisas
+  fearsLight: false        # hesita na luz da lamparina: mais lento, golpeia menos, apanha mais
+  loot: [{item: faca}]     # o que leva: fica com o jogador se ele o abater ou saquear
+  money: 5
+  lines: {ataque: "…", rende: "…", foge: "…", vence: "…", poupado: "…", saqueado: "…"}
+```
+
+Abater um inimigo soma 1 na variável `abatidos.<id>`. **Nenhum desfecho de arco pode depender disso** (RF-225): o validador exige, para cada desfecho, um caminho cujas condições não peçam `abatidos.*` nem flags `combate*`. Lutar pode ser um caminho, nunca o único.
+
+## Encontros — `content/encounters.yaml`
+
+```yaml
+- id: lobos_estrada
+  area: area_teste
+  at: [bosque_norte, bosque_oeste]   # pontos do mapa (spots ou spawns); um é sorteado
+  enemies: [{enemy: lobo, qty: 2}]
+  when: {time: {hourFrom: 20, hourTo: 5}}
+  chance: 0.3              # sorteado ao chegar à área e a cada hora nela — dormindo também
+  cooldown: 20             # horas até poder acontecer de novo
+  once: false              # true = no máximo uma vez por partida
+```
+
+Um ataque durante o sono ou a espera interrompe o descanso (RF-323). Para forçar um encontro (H4 no M7, por exemplo): efeito `{encounter: lobos_estrada}` — só funciona com o jogador na área do encontro.
+
+## Áreas — `content/areas/areas.yaml`
+
+```yaml
+- id: estrutura
+  map: estrutura.tmj
+  dark: true               # escura a qualquer hora: só se vê o raio de luz do personagem
+  lethal: true             # perder aqui é morrer (o padrão é acordar horas depois)
+  exits: [{spot: escada, to: area_teste, spawn: estrutura}]   # andar até o ponto leva à outra área
+  wakeAt: area_teste/beira_estrada   # onde se acorda depois de perder aqui
+  finder: comerciante_posto          # quem acha o jogador desacordado: fica sabendo e lembra (`socorreu`)
+```
+
+O ponto de chegada (`spawn`) precisa ficar a mais de 1 m do ponto de saída da outra área, senão o jogador volta na hora.
+
 ## Habilidades e origem
 
 - `content/skills.yaml`: as seis habilidades, com nome, descrição e a `curve` do ganho decrescente.
@@ -291,6 +351,7 @@ Na conversa: escolha com `when: {job: oficina}` (só aparece se o trabalho pode 
 | preço | `{priceMod: {tag: sal, factor: 1.5}}` (multiplica o atual) |
 | treinar | `{train: {skill: vigor, amount: 2}}` |
 | trabalho / comércio | `{startJob: oficina}` · `{startTrade: taverna}` (começam quando a conversa acabar) |
+| combate | `{encounter: saqueadores_estrada}` (inimigos aparecem, se o jogador estiver na área do encontro) |
 
 Graus de certeza: `rumor` (ouvi dizer), `claim` (me afirmaram), `witnessed` (vi), `read` (li), `verified` (conferi).
 

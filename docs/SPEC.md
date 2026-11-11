@@ -1,6 +1,6 @@
 # SPEC — ETRAVA (especificação técnica do MVP)
 
-**Versão:** 0.6 · **Data:** 2026-11-11 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
+**Versão:** 0.7 · **Data:** 2026-11-11 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018); combate e perigo detalhados no M6 (D-057 a D-066)
 **Base:** `docs/PRD.md` v0.1 (seção 20.1), `docs/ponto-seguro.md`, `docs/lore-etrava.md`
 **Escopo:** só o MVP (Origem I + Capítulo I + Pedra-Mansa). Itens [PÓS]/[LP] aparecem apenas como "não fechar a porta".
 
@@ -385,11 +385,12 @@ Regras do motor:
 | `collision` | tiles | onde não se anda |
 | `props` | objetos | prop por ID, posição e rotação livres; `key` opcional para variantes |
 | `spots` | pontos | lugares nomeados usados por agendas e arcos (`oficina_bancada`) |
-| `triggers` | retângulos | transição de área, descoberta de local, zona de telhado, zona de perigo |
+| `triggers` | retângulos | (ainda não usada: as transições são pontos de `spots` declarados como saída em `areas.yaml`, D-064) |
 | `lights` | pontos | luzes soltas no mapa (ainda não implementada; hoje as luzes vêm dos props) |
 | `spawns` | pontos | entrada do jogador, encontros |
 
 - `props.yaml`: para cada prop, o asset, a pegada de colisão e suas **variantes** — `states: {morta: prop.arvore_morta, viva: prop.arvore, cortada: prop.toco}` (estado → asset; o primeiro é o inicial). Só tem estado o prop posicionado no mapa com a propriedade `key`. O estado fica em `World.props[key]` e muda só por efeito `setProp` (RF-043); a colisão não muda com a variante.
+- `areas/areas.yaml` (metadados de cada área, M6): `dark` (escura a qualquer hora), `lethal` (perder ali é morrer), `exits` (andar até um ponto leva a outra área, D-064), `wakeAt` e `finder` (onde se acorda depois de uma derrota não letal, e quem acha o jogador).
 - **Terreno plano no MVP** (D-010): desnível, quando existir, é pintado na arte, não simulado.
 - **Navegação:** grade de 0,5 m derivada de `collision` + pegadas dos props; A* próprio no `core-sim` (D-011). Clique em ponto inalcançável leva ao ponto alcançável mais próximo (RF-001).
 
@@ -407,7 +408,12 @@ Implementado no M5 pela classe `economy.Economy` (detalhes de formato em `CONTEN
 - **Habilidades** (`skills.yaml`: Luta, Vigor, Ofício, Lábia, Observação, Comércio): 0–100, sobem por uso com ganho = base × (1 − valor/100)^curva; sem nível global (RF-180–182, D-054).
 - **Reputação** (RF-280): média das opiniões dos membros presentes de uma comunidade (`faction` no NPC); mexe em preço (pela opinião de quem vende), em quem vende e em quem oferece trabalho (RF-282, D-052).
 - **Origem** (`origins/pedra_mansa.yaml`): dinheiro, itens, equipamento e habilidades iniciais (D-055).
-- **Combate** roda no `core-sim`: alcance, tempos de ataque, vida e fôlego, 2 habilidades com recarga. Inimigos humanos têm limiar de fuga/rendição. `enemies.yaml` e as áreas dizem se a derrota ali é letal; o padrão é acordar horas depois, roubado, com o mundo avançado (RF-340/341).
+- **Combate** (M6, classe `combat.Combat`; D-057 a D-062) roda no `core-sim`, só na área carregada e em tempo real (escala detalhada). Vida e fôlego (100 + 0,5 × Vigor); golpe, esquiva e duas habilidades com recarga (golpe pesado, empurrão). O inimigo anuncia o golpe antes de acertar (`windup`): esquivando, nada acerta. Chance e dano pela Luta dos dois lados, pela arma (`dano`) e pela proteção (`protecao`).
+- `enemies.yaml` (RF-223): lobo (animal), saqueador (humano) e vulto (estranho, da estrutura). Cada um com vida, dano, alcance, tempos, percepção (`aggro`), distância máxima de casa (`leash`), limiar de fuga e chance de rendição, se é letal, se rouba, se teme a luz, o que leva e falas curtas.
+- `encounters.yaml`: inimigos que aparecem numa área, com condição, chance, intervalo e pontos de surgimento. Sorteados ao chegar e a cada hora — também dormindo, e então interrompem (RF-323). Efeito `encounter` força um (RF-102).
+- **Fuga e rendição** (RF-224, D-061): inimigo ferido foge ou, se humano, se rende; o jogador decide entre poupar, saquear ou executar (ato `execucao`). O jogador pode se render a saqueadores (levam 60% do dinheiro) ou fugir (longe de casa, o inimigo desiste).
+- **Derrota** (RF-340/341, D-059/D-060): vida zero numa área `lethal` (a estrutura) ou contra inimigo `lethal` (o vulto) é morte — o mundo para, a apresentação mostra o epílogo como estaria e oferece carregar. Fora disso: saqueadores levam dinheiro e até 2 itens, o personagem acorda 4–8 h depois em `wakeAt`, com 30% da vida, e o `finder` da área fica sabendo.
+- Abater soma em `abatidos.<inimigo>`; o validador exige que todo desfecho de arco tenha um caminho sem depender disso (RF-225, AT-13). Empurrar um NPC (Ctrl + clique) é o ato `agressao` (D-065).
 - `phenomena.yaml` (RF-241): tipo de custo, quem carrega, origem e destino do custo. O MVP usa em A1 e no rumor de Berta; o jogador não conjura (DP-04).
 
 ---
@@ -459,7 +465,7 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 
 ### 5.3 Versão, migração e integridade
 
-- `schemaVersion` inteiro (hoje 4 — D-035, D-044, D-056). O M4 acrescentou `arcs`, `props`, `memories`, `epilogue`, a situação dos NPCs e o ritmo de eventos; o M5, `life` (dinheiro, mochila, corpo, habilidades, fome, trabalhos do dia) e `economy` (modificadores de preço, comerciantes, contêineres). Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
+- `schemaVersion` inteiro (hoje 5 — D-035, D-044, D-056, D-066; a 4 é migrada, as anteriores recusadas). O M4 acrescentou `arcs`, `props`, `memories`, `epilogue`, a situação dos NPCs e o ritmo de eventos; o M5, `life` (dinheiro, mochila, corpo, habilidades, fome, trabalhos do dia) e `economy` (modificadores de preço, comerciantes, contêineres); o M6, `combat` (vida, fôlego, inimigos da área, recargas, encontros, morte). Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
 - Arquivo ilegível → erro tratado e volta ao menu, nunca crash (RF-365).
 - ID que sumiu do conteúdo (NPC ou item removido entre versões) → ignorado com aviso no log.
 - **Hash de estado:** SHA-256 do `state.json` em forma canônica (chaves ordenadas). É o que os testes AT-03 e AT-05 comparam.
@@ -474,7 +480,7 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 - **Pós-processamento (RF-028):** um passe próprio de tela cheia — gradação de cor e vinheta; névoa como camada; bloom opcional. Cada efeito desliga nas opções.
 - **Câmera (DP-02):** interface `CameraRig`; implementação do MVP = isométrica 2D ortográfica, zoom limitado, segue com suavização. Interação usa **posição de mundo** (ponto da tela → ponto do chão), nunca coordenada de tela (RF-024). Rotação em 90° (RF-022, opcional no PRD) fica fora: em 2D exigiria quatro versões de cada arte.
 - **Oclusão (RF-006, RF-023):** por fora, cada construção é um sprite só; o interior é outra área, carregada ao passar pela porta (D-023). O que estiver na frente do jogador e o cobrir fica translúcido.
-- **Escuridão (RF-008):** ambiente quase preto no buffer de luz + raio de luz no personagem, maior com lamparina equipada.
+- **Escuridão (RF-008, D-062):** área `dark` (em `areas.yaml`) tem ambiente quase preto a qualquer hora e luzes sempre acesas. O raio de luz do personagem vem da simulação (`Combat.lightRadius`: 1,5 m no escuro, 4,5 m à noite, +0,75 m por ponto de `luz` equipado) e é desenhado como mancha no buffer de luz — fria sem lamparina, quente com ela. Só se mira em inimigo dentro do raio; no escuro sem luz se erra mais.
 - **UI:** scene2d, tema "papel e tinta" (PRD 10.1), fonte serifada via FreeType com 3 tamanhos (RNF-040). Telas do PRD 10.2. Nenhum marcador de objetivo em lugar nenhum.
 - **Áudio:** canais geral/música/ambiente/efeitos/interface (RF-403); ambiente por área × período com transição suave; música por contexto.
 - **Depuração (RF-440):** console e painéis em scene2d, só em build de desenvolvimento — avançar tempo, mexer em flags, teletransporte, ver arcos, conhecimento, opiniões e crônica.
@@ -603,4 +609,4 @@ Asset com ID no manifesto mas sem arquivo é **aviso**, não erro (vira placehol
 - Se a IA mantém ângulo e paleta consistentes entre tiles, props e construções.
 - Resolução dos sprites e distância padrão da câmera.
 
-**Narrativos (ficam para os marcos que o PRD indica):** Q-07 (o que há na estrutura enterrada, M6) e Q-08 (quem é o estranho, M7).
+**Narrativos (ficam para os marcos que o PRD indica):** Q-07 (o que há na estrutura enterrada) tem proposta no M6, a aprovar (D-063); Q-08 (quem é o estranho, M7).

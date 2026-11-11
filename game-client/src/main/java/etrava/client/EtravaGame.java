@@ -31,6 +31,8 @@ import etrava.sim.api.Command;
 import etrava.sim.api.SimEvent;
 import etrava.sim.api.Simulation;
 import etrava.sim.api.WorldView;
+import etrava.sim.combat.Combat;
+import etrava.sim.world.EnemyState;
 import etrava.sim.content.ContentDb;
 import etrava.sim.nav.NavGrid;
 import etrava.sim.rules.Effect;
@@ -93,6 +95,14 @@ public final class EtravaGame extends ApplicationAdapter {
     private String hoverNpc;
     /** Contêiner sob o cursor (quando não há NPC), ou null. */
     private String hoverContainer;
+    /** Inimigo sob o cursor, ou null. */
+    private String hoverEnemy;
+    /** O botão está apertado sobre um inimigo: continua atacando até soltar (RF-220). */
+    private boolean attacking;
+    /** Números de dano subindo da cabeça de quem apanhou: {id, texto, segundos, cor (0 = jogador)}. */
+    private final List<Object[]> floaters = new ArrayList<>();
+    /** Personagem → segundos de lampejo depois de um golpe. */
+    private final Map<String, Float> flashes = new HashMap<>();
     private String notice = "";
     private float noticeTime;
     private int autosaveCount;
@@ -142,7 +152,12 @@ public final class EtravaGame extends ApplicationAdapter {
         ui = new GameUi(font, assets, content, texts);
         ui.onChoice(this::chooseDialogue);
         ui.onToggleMark(f -> sim.submit(new Command.MarkFact(f, !sim.view().markedFacts().contains(f))));
-        ui.onCommand(sim::submit);
+        ui.onCommand(c -> sim.submit(c));
+        ui.onLoad(name -> {
+            String result = loadGame(name);
+            showNotice(result);
+            if (!sim.view().dead()) ui.closeDeath();
+        });
 
         InputMultiplexer input = new InputMultiplexer();
         input.addProcessor(new GlobalKeys());
@@ -198,11 +213,15 @@ public final class EtravaGame extends ApplicationAdapter {
         double hour = v.clock().minuteOfDay() / 60.0
                 + (v.clock().tick() % 25) / 25.0 / 60.0; // fração do minuto, para a luz mudar sem degraus
         float animTime = (v.clock().tick() + alpha) / 30f;
+        scene.darkArea = sim.combat().darkArea();
+        scene.playerLight = sim.combat().lightRadius();
+        scene.playerLamp = sim.combat().equipped("luz") > 0;
         scene.render(camera, draws, hour, animTime, v.hasDestination(), v.destinationX(), v.destinationY());
 
         if (showCollision) drawCollisionOverlay();
         updateHover(v);
         drawBalloons(v, dt);
+        drawCombatOverlay(v, dt);
         if (showHud) drawHud(v);
         ui.render(v, sim.tradeView(), sim.economy(), dt);
         if (console != null) console.render(dt);
@@ -266,6 +285,52 @@ public final class EtravaGame extends ApplicationAdapter {
                 }
                 case SimEvent.JobRefused r -> showNotice(texts.get("trabalho.recusado"));
                 case SimEvent.DeedSeen d -> showNotice(texts.get("ato.visto"));
+                case SimEvent.Hit h -> {
+                    String who = h.target();
+                    floaters.add(new Object[] {who, h.damage() <= 0 ? texts.get("combate.errou")
+                            : String.valueOf(Math.max(1, Math.round(h.damage()))), 1.1f, Combat.PLAYER.equals(who) ? 0 : 1});
+                    if (h.damage() > 0) flashes.put(who, 0.25f);
+                }
+                case SimEvent.EnemiesAppeared a -> showNotice(texts.get("combate.apareceram"));
+                case SimEvent.EnemyChanged c -> {
+                    if (c.line() != null) {
+                        balloons.removeIf(b -> b[0].equals(c.enemyId()));
+                        balloons.add(new Object[] {c.enemyId(), c.line(), 2.2f + c.line().length() * 0.045f});
+                    }
+                    if ("desistiu".equals(c.what()) || "fugiu".equals(c.what())) showNotice(texts.get("combate." + c.what()));
+                    if ("rendeu".equals(c.what())) showNotice(texts.get("combate.rendeu"));
+                }
+                case SimEvent.Looted l -> showNotice(texts.get("combate.pegou", itemNames(l.items()), ui.coins(l.money())));
+                case SimEvent.Refused r -> showNotice(texts.get(r.reason()));
+                case SimEvent.PlayerSurrendered s -> showNotice(texts.get("combate.rendicao", ui.coins(s.moneyLost())));
+                case SimEvent.PlayerDefeated d -> {
+                    attacking = false;
+                    previous.clear();
+                    capturePrevious(sim.view());
+                    List<String> lines = new ArrayList<>();
+                    long hours = Math.round((d.toTick() - d.fromTick()) / (double) sim.view().clock().ticksPerHour());
+                    lines.add(texts.get("derrota.acorda", hours));
+                    if (d.moneyLost() > 0) lines.add(texts.get("derrota.dinheiro", ui.coins(d.moneyLost())));
+                    if (!d.itemsLost().isEmpty()) lines.add(texts.get("derrota.itens", itemNames(d.itemsLost())));
+                    if (d.finder() != null) {
+                        var finder = content.npcs().get(d.finder());
+                        lines.add(texts.get("derrota.achou", finder != null ? finder.displayName() : d.finder()));
+                    }
+                    ui.showWake(lines);
+                }
+                case SimEvent.PlayerDied d -> {
+                    attacking = false;
+                    Map<String, String> saves = new java.util.LinkedHashMap<>();
+                    for (String name : List.of("rapido", "auto_1", "auto_2", "auto_3")) {
+                        SaveGame.Meta meta = SaveGame.readMeta(savePath(name));
+                        if (meta != null) saves.put(name, texts.get("morte.save." + (name.startsWith("auto") ? "auto" : name),
+                                meta.day(), meta.time()));
+                    }
+                    List<String> lines = new ArrayList<>();
+                    lines.add(texts.get("morte.texto"));
+                    lines.addAll(d.summary());
+                    ui.showDeath(lines, saves);
+                }
                 case SimEvent.ChapterEnded c -> {
                     ui.showEpilogue(c.epilogue());
                     autosave();
@@ -278,6 +343,7 @@ public final class EtravaGame extends ApplicationAdapter {
     private void capturePrevious(WorldView v) {
         store(v.player());
         for (ActorView a : v.actors()) store(a);
+        for (ActorView a : v.enemies()) store(a);
     }
 
     private void store(ActorView a) {
@@ -287,11 +353,13 @@ public final class EtravaGame extends ApplicationAdapter {
     }
 
     private void buildDraws(WorldView v, float alpha) {
-        int n = 1 + v.actors().size();
+        int n = 1 + v.actors().size() + v.enemies().size();
         while (draws.size() < n) draws.add(new ActorDraw());
         while (draws.size() > n) draws.remove(draws.size() - 1);
         fill(draws.get(0), v.player(), alpha);
         for (int i = 0; i < v.actors().size(); i++) fill(draws.get(i + 1), v.actors().get(i), alpha);
+        int base = 1 + v.actors().size();
+        for (int i = 0; i < v.enemies().size(); i++) fill(draws.get(base + i), v.enemies().get(i), alpha);
     }
 
     private void fill(ActorDraw d, ActorView a, float alpha) {
@@ -303,6 +371,7 @@ public final class EtravaGame extends ApplicationAdapter {
         d.y = py + (a.y() - py) * alpha;
         d.facing = a.facing();
         d.moving = a.moving();
+        d.flash = Math.min(1f, flashes.getOrDefault(a.id(), 0f) * 4f);
     }
 
     // ---------------------------------------------------------------- salvar e carregar
@@ -371,26 +440,124 @@ public final class EtravaGame extends ApplicationAdapter {
         batch.end();
     }
 
+    /** Nomes dos itens, separados por vírgula ("nada" se vazio). */
+    private String itemNames(List<String> ids) {
+        if (ids.isEmpty()) return texts.get("encaixe.vazio");
+        List<String> names = new ArrayList<>();
+        for (String id : ids) {
+            var def = content.items().get(id);
+            names.add(def != null ? def.displayName() : id);
+        }
+        return String.join(", ", names);
+    }
+
+    /**
+     * Combate na tela: vida e fôlego do jogador, recargas das habilidades, barrinha de
+     * vida sobre os inimigos à vista (que acende quando o golpe deles vem) e os números de dano.
+     */
+    private void drawCombatOverlay(WorldView v, float dt) {
+        flashes.replaceAll((k, t) -> t - dt);
+        flashes.values().removeIf(t -> t <= 0);
+        batch.begin();
+        // barras do jogador, no canto de baixo
+        if (showHud) {
+            float x = 16, y = 18, w = 180, h = 9;
+            bar(x, y + 16, w, h, (float) (v.health() / sim.combat().maxHealth()), 0.62f, 0.16f, 0.12f);
+            bar(x, y, w, h, (float) (v.stamina() / sim.combat().maxStamina()), 0.72f, 0.62f, 0.30f);
+            font.setColor(0.93f, 0.89f, 0.78f, 1f);
+            font.draw(batch, texts.get("hud.vida", Math.round(v.health()), Math.round(sim.combat().maxHealth())), x + w + 8, y + 16 + h + 2);
+            font.draw(batch, texts.get("hud.folego"), x + w + 8, y + h + 2);
+            String q = cooldownText(Combat.HEAVY), e = cooldownText(Combat.PUSH);
+            font.setColor(0.75f, 0.72f, 0.64f, 1f);
+            font.draw(batch, texts.get("hud.habilidades", q, e), x, y + 52);
+        }
+        // inimigos: vida, e o aviso do golpe
+        double light = sim.combat().lightRadius();
+        ActorDraw me = draws.get(0);
+        for (EnemyState e : v.enemies()) {
+            ActorDraw d = drawOf(e.id);
+            var def = content.enemies().get(e.type);
+            if (d == null || def == null || Math.hypot(d.x - me.x, d.y - me.y) > light) continue;
+            camera.worldPxToScreen(IsoProjection.sx(d.x, d.y), IsoProjection.sy(d.x, d.y, 0) + 108, px);
+            float frac = (float) Math.max(0, e.health / def.health());
+            boolean windup = EnemyState.WINDUP.equals(e.state);
+            boolean meek = !e.hostile();
+            bar(px[0] - 22, px[1], 44, 5, frac, windup ? 0.95f : meek ? 0.5f : 0.62f,
+                    windup ? 0.78f : meek ? 0.5f : 0.16f, windup ? 0.3f : meek ? 0.45f : 0.12f);
+            if (e.id.equals(hoverEnemy)) {
+                String label = def.displayName() + (EnemyState.SURRENDERED.equals(e.state) ? " " + texts.get("combate.rendido_rotulo") : "");
+                layout.setText(font, label);
+                font.setColor(0.95f, 0.91f, 0.80f, 1f);
+                font.draw(batch, label, px[0] - layout.width / 2, px[1] + 22);
+            }
+        }
+        // números de dano
+        for (int i = floaters.size() - 1; i >= 0; i--) {
+            Object[] f = floaters.get(i);
+            f[2] = (float) f[2] - dt;
+            if ((float) f[2] <= 0) {
+                floaters.remove(i);
+                continue;
+            }
+            ActorDraw d = drawOf((String) f[0]);
+            if (d == null) continue;
+            float rise = (1.1f - (float) f[2]) * 30;
+            camera.worldPxToScreen(IsoProjection.sx(d.x, d.y), IsoProjection.sy(d.x, d.y, 0) + 92, px);
+            if ((int) f[3] == 0) font.setColor(0.95f, 0.45f, 0.38f, Math.min(1f, (float) f[2] * 2));
+            else font.setColor(0.98f, 0.92f, 0.75f, Math.min(1f, (float) f[2] * 2));
+            layout.setText(font, (String) f[1]);
+            font.draw(batch, (String) f[1], px[0] - layout.width / 2, px[1] + rise);
+        }
+        font.setColor(1f, 1f, 1f, 1f);
+        batch.end();
+    }
+
+    private String cooldownText(String ability) {
+        long ticks = sim.combat().cooldownLeft(ability);
+        return ticks <= 0 ? texts.get("hud.pronto") : String.valueOf((ticks + 29) / 30);
+    }
+
+    /** Barra com fundo escuro; {@code frac} de 0 a 1. */
+    private void bar(float x, float y, float w, float h, float frac, float r, float g, float b) {
+        batch.setColor(0.08f, 0.06f, 0.07f, 0.8f);
+        batch.draw(whitePx, x - 1, y - 1, w + 2, h + 2);
+        batch.setColor(r, g, b, 1f);
+        batch.draw(whitePx, x, y, w * Math.max(0, Math.min(1, frac)), h);
+        batch.setColor(1f, 1f, 1f, 1f);
+    }
+
     // ---------------------------------------------------------------- NPCs: apontar, falar, legendas
 
     /** Qual NPC está sob o cursor (RF-004). Compara em pixels de mundo com o retângulo do sprite. */
     private void updateHover(WorldView v) {
         hoverNpc = null;
         hoverContainer = null;
+        hoverEnemy = null;
+        if (v.dead() || ui.epilogueOpen()) return;
         if (v.dialogue() != null || v.trade() != null || ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen()
                 || (console != null && console.isOpen())) return;
         camera.screenToWorldPx(Gdx.input.getX(), Gdx.input.getY(), px);
         double best = Double.MAX_VALUE;
+        double light = sim.combat().lightRadius();
         for (ActorDraw d : draws) {
             if (d == draws.get(0)) continue; // o próprio jogador
+            boolean enemy = sim.combat().enemy(d.id) != null;
+            // no escuro, só se mira em quem está no raio de luz (RF-008)
+            if (enemy && Math.hypot(d.x - draws.get(0).x, d.y - draws.get(0).y) > light) continue;
             float fx = IsoProjection.sx(d.x, d.y), fy = IsoProjection.sy(d.x, d.y, 0);
             if (px[0] < fx - 40 || px[0] > fx + 40 || px[1] < fy - 8 || px[1] > fy + 116) continue;
-            if (d.x + d.y < best || hoverNpc == null) { // se houver dois, o da frente
-                best = -(d.x + d.y);
+            if (enemy) { // inimigo tem prioridade sobre NPC: no meio da luta, o clique é golpe
+                if (hoverEnemy == null || d.x + d.y > best) {
+                    best = d.x + d.y;
+                    hoverEnemy = d.id;
+                }
+            } else if (hoverEnemy == null && (hoverNpc == null || d.x + d.y > best)) { // se houver dois, o da frente
+                best = d.x + d.y;
                 hoverNpc = d.id;
             }
         }
-        if (hoverNpc != null) return;
+        if (hoverEnemy != null) hoverNpc = null;
+        if (hoverNpc != null || hoverEnemy != null) return;
         // sem NPC sob o cursor: algum contêiner perto do ponto do chão apontado?
         camera.screenToWorld(Gdx.input.getX(), Gdx.input.getY(), worldPoint);
         for (var c : content.containers().values()) {
@@ -521,6 +688,7 @@ public final class EtravaGame extends ApplicationAdapter {
                 }
                 case Input.Keys.ESCAPE -> {
                     if (console != null && console.isOpen()) console.toggle();
+                    else if (ui.deathOpen()) return true; // só sai carregando um jogo
                     else if (ui.epilogueOpen()) ui.closeEpilogue();
                     else if (sim.view().dialogue() != null) sim.submit(new Command.LeaveDialogue());
                     else if (sim.view().trade() != null) sim.submit(new Command.CloseTrade());
@@ -556,6 +724,7 @@ public final class EtravaGame extends ApplicationAdapter {
                 if (keycode == Input.Keys.SPACE || keycode == Input.Keys.ENTER) ui.closeEpilogue();
                 return true;
             }
+            if (sim.view().dead()) return true;
             if (sim.view().dialogue() != null) { // na conversa, o teclado só escolhe falas
                 if (keycode >= Input.Keys.NUM_1 && keycode <= Input.Keys.NUM_9) chooseDialogue(keycode - Input.Keys.NUM_1);
                 else if (keycode == Input.Keys.SPACE || keycode == Input.Keys.ENTER) chooseDialogue(0);
@@ -586,7 +755,17 @@ public final class EtravaGame extends ApplicationAdapter {
                 sim.submit(new Command.Wait(1));
                 return true;
             }
-            return false;
+            if (paused) return false;
+            switch (keycode) { // combate (RF-221, RF-222)
+                case Input.Keys.Q -> sim.submit(new Command.Ability(Combat.HEAVY));
+                case Input.Keys.E -> sim.submit(new Command.Ability(Combat.PUSH));
+                case Input.Keys.SHIFT_LEFT, Input.Keys.SHIFT_RIGHT -> sim.submit(new Command.Dodge(lastDirX, lastDirY));
+                case Input.Keys.R -> sim.submit(new Command.Surrender());
+                default -> {
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Override
@@ -594,9 +773,28 @@ public final class EtravaGame extends ApplicationAdapter {
             if (button != Input.Buttons.LEFT || paused) return false;
             if (sim.view().dialogue() != null || sim.view().trade() != null || ui.notebookOpen() || ui.epilogueOpen()
                     || ui.inventoryOpen() || ui.characterOpen()) return true;
-            if (hoverNpc != null) sim.submit(new Command.Talk(hoverNpc));
-            else if (hoverContainer != null) sim.submit(new Command.OpenContainer(hoverContainer));
+            if (hoverEnemy != null) {
+                EnemyState e = sim.combat().enemy(hoverEnemy);
+                if (e != null && EnemyState.SURRENDERED.equals(e.state)) {
+                    var def = content.enemies().get(e.type);
+                    ui.showResolve(e.id, def != null ? def.displayName() : e.type, def != null ? def.line("rende") : null);
+                } else {
+                    sim.submit(new Command.Attack(hoverEnemy, true));
+                    attacking = true;
+                }
+            } else if (hoverNpc != null) {
+                boolean ctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT);
+                sim.submit(ctrl ? new Command.Strike(hoverNpc) : new Command.Talk(hoverNpc));
+            } else if (hoverContainer != null) sim.submit(new Command.OpenContainer(hoverContainer));
             else moveToScreenPoint(screenX, screenY);
+            return true;
+        }
+
+        @Override
+        public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+            if (button != Input.Buttons.LEFT || !attacking) return false;
+            attacking = false;
+            sim.submit(new Command.ReleaseAttack()); // soltou: termina o golpe em curso e para
             return true;
         }
 
@@ -604,7 +802,7 @@ public final class EtravaGame extends ApplicationAdapter {
         public boolean touchDragged(int screenX, int screenY, int pointer) {
             if (paused || !Gdx.input.isButtonPressed(Input.Buttons.LEFT)) return false;
             if (sim.view().dialogue() != null || sim.view().trade() != null || ui.notebookOpen() || ui.inventoryOpen()
-                    || ui.characterOpen() || hoverNpc != null || hoverContainer != null) return true;
+                    || ui.characterOpen() || hoverNpc != null || hoverContainer != null || attacking) return true;
             long tick = sim.view().clock().tick();
             if (tick - lastDragTick >= 6) { // segurar o botão: recalcula o caminho 5 vezes por segundo
                 lastDragTick = tick;
@@ -633,6 +831,7 @@ public final class EtravaGame extends ApplicationAdapter {
                         + "arcos | arco ID ESTAGIO | prop CHAVE ESTADO | status NPC SITUACAO | ato ID | epilogo\n"
                         + "trabalhar ID | comercio ID | abrir CONTEINER | mochila | ficha | dar ITEM [N] | dinheiro N\n"
                         + "fome N | vida | precos\n"
+                        + "encontro ID | saude N | inimigos | equipar ITEM\n"
                         + "vel FATOR | zoom VALOR | semente | luz on/off | pos-fx on/off | colisao | hud | validar | sair";
             case "pos":
                 return String.format(Locale.ROOT, "(%.2f, %.2f) em %s", v.playerX(), v.playerY(), v.areaId());
@@ -735,6 +934,22 @@ public final class EtravaGame extends ApplicationAdapter {
             case "dinheiro":
                 sim.applyNow(List.of(new Effect.Give(null, 0, (int) num(p, 1))));
                 return v.money() + " moedas";
+            case "encontro": // força um encontro de encounters.yaml, se o jogador estiver na área dele
+                sim.applyNow(List.of(new Effect.Encounter(p[1])));
+                return v.enemies().size() + " inimigo(s) na área";
+            case "equipar":
+                sim.submit(new Command.Equip(p[1]));
+                sim.stepPaused();
+                return "corpo: " + v.equipment();
+            case "saude":
+                sim.stateWorld().health = Math.max(1, Math.min(sim.combat().maxHealth(), num(p, 1)));
+                return "vida " + Math.round(v.health());
+            case "inimigos": {
+                StringBuilder sb = new StringBuilder();
+                for (var e : v.enemies())
+                    sb.append(String.format(Locale.ROOT, "%s %s vida %.0f (%.1f, %.1f)%n", e.id, e.state, e.health, e.x, e.y));
+                return sb.length() == 0 ? "ninguém" : sb.toString().trim();
+            }
             case "fome":
                 sim.stateWorld().hunger = Math.max(0, Math.min(100, num(p, 1)));
                 return "fome " + v.hunger();
