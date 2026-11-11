@@ -53,6 +53,10 @@ public final class Rules {
             case "remembers" -> new Condition.Remembers(v.path("npc").asText("npc"), text(v, "type"),
                     optional(v, "subject"));
             case "chance" -> new Condition.Chance(v.asDouble());
+            case "has" -> new Condition.Has(optional(v, "item"), v.path("qty").asInt(1), integer(v, "money"));
+            case "skill" -> new Condition.Skill(text(v, "name"), number(v, "min"), number(v, "max"));
+            case "reputation" -> new Condition.Reputation(text(v, "faction"), integer(v, "min"), integer(v, "max"));
+            case "job" -> new Condition.Job(v.isTextual() ? v.asText() : text(v, "id"));
             default -> throw new IllegalArgumentException("condição desconhecida: '" + key + "'");
         };
     }
@@ -96,6 +100,12 @@ public final class Rules {
             case "remember" -> new Effect.Remember(v.path("npc").asText("npc"), text(v, "type"),
                     v.path("subject").asText("player"));
             case "deed" -> new Effect.Deed(v.isTextual() ? v.asText() : text(v, "id"));
+            case "give" -> new Effect.Give(optional(v, "item"), v.path("qty").asInt(1), v.path("money").asInt(0));
+            case "take" -> new Effect.Take(optional(v, "item"), v.path("qty").asInt(1), v.path("money").asInt(0));
+            case "priceMod" -> new Effect.PriceMod(text(v, "tag"), v.path("factor").asDouble(1));
+            case "train" -> new Effect.Train(text(v, "skill"), v.path("amount").asDouble(1));
+            case "startJob" -> new Effect.StartJob(v.isTextual() ? v.asText() : text(v, "id"));
+            case "startTrade" -> new Effect.StartTrade(v.isTextual() ? v.asText() : text(v, "id"));
             default -> throw new IllegalArgumentException("efeito desconhecido: '" + e.getKey() + "'");
         };
     }
@@ -126,6 +136,12 @@ public final class Rules {
             case Effect.Remember r -> root.putObject("remember").put("npc", r.npc()).put("type", r.type())
                     .put("subject", r.subject());
             case Effect.Deed d -> root.putObject("deed").put("id", d.id());
+            case Effect.Give g -> root.putObject("give").put("item", g.item()).put("qty", g.qty()).put("money", g.money());
+            case Effect.Take t -> root.putObject("take").put("item", t.item()).put("qty", t.qty()).put("money", t.money());
+            case Effect.PriceMod p -> root.putObject("priceMod").put("tag", p.tag()).put("factor", p.factor());
+            case Effect.Train t -> root.putObject("train").put("skill", t.skill()).put("amount", t.amount());
+            case Effect.StartJob j -> root.putObject("startJob").put("id", j.id());
+            case Effect.StartTrade t -> root.putObject("startTrade").put("id", t.id());
         }
         return root;
     }

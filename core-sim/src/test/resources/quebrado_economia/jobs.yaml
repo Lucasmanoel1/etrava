@@ -1,0 +1,9 @@
+- {id: sem_nada, at: a/centro, hours: 0, pay: 1}   # sem quem dê o trabalho e sem duração
+- id: lugar_errado
+  giver: vendedor
+  at: a/lugar_que_nao_existe
+  hours: 2
+  pay: 3
+  paySkill: voar                                   # habilidade que não existe
+  train: {oficio: 1}
+  onFinish: [{startTrade: banca_fantasma}]         # comerciante que não existe

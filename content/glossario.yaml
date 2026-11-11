@@ -4,6 +4,7 @@
 lugares:
   - {nome: Etrava, tipo: mundo, fonte: lore}
   - {nome: Pedra-Mansa, tipo: vilarejo, fonte: lore}
+  - {nome: Posto da Encruzilhada, tipo: entreposto na estrada, fonte: PRD}
 
 pessoas:
   - {nome: Nalia, tipo: filha do moleiro, fonte: lore}

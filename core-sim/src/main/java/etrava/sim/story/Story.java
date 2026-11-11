@@ -11,6 +11,7 @@ import etrava.sim.content.EpilogueDef;
 import etrava.sim.content.FactDef;
 import etrava.sim.content.NpcDef;
 import etrava.sim.content.PropDef;
+import etrava.sim.economy.Economy;
 import etrava.sim.rules.Condition;
 import etrava.sim.rules.Effect;
 import etrava.sim.world.ActorState;
@@ -34,7 +35,9 @@ public final class Story {
     /** Distância, em metros, para conversar com alguém. */
     public static final double TALK_RANGE = 2.2;
     /** Até onde o jogador escuta uma conversa alheia. */
-    public static final double HEAR_RANGE = 9.0;
+    public static final double HEAR_RANGE = 9.0, HEAR_PER_OBSERVATION = 0.06;
+    /** Ganho-base de habilidade ao usá-la numa conversa, e ao escutar uma conversa alheia até o fim. */
+    public static final double SKILL_CHOICE_GAIN = 1.0, OBSERVATION_GAIN = 0.5;
     /** NPCs a esta distância uns dos outros estão "juntos": conversam e trocam rumores. */
     public static final double GROUP_RANGE = 6.0;
     /** Chance de um NPC passar um rumor a outro a cada hora juntos, e de ele sair distorcido. */
@@ -61,6 +64,7 @@ public final class Story {
     private final World world;
     private final Scheduler scheduler;
     private Arcs arcs;
+    private Economy economy;
     /** Um efeito mexeu no mundo desde a última vez que os arcos foram conferidos. */
     private boolean dirty;
     /** Algo de que as agendas dependem mudou (estágio de arco, situação de NPC). */
@@ -73,6 +77,7 @@ public final class Story {
     }
 
     public void setArcs(Arcs arcs) { this.arcs = arcs; }
+    public void setEconomy(Economy economy) { this.economy = economy; }
 
     /** Devolve true (uma vez) se algum efeito foi aplicado desde a última consulta. */
     public boolean takeDirty() {
@@ -141,6 +146,17 @@ public final class Story {
                 yield found;
             }
             case Condition.Chance ch -> world.rng.chance(ch.probability());
+            case Condition.Has h -> (h.item() == null || economy.count(h.item()) >= h.qty())
+                    && (h.money() == null || world.money >= h.money());
+            case Condition.Skill sk -> {
+                double value = economy.skill(sk.name());
+                yield (sk.min() == null || value >= sk.min()) && (sk.max() == null || value <= sk.max());
+            }
+            case Condition.Reputation r -> {
+                int value = economy.reputation(r.faction());
+                yield (r.min() == null || value >= r.min()) && (r.max() == null || value <= r.max());
+            }
+            case Condition.Job j -> economy.canWork(content.jobs().get(j.id()));
         };
     }
 
@@ -192,6 +208,18 @@ public final class Story {
                     world.chronicle.add(new ChronicleEntry(world.clock.tick(), c.type(), c.ref(), c.text()));
             case Effect.Schedule s -> scheduler.schedule(
                     world.clock.tick() + Math.round(s.hours() * world.clock.ticksPerHour()), s.interrupts(), s.effects());
+            case Effect.Give g -> {
+                if (g.item() != null) economy.give(g.item(), g.qty());
+                world.money += Math.max(0, g.money());
+            }
+            case Effect.Take t -> {
+                if (t.item() != null) economy.take(t.item(), t.qty());
+                world.money = Math.max(0, world.money - Math.max(0, t.money()));
+            }
+            case Effect.PriceMod p -> economy.priceMod(p.tag(), p.factor());
+            case Effect.Train t -> economy.train(t.skill(), t.amount());
+            case Effect.StartJob j -> world.pendingJob = j.id();
+            case Effect.StartTrade t -> world.pendingTrade = t.id();
         }
     }
 
@@ -395,7 +423,7 @@ public final class Story {
         }
         String text = node.text();
         if (node.gossip() != null) { // nó de novidades: conta algo que o jogador ainda não sabe (RF-125)
-            KnowledgeEntry news = gossip(session.npcId);
+            KnowledgeEntry news = news(session.npcId);
             DialogueDef.Node fallback = dialogue.nodes().get(node.gossip());
             if (news == null) {
                 if (fallback != null && fallback.gossip() == null) enter(session, dialogue, node.gossip(), events);
@@ -428,7 +456,7 @@ public final class Story {
      * A novidade mais recente que o NPC sabe e o jogador não: só o que vira rumor,
      * nada além da camada V1, e nunca os atos do próprio jogador.
      */
-    private KnowledgeEntry gossip(String npcId) {
+    public KnowledgeEntry news(String npcId) {
         KnowledgeEntry newest = null;
         for (KnowledgeEntry k : world.npcKnowledge(npcId).values()) {
             FactDef fact = content.facts().get(k.fact());
@@ -450,8 +478,19 @@ public final class Story {
         DialogueDef.Choice choice = node.choices().get(s.choiceIndex.get(index));
         s.history.add(new DialogueView.Line(content.text("dialogo.voce", "Você"), choice.text()));
         applyAll(choice.effects(), s.npcId, "npc:" + s.npcId, events);
+        trainBy(choice.when()); // usar a Lábia (ou outra habilidade) numa conversa treina a habilidade (RF-180)
         if (choice.target() == null) close(events);
         else enter(s, content.dialogues().get(s.dialogueId), choice.target(), events);
+    }
+
+    /** Treina cada habilidade exigida pela condição de uma escolha. */
+    private void trainBy(Condition c) {
+        switch (c) {
+            case Condition.Skill sk -> economy.train(sk.name(), SKILL_CHOICE_GAIN);
+            case Condition.All a -> a.of().forEach(this::trainBy);
+            case Condition.Any a -> a.of().forEach(this::trainBy);
+            default -> { /* nada a treinar */ }
+        }
     }
 
     public void advance(List<SimEvent> events) {
@@ -549,6 +588,7 @@ public final class Story {
                 learn(PLAYER, AmbientDef.factId(ref), AmbientDef.factVersion(ref), "rumor", "conversa:" + def.id(), events);
             }
         }
+        if (playerHears(def)) economy.train(Economy.OBSERVATION, OBSERVATION_GAIN); // escutar treina Observação
         world.ambientLast.put(def.id(), world.clock.tick());
         world.ambientId = null;
     }
@@ -567,6 +607,11 @@ public final class Story {
 
     private boolean playerHears(AmbientDef def) {
         ActorState first = world.npcs.get(def.participants().get(0));
-        return first != null && Math.hypot(first.x - world.player.x, first.y - world.player.y) <= HEAR_RANGE;
+        return first != null && Math.hypot(first.x - world.player.x, first.y - world.player.y) <= hearRange();
+    }
+
+    /** Quem tem Observação escuta conversas alheias de mais longe (RF-184): até +6 m com 100. */
+    public double hearRange() {
+        return HEAR_RANGE + HEAR_PER_OBSERVATION * (economy == null ? 0 : economy.skill(Economy.OBSERVATION));
     }
 }

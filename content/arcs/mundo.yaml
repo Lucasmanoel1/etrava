@@ -29,6 +29,8 @@
       onEnter:
         - {setFlag: sal_subiu}
         - {learn: {who: viajante, fact: sal_subiu, certainty: witnessed}}
+        - {learn: {who: comerciante_posto, fact: sal_subiu, certainty: witnessed}}
+        - {priceMod: {tag: sal, factor: 1.5}}      # AT-09: tudo o que leva sal fica 50% mais caro
 
 - id: e3_sacerdote
   name: O sacerdote de Orra

@@ -1,0 +1,19 @@
+# Origem I — O aprendiz de Pedra-Mansa (PRD 8.4). Pacote de dados: outra origem = outro arquivo.
+# No M5: dinheiro, itens, equipamento e habilidades iniciais. Local inicial, relações,
+# conhecimentos e arcos pessoais entram no M7.
+id: pedra_mansa
+name: O aprendiz de Pedra-Mansa
+money: 8
+items:
+  - {item: pao, qty: 2}
+  - {item: maca, qty: 1}
+equipment:
+  body: camisa_linho
+  mainHand: martelo
+skills:
+  luta: 5
+  vigor: 15
+  oficio: 20
+  labia: 8
+  observacao: 12
+  comercio: 5

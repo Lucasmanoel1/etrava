@@ -7,7 +7,16 @@ nodes:
   forja:
     text: "Ferradura é amanhã. Prego é hoje, se tiver o ferro."
     choices:
+      - text: "Precisa de mão na oficina?"
+        when: {job: oficina}
+        goto: servico
       - {text: "Só passando."}
+  servico:
+    text: "Tem prego para bater e dobradiça para endireitar. Quatro horas, nove moedas. E não me queima a mão."
+    choices:
+      - text: "Começo agora."
+        effects: [{startJob: oficina}]
+      - {text: "Mais tarde."}
   machado:
     text: "Árvore que come gente, a gente corta. Não precisa de curandeira para isso."
     effects: [{learn: {who: player, fact: ferreiro_quer_cortar, certainty: claim}}]

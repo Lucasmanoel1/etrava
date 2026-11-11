@@ -1,0 +1,63 @@
+# Trabalhos remunerados (RF-264, PRD 7.2): ação temporizada, sem minijogo. O tempo passa como
+# numa espera (o mundo segue) e o personagem termina no posto de trabalho.
+#   giver:    quem dá o trabalho; precisa estar presente, acordado e na área do jogador
+#   at:       onde se trabalha (area/ponto)
+#   from/to:  janela de horário em que dá para COMEÇAR
+#   hours:    duração; pay: pagamento-base pelo trabalho inteiro (interrompido = proporcional)
+#   paySkill: habilidade que aumenta o pagamento (até +50% com 100)
+#   train:    habilidade → ganho-base por hora
+#   when:     condição extra ("npc" = quem dá o trabalho) — quem detesta o jogador não oferece (RF-282)
+#   onFinish: efeitos ao terminar o trabalho inteiro
+#   gossip:   chance de quem dá o trabalho contar uma novidade enquanto trabalham
+# Um trabalho por dia, de cada. Faminto, rende e ensina metade.
+# Oferece-se pela conversa: escolha com {when: {job: <id>}} e efeito {startJob: <id>}.
+
+# Até Avel chegar (M7), quem toca a oficina é o ferreiro.
+- id: oficina
+  name: Serviço na oficina
+  giver: ferreiro
+  at: vila_ref/oficina_fora
+  from: "06:00"
+  to: "11:00"
+  hours: 4
+  pay: 9
+  paySkill: oficio
+  train: {oficio: 0.8, vigor: 0.2}
+  when: {opinion: {npc: npc, min: -20}}
+  onFinish:
+    - {opinion: {npc: ferreiro, add: 1}}
+    - {addVar: {name: dias_de_trabalho, value: 1}}
+  gossip: 0.5
+
+- id: colheita
+  name: Ajudar na colheita
+  giver: aldea
+  at: vila_ref/feno
+  from: "09:00"
+  to: "11:30"
+  hours: 3
+  pay: 6
+  paySkill: vigor
+  train: {vigor: 0.7, observacao: 0.2}
+  when: {opinion: {npc: npc, min: -20}}
+  onFinish:
+    - {give: {item: legumes, qty: 2}}
+    - {opinion: {npc: aldea, add: 1}}
+    - {addVar: {name: dias_de_trabalho, value: 1}}
+  gossip: 0.6
+
+- id: carga_posto
+  name: Descarregar no Posto
+  giver: comerciante_posto
+  at: area_teste/praca
+  from: "07:00"
+  to: "13:00"
+  hours: 5
+  pay: 14
+  paySkill: vigor
+  train: {vigor: 0.9, comercio: 0.2}
+  when: {opinion: {npc: npc, min: -20}}
+  onFinish:
+    - {opinion: {npc: comerciante_posto, add: 1}}
+    - {addVar: {name: dias_de_trabalho, value: 1}}
+  gossip: 0.7

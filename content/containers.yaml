@@ -1,0 +1,22 @@
+# Contêineres (RF-204): cestos, sacos, baús. Clique para abrir; pegar do que tem dono é roubo
+# (ato `roubo` de deeds.yaml) — mas só pesa para quem estiver vendo (RF-089). Ninguém vendo,
+# ninguém sabe. O dono repõe de tantos em tantos dias.
+#   at:    area/ponto do mapa
+#   owner: NPC dono (omitido = de ninguém)
+
+- id: sacos_moinho
+  name: Sacos de farinha
+  at: vila_ref/feno
+  owner: moleiro
+  restockDays: 2
+  items:
+    - {item: farinha, qty: 3}
+
+- id: cesto_horta
+  name: Cesto da horta
+  at: vila_ref/horta
+  owner: curandeira
+  restockDays: 2
+  items:
+    - {item: ervas, qty: 4}
+    - {item: legumes, qty: 3}

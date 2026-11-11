@@ -7,6 +7,7 @@ dialogue: moleiro
 opinion: 10
 knows: [mo_parada]          # o resto ele fica sabendo conforme o arco A1 anda
 relations: [{npc: nalia, kind: familia}]
+faction: pedra_mansa
 schedule:
   - {from: "21:00", to: "05:00", do: dormir,    at: vila_ref/moinho_porta, hidden: true}
   - {from: "05:00", to: "11:00", do: trabalhar, at: vila_ref/moinho_porta}

@@ -35,4 +35,26 @@ public sealed interface SimEvent {
 
     /** O capítulo terminou: a apresentação mostra o epílogo (RF-163). O jogo continua depois. */
     record ChapterEnded(java.util.List<String> epilogue) implements SimEvent {}
+
+    /** Abriu um comércio ou um contêiner; o relógio fica parado até fechar (RF-324). */
+    record TradeOpened(String partnerId, boolean container) implements SimEvent {}
+
+    record TradeClosed(String partnerId) implements SimEvent {}
+
+    /** O jogador comeu, bebeu ou usou um item. */
+    record ItemUsed(String itemId) implements SimEvent {}
+
+    /** Alguém viu o jogador fazer o que não devia. */
+    record DeedSeen(String deedId, int witnesses) implements SimEvent {}
+
+    /**
+     * Um trabalho terminou (ou foi interrompido).
+     *
+     * @param heard texto da novidade que quem deu o trabalho contou, ou null
+     */
+    record JobFinished(String jobId, double hours, int pay, boolean interrupted, String giver, String heard)
+            implements SimEvent {}
+
+    /** O trabalho não pôde começar (fora de hora, quem dá o trabalho não está, já foi feito hoje). */
+    record JobRefused(String jobId) implements SimEvent {}
 }

@@ -48,4 +48,17 @@ public interface WorldView {
     String npcStatus(String id);
     /** Área em que o NPC está agora; null se não existir. */
     String npcArea(String id);
+    int money();
+    /** Mochila: item → quantidade (sem o que está equipado). */
+    java.util.Map<String, Integer> inventory();
+    /** Encaixe → item equipado. */
+    java.util.Map<String, String> equipment();
+    /** Habilidade → valor de 0 a 100. */
+    java.util.Map<String, Double> skills();
+    /** Fome de 0 a 100. */
+    double hunger();
+    /** Comércio ou contêiner aberto, ou null. Preços e listas: {@code Simulation.tradeView()}. */
+    etrava.sim.world.TradeSession trade();
+    /** Multiplicador de preço de uma categoria ou marca (1 = normal). */
+    double priceMod(String tag);
 }

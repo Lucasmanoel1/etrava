@@ -1,0 +1,4 @@
+- id: bau
+  at: a/centro
+  owner: fantasma            # dono que não existe; e não há deeds.yaml com o ato 'roubo'
+  items: [{item: nada, qty: 1}]

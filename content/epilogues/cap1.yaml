@@ -20,6 +20,7 @@ slots:
   - berta
   - estrada
   - vizinhos
+  - vida
   - caderno
   - fecho
 
@@ -119,6 +120,20 @@ fragments:
     text: "No moinho, guardam um lugar para você no banco de fora."
   - slot: vizinhos
     text: "Para o vilarejo, você continua sendo o aprendiz da oficina: o que está sempre com graxa na cara."
+
+  # ---- a vida do próprio personagem: trabalho e dinheiro (M5)
+  - slot: vida
+    priority: 20
+    when: {var: {name: dias_de_trabalho, min: 15}}
+    text: "Na oficina e no campo, já ninguém precisa explicar duas vezes. As mãos aprenderam antes da cabeça."
+  - slot: vida
+    priority: 15
+    when: {has: {money: 80}}
+    text: "No fundo da bolsa sobrou dinheiro. É a primeira vez que sobra, e você ainda não sabe o que fazer com ele."
+  - slot: vida
+    priority: 10
+    when: {var: {name: dias_de_trabalho, max: 2}}
+    text: "Trabalho, quase nenhum. A bolsa sabe disso antes de qualquer pessoa."
 
   - slot: caderno
     when: {knows: {who: player, fact: custo_pode_ser_dividido}}

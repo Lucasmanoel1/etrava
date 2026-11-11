@@ -13,7 +13,16 @@ nodes:
       - text: "Alguma novidade?"
         when: {not: {knows: {who: npc, fact: arvore_voltou}}}
         goto: sem_novidade
+      - text: "Precisa de ajuda na colheita?"
+        when: {job: colheita}
+        goto: colheita
       - {text: "Bom dia para você também."}
+  colheita:
+    text: "Três horas de costas curvadas. Seis moedas e um tanto do que sair da terra."
+    choices:
+      - text: "Vamos."
+        effects: [{startJob: colheita}]
+      - {text: "Fica para outro dia."}
   combina:
     text: "Combina."
   sem_novidade:

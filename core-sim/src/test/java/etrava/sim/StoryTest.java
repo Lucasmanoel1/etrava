@@ -142,7 +142,7 @@ class StoryTest {
         assertTrue(tree.spreads());
         assertFalse(content.facts().get("curandeira_olhou_arvore").spreads());
         assertEquals(1, content.facts().get("curandeira_olhou_arvore").layerIndex());
-        assertEquals(7, content.dialogues().size());
+        assertEquals(8, content.dialogues().size());
         assertEquals(5, content.ambients().size());
         assertEquals("Você", content.text("dialogo.voce", "?"));
         assertEquals("padrão", content.text("chave.que.nao.existe", "padrão"));

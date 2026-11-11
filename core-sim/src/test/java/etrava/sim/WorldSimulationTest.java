@@ -58,7 +58,7 @@ class WorldSimulationTest {
 
     @Test
     void agendaDosNpcsCobreODiaInteiro() {
-        assertEquals(8, content.npcs().size());
+        assertEquals(9, content.npcs().size());
         for (NpcDef npc : content.npcs().values()) {
             for (int minute = 0; minute < 1440; minute += 5) {
                 assertNotNull(npc.blockAt(minute), npc.id() + " sem bloco no minuto " + minute);
@@ -146,8 +146,9 @@ class WorldSimulationTest {
         assertTrue(events.contains(new SimEvent.AreaChanged("vila_ref", "area_teste")));
         assertEquals("area_teste", sim.view().areaId());
         assertEquals(20.5, sim.view().playerX(), 1e-9);
-        assertEquals(1, sim.view().actors().size());
-        assertEquals("viajante", sim.view().actors().get(0).id());
+        // na área de teste estão o viajante e o comerciante do Posto (M5)
+        assertEquals(List.of("viajante", "comerciante_posto"),
+                sim.view().actors().stream().map(a -> a.id()).sorted(java.util.Comparator.reverseOrder()).toList());
         sim.submit(new Command.EnterArea("nao_existe", null)); // ignorado
         sim.step();
         assertEquals("area_teste", sim.view().areaId());

@@ -1,8 +1,11 @@
 package etrava.sim.api;
 
 import etrava.sim.content.AreaDef;
+import etrava.sim.content.ContainerDef;
 import etrava.sim.content.ContentDb;
 import etrava.sim.content.EpilogueDef;
+import etrava.sim.content.JobDef;
+import etrava.sim.economy.Economy;
 import etrava.sim.content.NpcDef;
 import etrava.sim.nav.NavGrid;
 import etrava.sim.nav.Pathfinder;
@@ -56,6 +59,7 @@ public final class Simulation {
     private final List<Command.Timed> commandLog = new ArrayList<>();
     private final Story story;
     private final Arcs arcs;
+    private final Economy economy;
     /** Eventos gerados fora de um comando (efeitos agendados); saem no fim do próximo passo. */
     private final List<SimEvent> buffered = new ArrayList<>();
 
@@ -64,7 +68,9 @@ public final class Simulation {
         this.world = world;
         this.story = new Story(content, world, this::schedule);
         this.arcs = new Arcs(content, world, story);
+        this.economy = new Economy(content, world, story);
         story.setArcs(arcs);
+        story.setEconomy(economy);
     }
 
     public static Simulation newGame(ContentDb content, long seed, String areaId) {
@@ -78,6 +84,7 @@ public final class Simulation {
         for (NpcDef def : content.npcs().values()) world.npcs.put(def.id(), new ActorState(def.id(), def.sprite()));
         Simulation sim = new Simulation(content, world);
         for (NpcDef def : content.npcs().values()) sim.story.initNpc(def);
+        sim.economy.newGame(content.origin());
         sim.loadArea(areaId);
         sim.placePlayer(AreaDef.PLAYER_SPAWN);
         sim.arcs.init(sim.buffered);
@@ -99,8 +106,9 @@ public final class Simulation {
                 sim.story.initNpc(def);
             }
         }
-        // arcos que entraram no conteúdo depois do save começam do início
+        // arcos, comerciantes e contêineres que entraram no conteúdo depois do save começam do início
         sim.arcs.init(sim.buffered);
+        sim.economy.ensureState();
         sim.story.takeDirty();
         sim.story.takeAgendaDirty();
         // só os recém-chegados são posicionados: mexer nos demais mudaria o estado carregado
@@ -123,6 +131,8 @@ public final class Simulation {
     public void save(Path file, String savedAt) throws SaveGame.SaveException {
         if (world.dialogue != null)
             throw new SaveGame.SaveException("Não dá para salvar no meio de uma conversa.");
+        if (world.trade != null)
+            throw new SaveGame.SaveException("Não dá para salvar com o comércio aberto.");
         SaveGame.write(file, world, savedAt);
     }
 
@@ -156,6 +166,10 @@ public final class Simulation {
     public NavGrid nav() { return nav; }
     public ContentDb content() { return content; }
     public List<Command.Timed> commandLog() { return Collections.unmodifiableList(commandLog); }
+    /** Mochila, preços, habilidades e trabalhos — consultas para a apresentação e as ferramentas. */
+    public Economy economy() { return economy; }
+    /** O comércio ou contêiner aberto, com os preços de agora; null se nada está aberto. */
+    public TradeView tradeView() { return economy.tradeView(); }
 
     /** Enfileira um comando; ele é aplicado no início do próximo tick. */
     public void submit(Command command) {
@@ -172,8 +186,9 @@ public final class Simulation {
         }
         pending.clear();
         react(events, false);
-        // durante uma conversa com o jogador o mundo fica parado (RF-105)
-        if (!skipped && world.dialogue == null) { // um salto de tempo já consumiu este passo
+        skipped |= startPending(events);
+        // durante uma conversa com o jogador, ou com o comércio aberto, o mundo fica parado (RF-105, RF-324)
+        if (!skipped && world.dialogue == null && world.trade == null) { // um salto de tempo já consumiu este passo
             movePlayer(events);
             for (ActorState npc : world.npcs.values()) {
                 if (!npc.path.isEmpty() && area.id().equals(npc.areaId)) {
@@ -181,11 +196,30 @@ public final class Simulation {
                 }
             }
             approachTalk(events);
-            if (world.dialogue == null) {
+            approachContainer(events);
+            if (world.dialogue == null && world.trade == null) {
                 advanceTo(world.clock.tick() + 1, false);
                 story.tickAmbient(events);
             }
         }
+        events.addAll(buffered);
+        buffered.clear();
+        refreshVisible();
+        return events;
+    }
+
+    /**
+     * Aplica os comandos pendentes sem avançar o relógio — para a apresentação com o
+     * jogo parado (mochila, ficha do personagem, pausa): comer ou trocar de roupa não gasta tempo.
+     */
+    public List<SimEvent> stepPaused() {
+        List<SimEvent> events = new ArrayList<>();
+        for (Command c : pending) {
+            commandLog.add(new Command.Timed(world.clock.tick(), c));
+            apply(c, events);
+        }
+        pending.clear();
+        react(events, false);
         events.addAll(buffered);
         buffered.clear();
         refreshVisible();
@@ -209,6 +243,7 @@ public final class Simulation {
     public void applyNow(List<Effect> effects) {
         for (Effect e : effects) applyEffect(e);
         react(buffered, false);
+        startPending(buffered);
         refreshVisible();
     }
 
@@ -242,7 +277,10 @@ public final class Simulation {
             for (Effect e : s.effects()) applyEffect(e);
             interrupted |= s.interrupts();
         }
-        if (target % agendaInterval() == 0) updateAgendas(snap);
+        if (target % agendaInterval() == 0) {
+            economy.tenMinutes();
+            updateAgendas(snap);
+        }
         if (target % world.clock.ticksPerHour() == 0) {
             story.spreadRumors();
             arcs.evaluate(buffered); // prazos e transições, uma vez por hora (SPEC 3.2)
@@ -250,6 +288,7 @@ public final class Simulation {
         react(buffered, snap);
         if (target % world.clock.ticksPerDay() == 0) {
             chronicle("dia", "", "Dia " + world.clock.day());
+            economy.daily(); // reposição dos comerciantes (SPEC 3.2: economia uma vez por dia)
             interrupted |= endChapterIfDue();
         }
         return interrupted;
@@ -309,11 +348,19 @@ public final class Simulation {
     /** Aplica um comando. Devolve true se ele fez o tempo saltar. */
     private boolean apply(Command c, List<SimEvent> events) {
         ActorState player = world.player;
-        boolean talking = world.dialogue != null;
+        boolean talking = world.dialogue != null, trading = world.trade != null;
         boolean talkCommand = c instanceof Command.Choose || c instanceof Command.Advance
-                || c instanceof Command.LeaveDialogue || c instanceof Command.AskAbout || c instanceof Command.MarkFact;
-        if (talking != talkCommand && !(c instanceof Command.MarkFact)) return false; // comando fora de hora
-        if (!talkCommand && !(c instanceof Command.Talk)) world.pendingTalk = null;
+                || c instanceof Command.LeaveDialogue || c instanceof Command.AskAbout;
+        boolean tradeCommand = c instanceof Command.Buy || c instanceof Command.Sell || c instanceof Command.TakeItem
+                || c instanceof Command.CloseTrade;
+        // valem a qualquer hora, até com o jogo parado: caderno e mochila
+        boolean anytime = c instanceof Command.MarkFact || c instanceof Command.UseItem || c instanceof Command.Equip
+                || c instanceof Command.Unequip;
+        if (!anytime && (talking != talkCommand || trading != tradeCommand)) return false; // comando fora de hora
+        if (!anytime && !talkCommand && !tradeCommand) {
+            if (!(c instanceof Command.Talk)) world.pendingTalk = null;
+            if (!(c instanceof Command.OpenContainer)) world.pendingContainer = null;
+        }
         switch (c) {
             case Command.Talk t -> {
                 ActorState npc = world.npcs.get(t.npcId());
@@ -385,6 +432,30 @@ public final class Simulation {
                 events.add(new SimEvent.TimeSkipped(from, world.clock.tick(), true, interrupted));
                 return true;
             }
+            case Command.UseItem u -> economy.use(u.itemId(), events);
+            case Command.Equip e -> economy.equip(e.itemId());
+            case Command.Unequip u -> economy.unequip(u.slot());
+            case Command.Work w -> world.pendingJob = w.jobId();
+            case Command.OpenTrade o -> economy.openTrade(o.merchantId(), events);
+            case Command.Buy b -> economy.buy(b.itemId());
+            case Command.Sell s -> economy.sell(s.itemId());
+            case Command.TakeItem t -> economy.takeFromContainer(t.itemId(), events);
+            case Command.CloseTrade x -> economy.closeTrade(events);
+            case Command.OpenContainer o -> {
+                ContainerDef def = content.containers().get(o.containerId());
+                double[] p = def == null ? null : economy.containerPoint(def);
+                if (p == null) return false;
+                if (economy.nearContainer(def)) {
+                    stopPlayer();
+                    economy.openContainer(def.id(), events);
+                } else {
+                    world.dirX = world.dirY = 0;
+                    world.hasDestination = false;
+                    player.path.clear();
+                    player.path.addAll(Pathfinder.findPath(nav, player.x, player.y, p[0], p[1]));
+                    world.pendingContainer = player.path.isEmpty() ? null : def.id();
+                }
+            }
             case Command.EnterArea e -> {
                 if (content.area(e.areaId()) == null || e.areaId().equals(world.areaId)) return false;
                 String from = world.areaId;
@@ -397,6 +468,68 @@ public final class Simulation {
             }
         }
         return false;
+    }
+
+    // ---------------------------------------------------------------- trabalho e comércio
+
+    /**
+     * Trabalho ou comércio pedido por uma conversa (efeitos {@code startJob}/{@code startTrade})
+     * ou por comando: começa assim que não houver conversa aberta. Devolve true se o tempo saltou.
+     */
+    private boolean startPending(List<SimEvent> events) {
+        if (world.dialogue != null) return false;
+        if (world.pendingTrade != null) {
+            String id = world.pendingTrade;
+            world.pendingTrade = null;
+            if (world.trade == null) economy.openTrade(id, events);
+        }
+        if (world.pendingJob == null) return false;
+        String id = world.pendingJob;
+        world.pendingJob = null;
+        return world.trade == null && runJob(id, events);
+    }
+
+    /**
+     * Trabalhar (RF-264): uma ação temporizada, sem minijogo (PRD 7.2). O tempo salta
+     * como numa espera — o mundo segue — e pode ser interrompido por um evento.
+     */
+    private boolean runJob(String jobId, List<SimEvent> events) {
+        JobDef job = content.jobs().get(jobId);
+        if (!economy.canWork(job)) {
+            events.add(new SimEvent.JobRefused(jobId));
+            return false;
+        }
+        stopPlayer();
+        if (job.area().equals(area.id())) { // o personagem vai para o posto de trabalho
+            Point p = spot(job.area(), job.spot());
+            if (!nav.isBlockedAt(p.x(), p.y())) {
+                world.player.x = p.x();
+                world.player.y = p.y();
+            }
+        }
+        long from = world.clock.tick();
+        boolean hungry = economy.starving();
+        boolean interrupted = skipTime(Math.round(job.hours() * world.clock.ticksPerHour()), true);
+        double worked = (world.clock.tick() - from) / (double) world.clock.ticksPerHour();
+        events.add(economy.finishJob(job, worked, hungry, interrupted, events));
+        react(events, false);
+        events.add(new SimEvent.TimeSkipped(from, world.clock.tick(), false, interrupted));
+        return true;
+    }
+
+    /** O jogador está indo até um contêiner: abre ao chegar perto. */
+    private void approachContainer(List<SimEvent> events) {
+        if (world.pendingContainer == null) return;
+        ContainerDef def = content.containers().get(world.pendingContainer);
+        if (def == null || economy.containerPoint(def) == null) {
+            world.pendingContainer = null;
+        } else if (economy.nearContainer(def)) {
+            world.pendingContainer = null;
+            stopPlayer();
+            economy.openContainer(def.id(), events);
+        } else if (world.player.path.isEmpty()) {
+            world.pendingContainer = null; // chegou o mais perto que dava e não alcançou
+        }
     }
 
     // ---------------------------------------------------------------- conversa
@@ -436,7 +569,8 @@ public final class Simulation {
 
     private void movePlayer(List<SimEvent> events) {
         ActorState player = world.player;
-        double step = WALK_SPEED * DT, dirX = world.dirX, dirY = world.dirY;
+        double speed = WALK_SPEED * (economy.overloaded() ? Economy.OVERLOAD_SPEED : 1); // carga demais pesa (RF-200)
+        double step = speed * DT, dirX = world.dirX, dirY = world.dirY;
         if (dirX != 0 || dirY != 0) {
             double nx = player.x + dirX * step, ny = player.y + dirY * step;
             boolean moved = false;

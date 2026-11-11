@@ -1,0 +1,7 @@
+- id: banca
+  npc: fantasma                         # NPC que não existe
+  cash: 10
+  when: {reputation: {faction: guilda}} # comunidade sem ninguém
+  stock:
+    - {item: sumido, min: 1, max: 2}    # item que não existe
+    - {item: pao, min: 5, max: 2}       # mínimo maior que o máximo

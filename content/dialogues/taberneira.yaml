@@ -1,16 +1,40 @@
 # A taverna é onde os rumores se cruzam: o nó `novidades` conta o que ela ouviu e o jogador não.
+# É também o comércio do vilarejo (merchants.yaml: taverna). À tarde ela serve do lado de fora.
 id: taberneira
 start:
+  - {when: {time: {hourFrom: 15, hourTo: 23}}, goto: balcao}
   - {goto: oi}
 nodes:
   oi:
     text: "Balcão é lá dentro. Aqui fora eu só respiro."
     choices:
       - {text: "O que andam dizendo?", goto: novidades}
+      - text: "Tem alguma coisa para comer?"
+        when: {reputation: {faction: pedra_mansa, min: -25}}
+        effects: [{startTrade: taverna}]
+      - text: "Tem alguma coisa para comer?"
+        when: {reputation: {faction: pedra_mansa, max: -26}}
+        goto: fechado
       - text: "É sobre a menina do moinho. Repartir o peso entre três."
         when: {all: [{knows: {who: player, fact: custo_pode_ser_dividido}}, {arc: {id: a1_nalia, stage: impasse}}, {not: {flag: vol_taberneira}}]}
         goto: repartir
       - {text: "Então respire."}
+  balcao:
+    text: "Lá dentro está um forno. Hoje o balcão é aqui fora."
+    choices:
+      - text: "O que tem no caldeirão?"
+        when: {reputation: {faction: pedra_mansa, min: -25}}
+        effects: [{startTrade: taverna}]
+      - text: "O que tem no caldeirão?"
+        when: {reputation: {faction: pedra_mansa, max: -26}}
+        goto: fechado
+      - {text: "O que andam dizendo?", goto: novidades}
+      - text: "É sobre a menina do moinho. Repartir o peso entre três."
+        when: {all: [{knows: {who: player, fact: custo_pode_ser_dividido}}, {arc: {id: a1_nalia, stage: impasse}}, {not: {flag: vol_taberneira}}]}
+        goto: repartir
+      - {text: "Nada, obrigado."}
+  fechado:
+    text: "Para você a cozinha fechou. Anda falando muito de você por aqui."
   novidades:
     gossip: nada
     text: "No balcão, dizem:"

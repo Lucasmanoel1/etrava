@@ -20,3 +20,8 @@
 - id: retrato.curandeira
   type: portrait
   file: retratos/curandeira.png
+
+# Retrato ainda não gerado (o comerciante do Posto entrou no M5).
+- id: retrato.comerciante_posto
+  type: portrait
+  file: retratos/comerciante_posto.png

@@ -46,4 +46,22 @@ public sealed interface Effect {
 
     /** O jogador comete um ato (content/deeds.yaml); só pesa para quem viu ou ficou sabendo (RF-089, RF-281). */
     record Deed(String id) implements Effect {}
+
+    /** O jogador recebe um item (item != null) e/ou dinheiro. */
+    record Give(String item, int qty, int money) implements Effect {}
+
+    /** O jogador perde um item e/ou dinheiro (só até o que tem). */
+    record Take(String item, int qty, int money) implements Effect {}
+
+    /** Multiplica o modificador de preço dos itens com esta categoria ou marca (RF-263; E2 → sal). */
+    record PriceMod(String tag, double factor) implements Effect {}
+
+    /** Treina uma habilidade do jogador; o ganho real diminui conforme ela sobe (RF-182). */
+    record Train(String skill, double amount) implements Effect {}
+
+    /** Começa um trabalho de content/jobs.yaml assim que a conversa acabar. */
+    record StartJob(String id) implements Effect {}
+
+    /** Abre o comércio de content/merchants.yaml assim que a conversa acabar. */
+    record StartTrade(String id) implements Effect {}
 }

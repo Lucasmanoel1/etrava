@@ -1,0 +1,252 @@
+# Itens (RF-202). Peso em kg; valor-base em moedas, antes dos modificadores (RF-262).
+#   category: arma | armadura | ferramenta | consumivel | material | mercadoria | documento | especial
+#   tags:     marcas livres; eventos mudam preços por categoria ou marca (E2 sobe tudo com `sal`)
+#   slot:     mainHand | offHand | body | head | accessory (lamparina vai na mão secundária)
+#   food:     quanto a fome cai ao comer
+#   use:      efeitos ao usar (vocabulário de CONTENT.md)
+#   stats:    números para o combate e a escuridão (M6): dano, protecao, luz; `carga` soma à capacidade
+# O ícone é o asset icone.<id> (placeholder até a arte existir).
+# Documentos e itens especiais entram no M7, com A2 e A3.
+
+# ---------- comida e bebida
+- id: pao
+  name: Pão de centeio
+  description: "Duro por fora, quase duro por dentro."
+  category: consumivel
+  weight: 0.4
+  value: 2
+  food: 30
+
+- id: sopa
+  name: Tigela de sopa
+  description: "Do caldeirão da taverna. Tem o que tinha na cozinha hoje."
+  category: consumivel
+  weight: 0.5
+  value: 4
+  food: 55
+
+- id: queijo
+  name: Queijo curado
+  description: "Aguenta uma semana na mochila. Você, nem tanto."
+  category: consumivel
+  weight: 0.5
+  value: 5
+  food: 35
+
+- id: maca
+  name: Maçã
+  description: "Pequena e azeda. Das árvores do caminho do moinho."
+  category: consumivel
+  tags: [horta]
+  weight: 0.2
+  value: 1
+  food: 12
+
+- id: biscoito
+  name: Biscoito de viagem
+  description: "Feito para durar mais que a viagem."
+  category: consumivel
+  weight: 0.2
+  value: 3
+  food: 18
+
+- id: carne_salgada
+  name: Carne salgada
+  description: "Mais sal que carne, e o sal anda caro."
+  category: consumivel
+  tags: [sal]
+  weight: 0.5
+  value: 6
+  food: 45
+
+- id: legumes
+  name: Legumes da horta
+  description: "Terra ainda grudada. Comem-se crus, se a fome apertar."
+  category: consumivel
+  tags: [horta]
+  weight: 0.8
+  value: 3
+  food: 15
+
+- id: cerveja
+  name: Caneca de cerveja
+  description: "Rala. A taberneira jura que não."
+  category: consumivel
+  weight: 0.6
+  value: 2
+  food: 5
+
+- id: cha_ervas
+  name: Chá de ervas
+  description: "Amargo. Dizem que acalma; ninguém diz o quê."
+  category: consumivel
+  weight: 0.2
+  value: 2
+  food: 3
+
+- id: unguento_sal
+  name: Unguento de sal
+  description: "Pasta cinzenta para corte e queimadura. Arde antes de ajudar."
+  category: consumivel
+  tags: [sal, remedio]
+  weight: 0.2
+  value: 12
+  stats: {cura: 20}
+
+# ---------- materiais e mercadorias
+- id: sal_medicinal
+  name: Sal medicinal
+  description: "Um saquinho de sal cinzento. Vem de longe e cobra pela distância."
+  category: mercadoria
+  tags: [sal, remedio]
+  weight: 0.3
+  value: 10
+
+- id: farinha
+  name: Saco de farinha
+  description: "Do moinho. Pesa mais do que parece."
+  category: material
+  tags: [moinho]
+  weight: 5.0
+  value: 6
+
+- id: ferro
+  name: Barra de ferro
+  description: "Ferro de estrada, cheio de escama."
+  category: material
+  weight: 2.0
+  value: 8
+
+- id: pregos
+  name: Punhado de pregos
+  description: "Uns tortos. Todos úteis."
+  category: material
+  weight: 0.5
+  value: 3
+
+- id: lenha
+  name: Feixe de lenha
+  description: "Seca o bastante para pegar fogo na segunda tentativa."
+  category: material
+  tags: [combustivel]
+  weight: 4.0
+  value: 2
+
+- id: couro
+  name: Peça de couro
+  description: "Curtido às pressas. Ainda cheira."
+  category: material
+  weight: 1.5
+  value: 7
+
+- id: corda
+  name: Rolo de corda
+  description: "Dez braças de cânhamo."
+  category: material
+  weight: 1.2
+  value: 4
+
+- id: ervas
+  name: Ervas secas
+  description: "Um maço amarrado com linha. A curandeira saberia dizer o nome."
+  category: material
+  tags: [horta, remedio]
+  weight: 0.1
+  value: 3
+
+- id: oleo
+  name: Óleo de lamparina
+  description: "Uma garrafinha. Dura uma noite e meia."
+  category: material
+  tags: [combustivel]
+  weight: 0.5
+  value: 3
+
+# ---------- ferramentas, armas e roupa
+- id: martelo
+  name: Martelo de oficina
+  description: "O cabo tem a forma da sua mão. Ou o contrário."
+  category: ferramenta
+  slot: mainHand
+  weight: 1.2
+  value: 9
+  stats: {dano: 5}
+
+- id: faca
+  name: Faca de ofício
+  description: "Corta corda, couro e pão, nessa ordem de frequência."
+  category: arma
+  slot: mainHand
+  weight: 0.3
+  value: 6
+  stats: {dano: 3}
+
+- id: machadinha
+  name: Machadinha
+  description: "Para lenha. Serve para outras coisas, e é por isso que custa mais."
+  category: arma
+  slot: mainHand
+  weight: 1.5
+  value: 14
+  stats: {dano: 7}
+
+- id: cajado
+  name: Cajado de viagem
+  description: "Madeira de freixo, ponta gasta de estrada."
+  category: arma
+  slot: mainHand
+  weight: 1.8
+  value: 4
+  stats: {dano: 4}
+
+- id: lamparina
+  name: Lamparina
+  description: "Vidro grosso, alça quente. Na mão de fora."
+  category: ferramenta
+  slot: offHand
+  weight: 0.8
+  value: 10
+  stats: {luz: 6}
+
+- id: camisa_linho
+  name: Camisa de linho
+  description: "Remendada nos cotovelos."
+  category: armadura
+  slot: body
+  weight: 0.4
+  value: 3
+
+- id: gibao_couro
+  name: Gibão de couro
+  description: "Grosso, quente e duro de dobrar. Segura uma pancada."
+  category: armadura
+  slot: body
+  weight: 3.0
+  value: 22
+  stats: {protecao: 3}
+
+- id: chapeu_feltro
+  name: Chapéu de feltro
+  description: "Aba larga. Chuva escorre para as costas, não para os olhos."
+  category: armadura
+  slot: head
+  weight: 0.3
+  value: 5
+
+- id: capuz_la
+  name: Capuz de lã
+  description: "Pinica. Esquenta."
+  category: armadura
+  slot: head
+  weight: 0.4
+  value: 6
+  stats: {protecao: 1}
+
+- id: bolsa_cinto
+  name: Bolsa de cinto
+  description: "Couro com fivela. Cabe mais do que parece."
+  category: ferramenta
+  slot: accessory
+  weight: 0.3
+  value: 8
+  stats: {carga: 6}

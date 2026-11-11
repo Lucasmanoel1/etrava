@@ -1,0 +1,31 @@
+# Habilidades (RF-180–182). Vão de 0 a 100 e sobem pelo uso, cada vez mais devagar:
+#   ganho = base × (1 − valor/100) ^ curve
+# Não há nível global nem experiência genérica. Os valores iniciais vêm da origem
+# (origins/pedra_mansa.yaml). O que treina cada uma:
+#   Ofício e Vigor — trabalhos (jobs.yaml, campo `train`)
+#   Comércio       — cada compra e venda
+#   Observação     — escutar uma conversa alheia até o fim; também aumenta a distância de escuta
+#   Lábia          — usar uma fala que exige Lábia (escolha com condição `skill`)
+#   Luta           — combate (M6)
+
+curve: 1.6
+
+skills:
+  - id: luta
+    name: Luta
+    description: "Saber onde pôr o peso, quando recuar e quando não adianta mais."
+  - id: vigor
+    name: Vigor
+    description: "Aguentar carga, frio e dia comprido. Quem tem mais leva mais sem arrastar o pé."
+  - id: oficio
+    name: Ofício
+    description: "Mão de oficina: medir, bater, encaixar. Paga melhor quem erra menos."
+  - id: labia
+    name: Lábia
+    description: "Dizer a coisa certa do jeito que o outro aceita ouvir."
+  - id: observacao
+    name: Observação
+    description: "Reparar no que está fora do lugar e ouvir conversa de longe."
+  - id: comercio
+    name: Comércio
+    description: "Saber quanto vale, quanto pedir e quando calar. Mexe no preço dos dois lados do balcão."

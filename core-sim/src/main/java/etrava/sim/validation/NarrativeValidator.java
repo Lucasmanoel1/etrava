@@ -3,13 +3,20 @@ package etrava.sim.validation;
 import etrava.sim.content.AmbientDef;
 import etrava.sim.content.ArcDef;
 import etrava.sim.content.AreaDef;
+import etrava.sim.content.ContainerDef;
 import etrava.sim.content.ContentDb;
 import etrava.sim.content.DeedDef;
 import etrava.sim.content.DialogueDef;
 import etrava.sim.content.EpilogueDef;
 import etrava.sim.content.FactDef;
+import etrava.sim.content.ItemDef;
+import etrava.sim.content.JobDef;
+import etrava.sim.content.MerchantDef;
 import etrava.sim.content.NpcDef;
+import etrava.sim.content.OriginDef;
 import etrava.sim.content.PropDef;
+import etrava.sim.content.SkillsDef;
+import etrava.sim.economy.Economy;
 import etrava.sim.rules.Condition;
 import etrava.sim.rules.Effect;
 import etrava.sim.world.KnowledgeEntry;
@@ -60,6 +67,7 @@ final class NarrativeValidator {
         for (DialogueDef d : db.dialogues().values()) v.dialogue(d);
         for (AmbientDef a : db.ambients().values()) v.ambient(a);
         v.deeds();
+        v.economy();
         for (ArcDef a : db.arcs().values()) v.arc(a);
         v.epilogue();
         v.redundancy();
@@ -324,6 +332,17 @@ final class NarrativeValidator {
             case Condition.Remembers r -> {
                 if (!r.npc().equals("npc")) npc(file, where, r.npc());
             }
+            case Condition.Has h -> {
+                if (h.item() != null) item(file, where, h.item());
+            }
+            case Condition.Skill sk -> skill(file, where, sk.name());
+            case Condition.Reputation r -> {
+                if (db.npcs().values().stream().noneMatch(n -> r.faction().equals(n.faction())))
+                    errors.add(file + ": " + where + ": comunidade sem nenhum NPC '" + r.faction() + "'");
+            }
+            case Condition.Job j -> {
+                if (!db.jobs().containsKey(j.id())) errors.add(file + ": " + where + ": trabalho inexistente '" + j.id() + "'");
+            }
             default -> { /* sem referências a conferir */ }
         }
     }
@@ -362,6 +381,26 @@ final class NarrativeValidator {
                 case Effect.Deed d -> {
                     if (!db.deeds().containsKey(d.id()))
                         errors.add(file + ": " + where + ": ato inexistente '" + d.id() + "' (ver deeds.yaml)");
+                }
+                case Effect.Give g -> {
+                    if (g.item() != null) item(file, where, g.item());
+                }
+                case Effect.Take t -> {
+                    if (t.item() != null) item(file, where, t.item());
+                }
+                case Effect.PriceMod pm -> {
+                    if (pm.factor() <= 0) errors.add(file + ": " + where + ": priceMod precisa de 'factor' maior que 0");
+                    if (db.items().values().stream().noneMatch(i -> i.hasTag(pm.tag())))
+                        warnings.add(file + ": " + where + ": priceMod em '" + pm.tag()
+                                + "', mas nenhum item tem essa categoria ou marca");
+                }
+                case Effect.Train t -> skill(file, where, t.skill());
+                case Effect.StartJob j -> {
+                    if (!db.jobs().containsKey(j.id())) errors.add(file + ": " + where + ": trabalho inexistente '" + j.id() + "'");
+                }
+                case Effect.StartTrade t -> {
+                    if (!db.merchants().containsKey(t.id()))
+                        errors.add(file + ": " + where + ": comerciante inexistente '" + t.id() + "'");
                 }
                 default -> { /* sem referências a conferir */ }
             }
@@ -402,6 +441,102 @@ final class NarrativeValidator {
         if (!placed) errors.add(file + ": " + where + ": nenhum prop do mapa tem a chave '" + key + "'");
         else if (def != null && !def.stateMap().containsKey(state))
             errors.add(file + ": " + where + ": o prop '" + key + "' não tem a variante '" + state + "'");
+    }
+
+    private void item(String file, String where, String id) {
+        if (!db.items().containsKey(id)) errors.add(file + ": " + where + ": item inexistente '" + id + "'");
+    }
+
+    private void skill(String file, String where, String id) {
+        if (db.skills().skill(id) == null)
+            errors.add(file + ": " + where + ": habilidade inexistente '" + id + "' (ver skills.yaml)");
+    }
+
+    /** "area/ponto" que existe num mapa. */
+    private void place(String file, String where, String at) {
+        int slash = at == null ? -1 : at.indexOf('/');
+        if (slash <= 0) {
+            errors.add(file + ": " + where + ": lugar mal escrito '" + at + "' (use area/ponto)");
+            return;
+        }
+        AreaDef area = db.area(at.substring(0, slash));
+        if (area == null) errors.add(file + ": " + where + ": área inexistente '" + at.substring(0, slash) + "'");
+        else if (!area.spots().containsKey(at.substring(slash + 1)))
+            errors.add(file + ": " + where + ": ponto inexistente '" + at + "'");
+    }
+
+    /** Itens, habilidades, origem, comerciantes, trabalhos e contêineres (M5). */
+    private void economy() {
+        Set<String> skillIds = new HashSet<>();
+        for (SkillsDef.Skill s : db.skills().list()) {
+            if (!skillIds.add(s.id())) errors.add("skills.yaml: habilidade duplicada '" + s.id() + "'");
+        }
+        for (ItemDef i : db.items().values()) {
+            String where = "item '" + i.id() + "'";
+            if (!ItemDef.CATEGORIES.contains(i.category()))
+                errors.add("items.yaml: " + where + ": categoria inválida '" + i.category() + "' " + ItemDef.CATEGORIES);
+            if (i.slot() != null && !ItemDef.SLOTS.contains(i.slot()))
+                errors.add("items.yaml: " + where + ": encaixe inválido '" + i.slot() + "' " + ItemDef.SLOTS);
+            if (i.weight() < 0 || i.value() < 0 || i.food() < 0)
+                errors.add("items.yaml: " + where + ": peso, valor e comida não podem ser negativos");
+            try {
+                effects("items.yaml", where, i.useEffects(), "item:" + i.id());
+            } catch (IllegalArgumentException e) {
+                errors.add("items.yaml: " + where + ": " + e.getMessage());
+            }
+        }
+        OriginDef o = db.origin();
+        for (ItemDef.Stack s : o.itemList()) item(ContentDb.ORIGIN_FILE, "itens", s.item());
+        for (Map.Entry<String, String> e : o.equipmentMap().entrySet()) {
+            ItemDef i = db.items().get(e.getValue());
+            if (i == null) item(ContentDb.ORIGIN_FILE, "equipamento", e.getValue());
+            else if (!e.getKey().equals(i.slot()))
+                errors.add(ContentDb.ORIGIN_FILE + ": equipamento: '" + i.id() + "' não vai no encaixe '" + e.getKey() + "'");
+        }
+        for (String s : o.skillMap().keySet()) skill(ContentDb.ORIGIN_FILE, "habilidades", s);
+        for (MerchantDef m : db.merchants().values()) {
+            String where = "comerciante '" + m.id() + "'";
+            npc("merchants.yaml", where, m.npc());
+            for (MerchantDef.Entry e : m.stockList()) {
+                item("merchants.yaml", where, e.item());
+                if (e.min() < 0 || e.min() > e.max())
+                    errors.add("merchants.yaml: " + where + ": estoque de '" + e.item() + "' com mínimo/máximo inválidos");
+            }
+            for (String tag : m.buysList()) {
+                if (db.items().values().stream().noneMatch(i -> i.hasTag(tag)))
+                    warnings.add("merchants.yaml: " + where + ": compra '" + tag
+                            + "', mas nenhum item tem essa categoria ou marca");
+            }
+            condition("merchants.yaml", where, m.condition());
+        }
+        for (JobDef j : db.jobs().values()) {
+            String where = "trabalho '" + j.id() + "'";
+            if (!j.wellFormed()) {
+                errors.add("jobs.yaml: " + where + ": precisa de giver, at (area/ponto), hours > 0, pay >= 0 e horários HH:MM");
+                continue;
+            }
+            npc("jobs.yaml", where, j.giver());
+            place("jobs.yaml", where, j.at());
+            if (j.paySkill() != null) skill("jobs.yaml", where, j.paySkill());
+            for (String s : j.trainMap().keySet()) skill("jobs.yaml", where, s);
+            condition("jobs.yaml", where, j.condition());
+            effects("jobs.yaml", where, j.finishEffects(), "trabalho:" + j.id());
+        }
+        for (ContainerDef c : db.containers().values()) {
+            String where = "contêiner '" + c.id() + "'";
+            if (!c.wellFormed()) {
+                errors.add("containers.yaml: " + where + ": 'at' precisa ser area/ponto");
+                continue;
+            }
+            place("containers.yaml", where, c.at());
+            if (c.owner() != null) {
+                npc("containers.yaml", where, c.owner());
+                if (!db.deeds().containsKey(Economy.THEFT_DEED))
+                    errors.add("containers.yaml: " + where + ": tem dono, mas deeds.yaml não tem o ato '"
+                            + Economy.THEFT_DEED + "'");
+            }
+            for (ItemDef.Stack s : c.itemList()) item("containers.yaml", where, s.item());
+        }
     }
 
     private void npc(String file, String where, String id) {

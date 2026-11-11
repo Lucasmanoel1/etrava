@@ -95,6 +95,9 @@ public final class GenerateArt {
         character("personagem.estudioso", "personagens/estudioso.png", new CharacterArt.Look(
                 new Color(0xC2997C), new Color(0x2A2320), new Color(0x2E3440), new Color(0x2A2A2E),
                 new Color(0x1E1A18), false, 0.48));
+        character("personagem.comerciante", "personagens/comerciante.png", new CharacterArt.Look(
+                new Color(0xB8896A), new Color(0x3A2C22), new Color(0x6B4A2E), new Color(0x3E3A32),
+                new Color(0x2A201A), false, 0.44));
 
         Path file = assets.resolve("manifest/provisorio.yaml");
         Files.createDirectories(file.getParent());

@@ -53,4 +53,16 @@ public sealed interface Condition {
 
     /** Verdadeira com a probabilidade dada; usa o gerador da simulação. */
     record Chance(double probability) implements Condition {}
+
+    /** O jogador tem o item (na mochila ou no corpo), na quantidade dada, e/ou ao menos este dinheiro. */
+    record Has(String item, int qty, Integer money) implements Condition {}
+
+    /** Habilidade do jogador dentro de [min, max] (RF-180). Escolha de diálogo com esta condição treina a habilidade. */
+    record Skill(String name, Double min, Double max) implements Condition {}
+
+    /** Reputação do jogador numa comunidade: média das opiniões dos membros presentes (RF-280). */
+    record Reputation(String faction, Integer min, Integer max) implements Condition {}
+
+    /** O trabalho pode começar agora: na janela de horário, com quem o dá disponível, ainda não feito hoje. */
+    record Job(String id) implements Condition {}
 }

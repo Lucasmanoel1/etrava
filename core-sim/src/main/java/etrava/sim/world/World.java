@@ -53,6 +53,34 @@ public final class World implements WorldView {
     /** Texto do epílogo do capítulo, depois de montado; vazio enquanto o capítulo corre. */
     public final List<String> epilogue = new ArrayList<>();
 
+    // ---- vida do personagem (M5): dinheiro, mochila, corpo, habilidades, fome
+    public int money;
+    /** Item → quantidade na mochila (fora o que está equipado). */
+    public final Map<String, Integer> inventory = new TreeMap<>();
+    /** Encaixe (mainHand, offHand, body, head, accessory) → item. */
+    public final Map<String, String> equipment = new TreeMap<>();
+    /** Habilidade → valor de 0 a 100 (RF-180). */
+    public final Map<String, Double> skills = new TreeMap<>();
+    /** Fome de 0 (satisfeito) a 100 (faminto). Sobe com o tempo; cai ao comer. */
+    public double hunger;
+    /** Trabalho → último dia em que foi feito (um por dia). */
+    public final Map<String, Integer> jobDay = new TreeMap<>();
+
+    // ---- economia (M5)
+    /** Categoria ou marca → multiplicador de preço (RF-262/263). Ausente = 1. */
+    public final Map<String, Double> priceMods = new TreeMap<>();
+    public final Map<String, MerchantState> merchants = new TreeMap<>();
+    /** Contêiner → item → quantidade. */
+    public final Map<String, Map<String, Integer>> containers = new TreeMap<>();
+    /** Contêiner → último dia em que o dono repôs. */
+    public final Map<String, Integer> containerRestock = new TreeMap<>();
+    /** Contêiner até o qual o jogador está indo (null = nenhum). */
+    public String pendingContainer;
+    /** Trabalho ou comércio pedido por um diálogo; começa quando a conversa acaba. Não vai para o save. */
+    public String pendingJob, pendingTrade;
+    /** Comércio ou contêiner aberto; não vai para o save. */
+    public TradeSession trade;
+
     /** Conversa ambiente em andamento (null = nenhuma), próxima fala e quando ela sai. */
     public String ambientId;
     public int ambientLine;
@@ -119,4 +147,11 @@ public final class World implements WorldView {
         ActorState n = npcs.get(id);
         return n == null ? null : n.areaId;
     }
+    @Override public int money() { return money; }
+    @Override public Map<String, Integer> inventory() { return inventory; }
+    @Override public Map<String, String> equipment() { return equipment; }
+    @Override public Map<String, Double> skills() { return skills; }
+    @Override public double hunger() { return hunger; }
+    @Override public TradeSession trade() { return trade; }
+    @Override public double priceMod(String tag) { return priceMods.getOrDefault(tag, 1.0); }
 }

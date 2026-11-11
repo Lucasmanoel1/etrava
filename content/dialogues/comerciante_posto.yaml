@@ -1,0 +1,35 @@
+# O Posto vende o que vem de fora e comenta o preço do sal quando ele sobe (RF-263).
+id: comerciante_posto
+start:
+  - {when: {all: [{flag: sal_subiu}, {not: {flag: posto_falou_sal}}]}, goto: sal}
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Olha à vontade. Pegou na mão, comprou."
+    choices:
+      - text: "Quero ver o que tem."
+        effects: [{startTrade: posto}]
+      - text: "Precisa de braço para descarregar?"
+        when: {job: carga_posto}
+        goto: carga
+      - text: "Pelo tanto que eu já carreguei aqui, merecia preço de amigo."
+        tag: Lábia
+        when: {all: [{skill: {name: labia, min: 5}}, {var: {name: dias_de_trabalho, min: 1}}, {not: {flag: posto_preco_amigo}}]}
+        effects: [{setFlag: posto_preco_amigo}, {opinion: {npc: npc, add: 12}}]
+        goto: amigo
+      - {text: "Só olhando."}
+  amigo:
+    text: "Amigo, não. Conhecido. Conhecido paga um pouco menos."
+    goto: oi
+  sal:
+    text: "Antes que pergunte: o sal subiu. Não fui eu que subi. Eu só repasso."
+    effects:
+      - {setFlag: posto_falou_sal}
+      - {learn: {who: player, fact: sal_subiu, certainty: claim}}
+    goto: oi
+  carga:
+    text: "A carroça chegou torta. Cinco horas, catorze moedas. E não me deixa cair o sal."
+    choices:
+      - text: "Fechado."
+        effects: [{startJob: carga_posto}]
+      - {text: "Hoje não."}

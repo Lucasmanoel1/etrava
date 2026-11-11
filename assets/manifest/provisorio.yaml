@@ -229,3 +229,15 @@
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
+- id: personagem.comerciante
+  type: spritesheet
+  file: personagens/comerciante.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+

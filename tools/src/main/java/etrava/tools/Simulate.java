@@ -2,6 +2,7 @@ package etrava.tools;
 
 import etrava.sim.api.ActorView;
 import etrava.sim.api.Simulation;
+import etrava.sim.api.WorkerPolicy;
 import etrava.sim.api.WorldView;
 import etrava.sim.content.ArcDef;
 import etrava.sim.content.ContentDb;
@@ -16,8 +17,8 @@ import java.util.Locale;
  * crônica, o estado dos arcos, o que mudou no cenário e o epílogo. Uso:
  * {@code gradlew simulate --args="--dias 30 --semente 42 --politica parado"}.
  * Opções: {@code --ritmo normal|contemplativo} (RF-145) e {@code --resumo} (uma linha por arco, sem crônica).
- * Política do jogador disponível: {@code parado} (não faz nada). Outras entram
- * quando houver o que o jogador fazer (trabalho e comércio, M5).
+ * Políticas do jogador: {@code parado} (não faz nada) e {@code trabalhador}
+ * (trabalha, compra comida na taverna, come e dorme — SPEC 9).
  */
 public final class Simulate {
     public static void main(String[] args) {
@@ -44,8 +45,8 @@ public final class Simulate {
                 default -> { /* argumento desconhecido: ignora */ }
             }
         }
-        if (!policy.equals("parado")) {
-            System.err.println("Política desconhecida: " + policy + " (disponível: parado)");
+        if (!policy.equals("parado") && !policy.equals("trabalhador")) {
+            System.err.println("Política desconhecida: " + policy + " (disponíveis: parado, trabalhador)");
             System.exit(2);
         }
         ContentDb db = ContentDb.load(content);
@@ -57,7 +58,13 @@ public final class Simulate {
         long started = System.nanoTime();
         Simulation sim = Simulation.newGame(db, seed, area, pace);
         WorldView v = sim.view();
-        sim.fastForward(days * v.clock().ticksPerDay());
+        WorkerPolicy worker = null;
+        if (policy.equals("trabalhador")) {
+            worker = new WorkerPolicy(sim, "taverna");
+            worker.run(days);
+        } else {
+            sim.fastForward(days * v.clock().ticksPerDay());
+        }
         double seconds = (System.nanoTime() - started) / 1e9;
 
         System.out.printf(Locale.ROOT, "Simulação: %d dias, semente %d, política %s, área %s (%.2f s)%n",
@@ -71,6 +78,14 @@ public final class Simulate {
             System.out.printf(Locale.ROOT, "  %-14s %-18s %s%n", def.id(), stage,
                     outcome != null ? "desfecho " + outcome : "em andamento");
         }
+        System.out.println();
+        System.out.printf(Locale.ROOT, "Personagem: %d moedas, fome %.0f, carga %.1f/%.1f kg%n", v.money(), v.hunger(),
+                sim.economy().weight(), sim.economy().capacity());
+        StringBuilder skills = new StringBuilder("  Habilidades:");
+        v.skills().forEach((k, val) -> skills.append(String.format(Locale.ROOT, " %s %.1f", k, val)));
+        System.out.println(skills);
+        System.out.println("  Mochila: " + v.inventory() + "  Corpo: " + v.equipment());
+        if (worker != null) System.out.printf(Locale.ROOT, "  Maior fome no caminho: %.0f%n", worker.maxHunger());
         if (brief) return;
         System.out.println();
         System.out.println("Cenário:");

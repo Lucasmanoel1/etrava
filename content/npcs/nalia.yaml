@@ -7,6 +7,7 @@ sprite: personagem.nalia
 dialogue: nalia
 opinion: 5
 relations: [{npc: moleiro, kind: familia}]
+faction: pedra_mansa
 schedule:
   # se ninguém fez nada: não sai mais de casa
   - {from: "00:00", to: "12:00", do: de_cama, at: vila_ref/moinho_porta, hidden: true, when: {arc: {id: a1_nalia, stage: nalia_piora}}}

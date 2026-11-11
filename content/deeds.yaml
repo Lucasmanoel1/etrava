@@ -2,8 +2,8 @@
 #   witness: quanto muda a opinião de quem VIU (perto, acordado, à vista)
 #   hearsay: quanto muda a opinião de quem só OUVIU FALAR (pelo rumor do `fact`)
 # Quem não viu nem ouviu não muda de atitude. Não há guarda no vilarejo: a reação é das pessoas.
-# Disparado pelo efeito {deed: <id>}. Os gatilhos de jogo (furto, invasão, briga) chegam com
-# inventário e combate (M5/M6); por ora o efeito existe para diálogos, arcos e o console.
+# Disparado pelo efeito {deed: <id>}. Pegar de um contêiner com dono dispara `roubo` (M5);
+# invasão e briga chegam com o combate (M6).
 
 - id: roubo
   name: Roubo

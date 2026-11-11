@@ -1,0 +1,8 @@
+# Conteúdo quebrado de propósito: o validador precisa apontar cada problema.
+- {id: pao, name: Pão, category: consumivel, weight: 0.4, value: 2, food: 30}
+- id: torto
+  category: inventada          # categoria que não existe
+  slot: pe                     # encaixe que não existe
+  weight: -1                   # peso negativo
+  value: 3
+  use: [{give: {item: sumido}}] # usa item que não existe

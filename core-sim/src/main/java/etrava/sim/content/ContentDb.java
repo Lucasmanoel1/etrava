@@ -21,6 +21,8 @@ public final class ContentDb {
     private static final Logger LOG = LoggerFactory.getLogger(ContentDb.class);
     private static final ObjectMapper YAML = new ObjectMapper(new YAMLFactory());
     public static final String EPILOGUE_FILE = "epilogues/cap1.yaml";
+    /** A única origem do MVP (PRD 8.4). */
+    public static final String ORIGIN_FILE = "origins/pedra_mansa.yaml";
 
     /** Entrada de areas/areas.yaml. */
     public record AreaEntry(String id, String name, String map) {}
@@ -38,6 +40,12 @@ public final class ContentDb {
     private final Map<String, String> arcFiles = new LinkedHashMap<>();
     private final Map<String, DeedDef> deeds = new LinkedHashMap<>();
     private EpilogueDef epilogue;
+    private final Map<String, ItemDef> items = new LinkedHashMap<>();
+    private final Map<String, MerchantDef> merchants = new LinkedHashMap<>();
+    private final Map<String, JobDef> jobs = new LinkedHashMap<>();
+    private final Map<String, ContainerDef> containers = new LinkedHashMap<>();
+    private SkillsDef skills = SkillsDef.EMPTY;
+    private OriginDef origin = OriginDef.EMPTY;
     private final List<String> problems = new ArrayList<>();
 
     public static ContentDb load(Path contentDir) {
@@ -74,6 +82,7 @@ public final class ContentDb {
         db.loadNpcs(contentDir.resolve("npcs"));
         db.loadNarrative(contentDir);
         db.loadWorld(contentDir);
+        db.loadEconomy(contentDir);
         for (String p : db.problems) LOG.warn("Conteúdo: {}", p);
         return db;
     }
@@ -183,6 +192,47 @@ public final class ContentDb {
         }
     }
 
+    /** Itens, comerciantes, trabalhos, contêineres, habilidades e a origem (M5). Arquivo ausente = lista vazia. */
+    private void loadEconomy(Path contentDir) {
+        list(contentDir, "items.yaml", new TypeReference<List<ItemDef>>() {}, ItemDef::id, items, "item");
+        list(contentDir, "merchants.yaml", new TypeReference<List<MerchantDef>>() {}, MerchantDef::id, merchants,
+                "comerciante");
+        list(contentDir, "jobs.yaml", new TypeReference<List<JobDef>>() {}, JobDef::id, jobs, "trabalho");
+        list(contentDir, "containers.yaml", new TypeReference<List<ContainerDef>>() {}, ContainerDef::id, containers,
+                "contêiner");
+        Path skillsFile = contentDir.resolve("skills.yaml");
+        if (Files.exists(skillsFile)) {
+            try {
+                skills = YAML.readValue(skillsFile.toFile(), SkillsDef.class);
+            } catch (Exception e) {
+                problem("skills.yaml", "não foi possível ler: " + e.getMessage());
+            }
+        }
+        Path originFile = contentDir.resolve(ORIGIN_FILE);
+        if (Files.exists(originFile)) {
+            try {
+                origin = YAML.readValue(originFile.toFile(), OriginDef.class);
+            } catch (Exception e) {
+                problem(ORIGIN_FILE, "não foi possível ler: " + e.getMessage());
+            }
+        }
+    }
+
+    private <T> void list(Path contentDir, String file, TypeReference<List<T>> type,
+            java.util.function.Function<T, String> id, Map<String, T> into, String what) {
+        Path path = contentDir.resolve(file);
+        if (!Files.exists(path)) return;
+        try {
+            List<T> list = YAML.readValue(path.toFile(), type);
+            for (T t : list == null ? List.<T>of() : list) {
+                if (id.apply(t) == null) problem(file, what + " sem id");
+                else if (into.put(id.apply(t), t) != null) problem(file, what + " duplicado: " + id.apply(t));
+            }
+        } catch (Exception e) {
+            problem(file, "não foi possível ler: " + e.getMessage());
+        }
+    }
+
     private List<Path> yamlFiles(Path dir, String label) {
         if (!Files.isDirectory(dir)) return List.of();
         try (java.util.stream.Stream<Path> stream = Files.list(dir)) {
@@ -227,6 +277,17 @@ public final class ContentDb {
         }
         return null;
     }
+    public Map<String, ItemDef> items() { return items; }
+    public Map<String, MerchantDef> merchants() { return merchants; }
+    /** O comércio que este NPC atende, ou null. */
+    public MerchantDef merchantOf(String npcId) {
+        for (MerchantDef m : merchants.values()) if (npcId.equals(m.npc())) return m;
+        return null;
+    }
+    public Map<String, JobDef> jobs() { return jobs; }
+    public Map<String, ContainerDef> containers() { return containers; }
+    public SkillsDef skills() { return skills; }
+    public OriginDef origin() { return origin; }
     /** Problemas encontrados durante o carregamento (arquivo: mensagem). */
     public List<String> problems() { return problems; }
 }

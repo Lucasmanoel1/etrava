@@ -1,0 +1,4 @@
+curve: 1.5
+skills:
+  - {id: oficio, name: Ofício}
+  - {id: oficio, name: Repetida}

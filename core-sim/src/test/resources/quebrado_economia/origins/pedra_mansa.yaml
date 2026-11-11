@@ -1,0 +1,5 @@
+id: pedra_mansa
+money: 5
+items: [{item: inexistente, qty: 1}]
+equipment: {head: pao}       # pão não vai na cabeça
+skills: {voar: 10}

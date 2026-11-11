@@ -39,6 +39,35 @@ public sealed interface Command {
     /** Marcar ou desmarcar um fato do caderno como de interesse. */
     record MarkFact(String factId, boolean marked) implements Command {}
 
+    /** Comer, beber ou usar um item da mochila. Vale a qualquer hora. */
+    record UseItem(String itemId) implements Command {}
+
+    /** Vestir ou empunhar um item da mochila. */
+    record Equip(String itemId) implements Command {}
+
+    /** Tirar o que está num encaixe (mainHand, offHand, body, head, accessory). */
+    record Unequip(String slot) implements Command {}
+
+    /** Trabalhar (RF-264). Normalmente vem de uma conversa; o comando direto serve ao console e à política headless. */
+    record Work(String jobId) implements Command {}
+
+    /** Abrir o comércio de um comerciante (normalmente pela conversa com ele). */
+    record OpenTrade(String merchantId) implements Command {}
+
+    /** Ir até um contêiner e abri-lo. */
+    record OpenContainer(String containerId) implements Command {}
+
+    /** Com o comércio aberto: comprar uma unidade. */
+    record Buy(String itemId) implements Command {}
+
+    /** Com o comércio aberto: vender uma unidade. */
+    record Sell(String itemId) implements Command {}
+
+    /** Com um contêiner aberto: pegar uma unidade. */
+    record TakeItem(String itemId) implements Command {}
+
+    record CloseTrade() implements Command {}
+
     /** Depuração: teletransporta o jogador. */
     record Teleport(double x, double y) implements Command {}
 

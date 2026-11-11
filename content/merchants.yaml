@@ -1,0 +1,51 @@
+# Comerciantes (RF-261). Preço = valor-base × modificador regional × opinião × Comércio (RF-262).
+#   npc:         quem atende; só negocia acordado, à vista e na mesma área do jogador
+#   cash:        dinheiro em caixa; na reposição volta a esse valor se tiver caído abaixo
+#   stock:       item, mínimo e máximo; na reposição o que ficou abaixo do mínimo volta ao máximo
+#                e o que passou do máximo (porque o jogador vendeu) volta ao máximo
+#   buys:        categorias ou marcas que ele compra do jogador (paga 40% do que cobraria)
+#   restockDays: de quantos em quantos dias repõe
+#   when:        condição para aceitar negociar ("npc" = o próprio comerciante)
+# Abre-se o comércio pela conversa, com o efeito {startTrade: <id>}.
+
+# A taverna é o comércio do vilarejo: comida, bebida, e compra o que sai da horta e do moinho.
+- id: taverna
+  npc: taberneira
+  cash: 40
+  restockDays: 1
+  when: {reputation: {faction: pedra_mansa, min: -25}}
+  stock:
+    - {item: pao, min: 3, max: 10}
+    - {item: sopa, min: 2, max: 6}
+    - {item: queijo, min: 1, max: 4}
+    - {item: maca, min: 2, max: 8}
+    - {item: biscoito, min: 2, max: 6}
+    - {item: cerveja, min: 4, max: 12}
+    - {item: cha_ervas, min: 2, max: 6}
+  buys: [horta, moinho, combustivel]
+
+# O Posto da Encruzilhada: o que vem de fora. Até o M7 ele fica na área de teste, que faz as vezes da estrada.
+- id: posto
+  npc: comerciante_posto
+  cash: 120
+  restockDays: 3
+  stock:
+    - {item: sal_medicinal, min: 2, max: 5}
+    - {item: unguento_sal, min: 1, max: 4}
+    - {item: carne_salgada, min: 2, max: 6}
+    - {item: pao, min: 2, max: 6}
+    - {item: biscoito, min: 3, max: 8}
+    - {item: corda, min: 1, max: 3}
+    - {item: oleo, min: 2, max: 6}
+    - {item: lamparina, min: 1, max: 2}
+    - {item: faca, min: 1, max: 2}
+    - {item: machadinha, min: 0, max: 1}
+    - {item: cajado, min: 1, max: 2}
+    - {item: gibao_couro, min: 0, max: 1}
+    - {item: capuz_la, min: 1, max: 2}
+    - {item: chapeu_feltro, min: 1, max: 2}
+    - {item: bolsa_cinto, min: 0, max: 1}
+    - {item: ferro, min: 2, max: 5}
+    - {item: pregos, min: 3, max: 8}
+    - {item: couro, min: 1, max: 3}
+  buys: [material, ferramenta, arma, armadura, horta]

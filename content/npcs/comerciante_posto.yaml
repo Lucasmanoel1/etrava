@@ -1,0 +1,11 @@
+# Comerciante do Posto da Encruzilhada (PRD 13.2: o segundo comerciante; H4 dá trabalho de carga).
+# O Posto só ganha mapa no M7; até lá ele atende na área de teste, que faz as vezes da estrada.
+id: comerciante_posto
+name: Comerciante do Posto
+layer: B
+sprite: personagem.comerciante
+dialogue: comerciante_posto
+faction: posto
+schedule:
+  - {from: "22:00", to: "06:00", do: dormir, at: area_teste/oficina_bancada, hidden: true}
+  - {from: "06:00", to: "22:00", do: vender, at: area_teste/praca}

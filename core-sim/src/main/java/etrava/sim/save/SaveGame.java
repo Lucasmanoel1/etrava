@@ -13,6 +13,7 @@ import etrava.sim.world.ActorState;
 import etrava.sim.world.ArcState;
 import etrava.sim.world.ChronicleEntry;
 import etrava.sim.world.MemoryEntry;
+import etrava.sim.world.MerchantState;
 import etrava.sim.world.Scheduled;
 import etrava.sim.world.World;
 import java.io.ByteArrayOutputStream;
@@ -39,7 +40,7 @@ import java.util.zip.ZipOutputStream;
  */
 public final class SaveGame {
     /** Aumenta a cada mudança incompatível no formato de state.json. */
-    public static final int SCHEMA_VERSION = 3;
+    public static final int SCHEMA_VERSION = 4;
     public static final String EXTENSION = ".etrava";
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -258,6 +259,35 @@ public final class SaveGame {
         ArrayNode epilogue = root.putArray("epilogue");
         w.epilogue.forEach(epilogue::add);
 
+        ObjectNode life = root.putObject("life");
+        life.put("money", w.money).put("hunger", w.hunger).put("pendingContainer", w.pendingContainer);
+        ObjectNode inventory = life.putObject("inventory");
+        w.inventory.forEach(inventory::put);
+        ObjectNode equipment = life.putObject("equipment");
+        w.equipment.forEach(equipment::put);
+        ObjectNode skills = life.putObject("skills");
+        w.skills.forEach(skills::put);
+        ObjectNode jobDay = life.putObject("jobDay");
+        w.jobDay.forEach(jobDay::put);
+
+        ObjectNode economy = root.putObject("economy");
+        ObjectNode priceMods = economy.putObject("priceMods");
+        w.priceMods.forEach(priceMods::put);
+        ObjectNode merchants = economy.putObject("merchants");
+        for (Map.Entry<String, MerchantState> e : w.merchants.entrySet()) {
+            ObjectNode m = merchants.putObject(e.getKey());
+            m.put("cash", e.getValue().cash).put("lastRestockDay", e.getValue().lastRestockDay);
+            ObjectNode stock = m.putObject("stock");
+            e.getValue().stock.forEach(stock::put);
+        }
+        ObjectNode containers = economy.putObject("containers");
+        for (Map.Entry<String, Map<String, Integer>> e : w.containers.entrySet()) {
+            ObjectNode c = containers.putObject(e.getKey());
+            e.getValue().forEach(c::put);
+        }
+        ObjectNode containerRestock = economy.putObject("containerRestock");
+        w.containerRestock.forEach(containerRestock::put);
+
         ArrayNode chronicle = root.putArray("chronicle");
         for (ChronicleEntry c : w.chronicle) {
             chronicle.addObject().put("tick", c.tick()).put("type", c.type()).put("ref", c.ref()).put("text", c.text());
@@ -352,6 +382,31 @@ public final class SaveGame {
             w.memories.put(e.getKey(), list);
         });
         for (JsonNode n : root.path("epilogue")) w.epilogue.add(n.asText());
+
+        JsonNode life = root.path("life");
+        w.money = life.path("money").asInt();
+        w.hunger = life.path("hunger").asDouble();
+        w.pendingContainer = text(life, "pendingContainer");
+        life.path("inventory").properties().forEach(e -> w.inventory.put(e.getKey(), e.getValue().asInt()));
+        life.path("equipment").properties().forEach(e -> w.equipment.put(e.getKey(), e.getValue().asText()));
+        life.path("skills").properties().forEach(e -> w.skills.put(e.getKey(), e.getValue().asDouble()));
+        life.path("jobDay").properties().forEach(e -> w.jobDay.put(e.getKey(), e.getValue().asInt()));
+        JsonNode economy = root.path("economy");
+        economy.path("priceMods").properties().forEach(e -> w.priceMods.put(e.getKey(), e.getValue().asDouble()));
+        economy.path("merchants").properties().forEach(e -> {
+            MerchantState m = new MerchantState();
+            m.cash = e.getValue().path("cash").asInt();
+            m.lastRestockDay = e.getValue().path("lastRestockDay").asInt();
+            e.getValue().path("stock").properties().forEach(x -> m.stock.put(x.getKey(), x.getValue().asInt()));
+            w.merchants.put(e.getKey(), m);
+        });
+        economy.path("containers").properties().forEach(e -> {
+            Map<String, Integer> items = new java.util.TreeMap<>();
+            e.getValue().properties().forEach(x -> items.put(x.getKey(), x.getValue().asInt()));
+            w.containers.put(e.getKey(), items);
+        });
+        economy.path("containerRestock").properties()
+                .forEach(e -> w.containerRestock.put(e.getKey(), e.getValue().asInt()));
 
         for (JsonNode n : root.path("chronicle")) {
             w.chronicle.add(new ChronicleEntry(n.path("tick").asLong(), n.path("type").asText(),

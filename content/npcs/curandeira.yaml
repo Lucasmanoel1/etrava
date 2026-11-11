@@ -4,6 +4,7 @@ name: Curandeira
 layer: A
 sprite: personagem.curandeira
 dialogue: curandeira
+faction: pedra_mansa
 schedule:
   # chamada pela família: passa as manhãs no quintal do moinho
   - {from: "09:00", to: "11:00", do: examinar, at: vila_ref/quintal_cerca, when: {arc: {id: a1_nalia, stage: impasse}}}
