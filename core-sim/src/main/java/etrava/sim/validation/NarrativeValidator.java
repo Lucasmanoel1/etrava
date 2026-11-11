@@ -16,6 +16,10 @@ import etrava.sim.content.NpcDef;
 import etrava.sim.content.OriginDef;
 import etrava.sim.content.PropDef;
 import etrava.sim.content.SkillsDef;
+import etrava.sim.api.Simulation;
+import etrava.sim.combat.Combat;
+import etrava.sim.content.EncounterDef;
+import etrava.sim.content.EnemyDef;
 import etrava.sim.economy.Economy;
 import etrava.sim.rules.Condition;
 import etrava.sim.rules.Effect;
@@ -68,7 +72,11 @@ final class NarrativeValidator {
         for (AmbientDef a : db.ambients().values()) v.ambient(a);
         v.deeds();
         v.economy();
-        for (ArcDef a : db.arcs().values()) v.arc(a);
+        v.combat();
+        for (ArcDef a : db.arcs().values()) {
+            v.arc(a);
+            v.peaceful(a);
+        }
         v.epilogue();
         v.redundancy();
     }
@@ -402,6 +410,10 @@ final class NarrativeValidator {
                     if (!db.merchants().containsKey(t.id()))
                         errors.add(file + ": " + where + ": comerciante inexistente '" + t.id() + "'");
                 }
+                case Effect.Encounter en -> {
+                    if (!db.encounters().containsKey(en.id()))
+                        errors.add(file + ": " + where + ": encontro inexistente '" + en.id() + "' (ver encounters.yaml)");
+                }
                 default -> { /* sem referências a conferir */ }
             }
         }
@@ -537,6 +549,105 @@ final class NarrativeValidator {
             }
             for (ItemDef.Stack s : c.itemList()) item("containers.yaml", where, s.item());
         }
+    }
+
+    /** Inimigos, encontros e o que as áreas dizem sobre perigo (M6). */
+    private void combat() {
+        boolean humans = false;
+        for (EnemyDef e : db.enemies().values()) {
+            String where = "inimigo '" + e.id() + "'";
+            if (!EnemyDef.KINDS.contains(e.kind()))
+                errors.add("enemies.yaml: " + where + ": tipo inválido '" + e.kind() + "' " + EnemyDef.KINDS);
+            if (e.health() <= 0 || e.damage() < 0 || e.protection() < 0)
+                errors.add("enemies.yaml: " + where + ": precisa de health > 0, damage e protection não negativos");
+            if (e.flee() < 0 || e.flee() >= 1 || e.surrender() < 0 || e.surrender() > 1)
+                errors.add("enemies.yaml: " + where + ": flee vai de 0 a 1 (exclusive) e surrender de 0 a 1");
+            if (e.surrender() > 0 && !e.human())
+                warnings.add("enemies.yaml: " + where + ": só humanos se rendem; 'surrender' não tem efeito");
+            for (ItemDef.Stack s : e.lootList()) item("enemies.yaml", where, s.item());
+            humans |= e.human();
+        }
+        if (humans && !db.deeds().containsKey(Combat.EXECUTION_DEED))
+            errors.add("deeds.yaml: há inimigos humanos (que se rendem) mas falta o ato '" + Combat.EXECUTION_DEED + "'");
+        if (!db.deeds().containsKey(Combat.AGGRESSION_DEED))
+            errors.add("deeds.yaml: falta o ato '" + Combat.AGGRESSION_DEED + "' (empurrar um NPC)");
+        for (EncounterDef enc : db.encounters().values()) {
+            String where = "encontro '" + enc.id() + "'";
+            AreaDef area = db.area(enc.area());
+            if (area == null) errors.add("encounters.yaml: " + where + ": área inexistente '" + enc.area() + "'");
+            for (String spot : enc.spots()) {
+                if (area != null && !area.spots().containsKey(spot) && !area.spawns().containsKey(spot))
+                    errors.add("encounters.yaml: " + where + ": ponto inexistente '" + enc.area() + "/" + spot + "'");
+            }
+            if (enc.groups().isEmpty()) errors.add("encounters.yaml: " + where + ": sem inimigos");
+            for (EncounterDef.Group g : enc.groups()) {
+                if (!db.enemies().containsKey(g.enemy()))
+                    errors.add("encounters.yaml: " + where + ": inimigo inexistente '" + g.enemy() + "'");
+            }
+            if (enc.chance() <= 0 || enc.chance() > 1)
+                errors.add("encounters.yaml: " + where + ": chance precisa estar entre 0 (exclusive) e 1");
+            if (!enc.once() && enc.cooldown() <= 0)
+                errors.add("encounters.yaml: " + where + ": sem 'cooldown' e sem 'once': aconteceria a toda hora");
+            condition("encounters.yaml", where, enc.condition());
+        }
+        for (ContentDb.AreaEntry e : db.areaEntries().values()) {
+            String where = "área '" + e.id() + "'";
+            AreaDef area = db.area(e.id());
+            for (ContentDb.Exit x : e.exitList()) {
+                if (area != null && !area.spots().containsKey(x.spot()))
+                    errors.add("areas/areas.yaml: " + where + ": saída num ponto inexistente '" + x.spot() + "'");
+                AreaDef to = db.area(x.to());
+                if (to == null) errors.add("areas/areas.yaml: " + where + ": saída para área inexistente '" + x.to() + "'");
+                else if (x.spawn() != null && !to.spawns().containsKey(x.spawn()))
+                    errors.add("areas/areas.yaml: " + where + ": saída chega a um ponto inexistente '" + x.to() + "/"
+                            + x.spawn() + "' (camada spawns)");
+            }
+            if (e.wakeAt() != null) {
+                place("areas/areas.yaml", where + " (wakeAt)", e.wakeAt());
+                ContentDb.AreaEntry wake = db.areaEntry(e.wakeAt().substring(0, Math.max(0, e.wakeAt().indexOf('/'))));
+                if (wake != null && wake.lethal())
+                    errors.add("areas/areas.yaml: " + where + ": acordar numa área letal não faz sentido");
+            }
+            if (e.finder() != null) {
+                npc("areas/areas.yaml", where, e.finder());
+                if (!db.facts().containsKey(Simulation.FOUND_FACT))
+                    errors.add("facts.yaml: falta o fato '" + Simulation.FOUND_FACT + "' (quem acha o jogador desacordado)");
+            }
+        }
+    }
+
+    /**
+     * RF-225 / AT-13: nenhum desfecho de arco pode exigir vencer um combate. Cada desfecho
+     * precisa ser alcançável do estágio inicial por caminhos cujas condições não dependam
+     * de abater alguém ({@code abatidos.*}) nem de flags de combate ({@code combate*}).
+     */
+    private void peaceful(ArcDef a) {
+        if (a.stage(a.start()) == null) return;
+        Set<String> seen = new HashSet<>();
+        Deque<String> queue = new ArrayDeque<>(List.of(a.start()));
+        while (!queue.isEmpty()) {
+            ArcDef.Stage s = a.stage(queue.poll());
+            if (s == null || !seen.add(s.id()) || s.terminal()) continue;
+            for (ArcDef.Transition t : s.transitions()) if (!needsCombat(t.when())) queue.add(t.to());
+            if (s.timeout() != null)
+                for (ArcDef.Option o : s.timeout().options()) if (!needsCombat(o.when())) queue.add(o.to());
+        }
+        for (ArcDef.Stage s : a.stages().values()) {
+            if (s.terminal() && !seen.contains(s.id()))
+                errors.add(db.arcFile(a.id()) + ": arco '" + a.id() + "': o desfecho '" + s.id()
+                        + "' só se alcança vencendo um combate (RF-225)");
+        }
+    }
+
+    /** A condição só é verdadeira depois de uma vitória em combate? ({@code any} basta que uma saída seja pacífica.) */
+    static boolean needsCombat(Condition c) {
+        return switch (c) {
+            case Condition.All all -> all.of().stream().anyMatch(NarrativeValidator::needsCombat);
+            case Condition.Any any -> !any.of().isEmpty() && any.of().stream().allMatch(NarrativeValidator::needsCombat);
+            case Condition.Var v -> v.name().startsWith(Combat.KILLS_VAR) && v.min() != null && v.min() > 0;
+            case Condition.Flag f -> f.name().startsWith("combate") && f.value();
+            default -> false;
+        };
     }
 
     private void npc(String file, String where, String id) {

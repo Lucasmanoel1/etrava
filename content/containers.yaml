@@ -20,3 +20,12 @@
   items:
     - {item: ervas, qty: 4}
     - {item: legumes, qty: 3}
+
+# A estrutura enterrada (M6). De ninguém — ou de alguém que não reclama.
+- id: nicho_estrutura
+  name: Nicho na rocha
+  at: estrutura/nicho
+  items:
+    - {item: lasca_fibra, qty: 2}
+    - {item: placa_simbolos, qty: 1}
+    - {item: oleo, qty: 1}

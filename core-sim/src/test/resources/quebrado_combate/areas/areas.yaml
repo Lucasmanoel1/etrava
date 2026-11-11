@@ -1,0 +1,10 @@
+# Combate quebrado de propósito, para o teste do validador (M6).
+- id: a
+  name: A
+  map: a.tmj
+  lethal: true
+  exits:
+    - {spot: porta_fantasma, to: lugar_nenhum}
+    - {spot: centro, to: a, spawn: chegada_fantasma}
+  wakeAt: a/centro
+  finder: ninguem

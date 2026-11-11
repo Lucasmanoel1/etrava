@@ -81,6 +81,29 @@ public final class World implements WorldView {
     /** Comércio ou contêiner aberto; não vai para o save. */
     public TradeSession trade;
 
+    // ---- combate e perigo (M6)
+    /** Vida e fôlego do jogador (RF-221). Os máximos dependem do Vigor: ver {@code Combat}. */
+    public double health = 100, stamina = 100;
+    /** Inimigos na área carregada, na ordem em que apareceram. */
+    public final List<EnemyState> enemies = new ArrayList<>();
+    public long nextEnemySeq;
+    /** Encontro → tick em que aconteceu pela última vez. */
+    public final Map<String, Long> encounterLast = new TreeMap<>();
+    /** Inimigo que o jogador está atacando (null = nenhum) e se continua atacando (botão segurado, RF-220). */
+    public String attackTarget;
+    public boolean attackRepeat;
+    /** Tick a partir do qual o jogador pode golpear de novo. */
+    public long attackReadyTick;
+    /** Tick do último golpe ou esquiva: o fôlego só volta um pouco depois. */
+    public long exertTick = -1_000_000;
+    /** Habilidade de combate → tick em que a recarga termina (RF-222). */
+    public final Map<String, Long> cooldowns = new TreeMap<>();
+    /** Esquiva: ticks que faltam e direção. Esquivando, o jogador não é atingido. */
+    public int dodgeTicks;
+    public double dodgeX, dodgeY;
+    /** O personagem morreu (RF-341): nada mais anda até carregar um save. */
+    public boolean dead;
+
     /** Conversa ambiente em andamento (null = nenhuma), próxima fala e quando ela sai. */
     public String ambientId;
     public int ambientLine;
@@ -88,6 +111,8 @@ public final class World implements WorldView {
     /** Tick em que cada conversa ambiente tocou pela última vez. */
     public final Map<String, Long> ambientLast = new TreeMap<>();
 
+    /** NPC que o jogador está indo agredir (null = ninguém). Não vai para o save. */
+    public String pendingStrike;
     /** NPC com quem o jogador está indo falar (null = ninguém). */
     public String pendingTalk;
     /** Conversa com o jogador em andamento; não vai para o save. */
@@ -154,4 +179,9 @@ public final class World implements WorldView {
     @Override public double hunger() { return hunger; }
     @Override public TradeSession trade() { return trade; }
     @Override public double priceMod(String tag) { return priceMods.getOrDefault(tag, 1.0); }
+    @Override public double health() { return health; }
+    @Override public double stamina() { return stamina; }
+    @Override public List<EnemyState> enemies() { return enemies; }
+    @Override public String attackTarget() { return attackTarget; }
+    @Override public boolean dead() { return dead; }
 }

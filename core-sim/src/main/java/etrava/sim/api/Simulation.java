@@ -1,6 +1,9 @@
 package etrava.sim.api;
 
+import etrava.sim.combat.Combat;
 import etrava.sim.content.AreaDef;
+import etrava.sim.content.EnemyDef;
+import etrava.sim.content.ItemDef;
 import etrava.sim.content.ContainerDef;
 import etrava.sim.content.ContentDb;
 import etrava.sim.content.EpilogueDef;
@@ -17,6 +20,7 @@ import etrava.sim.story.Story;
 import etrava.sim.time.GameClock;
 import etrava.sim.world.ActorState;
 import etrava.sim.world.ChronicleEntry;
+import etrava.sim.world.EnemyState;
 import etrava.sim.world.Scheduled;
 import etrava.sim.world.World;
 import java.nio.file.Path;
@@ -49,6 +53,13 @@ public final class Simulation {
     /** Flag que marca o fim do Capítulo I (o epílogo já foi montado). */
     public static final String CHAPTER_ENDED = "capitulo1_encerrado";
     private static final int SLEEP_UNTIL_HOUR = 6;
+    /** Derrota não letal: acorda entre tantas horas depois, com esta fração da vida. */
+    public static final int DEFEAT_MIN_HOURS = 4, DEFEAT_MAX_HOURS = 8;
+    public static final double DEFEAT_HEALTH = 0.3;
+    /** Fato que quem acha o jogador desacordado passa a saber (facts.yaml). */
+    public static final String FOUND_FACT = "jogador_achado_desacordado";
+    /** Distância de um ponto de saída que leva a outra área. */
+    public static final double EXIT_RANGE = 0.9;
 
     private final ContentDb content;
     private final World world;
@@ -60,6 +71,7 @@ public final class Simulation {
     private final Story story;
     private final Arcs arcs;
     private final Economy economy;
+    private final Combat combat;
     /** Eventos gerados fora de um comando (efeitos agendados); saem no fim do próximo passo. */
     private final List<SimEvent> buffered = new ArrayList<>();
 
@@ -69,8 +81,10 @@ public final class Simulation {
         this.story = new Story(content, world, this::schedule);
         this.arcs = new Arcs(content, world, story);
         this.economy = new Economy(content, world, story);
+        this.combat = new Combat(content, world, story, economy, () -> nav, () -> area);
         story.setArcs(arcs);
         story.setEconomy(economy);
+        story.setCombat(combat);
     }
 
     public static Simulation newGame(ContentDb content, long seed, String areaId) {
@@ -85,6 +99,8 @@ public final class Simulation {
         Simulation sim = new Simulation(content, world);
         for (NpcDef def : content.npcs().values()) sim.story.initNpc(def);
         sim.economy.newGame(content.origin());
+        world.health = sim.combat.maxHealth();
+        world.stamina = sim.combat.maxStamina();
         sim.loadArea(areaId);
         sim.placePlayer(AreaDef.PLAYER_SPAWN);
         sim.arcs.init(sim.buffered);
@@ -109,6 +125,8 @@ public final class Simulation {
         // arcos, comerciantes e contêineres que entraram no conteúdo depois do save começam do início
         sim.arcs.init(sim.buffered);
         sim.economy.ensureState();
+        if (world.health < 0) world.health = sim.combat.maxHealth(); // save migrado da versão 4
+        if (world.stamina < 0) world.stamina = sim.combat.maxStamina();
         sim.story.takeDirty();
         sim.story.takeAgendaDirty();
         // só os recém-chegados são posicionados: mexer nos demais mudaria o estado carregado
@@ -133,6 +151,10 @@ public final class Simulation {
             throw new SaveGame.SaveException("Não dá para salvar no meio de uma conversa.");
         if (world.trade != null)
             throw new SaveGame.SaveException("Não dá para salvar com o comércio aberto.");
+        if (world.dead)
+            throw new SaveGame.SaveException("O personagem morreu. Carregue um jogo salvo.");
+        if (combat.inCombat())
+            throw new SaveGame.SaveException("Não dá para salvar no meio de uma luta.");
         SaveGame.write(file, world, savedAt);
     }
 
@@ -170,6 +192,8 @@ public final class Simulation {
     public Economy economy() { return economy; }
     /** O comércio ou contêiner aberto, com os preços de agora; null se nada está aberto. */
     public TradeView tradeView() { return economy.tradeView(); }
+    /** Vida, fôlego, recargas, luz e inimigos — consultas para a apresentação e os testes. */
+    public Combat combat() { return combat; }
 
     /** Enfileira um comando; ele é aplicado no início do próximo tick. */
     public void submit(Command command) {
@@ -179,6 +203,11 @@ public final class Simulation {
     /** Avança um tick e devolve o que a apresentação precisa saber. */
     public List<SimEvent> step() {
         List<SimEvent> events = new ArrayList<>();
+        if (world.dead) { // morto não age; o mundo espera um save ser carregado (RF-341)
+            for (Command c : pending) commandLog.add(new Command.Timed(world.clock.tick(), c));
+            pending.clear();
+            return events;
+        }
         boolean skipped = false;
         for (Command c : pending) {
             commandLog.add(new Command.Timed(world.clock.tick(), c));
@@ -189,14 +218,24 @@ public final class Simulation {
         skipped |= startPending(events);
         // durante uma conversa com o jogador, ou com o comércio aberto, o mundo fica parado (RF-105, RF-324)
         if (!skipped && world.dialogue == null && world.trade == null) { // um salto de tempo já consumiu este passo
-            movePlayer(events);
+            if (!combat.playerTick(events)) movePlayer(events); // esquivando, o combate já moveu o personagem
             for (ActorState npc : world.npcs.values()) {
                 if (!npc.path.isEmpty() && area.id().equals(npc.areaId)) {
                     if (followPath(npc, STROLL_SPEED * DT)) arrive(npc);
                 }
             }
+            EnemyState winner = combat.enemiesTick(events);
+            if (world.health <= 0) {
+                defeat(winner, events);
+                events.addAll(buffered);
+                buffered.clear();
+                refreshVisible();
+                return events;
+            }
             approachTalk(events);
             approachContainer(events);
+            approachStrike(events);
+            takeExit(events);
             if (world.dialogue == null && world.trade == null) {
                 advanceTo(world.clock.tick() + 1, false);
                 story.tickAmbient(events);
@@ -279,11 +318,13 @@ public final class Simulation {
         }
         if (target % agendaInterval() == 0) {
             economy.tenMinutes();
+            combat.tenMinutes();
             updateAgendas(snap);
         }
         if (target % world.clock.ticksPerHour() == 0) {
             story.spreadRumors();
             arcs.evaluate(buffered); // prazos e transições, uma vez por hora (SPEC 3.2)
+            interrupted |= combat.checkEncounters(buffered); // um ataque interrompe sono e espera (RF-323)
         }
         react(buffered, snap);
         if (target % world.clock.ticksPerDay() == 0) {
@@ -361,6 +402,17 @@ public final class Simulation {
             if (!(c instanceof Command.Talk)) world.pendingTalk = null;
             if (!(c instanceof Command.OpenContainer)) world.pendingContainer = null;
         }
+        boolean needsPeace = c instanceof Command.Talk || c instanceof Command.Wait || c instanceof Command.Sleep
+                || c instanceof Command.Work || c instanceof Command.OpenTrade || c instanceof Command.OpenContainer;
+        if (needsPeace && combat.inCombat()) {
+            events.add(new SimEvent.Refused("combate.agora_nao"));
+            return false;
+        }
+        if (c instanceof Command.MoveTo || (c instanceof Command.MoveDir && !isStop(c)) || c instanceof Command.Talk
+                || c instanceof Command.OpenContainer || c instanceof Command.Teleport) {
+            world.attackTarget = null; // andar para outro lugar é parar de atacar
+        }
+        if (!(c instanceof Command.Strike)) world.pendingStrike = null;
         switch (c) {
             case Command.Talk t -> {
                 ActorState npc = world.npcs.get(t.npcId());
@@ -432,7 +484,30 @@ public final class Simulation {
                 events.add(new SimEvent.TimeSkipped(from, world.clock.tick(), true, interrupted));
                 return true;
             }
-            case Command.UseItem u -> economy.use(u.itemId(), events);
+            case Command.UseItem u -> {
+                ItemDef item = content.items().get(u.itemId());
+                if (economy.use(u.itemId(), events) && item != null && item.stat("cura") > 0) combat.heal(item.stat("cura"));
+            }
+            case Command.Attack a -> combat.attack(a.enemyId(), a.hold(), events);
+            case Command.ReleaseAttack r -> combat.release();
+            case Command.Ability a -> combat.ability(a.ability(), events);
+            case Command.Dodge d -> combat.dodge(d.dx(), d.dy(), events);
+            case Command.Resolve r -> combat.resolve(r.enemyId(), r.action(), events);
+            case Command.Surrender x -> combat.surrender(events);
+            case Command.Strike st -> {
+                ActorState npc = world.npcs.get(st.npcId());
+                if (npc == null || npc.hidden || !npc.present() || !area.id().equals(npc.areaId)) return false;
+                if (Math.hypot(npc.x - player.x, npc.y - player.y) <= Combat.STRIKE_RANGE) {
+                    stopPlayer();
+                    combat.strikeNpc(npc.id, events);
+                } else {
+                    world.dirX = world.dirY = 0;
+                    world.hasDestination = false;
+                    player.path.clear();
+                    player.path.addAll(Pathfinder.findPath(nav, player.x, player.y, npc.x, npc.y));
+                    world.pendingStrike = player.path.isEmpty() ? null : npc.id;
+                }
+            }
             case Command.Equip e -> economy.equip(e.itemId());
             case Command.Unequip u -> economy.unequip(u.slot());
             case Command.Work w -> world.pendingJob = w.jobId();
@@ -456,18 +531,120 @@ public final class Simulation {
                     world.pendingContainer = player.path.isEmpty() ? null : def.id();
                 }
             }
-            case Command.EnterArea e -> {
-                if (content.area(e.areaId()) == null || e.areaId().equals(world.areaId)) return false;
-                String from = world.areaId;
-                // quem estava a caminho na área antiga termina o trajeto fora de cena
-                for (ActorState npc : world.npcs.values()) if (!npc.path.isEmpty()) arriveAtTarget(npc);
-                loadArea(e.areaId());
-                placePlayer(e.spawn() == null ? AreaDef.PLAYER_SPAWN : e.spawn());
-                chronicle("jogador.area", e.areaId(), "Foi para " + e.areaId());
-                events.add(new SimEvent.AreaChanged(from, e.areaId()));
-            }
+            case Command.EnterArea e -> enterArea(e.areaId(), e.spawn(), events);
         }
         return false;
+    }
+
+    private static boolean isStop(Command c) {
+        return c instanceof Command.MoveDir m && Math.abs(m.dx()) < 1e-9 && Math.abs(m.dy()) < 1e-9;
+    }
+
+    /** Troca de área: quem estava a caminho termina o trajeto fora de cena; inimigos ficam para trás. */
+    private boolean enterArea(String areaId, String spawn, List<SimEvent> events) {
+        if (content.area(areaId) == null || areaId.equals(world.areaId)) return false;
+        String from = world.areaId;
+        for (ActorState npc : world.npcs.values()) if (!npc.path.isEmpty()) arriveAtTarget(npc);
+        combat.leaveArea();
+        loadArea(areaId);
+        placePlayer(spawn == null ? AreaDef.PLAYER_SPAWN : spawn);
+        chronicle("jogador.area", areaId, "Foi para " + areaId);
+        events.add(new SimEvent.AreaChanged(from, areaId));
+        combat.checkEncounters(events); // quem chega pode dar de cara com alguém
+        return true;
+    }
+
+    /** Saídas da área (areas.yaml): andar até o ponto leva à outra área. */
+    private void takeExit(List<SimEvent> events) {
+        ContentDb.AreaEntry entry = content.areaEntry(area.id());
+        if (entry == null || !world.player.moving) return;
+        for (ContentDb.Exit exit : entry.exitList()) {
+            Point p = area.spots().get(exit.spot());
+            if (p == null || Math.hypot(p.x() - world.player.x, p.y() - world.player.y) > EXIT_RANGE) continue;
+            if (enterArea(exit.to(), exit.spawn(), events)) return;
+        }
+    }
+
+    /** O jogador ia agredir alguém: chegando perto, agride. */
+    private void approachStrike(List<SimEvent> events) {
+        if (world.pendingStrike == null) return;
+        ActorState npc = world.npcs.get(world.pendingStrike);
+        if (npc == null || npc.hidden || !area.id().equals(npc.areaId)) {
+            world.pendingStrike = null;
+        } else if (Math.hypot(npc.x - world.player.x, npc.y - world.player.y) <= Combat.STRIKE_RANGE) {
+            world.pendingStrike = null;
+            stopPlayer();
+            combat.strikeNpc(npc.id, events);
+        } else if (world.player.path.isEmpty()) {
+            world.pendingStrike = null;
+        }
+    }
+
+    // ---------------------------------------------------------------- derrota e morte
+
+    /**
+     * Vida zero (RF-340/341). Numa área ou contra um inimigo letal, é a morte: o mundo
+     * para e a apresentação mostra o que aconteceu com ele. Senão, derrota não letal:
+     * saqueadores levam dinheiro e coisas, o personagem acorda horas depois num lugar
+     * plausível, ferido, e o mundo andou sem ele.
+     */
+    private void defeat(EnemyState winner, List<SimEvent> events) {
+        EnemyDef by = winner == null ? null : content.enemies().get(winner.type);
+        ContentDb.AreaEntry entry = content.areaEntry(area.id());
+        String byId = by == null ? "" : by.id();
+        stopPlayer();
+        if ((entry != null && entry.lethal()) || (by != null && by.lethal())) {
+            world.dead = true;
+            world.attackTarget = null;
+            chronicle("jogador.morreu", byId, "O personagem morreu" + (by == null ? "" : " (" + by.displayName() + ")"));
+            events.add(new SimEvent.PlayerDied(byId, story.composeEpilogue()));
+            return;
+        }
+        boolean robbers = false;
+        for (EnemyState e : world.enemies) {
+            EnemyDef d = content.enemies().get(e.type);
+            robbers |= d != null && d.robs() && e.hostile();
+        }
+        int lost = robbers ? combat.robMoney() : 0;
+        List<String> items = robbers ? combat.robItems() : List.of();
+        long from = world.clock.tick();
+        combat.leaveArea();
+        // acorda num lugar plausível (areas.yaml: wakeAt), horas depois
+        String wakeArea = area.id(), wakeSpot = null;
+        if (entry != null && entry.wakeAt() != null && entry.wakeAt().indexOf('/') > 0) {
+            wakeArea = entry.wakeAt().substring(0, entry.wakeAt().indexOf('/'));
+            wakeSpot = entry.wakeAt().substring(entry.wakeAt().indexOf('/') + 1);
+        }
+        if (!wakeArea.equals(area.id()) && content.area(wakeArea) != null) {
+            String fromArea = world.areaId;
+            for (ActorState npc : world.npcs.values()) if (!npc.path.isEmpty()) arriveAtTarget(npc);
+            loadArea(wakeArea);
+            events.add(new SimEvent.AreaChanged(fromArea, wakeArea));
+        }
+        Point p = wakeSpot == null ? null : area.spots().get(wakeSpot);
+        if (p != null && !nav.isBlockedAt(p.x(), p.y())) {
+            world.player.x = p.x();
+            world.player.y = p.y();
+        } else {
+            placePlayer(AreaDef.PLAYER_SPAWN);
+        }
+        int hours = DEFEAT_MIN_HOURS + world.rng.nextInt(DEFEAT_MAX_HOURS - DEFEAT_MIN_HOURS + 1);
+        skipTime(hours * world.clock.ticksPerHour(), false);
+        combat.leaveArea(); // ninguém ataca quem acabou de acordar
+        world.health = Math.max(1, Math.round(combat.maxHealth() * DEFEAT_HEALTH));
+        world.stamina = combat.maxStamina();
+        String finder = entry == null ? null : entry.finder();
+        ActorState f = finder == null ? null : world.npcs.get(finder);
+        if (f == null || !f.present()) {
+            finder = null;
+        } else {
+            story.learn(finder, FOUND_FACT, null, "witnessed", "viu", null);
+            story.remember(finder, "socorreu", "player");
+        }
+        chronicle("jogador.derrotado", byId, "Derrotado" + (by == null ? "" : " por " + by.displayName())
+                + "; acordou " + hours + " h depois" + (lost > 0 ? ", sem " + lost + " moedas" : "")
+                + (items.isEmpty() ? "" : ", sem " + String.join(", ", items)));
+        events.add(new SimEvent.PlayerDefeated(from, world.clock.tick(), lost, items, world.areaId, finder, byId));
     }
 
     // ---------------------------------------------------------------- trabalho e comércio

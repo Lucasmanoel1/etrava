@@ -65,6 +65,7 @@ public final class Story {
     private final Scheduler scheduler;
     private Arcs arcs;
     private Economy economy;
+    private etrava.sim.combat.Combat combat;
     /** Um efeito mexeu no mundo desde a última vez que os arcos foram conferidos. */
     private boolean dirty;
     /** Algo de que as agendas dependem mudou (estágio de arco, situação de NPC). */
@@ -78,6 +79,7 @@ public final class Story {
 
     public void setArcs(Arcs arcs) { this.arcs = arcs; }
     public void setEconomy(Economy economy) { this.economy = economy; }
+    public void setCombat(etrava.sim.combat.Combat combat) { this.combat = combat; }
 
     /** Devolve true (uma vez) se algum efeito foi aplicado desde a última consulta. */
     public boolean takeDirty() {
@@ -220,6 +222,9 @@ public final class Story {
             case Effect.Train t -> economy.train(t.skill(), t.amount());
             case Effect.StartJob j -> world.pendingJob = j.id();
             case Effect.StartTrade t -> world.pendingTrade = t.id();
+            case Effect.Encounter en -> {
+                if (combat != null) combat.forceEncounter(en.id(), events);
+            }
         }
     }
 

@@ -99,6 +99,21 @@ public final class GenerateArt {
                 new Color(0xB8896A), new Color(0x3A2C22), new Color(0x6B4A2E), new Color(0x3E3A32),
                 new Color(0x2A201A), false, 0.44));
 
+        // M6: inimigos e a estrutura enterrada
+        character("personagem.saqueador", "personagens/saqueador.png", new CharacterArt.Look(
+                new Color(0xA67A5C), new Color(0x2A201A), new Color(0x5A4632), new Color(0x3A342C),
+                new Color(0x231B16), true, 0.24));
+        // o vulto: fibra escura e terra; sem rosto (a "pele" é da cor do capuz)
+        character("personagem.vulto", "personagens/vulto.png", new CharacterArt.Look(
+                new Color(0x2E2B26), new Color(0x1A1815), new Color(0x2B2824), new Color(0x221F1B),
+                new Color(0x1A1815), true, 0.62));
+        quadruped("personagem.lobo", "personagens/lobo.png", new Color(0x6E6658), new Color(0x9A9080));
+        sprite("prop.fibra", "props/fibra.png", RuinArt.fiber(1));
+        sprite("prop.entulho", "props/entulho.png", RuinArt.rubble());
+        sprite("prop.laje_simbolos", "props/laje_simbolos.png", RuinArt.slab());
+        sprite("prop.luz_buraco", "props/luz_buraco.png", RuinArt.ladder());
+        sprite("prop.buraco_terra", "props/buraco_terra.png", RuinArt.pit());
+
         Path file = assets.resolve("manifest/provisorio.yaml");
         Files.createDirectories(file.getParent());
         Files.writeString(file, manifest.toString(), StandardCharsets.UTF_8);
@@ -138,6 +153,17 @@ public final class GenerateArt {
 
     private void character(String id, String file, CharacterArt.Look look) throws IOException {
         write(file, PixelArt.pixelize(CharacterArt.sheet(look), true));
+        appendSheet(id, file);
+        credits();
+    }
+
+    private void quadruped(String id, String file, Color fur, Color belly) throws IOException {
+        write(file, PixelArt.pixelize(CharacterArt.quadrupedSheet(fur, belly), true));
+        appendSheet(id, file);
+        credits();
+    }
+
+    private void appendSheet(String id, String file) {
         manifest.append("- id: ").append(id).append('\n')
                 .append("  type: spritesheet\n")
                 .append("  file: ").append(file).append('\n')
@@ -150,7 +176,6 @@ public final class GenerateArt {
                 .append("    idle: {start: 0, frames: ").append(CharacterArt.IDLE_FRAMES).append(", fps: 3}\n")
                 .append("    walk: {start: ").append(CharacterArt.IDLE_FRAMES).append(", frames: ")
                 .append(CharacterArt.WALK_FRAMES).append(", fps: 11}\n");
-        credits();
     }
 
     private void credits() {

@@ -24,6 +24,16 @@ tasks.register<JavaExec>("generateArt") {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
+tasks.register<JavaExec>("generateEstrutura") {
+    group = "assets"
+    description = "Gera o mapa da estrutura enterrada (content/areas/estrutura.tmj). Sobrescreve o arquivo."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.maps.GenerateEstrutura")
+    args(rootProject.file("content/areas/estrutura.tmj").absolutePath)
+    jvmArgs("-Dstdout.encoding=UTF-8")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
 tasks.register<JavaExec>("generateRefMap") {
     group = "assets"
     description = "Gera o mapa da cena de referência (content/areas/vila_ref.tmj). Sobrescreve o arquivo."

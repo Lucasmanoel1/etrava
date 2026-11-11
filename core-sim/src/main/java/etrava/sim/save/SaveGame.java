@@ -12,6 +12,7 @@ import etrava.sim.world.KnowledgeEntry;
 import etrava.sim.world.ActorState;
 import etrava.sim.world.ArcState;
 import etrava.sim.world.ChronicleEntry;
+import etrava.sim.world.EnemyState;
 import etrava.sim.world.MemoryEntry;
 import etrava.sim.world.MerchantState;
 import etrava.sim.world.Scheduled;
@@ -40,7 +41,7 @@ import java.util.zip.ZipOutputStream;
  */
 public final class SaveGame {
     /** Aumenta a cada mudança incompatível no formato de state.json. */
-    public static final int SCHEMA_VERSION = 4;
+    public static final int SCHEMA_VERSION = 5;
     public static final String EXTENSION = ".etrava";
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -64,8 +65,16 @@ public final class SaveGame {
 
     public record Loaded(Meta meta, World world) {}
 
-    /** Migrações em produção. Vazio enquanto só existir a versão 1. */
-    private static final List<Migration> MIGRATIONS = List.of();
+    /**
+     * Migrações em produção. 4 → 5 (M6): o bloco "combat" é novo; sem ele, o personagem
+     * começa com vida e fôlego cheios e ninguém por perto — basta marcar o save.
+     */
+    private static final List<Migration> MIGRATIONS = List.of(new Migration() {
+        @Override public int from() { return 4; }
+        @Override public void apply(ObjectNode state) {
+            state.putObject("combat").put("health", -1).put("stamina", -1);
+        }
+    });
 
     private SaveGame() {}
 
@@ -270,6 +279,27 @@ public final class SaveGame {
         ObjectNode jobDay = life.putObject("jobDay");
         w.jobDay.forEach(jobDay::put);
 
+        ObjectNode combat = root.putObject("combat");
+        combat.put("health", w.health).put("stamina", w.stamina).put("nextEnemySeq", w.nextEnemySeq)
+                .put("attackTarget", w.attackTarget).put("attackRepeat", w.attackRepeat)
+                .put("attackReadyTick", w.attackReadyTick).put("exertTick", w.exertTick)
+                .put("dodgeTicks", w.dodgeTicks).put("dodgeX", w.dodgeX).put("dodgeY", w.dodgeY).put("dead", w.dead);
+        ObjectNode cooldowns = combat.putObject("cooldowns");
+        w.cooldowns.forEach(cooldowns::put);
+        ObjectNode encounterLast = combat.putObject("encounterLast");
+        w.encounterLast.forEach(encounterLast::put);
+        ArrayNode enemies = combat.putArray("enemies");
+        for (EnemyState e : w.enemies) {
+            ObjectNode n = enemies.addObject();
+            n.put("id", e.id).put("type", e.type).put("sprite", e.sprite).put("encounter", e.encounter)
+                    .put("x", e.x).put("y", e.y).put("facing", e.facing).put("moving", e.moving)
+                    .put("health", e.health).put("state", e.state).put("homeX", e.homeX).put("homeY", e.homeY)
+                    .put("nextAttackTick", e.nextAttackTick).put("hitTick", e.hitTick)
+                    .put("staggerUntil", e.staggerUntil).put("pathTick", e.pathTick).put("fleeSince", e.fleeSince);
+            ArrayNode path = n.putArray("path");
+            for (Point p : e.path) path.addArray().add(p.x()).add(p.y());
+        }
+
         ObjectNode economy = root.putObject("economy");
         ObjectNode priceMods = economy.putObject("priceMods");
         w.priceMods.forEach(priceMods::put);
@@ -391,6 +421,40 @@ public final class SaveGame {
         life.path("equipment").properties().forEach(e -> w.equipment.put(e.getKey(), e.getValue().asText()));
         life.path("skills").properties().forEach(e -> w.skills.put(e.getKey(), e.getValue().asDouble()));
         life.path("jobDay").properties().forEach(e -> w.jobDay.put(e.getKey(), e.getValue().asInt()));
+        JsonNode combat = root.path("combat");
+        // -1 (save migrado da versão 4) = cheio; a Simulation ajusta ao máximo verdadeiro ao carregar
+        w.health = combat.path("health").asDouble(-1);
+        w.stamina = combat.path("stamina").asDouble(-1);
+        w.nextEnemySeq = combat.path("nextEnemySeq").asLong();
+        w.attackTarget = text(combat, "attackTarget");
+        w.attackRepeat = combat.path("attackRepeat").asBoolean();
+        w.attackReadyTick = combat.path("attackReadyTick").asLong();
+        w.exertTick = combat.path("exertTick").asLong(-1_000_000);
+        w.dodgeTicks = combat.path("dodgeTicks").asInt();
+        w.dodgeX = combat.path("dodgeX").asDouble();
+        w.dodgeY = combat.path("dodgeY").asDouble();
+        w.dead = combat.path("dead").asBoolean();
+        combat.path("cooldowns").properties().forEach(e -> w.cooldowns.put(e.getKey(), e.getValue().asLong()));
+        combat.path("encounterLast").properties().forEach(e -> w.encounterLast.put(e.getKey(), e.getValue().asLong()));
+        for (JsonNode n : combat.path("enemies")) {
+            EnemyState e = new EnemyState(n.path("id").asText(), n.path("type").asText(), n.path("sprite").asText());
+            e.encounter = text(n, "encounter");
+            e.x = n.path("x").asDouble();
+            e.y = n.path("y").asDouble();
+            e.facing = n.path("facing").asDouble();
+            e.moving = n.path("moving").asBoolean();
+            e.health = n.path("health").asDouble();
+            e.state = n.path("state").asText(EnemyState.IDLE);
+            e.homeX = n.path("homeX").asDouble();
+            e.homeY = n.path("homeY").asDouble();
+            e.nextAttackTick = n.path("nextAttackTick").asLong();
+            e.hitTick = n.path("hitTick").asLong();
+            e.staggerUntil = n.path("staggerUntil").asLong();
+            e.pathTick = n.path("pathTick").asLong();
+            e.fleeSince = n.path("fleeSince").asLong();
+            for (JsonNode p : n.path("path")) e.path.add(new Point(p.get(0).asDouble(), p.get(1).asDouble()));
+            w.enemies.add(e);
+        }
         JsonNode economy = root.path("economy");
         economy.path("priceMods").properties().forEach(e -> w.priceMods.put(e.getKey(), e.getValue().asDouble()));
         economy.path("merchants").properties().forEach(e -> {

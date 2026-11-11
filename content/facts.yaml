@@ -237,3 +237,29 @@
   tags: [jogador]
   versions:
     - {id: base, text: "O aprendiz da oficina levantou a mão para gente daqui."}
+
+- id: jogador_executou
+  layer: V0
+  truth: true
+  spread: local
+  tags: [jogador, estrada]
+  versions:
+    - {id: base, text: "O aprendiz da oficina matou um homem que já tinha largado a faca."}
+
+# ---------- perigo (M6) ----------
+- id: jogador_achado_desacordado
+  layer: V0
+  truth: true
+  spread: local
+  tags: [jogador, estrada]
+  versions:
+    - {id: base, text: "Acharam o aprendiz da oficina caído na beira da estrada, sem a bolsa."}
+
+- id: estrada_tem_saqueadores
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [estrada]
+  versions:
+    - {id: base, text: "Tem gente esperando na curva da estrada, no fim da tarde, para aliviar quem passa."}
+    - {id: exagero, text: "A estrada virou terra de ninguém. Ninguém passa da curva com a bolsa cheia."}

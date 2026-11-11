@@ -241,3 +241,74 @@
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
+- id: personagem.saqueador
+  type: spritesheet
+  file: personagens/saqueador.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.vulto
+  type: spritesheet
+  file: personagens/vulto.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.lobo
+  type: spritesheet
+  file: personagens/lobo.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.fibra
+  type: sprite
+  file: props/fibra.png
+  anchor: [20, 58]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.entulho
+  type: sprite
+  file: props/entulho.png
+  anchor: [23, 23]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.laje_simbolos
+  type: sprite
+  file: props/laje_simbolos.png
+  anchor: [38, 38]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.luz_buraco
+  type: sprite
+  file: props/luz_buraco.png
+  anchor: [15, 68]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.buraco_terra
+  type: sprite
+  file: props/buraco_terra.png
+  anchor: [33, 23]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+

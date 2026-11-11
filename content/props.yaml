@@ -119,3 +119,40 @@
     morta: prop.arvore_morta
     viva: prop.arvore
     cortada: prop.toco
+
+# ---------- a estrutura enterrada (M6) ----------
+# Fibras petrificadas: parecem raízes grossas saindo da rocha, mas são pedra (PRD 6: "primeira
+# pista física, não explicada, da Sutura"). Nada aqui se explica.
+- id: fibra
+  category: ruina
+  footprint: [0.8, 0.8]
+  height: 2.6
+  blocks: true
+
+- id: entulho
+  category: ruina
+  footprint: [1.0, 0.8]
+  height: 0.6
+  blocks: true
+
+- id: laje_simbolos
+  category: ruina
+  footprint: [2.2, 1.4]
+  height: 1.0
+  blocks: true
+
+# A luz fria que entra pelo buraco, sobre a escada. Numa área escura as luzes ficam sempre acesas.
+- id: luz_buraco
+  category: ruina
+  footprint: [0.4, 0.4]
+  height: 0.2
+  blocks: false
+  lights:
+    - {offset: [0.0, 0.0, 3.0], radius: 3.4, color: [0.62, 0.68, 0.80]}
+
+# A boca da estrutura, aberta no chão da área de teste. Andar até ela é descer.
+- id: buraco_terra
+  category: ruina
+  footprint: [1.6, 1.6]
+  height: 0.3
+  blocks: false

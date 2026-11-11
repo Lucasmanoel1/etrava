@@ -61,4 +61,14 @@ public interface WorldView {
     etrava.sim.world.TradeSession trade();
     /** Multiplicador de preço de uma categoria ou marca (1 = normal). */
     double priceMod(String tag);
+    /** Vida do jogador; o máximo vem de {@code Simulation.combat().maxHealth()}. */
+    double health();
+    /** Fôlego do jogador. */
+    double stamina();
+    /** Inimigos na área carregada. */
+    List<etrava.sim.world.EnemyState> enemies();
+    /** Inimigo que o jogador está atacando, ou null. */
+    String attackTarget();
+    /** O personagem morreu (RF-341). */
+    boolean dead();
 }

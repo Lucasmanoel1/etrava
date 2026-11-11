@@ -34,7 +34,8 @@ public record ItemDef(String id, String name, String description, double weight,
     public String displayName() { return name != null ? name : id; }
     public List<String> tagList() { return tags != null ? tags : List.of(); }
     public String iconId() { return icon != null ? icon : "icone." + id; }
-    public boolean usable() { return food > 0 || (use != null && !use.isNull() && use.size() > 0); }
+    /** Dá para comer, beber ou usar: tem comida, efeitos de uso ou cura (stat {@code cura}, M6). */
+    public boolean usable() { return food > 0 || stat("cura") > 0 || (use != null && !use.isNull() && use.size() > 0); }
     public List<Effect> useEffects() { return Rules.effects(use); }
     public double stat(String name) { return stats != null ? stats.getOrDefault(name, 0.0) : 0.0; }
 

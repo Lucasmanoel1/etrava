@@ -106,6 +106,7 @@ public final class Rules {
             case "train" -> new Effect.Train(text(v, "skill"), v.path("amount").asDouble(1));
             case "startJob" -> new Effect.StartJob(v.isTextual() ? v.asText() : text(v, "id"));
             case "startTrade" -> new Effect.StartTrade(v.isTextual() ? v.asText() : text(v, "id"));
+            case "encounter" -> new Effect.Encounter(v.isTextual() ? v.asText() : text(v, "id"));
             default -> throw new IllegalArgumentException("efeito desconhecido: '" + e.getKey() + "'");
         };
     }
@@ -142,6 +143,7 @@ public final class Rules {
             case Effect.Train t -> root.putObject("train").put("skill", t.skill()).put("amount", t.amount());
             case Effect.StartJob j -> root.putObject("startJob").put("id", j.id());
             case Effect.StartTrade t -> root.putObject("startTrade").put("id", t.id());
+            case Effect.Encounter en -> root.putObject("encounter").put("id", en.id());
         }
         return root;
     }

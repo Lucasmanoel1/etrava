@@ -57,4 +57,44 @@ public sealed interface SimEvent {
 
     /** O trabalho não pôde começar (fora de hora, quem dá o trabalho não está, já foi feito hoje). */
     record JobRefused(String jobId) implements SimEvent {}
+
+    // ---- combate e perigo (M6)
+
+    /**
+     * Um golpe. {@code attacker}/{@code target} são "jogador" ou o ID de um inimigo (ou de um NPC agredido).
+     *
+     * @param damage 0 = errou (ou esquivou)
+     */
+    record Hit(String attacker, String target, double damage, boolean heavy) implements SimEvent {}
+
+    /** Inimigos apareceram na área (um encontro começou). */
+    record EnemiesAppeared(String encounterId, int count) implements SimEvent {}
+
+    /**
+     * Um inimigo mudou de situação: fugiu, rendeu, morreu, poupado, saqueado, executado, desistiu, foi_embora.
+     *
+     * @param line fala dele nesse momento, ou null
+     */
+    record EnemyChanged(String enemyId, String what, String line) implements SimEvent {}
+
+    /** O jogador pegou o que um inimigo levava. */
+    record Looted(String enemyId, java.util.List<String> items, int money) implements SimEvent {}
+
+    /** Não dá para fazer isso agora (em combate, sem fôlego, recarga). {@code reason}: chave de texto da interface. */
+    record Refused(String reason) implements SimEvent {}
+
+    /**
+     * Derrota não letal (RF-340): o personagem acorda horas depois, talvez roubado, e o mundo andou.
+     *
+     * @param itemsLost itens levados (IDs)
+     * @param finder    NPC que o encontrou, ou null
+     */
+    record PlayerDefeated(long fromTick, long toTick, int moneyLost, java.util.List<String> itemsLost,
+            String wakeArea, String finder, String by) implements SimEvent {}
+
+    /** Morte de verdade (RF-341): a apresentação mostra o que aconteceu com o mundo e oferece carregar. */
+    record PlayerDied(String by, java.util.List<String> summary) implements SimEvent {}
+
+    /** O jogador se rendeu; os saqueadores levaram isto. */
+    record PlayerSurrendered(int moneyLost) implements SimEvent {}
 }

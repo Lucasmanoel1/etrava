@@ -1,0 +1,29 @@
+# O único desfecho bom exige ter abatido alguém (RF-225 proíbe).
+- id: so_na_briga
+  start: a
+  stages:
+    a:
+      transitions:
+        - {when: {var: {name: abatidos.lobo_educado, min: 1}}, to: paz}
+        - {when: {any: [{flag: combate_vencido}, {var: {name: abatidos.bandido, min: 2}}]}, to: paz}
+      timeout: {after: {days: 1}, to: fim}
+    paz:
+      terminal: true
+      outcome: leve
+    fim:
+      terminal: true
+      outcome: tragico
+- id: briga_opcional
+  start: a
+  stages:
+    a:
+      transitions:
+        - {when: {any: [{var: {name: abatidos.bandido, min: 1}}, {flag: conversou}]}, to: paz}
+        - {when: {not: {var: {name: abatidos.bandido, min: 1}}}, to: paz}
+      timeout: {after: {days: 1}, to: fim}
+    paz:
+      terminal: true
+      outcome: leve
+    fim:
+      terminal: true
+      outcome: tragico

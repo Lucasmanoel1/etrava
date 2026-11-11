@@ -1,9 +1,28 @@
 # Áreas jogáveis. Cada uma aponta para um mapa do Tiled (.tmj) nesta pasta.
+#   dark:    escura de dia e de noite; só se vê no raio de luz do personagem (RF-008)
+#   lethal:  perder aqui é morrer de verdade (RF-341); o padrão é a derrota não letal
+#   exits:   chegar ao ponto `spot` leva à área `to`, entrando pelo ponto de chegada `spawn`
+#   wakeAt:  onde se acorda depois de uma derrota não letal aqui ("area/ponto")
+#   finder:  quem acha o personagem desacordado (fica sabendo e lembra)
 
 - id: area_teste
-  name: Área de teste
+  name: Área de teste (faz as vezes da estrada e do Posto até o M7)
   map: area_teste.tmj
+  exits:
+    - {spot: buraco, to: estrutura, spawn: jogador}
+  wakeAt: area_teste/beira_estrada
+  finder: comerciante_posto
 
 - id: vila_ref
   name: Cena de referência (praça do vilarejo)
   map: vila_ref.tmj
+
+# A estrutura enterrada (PRD 6, gancho 03). No M7 ela aparece durante um trabalho (A3);
+# até lá, entra-se pelo buraco da área de teste.
+- id: estrutura
+  name: A estrutura enterrada
+  map: estrutura.tmj
+  dark: true
+  lethal: true
+  exits:
+    - {spot: escada, to: area_teste, spawn: estrutura}

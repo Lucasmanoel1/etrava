@@ -1,0 +1,10 @@
+- id: em_lugar_nenhum
+  area: lugar_nenhum
+  enemies: [{enemy: bandido}]
+  chance: 0.5
+  cooldown: 10
+- id: sem_freio
+  area: a
+  at: [beco_fantasma]
+  enemies: [{enemy: fantasma}]
+  chance: 2

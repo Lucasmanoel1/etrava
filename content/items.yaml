@@ -250,3 +250,29 @@
   weight: 0.3
   value: 8
   stats: {carga: 6}
+
+# ---------- combate e perigo (M6)
+- id: pele_lobo
+  name: Pele de lobo
+  description: "Sarnenta numa ponta. O curtidor do Posto paga mesmo assim."
+  category: material
+  tags: [couro]
+  weight: 1.5
+  value: 5
+
+# Da estrutura enterrada (Q-07, proposta). Nada explica o que são.
+- id: lasca_fibra
+  name: Lasca de fibra
+  description: "Parece raiz e pesa como pedra. Está morna, e não deveria estar."
+  category: especial
+  tags: [estrutura]
+  weight: 0.4
+  value: 0
+
+- id: placa_simbolos
+  name: Placa riscada
+  description: "Pedra lisa, do tamanho da mão. As marcas se repetem em grupos de nove."
+  category: especial
+  tags: [estrutura]
+  weight: 0.6
+  value: 0

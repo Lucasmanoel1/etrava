@@ -68,6 +68,32 @@ public sealed interface Command {
 
     record CloseTrade() implements Command {}
 
+    // ---- combate (M6)
+
+    /**
+     * Atacar um inimigo (RF-220): o personagem vai até ele e golpeia. Com {@code hold},
+     * continua golpeando até soltar ({@link ReleaseAttack}) ou o alvo cair, fugir ou se render.
+     */
+    record Attack(String enemyId, boolean hold) implements Command {}
+
+    /** Soltou o botão: termina o golpe em curso e para de atacar. */
+    record ReleaseAttack() implements Command {}
+
+    /** Habilidade de combate (RF-222): golpe_pesado | empurrao, contra o alvo atual ou o inimigo mais perto ao alcance. */
+    record Ability(String ability) implements Command {}
+
+    /** Esquivar numa direção do mundo (gasta fôlego; durante a esquiva nada acerta). (0, 0) = para trás. */
+    record Dodge(double dx, double dy) implements Command {}
+
+    /** Diante de um inimigo rendido (RF-224): poupar | saquear | executar. */
+    record Resolve(String enemyId, String action) implements Command {}
+
+    /** O jogador se rende aos saqueadores: levam o dinheiro e vão embora. */
+    record Surrender() implements Command {}
+
+    /** Agredir um NPC (ato "agressao"): um empurrão, não uma luta. */
+    record Strike(String npcId) implements Command {}
+
     /** Depuração: teletransporta o jogador. */
     record Teleport(double x, double y) implements Command {}
 

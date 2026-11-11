@@ -83,6 +83,8 @@ public final class ContentValidator {
             }
         }
         requireAsset(errors, manifest, "(jogador)", "personagem do jogador", World.PLAYER_SPRITE);
+        for (etrava.sim.content.EnemyDef enemy : db.enemies().values())
+            requireAsset(errors, manifest, "enemies.yaml", "inimigo '" + enemy.id() + "'", enemy.spriteId());
         for (AreaDef area : db.areas().values()) {
             String file = "areas/" + db.areaEntry(area.id()).map();
             for (String terrain : area.terrainsUsed()) {

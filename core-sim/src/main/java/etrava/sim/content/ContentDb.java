@@ -24,8 +24,22 @@ public final class ContentDb {
     /** A única origem do MVP (PRD 8.4). */
     public static final String ORIGIN_FILE = "origins/pedra_mansa.yaml";
 
-    /** Entrada de areas/areas.yaml. */
-    public record AreaEntry(String id, String name, String map) {}
+    /**
+     * Entrada de areas/areas.yaml.
+     *
+     * @param dark   escura de dia e de noite (ruína, porão): só se vê no raio de luz (RF-008)
+     * @param lethal perder aqui é morrer de verdade (RF-341)
+     * @param exits  saídas: chegar perto do ponto leva a outra área
+     * @param wakeAt onde se acorda depois de uma derrota não letal aqui ("area/ponto"); ausente = na própria área
+     * @param finder NPC que encontra o jogador desacordado (fica sabendo e lembra); pode faltar
+     */
+    public record AreaEntry(String id, String name, String map, boolean dark, boolean lethal, List<Exit> exits,
+            String wakeAt, String finder) {
+        public List<Exit> exitList() { return exits != null ? exits : List.of(); }
+    }
+
+    /** Saída de uma área: o ponto do mapa e para onde leva (área e ponto de chegada em {@code spawns}). */
+    public record Exit(String spot, String to, String spawn) {}
 
     private final Map<String, PropDef> props = new LinkedHashMap<>();
     private final Map<String, AreaDef> areas = new LinkedHashMap<>();
@@ -44,6 +58,8 @@ public final class ContentDb {
     private final Map<String, MerchantDef> merchants = new LinkedHashMap<>();
     private final Map<String, JobDef> jobs = new LinkedHashMap<>();
     private final Map<String, ContainerDef> containers = new LinkedHashMap<>();
+    private final Map<String, EnemyDef> enemies = new LinkedHashMap<>();
+    private final Map<String, EncounterDef> encounters = new LinkedHashMap<>();
     private SkillsDef skills = SkillsDef.EMPTY;
     private OriginDef origin = OriginDef.EMPTY;
     private final List<String> problems = new ArrayList<>();
@@ -83,6 +99,9 @@ public final class ContentDb {
         db.loadNarrative(contentDir);
         db.loadWorld(contentDir);
         db.loadEconomy(contentDir);
+        db.list(contentDir, "enemies.yaml", new TypeReference<List<EnemyDef>>() {}, EnemyDef::id, db.enemies, "inimigo");
+        db.list(contentDir, "encounters.yaml", new TypeReference<List<EncounterDef>>() {}, EncounterDef::id,
+                db.encounters, "encontro");
         for (String p : db.problems) LOG.warn("Conteúdo: {}", p);
         return db;
     }
@@ -294,6 +313,12 @@ public final class ContentDb {
         return set;
     }
     public OriginDef origin() { return origin; }
+    /** Tipos de inimigo (M6). */
+    public Map<String, EnemyDef> enemies() { return enemies; }
+    /** Encontros por área (M6). */
+    public Map<String, EncounterDef> encounters() { return encounters; }
+    /** Áreas declaradas em areas.yaml (com ou sem mapa carregado). */
+    public Map<String, AreaEntry> areaEntries() { return areaEntries; }
     /** Problemas encontrados durante o carregamento (arquivo: mensagem). */
     public List<String> problems() { return problems; }
 }

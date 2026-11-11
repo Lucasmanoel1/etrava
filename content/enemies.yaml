@@ -1,0 +1,86 @@
+# Inimigos (RF-223, PRD 7.3). Três tipos no MVP: animal, humano e o que mora na estrutura enterrada.
+# Tempos em segundos (de combate, em tempo real); distâncias em metros. Ver CONTENT.md.
+#   health / damage / protection   vida, dano-base de um golpe, quanto tira de cada golpe recebido
+#   skill                          "Luta" do inimigo (0–100): mexe nas chances dos dois lados
+#   speed / reach                  velocidade correndo; alcance do golpe
+#   attackTime / windup            intervalo entre golpes; quanto o golpe demora a sair depois de
+#                                  anunciado (é a janela para esquivar)
+#   aggro / leash                  a que distância percebe o jogador; quanto se afasta de onde
+#                                  apareceu antes de desistir (correr para longe é fugir)
+#   flee / surrender               fração da vida em que foge; chance de se render em vez disso (só humano)
+#   lethal                         perder para ele é morrer (RF-341). Áreas também podem ser letais.
+#   robs                           vencendo, leva dinheiro e coisas; também aceita a rendição do jogador
+#   fearsLight                     hesita na luz de uma lamparina
+#   loot / money                   o que leva consigo
+#   lines                          falas: ataque, rende, foge, vence, poupado, saqueado
+# O texto é provisório até a leitura de tom do diretor.
+
+- id: lobo
+  name: Lobo magro
+  kind: animal
+  sprite: personagem.lobo
+  health: 28
+  damage: 7
+  protection: 0
+  skill: 15
+  speed: 4.6
+  reach: 1.3
+  attackTime: 1.4
+  windup: 0.35
+  aggro: 9
+  leash: 22
+  flee: 0.3
+  loot:
+    - {item: pele_lobo}
+
+- id: saqueador
+  name: Saqueador
+  kind: humano
+  sprite: personagem.saqueador
+  health: 40
+  damage: 8
+  protection: 1
+  skill: 20
+  speed: 3.6
+  reach: 1.5
+  attackTime: 1.6
+  windup: 0.5
+  aggro: 8
+  leash: 20
+  flee: 0.35
+  surrender: 0.6
+  robs: true
+  loot:
+    - {item: faca}
+    - {item: biscoito}
+  money: 5
+  lines:
+    ataque: "A bolsa. Devagar."
+    rende: "Chega! Chega. Fica com tudo."
+    foge: "Não vale isso."
+    vence: "Viu? Era só ter dado."
+    poupado: "…Não vou esquecer."
+    saqueado: "Leva. Leva e some."
+
+# Q-07 (proposta, a aprovar): o que há na estrutura enterrada. Não tem nome, não fala e não
+# se explica. É fibra e terra que se move no escuro; recua diante da lamparina. Ninguém no
+# Capítulo I sabe o que é (camada V1: só "há algo sob a terra").
+- id: vulto
+  name: Vulto
+  kind: estranho
+  sprite: personagem.vulto
+  health: 55
+  damage: 15
+  protection: 2
+  skill: 25
+  speed: 2.4
+  reach: 1.6
+  attackTime: 2.4
+  windup: 0.8
+  aggro: 7
+  leash: 30
+  flee: 0
+  fearsLight: true
+  lethal: true
+  lines:
+    ataque: "(um som de voz, longe, chamando alguém por um nome que não é o seu)"

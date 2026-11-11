@@ -358,7 +358,13 @@ class WorldSimulationTest {
         Path oldFile = dir.resolve("antigo.etrava");
         writeZip(oldFile, "{}", state.toString());
 
-        SaveException refused = assertThrows(SaveException.class, () -> SaveGame.read(oldFile));
+        // a 4 tem migração em produção (M6); uma versão sem migração nenhuma é recusada
+        assertDoesNotThrow(() -> SaveGame.read(oldFile).world());
+        ObjectNode ancient = state.deepCopy();
+        ancient.put("schemaVersion", old - 1);
+        Path ancientFile = dir.resolve("antiquissimo.etrava");
+        writeZip(ancientFile, "{}", ancient.toString());
+        SaveException refused = assertThrows(SaveException.class, () -> SaveGame.read(ancientFile));
         assertTrue(refused.getMessage().contains("versão antiga"), refused.getMessage());
 
         SaveGame.Migration v0 = new SaveGame.Migration() {

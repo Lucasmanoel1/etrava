@@ -17,7 +17,23 @@ nodes:
         when: {all: [{skill: {name: labia, min: 5}}, {var: {name: dias_de_trabalho, min: 1}}, {not: {flag: posto_preco_amigo}}]}
         effects: [{setFlag: posto_preco_amigo}, {opinion: {npc: npc, add: 12}}]
         goto: amigo
+      - text: "Como anda a estrada?"
+        when: {not: {flag: posto_falou_estrada}}
+        goto: estrada
+      - text: "Foi você que me achou na beira da estrada?"
+        when: {all: [{remembers: {npc: npc, type: socorreu}}, {not: {flag: posto_falou_socorro}}]}
+        goto: socorro
       - {text: "Só olhando."}
+  estrada:
+    text: "De manhã é estrada. No fim da tarde, na curva, tem quem espere. Quem passa ali de bolsa cheia costuma voltar de bolsa leve."
+    effects:
+      - {setFlag: posto_falou_estrada}
+      - {learn: {who: player, fact: estrada_tem_saqueadores, certainty: claim}}
+    goto: oi
+  socorro:
+    text: "De cara no chão, sim. Te arrastei para a sombra. A bolsa eu não achei. Não fui eu, se é o que está pensando."
+    effects: [{setFlag: posto_falou_socorro}]
+    goto: oi
   amigo:
     text: "Amigo, não. Conhecido. Conhecido paga um pouco menos."
     goto: oi

@@ -6,6 +6,7 @@ layer: B
 sprite: personagem.comerciante
 dialogue: comerciante_posto
 faction: posto
+knows: [estrada_tem_saqueadores]   # ele vê quem chega da curva sem a bolsa
 schedule:
   - {from: "22:00", to: "06:00", do: dormir, at: area_teste/oficina_bancada, hidden: true}
   - {from: "06:00", to: "22:00", do: vender, at: area_teste/praca}

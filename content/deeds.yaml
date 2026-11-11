@@ -3,7 +3,7 @@
 #   hearsay: quanto muda a opinião de quem só OUVIU FALAR (pelo rumor do `fact`)
 # Quem não viu nem ouviu não muda de atitude. Não há guarda no vilarejo: a reação é das pessoas.
 # Disparado pelo efeito {deed: <id>}. Pegar de um contêiner com dono dispara `roubo` (M5);
-# invasão e briga chegam com o combate (M6).
+# `agressao` vem de empurrar um NPC (Ctrl + clique); `execucao`, de acabar com um inimigo rendido (M6).
 
 - id: roubo
   name: Roubo
@@ -21,4 +21,11 @@
   name: Agressão
   fact: jogador_agrediu
   witness: -45
+  hearsay: -20
+
+# Acabar com quem já se rendeu (RF-224). Quem não viu, não sabe.
+- id: execucao
+  name: Execução
+  fact: jogador_executou
+  witness: -50
   hearsay: -20

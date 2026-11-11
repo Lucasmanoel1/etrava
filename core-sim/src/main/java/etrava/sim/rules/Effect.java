@@ -64,4 +64,7 @@ public sealed interface Effect {
 
     /** Abre o comércio de content/merchants.yaml assim que a conversa acabar. */
     record StartTrade(String id) implements Effect {}
+
+    /** Inicia um encontro de content/encounters.yaml (RF-102, "iniciar combate"), se o jogador estiver na área dele. */
+    record Encounter(String id) implements Effect {}
 }

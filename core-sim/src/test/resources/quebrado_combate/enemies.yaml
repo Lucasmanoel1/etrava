@@ -1,0 +1,15 @@
+- id: dragao
+  kind: dragao
+  health: 0
+  damage: 5
+  flee: 1.5
+- id: lobo_educado
+  kind: animal
+  health: 10
+  damage: 2
+  surrender: 0.5
+  loot: [{item: ouro_de_tolo}]
+- id: bandido
+  kind: humano
+  health: 20
+  damage: 4

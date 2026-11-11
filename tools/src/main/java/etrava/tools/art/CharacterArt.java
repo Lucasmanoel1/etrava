@@ -85,6 +85,57 @@ final class CharacterArt {
         add(parts, cos, sin, -0.035, 0, headZ + 0.03, -0.034, 0, headZ + 0.045, look.hood() ? 20 : 18, cover);
         if (look.hood()) add(parts, cos, sin, -0.02, 0, shoulderZ - 0.02, -0.05, 0, headZ - 0.03, 22, cover);
 
+        paint(g, ox, oy, parts);
+    }
+
+    /**
+     * Folha de um quadrúpede (o lobo do M6): o mesmo esquema de segmentos girados, com
+     * corpo na horizontal, quatro patas em trote, cabeça baixa e rabo.
+     */
+    static BufferedImage quadrupedSheet(Color fur, Color belly) {
+        BufferedImage img = image(FRAME_W * COLUMNS, FRAME_H * DIRECTIONS);
+        Graphics2D g = graphics(img);
+        for (int dir = 0; dir < DIRECTIONS; dir++) {
+            double yaw = dir * Math.PI / 4;
+            for (int col = 0; col < COLUMNS; col++) {
+                boolean walking = col >= IDLE_FRAMES;
+                double phase = walking ? (col - IDLE_FRAMES) * Math.PI * 2 / WALK_FRAMES : col * Math.PI * 2 / IDLE_FRAMES;
+                drawQuadruped(g, col * FRAME_W + ANCHOR_X, dir * FRAME_H + ANCHOR_Y, fur, belly, yaw, walking, phase);
+            }
+        }
+        g.dispose();
+        return img;
+    }
+
+    private static void drawQuadruped(Graphics2D g, double ox, double oy, Color fur, Color belly, double yaw,
+            boolean walking, double phase) {
+        List<Part> parts = new ArrayList<>();
+        double cos = Math.cos(yaw), sin = Math.sin(yaw);
+        double bob = walking ? Math.abs(Math.sin(phase)) * 0.03 : Math.sin(phase) * 0.006;
+        double backZ = 0.62 + bob;
+        // patas: diagonais opostas juntas (trote)
+        double[][] legs = {{0.30, 0.11, 1}, {0.30, -0.11, -1}, {-0.30, 0.11, -1}, {-0.30, -0.11, 1}};
+        for (double[] l : legs) {
+            double a = walking ? Math.sin(phase) * 0.45 * l[2] : 0;
+            double kx = l[0] + Math.sin(a) * 0.28, kz = backZ - 0.12 - Math.cos(a) * 0.28;
+            double fx = kx + Math.sin(a * 0.4) * 0.26, fz = Math.max(0.03, kz - 0.26);
+            add(parts, cos, sin, l[0], l[1], backZ - 0.1, kx, l[1], kz, 8, shade(fur, 0.85));
+            add(parts, cos, sin, kx, l[1], kz, fx, l[1], fz, 6, shade(fur, 0.75));
+        }
+        add(parts, cos, sin, -0.38, 0, backZ, 0.34, 0, backZ + 0.03, 22, fur);           // corpo
+        add(parts, cos, sin, -0.25, 0, backZ - 0.08, 0.22, 0, backZ - 0.06, 14, belly); // peito e barriga
+        add(parts, cos, sin, 0.34, 0, backZ + 0.03, 0.52, 0, backZ + 0.12, 13, fur);     // pescoço
+        add(parts, cos, sin, 0.52, 0, backZ + 0.12, 0.6, 0, backZ + 0.1, 14, fur);       // cabeça
+        add(parts, cos, sin, 0.6, 0, backZ + 0.08, 0.76, 0, backZ + 0.03, 7, shade(fur, 0.9)); // focinho
+        for (int side = -1; side <= 1; side += 2)
+            add(parts, cos, sin, 0.52, side * 0.05, backZ + 0.2, 0.5, side * 0.06, backZ + 0.28, 4, shade(fur, 0.7));
+        double tail = walking ? Math.sin(phase * 2) * 0.05 : 0;
+        add(parts, cos, sin, -0.4, 0, backZ, -0.68, tail, backZ - 0.14, 7, shade(fur, 0.8));
+        paint(g, ox, oy, parts);
+    }
+
+    /** Desenha os segmentos de trás para a frente, com contorno e um brilho do lado da luz. */
+    private static void paint(Graphics2D g, double ox, double oy, List<Part> parts) {
         parts.sort(Comparator.comparingDouble(Part::depth));
         for (Part p : parts) {
             double x0 = ox + sx(p.x0(), p.y0()), y0 = oy + sy(p.x0(), p.y0(), p.z0());
