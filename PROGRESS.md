@@ -3,86 +3,80 @@
 Última atualização: 2026-11-11
 
 ## Estado atual
-- **Marco concluído:** M4 — Mundo independente.
-- **Status:** **PARADO no fim do M4**, aguardando o usuário mandar continuar para o M5 (Vida e economia).
-- Marcos concluídos: M0, M1, M2, M3, M4.
-- Aviso do usuário (2026-11-11): do M5 ao M7 ele pretende usar outro modelo (Opus) e voltar ao Fable no M8, para polir. Este arquivo, o `DECISIONS.md`, a `docs/SPEC.md` e o `CONTENT.md` estão atualizados para essa troca.
+- **Marco concluído:** M5 — Vida e economia.
+- **Status:** **PARADO no fim do M5**, aguardando o usuário mandar continuar para o M6 (Combate e perigo).
+- Marcos concluídos: M0, M1, M2, M3, M4, M5.
+- Aviso do usuário (2026-11-11): do M5 ao M7 ele usa o Opus; volta ao Fable no M8, para polir.
 
-## Feito no M4
+## Feito no M5
 
-- **Motor de arcos** (`content/arcs/`): histórias como máquinas de estado em dados. Todo estágio tem prazo, então todo arco chega a um desfecho sozinho. Avaliado a cada hora de jogo e logo depois de qualquer escolha do jogador.
-- **A1 — Nalia e a árvore**, do começo ao fim: árvore morta → brota (≈ dia 2) → insônia → vozes → impasse (≈ dia 10) → desfecho (≈ dias 17–19). Cinco desfechos:
-  - sem o jogador: um estudioso estabiliza a árvore (só se ele passar pela região e o rumor tiver chegado à estrada), o pai corta a árvore, ou Nalia piora;
-  - com o jogador: juntar 3 voluntários para repartir o custo (curandeira, moleiro, ferreiro, taberneira ou ele mesmo), convencer Nalia a soltar a árvore, ou apoiar o ferreiro no corte.
-- **Eventos externos E1–E5** (ferrovia, sal, sacerdote, a mulher do incêndio em três versões, o homem da estrada): acontecem fora de tela em datas sorteadas e chegam pelo viajante; daí em diante correm como rumor.
-- **Cenário que muda:** a árvore do quintal do moinho tem três variantes (morta, viva, cortada) e troca na tela quando o arco manda.
-- **NPCs novos:** Nalia, a curandeira e o homem de fora (só aparece num dos desfechos e parte três dias depois). Ferreiro, taberneira e viajante ganharam conversa.
-- **Agenda que reage ao arco:** Nalia passa as noites debaixo da árvore enquanto não dorme; a curandeira vai ao moinho no impasse; se Nalia piora, não sai mais de casa.
-- **Memória e opinião:** NPCs guardam lembranças datadas (até 20); parentes e amigos contam mais um ao outro, rivais menos.
-- **Atos do jogador** (`content/deeds.yaml`): só pesam para quem viu; viram rumor e pesam menos para quem só ouviu; quem detesta o jogador (opinião ≤ −40) se recusa a conversar.
-- **Novidades:** perguntar "o que há de novo?" ao viajante ou à taberneira traz a notícia mais recente que eles sabem.
-- **Epílogo combinatório** (`content/epilogues/cap1.yaml`, 27 fragmentos em 12 espaços): aparece ao fim do dia 30, numa tela de papel; o jogo continua depois.
-- **Ritmo Contemplativo** (prazos ×2) na simulação e no `simulate`; a escolha no menu vem no M7.
-- **Validador:** arco sem prazo, sem desfecho, só com desfecho trágico ou que anda em círculo; estágio, chave de prop, variante, ato ou situação inexistentes; arco maior sem trecho garantido no epílogo.
-- Save na versão 3 (saves antigos são recusados com mensagem).
+- **Mochila e corpo:** itens em dados (`content/items.yaml`, 29 itens), mochila por categoria com peso, 5 encaixes. Carga demais deixa o personagem lento. Tecla **I**.
+- **Fome** (D-046): sobe de 0 a 100 em um dia; comer não gasta tempo; faminto rende e aprende pela metade. Aparece no HUD.
+- **Habilidades** (`content/skills.yaml`): as seis do PRD, 0–100, ganho decrescente. Ofício e Vigor sobem trabalhando, Comércio negociando, Observação escutando conversas (e aumenta a distância de escuta), Lábia usando falas com rótulo [Lábia]. Tecla **C**.
+- **Comércio** (`content/merchants.yaml`): taverna (vilarejo) e Posto. Preço = valor × modificador regional × opinião × Comércio; o comerciante tem caixa e repõe o estoque. Tela de duas colunas com o efeito da opinião. Relógio parado enquanto negocia.
+- **AT-09:** E2 multiplica por 1,5 o preço de tudo com a marca `sal`; o comerciante do Posto comenta.
+- **Trabalhos** (`content/jobs.yaml`): oficina (ferreiro), colheita (aldeã), carga no Posto. Oferecidos na conversa; o tempo salta, paga, treina e às vezes quem dá o trabalho conta uma novidade.
+- **Contêineres com dono** (`content/containers.yaml`): sacos do moinho e cesto da horta. Pegar é roubo se alguém vir (ato `roubo`, D-042 agora tem gatilho de jogo).
+- **Reputação:** NPCs têm comunidade (`faction`); reputação = média das opiniões. Má fama fecha a cozinha da taverna; quem detesta o jogador não oferece trabalho.
+- **Origem** (`content/origins/pedra_mansa.yaml`): 8 moedas, pão, maçã, camisa e martelo, habilidades iniciais.
+- **NPC novo:** comerciante do Posto (na área de teste até o M7). A taberneira serve do lado de fora à tarde.
+- **Epílogo:** espaço novo "vida", com trecho sobre trabalho e dinheiro.
+- **Política headless `trabalhador`** e `simulate --politica trabalhador`.
+- Validador: itens, comerciantes, trabalhos, contêineres, origem, habilidades e as condições/efeitos novos. Save na versão 4.
 
 ## Testes de aceitação do marco
-| AT | Situação | Teste |
+| Critério | Situação | Teste |
 |---|---|---|
-| AT-01 (para A1) | passa | `at01_jogadorParado30Dias_arcoEEventosExternosChegamAoFim` |
-| AT-02 | passa: em 20 sementes, 7 estabilizada · 7 árvore cortada · 6 Nalia piora | `at02_vinteSementes_desfechosDiferentesEPeloMenosUmNaoTragico` |
-| AT-04 (parte de arcos) | passa | `validadorRejeitaArcoSemDesfechoEEpilogoSemGarantia` |
-| AT-05 com arco em andamento | passa | `mesmaSementeDaAMesmaHistoria_eOSaveNoMeioDoArcoNaoMudaNada` |
+| AT-09 | passa | `at09_depoisDeE2OSalSobeNoPostoEAReposicaoVoltaOEstoqueAosLimites` |
+| Viver 10 dias só trabalhando e comerciando | passa: semente 42 termina com 134 moedas, fome máxima 78 (nunca faminto), Ofício 20 → 39, Vigor 15 → 34 | `m5_dezDiasSoTrabalhandoEComerciando` |
+| AT-05 com economia | passa (save no meio, mesmo hash depois) | `politicaTrabalhadorEDeterministicaESobreviveAoSave` |
 
-AT-01 pede também A2, que é do M7; os 5 eventos externos já ocorrem.
-`gradlew build`: 88 testes, cobertura do `core-sim` em 92%, validador sem erros.
+`gradlew build`: 107 testes, cobertura do `core-sim` em 91%, validador sem erros.
 
 ## Como rodar e testar
 | Comando | Faz |
 |---|---|
 | `gradlew run` | abre o jogo |
 | `gradlew build` | compila, testa, confere cobertura e valida conteúdo e assets |
-| `gradlew simulate --args="--dias 30 --semente 42"` | 30 dias sem janela: arcos, cenário, epílogo e crônica |
-| `gradlew simulate --args="--semente 7 --resumo"` | só a situação final de cada arco |
-| `gradlew simulate --args="--ritmo contemplativo"` | prazos dobrados |
+| `gradlew simulate --args="--dias 10 --semente 42 --politica trabalhador --resumo"` | 10 dias de um jogador que só trabalha e come |
+| `gradlew simulate --args="--dias 30 --semente 42"` | 30 dias sem o jogador: arcos, cenário, epílogo e crônica |
 | `gradlew generateArt` / `generateRefMap` / `importPortraits` | regeneram arte, mapa de referência e retratos |
 | `gradlew distWin` | gera o `Etrava.exe` e o ZIP |
 
 No IntelliJ: janela Gradle → `ETRAVA > Tasks > application > run` (ou `verification > simulate`, com os argumentos em "Arguments").
 
-Controles: clique anda ou fala com um NPC · WASD anda · roda do mouse muda o zoom · J ou N abre o caderno · na conversa: 1 a 9 escolhe, Espaço continua, Esc vai embora · T espera 1 h · F5/F9 salva/carrega · F1 console.
-Console (novos): `arcos`, `arco ID ESTAGIO`, `prop CHAVE ESTADO`, `status NPC SITUACAO`, `ato ID`, `epilogo`; `sabe NPC` agora mostra lembranças.
+Controles: clique anda, fala com um NPC ou abre um contêiner · WASD anda · roda do mouse muda o zoom · **I** mochila · **C** habilidades · J ou N caderno · na conversa: 1 a 9 escolhe, Espaço continua, Esc vai embora · no comércio: clique compra/vende, Esc fecha · T espera 1 h · F5/F9 salva/carrega · F1 console.
+Console (novos): `trabalhar ID`, `comercio ID`, `abrir CONTEINER`, `mochila`, `ficha`, `dar ITEM [N]`, `dinheiro N`, `fome N`, `vida` (dinheiro, habilidades, reputação), `precos`.
 
-Roteiro para ver o M4 (uns 5 minutos):
-1. `gradlew run`. Ande até o sudeste da praça (perto de `ir 31 41` no console): a árvore do quintal do moinho está seca.
-2. Console: `avancar 40`. A árvore brotou. Fale com Nalia ("Viu? Tem folha.").
-3. Console: `arco a1_nalia insonia`, depois `hora 23`: Nalia está acordada debaixo da árvore.
-4. Console: `arco a1_nalia vozes`, `arco a1_nalia impasse`, `hora 10`. A curandeira está no quintal: pergunte o que a menina tem e se tem jeito. Depois convença dois outros (moleiro, ferreiro, taberneira) ou entre você mesmo falando com Nalia. No terceiro voluntário o arco termina.
-5. Console: `epilogo` mostra o texto que sairia agora. Para outro final, recomece e, no impasse, diga "Eu ajudo." ao ferreiro: a árvore vira toco.
-6. Sem fazer nada: `gradlew simulate --args="--semente 42"` e leia a crônica e o epílogo.
+Roteiro para ver o M5 (uns 5 minutos):
+1. `gradlew run`. No alto: "8 moedas". **I** abre a mochila: clique na maçã para comer. **C** mostra as habilidades.
+2. Fale com o ferreiro (na frente da oficina, 6 h–11 h): "Precisa de mão na oficina?" → "Começo agora." Passam 4 horas e aparece quanto você ganhou. Ofício subiu (**C**).
+3. Entre 9 h e 11h30, fale com a aldeã no feno: "Precisa de ajuda na colheita?". Você ganha moedas e legumes.
+4. Depois das 15 h (console `hora 16`), a taberneira serve na frente da taverna: "O que tem no caldeirão?". Compre pão; venda legumes. Repare no caixa dela e no seu dinheiro.
+5. Clique nos sacos de farinha, ao lado do feno, e pegue um. Se a aldeã ou o moleiro estiverem perto e acordados, aparece "Alguém viu." (console `sabe aldea` mostra a opinião e a lembrança). De madrugada ninguém vê.
+6. Console `area area_teste`: o comerciante do Posto. Depois `arco e2_sal subiu` e fale com ele de novo: ele comenta o sal, e `precos` mostra o sal 50% mais caro.
+7. Sem janela: `gradlew simulate --args="--dias 10 --politica trabalhador --resumo"`.
 
 ## Decisões que pedem aprovação
-- **D-041 (narrativo):** como A1 se resolve sem o jogador, os dois caminhos exclusivos do jogador e o texto dos desfechos e do epílogo são proposta minha.
-- **D-039:** o jogo começa com a árvore morta (ela brota por volta do dia 2).
-- Os nomes: a curandeira segue sem nome próprio; o estudioso aparece como "Homem de fora".
+- **D-046 (design):** a fome como única necessidade, e o que ela faz (faminto rende metade; ninguém morre de fome).
+- **D-049:** trabalho oferecido na conversa, uma vez por dia; o ferreiro faz as vezes de Avel na oficina até o M7.
+- **D-050:** a taberneira passa a servir do lado de fora das 15 h às 23 h; o comerciante do Posto mora na área de teste até o M7.
+- **Equilíbrio:** quem só trabalha junta ~13 moedas por dia (134 em 10 dias). Está generoso de propósito; dá para apertar em `jobs.yaml` e `items.yaml` sem mexer em código.
+- Texto novo: falas do comerciante do Posto, ofertas de trabalho, balcão da taverna, descrições de itens e habilidades, trechos "vida" do epílogo — tudo proposta minha, para a leitura de tom do diretor.
 
 ## Problemas conhecidos / pendências
-- **Retratos de Nalia e da curandeira não foram gerados** (aparecem como placeholder na conversa). São 2 imagens na Dreamina, cerca de 60 créditos; deixei fora por não ser trabalho do M4.
-- Todo texto de diálogo, fato e epílogo é meu e precisa da leitura de tom do diretor.
-- Furto, invasão e agressão ainda não existem como ações do jogador (M5/M6); o efeito `deed` e o console `ato` já funcionam. Confronto e expulsão ficam para o M6 (D-042).
-- A fonte padrão do libGDX não tem travessão; evitei o caractere nas falas.
-- A árvore viva encobre quem fica atrás dela (fica translúcida, como os outros objetos).
-- Caderno só tem duas das cinco abas do PRD; sem escolhas por habilidade (M5).
-- A checagem de "escolha relevante" só confere a declaração dos canais.
-- NPCs atravessam uns aos outros; troca de área só pelo console; sem tela de salvar/carregar nem menu (logo, sem escolha de ritmo na interface).
-- Capítulo I só termina pelo dia 30; a saída pela estrada entra no M7 (D-045).
-- Conferir os termos de uso comercial da Dreamina antes de um release.
-- AT-18 segue parcial: executável testado só nesta máquina.
+- **Retratos que faltam** (placeholder na conversa): Nalia, curandeira e, agora, o comerciante do Posto. São 3 imagens na Dreamina, cerca de 90 créditos.
+- Itens aparecem só como texto: os ícones (`icone.<id>`) ainda não existem. Arma equipada não aparece no personagem (RF-203, MVP-S).
+- Equipamento ainda não faz nada além de ocupar o encaixe e pesar (exceto a bolsa de cinto, que aumenta a carga). Dano, proteção e a luz da lamparina entram no M6.
+- O Posto só se alcança pelo console (`area area_teste`); troca de área no mapa entra com a estrada (M7).
+- Furto: o dono não descobre depois sozinho; só quem vê (D-051). Invasão e agressão chegam com o combate (M6).
+- A fonte padrão do libGDX não tem travessão nem "×"; evitei os dois na interface.
+- Do M4, ainda valem: NPCs atravessam uns aos outros; sem tela de salvar/carregar nem menu; Capítulo I só termina pelo dia 30; conferir os termos de uso comercial da Dreamina antes de um release; AT-18 testado só nesta máquina.
 
-## Próximo passo — M5 (Vida e economia), só com o "continue" do usuário
-SPEC 4.8: itens e inventário, economia e comerciantes, trabalhos, habilidades. E2 (sal) já marca a flag `sal_subiu`; falta ligá-la ao preço (AT-09). Os gatilhos de furto usam o efeito `deed`.
+## Próximo passo — M6 (Combate e perigo), só com o "continue" do usuário
+SPEC 4.8 (combate) e 6 (escuridão): combate em tempo real com vida e fôlego, 3 inimigos, fuga e rendição, derrota não letal e morte, a estrutura enterrada e o raio de luz (a lamparina já existe como item, com `stats: {luz: 6}`). Os `stats` de dano e proteção dos itens já estão nos dados. AT-13 e AT-14.
 
-Para quem retomar (qualquer modelo): leia este arquivo, depois `CLAUDE.md`, as seções do PRD do marco e a `docs/SPEC.md`. O vocabulário de condições e efeitos está em `CONTENT.md`; cada tipo novo precisa de leitura e escrita em `Rules` (os efeitos agendados vão para o save) e de um caso no `NarrativeValidator`.
+Para quem retomar (qualquer modelo): leia este arquivo, depois `CLAUDE.md`, as seções do PRD do marco e a `docs/SPEC.md`. O vocabulário de condições e efeitos está em `CONTENT.md`; cada tipo novo precisa de leitura e escrita em `Rules` (os efeitos agendados vão para o save), de um caso no `Story` (teste/aplicação) e de um caso no `NarrativeValidator`.
 
 ## Paradas obrigatórias (lembrete)
 - Fim de cada marco (M0…M8).

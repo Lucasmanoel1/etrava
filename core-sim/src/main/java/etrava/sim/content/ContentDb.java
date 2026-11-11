@@ -287,6 +287,12 @@ public final class ContentDb {
     public Map<String, JobDef> jobs() { return jobs; }
     public Map<String, ContainerDef> containers() { return containers; }
     public SkillsDef skills() { return skills; }
+    /** Comunidades que têm ao menos um NPC (para relatórios de reputação). */
+    public java.util.Set<String> factionsInUse() {
+        java.util.Set<String> set = new java.util.TreeSet<>();
+        for (NpcDef n : npcs.values()) if (n.faction() != null) set.add(n.faction());
+        return set;
+    }
     public OriginDef origin() { return origin; }
     /** Problemas encontrados durante o carregamento (arquivo: mensagem). */
     public List<String> problems() { return problems; }

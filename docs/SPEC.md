@@ -1,6 +1,6 @@
 # SPEC — ETRAVA (especificação técnica do MVP)
 
-**Versão:** 0.5 · **Data:** 2026-11-11 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
+**Versão:** 0.6 · **Data:** 2026-11-11 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
 **Base:** `docs/PRD.md` v0.1 (seção 20.1), `docs/ponto-seguro.md`, `docs/lore-etrava.md`
 **Escopo:** só o MVP (Origem I + Capítulo I + Pedra-Mansa). Itens [PÓS]/[LP] aparecem apenas como "não fechar a porta".
 
@@ -202,7 +202,9 @@ Todo texto exibido vem desses arquivos (RF-382). Cada texto tem um endereço est
 | `npc` | `{npc: {id: moleiro, status: present}}` · `{npc: {id: nalia, area: vila_ref}}` |
 | `prop` | `{prop: {key: arvore_nalia, state: viva}}` |
 | `remembers` | `{remembers: {npc: nalia, type: ajuda, subject: player}}` |
-| `chapter` · `reputation` · `chance` | `{chance: 0.3}` usa o RNG da simulação |
+| `reputation` | `{reputation: {faction: pedra_mansa, min: -25}}` (média das opiniões dos membros presentes) |
+| `job` | `{job: oficina}` — o trabalho pode começar agora |
+| `chapter` · `chance` | `{chance: 0.3}` usa o RNG da simulação |
 
 **Efeitos:**
 
@@ -218,13 +220,14 @@ Todo texto exibido vem desses arquivos (RF-382). Cada texto tem um endereço est
 | `remember` | o NPC guarda um acontecimento na memória (RF-084) |
 | `deed` | o jogador comete um ato de `deeds.yaml`; só pesa para quem viu ou ficou sabendo (RF-089) |
 | `approach` | NPC vai até o jogador e inicia conversa (RF-108) |
-| `priceMod` | altera modificador de preço de uma categoria/região |
+| `priceMod` | multiplica o modificador de preço de uma categoria ou marca (`{priceMod: {tag: sal, factor: 1.5}}`) |
+| `train` | treina uma habilidade do jogador |
 | `faction` | altera relação entre facções |
 | `schedule` | agenda efeitos para daqui a X horas/dias (RF-162) |
 | `startCombat` · `startTrade` · `startJob` · `endDialogue` | abrem outros modos |
 | `chronicle` | escreve na crônica |
 
-**Implementado até o M4:** condições `flag`, `var`, `knows`, `opinion`, `time`, `npc` (área ou situação), `arc`, `prop`, `remembers`, `chance`, `all/any/not`; efeitos `setFlag`, `setVar`, `addVar`, `learn`, `opinion`, `chronicle`, `schedule`, `setProp`, `arc`, `npcStatus`, `remember`, `deed`. Os demais entram com os sistemas deles (itens, economia, combate). A sobreposição de agenda não é um efeito: é um bloco de agenda com condição (4.3, D-040).
+**Implementado até o M5:** condições `flag`, `var`, `knows`, `opinion`, `time`, `npc` (área ou situação), `arc`, `prop`, `remembers`, `chance`, `has`, `skill`, `reputation`, `job`, `all/any/not`; efeitos `setFlag`, `setVar`, `addVar`, `learn`, `opinion`, `chronicle`, `schedule`, `setProp`, `arc`, `npcStatus`, `remember`, `deed`, `give`, `take`, `priceMod`, `train`, `startJob`, `startTrade`. `faction`, `startCombat` e `endDialogue` entram com o combate (M6) e o conteúdo final (M7). A sobreposição de agenda não é um efeito: é um bloco de agenda com condição (4.3, D-040).
 
 Condições e efeitos são **dados estruturados**, não uma linguagem de script. É isso que permite ao validador analisar o conteúdo sem executá-lo. Tipo novo só entra quando uma história realmente não couber nos existentes (PRD 20.2).
 
@@ -392,11 +395,18 @@ Regras do motor:
 
 ### 4.8 Itens, economia, trabalhos, combate, sobrenatural
 
-- `items.yaml`: os campos do RF-202. Documentos são itens com `document: <id>` (RF-124).
-- **Preço** = valor base × modificador regional da categoria × modificador de opinião × modificador de Comércio (RF-262). Eventos mexem no modificador regional com `priceMod` (E2 → itens com tag `sal`).
-- `merchants.yaml`: estoque mínimo/máximo, caixa, intervalo de reabastecimento.
-- `jobs.yaml`: ação temporizada — duração, pagamento, habilidade que treina, conversas/eventos que pode disparar (RF-264).
-- **Habilidades** (Luta, Vigor, Ofício, Lábia, Observação, Comércio): 0–100, sobem por uso com ganho decrescente por curva configurável; sem nível global (RF-180–182).
+Implementado no M5 pela classe `economy.Economy` (detalhes de formato em `CONTENT.md`; decisões D-046 a D-056).
+
+- `items.yaml`: os campos do RF-202 — `name`, `description`, `weight`, `value`, `category`, `tags`, `slot`, `food`, `use` (efeitos), `icon`, `stats` (dano, proteção, luz, carga — usados no M6). Documentos serão itens com `document: <id>` (RF-124, M7).
+- **Mochila e corpo:** mochila = item → quantidade; corpo = 5 encaixes (`mainHand`, `offHand`, `body`, `head`, `accessory`). Carga acima de 25 kg + 0,25 × Vigor (+ `carga` do equipamento) deixa o personagem a 60% da velocidade (RF-200).
+- **Fome** (D-046): 0 a 100 em um dia; faminto (≥ 90) rende e aprende pela metade. Comer não gasta tempo.
+- **Preço** = valor base × modificador regional (categoria e marcas) × (1 − opinião/500) × (1 − Comércio/400) (RF-262). O comerciante paga 40% disso, com os fatores invertidos (D-047). Eventos mexem no modificador com `priceMod` (E2 → marca `sal` × 1,5).
+- `merchants.yaml`: NPC que atende, caixa, estoque mínimo/máximo, o que compra, intervalo de reposição, condição para negociar. Reposição à meia-noite (D-048). Abre pela conversa (`startTrade`); com o comércio aberto o relógio para.
+- `jobs.yaml`: ação temporizada (RF-264) — quem dá, onde, janela de horário, duração, pagamento, habilidade que melhora o pagamento, habilidades que treina, efeitos ao terminar e chance de quem dá o trabalho contar uma novidade. Corre como uma espera interrompível; um por dia (D-049).
+- `containers.yaml`: contêiner num ponto do mapa, com dono e reposição; pegar do que tem dono dispara o ato `roubo` (RF-204, D-051).
+- **Habilidades** (`skills.yaml`: Luta, Vigor, Ofício, Lábia, Observação, Comércio): 0–100, sobem por uso com ganho = base × (1 − valor/100)^curva; sem nível global (RF-180–182, D-054).
+- **Reputação** (RF-280): média das opiniões dos membros presentes de uma comunidade (`faction` no NPC); mexe em preço (pela opinião de quem vende), em quem vende e em quem oferece trabalho (RF-282, D-052).
+- **Origem** (`origins/pedra_mansa.yaml`): dinheiro, itens, equipamento e habilidades iniciais (D-055).
 - **Combate** roda no `core-sim`: alcance, tempos de ataque, vida e fôlego, 2 habilidades com recarga. Inimigos humanos têm limiar de fuga/rendição. `enemies.yaml` e as áreas dizem se a derrota ali é letal; o padrão é acordar horas depois, roubado, com o mundo avançado (RF-340/341).
 - `phenomena.yaml` (RF-241): tipo de custo, quem carrega, origem e destino do custo. O MVP usa em A1 e no rumor de Berta; o jogador não conjura (DP-04).
 
@@ -449,7 +459,7 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 
 ### 5.3 Versão, migração e integridade
 
-- `schemaVersion` inteiro (hoje 3 — D-035, D-044). O M4 acrescentou `arcs`, `props`, `memories`, `epilogue`, a situação dos NPCs e o ritmo de eventos. Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
+- `schemaVersion` inteiro (hoje 4 — D-035, D-044, D-056). O M4 acrescentou `arcs`, `props`, `memories`, `epilogue`, a situação dos NPCs e o ritmo de eventos; o M5, `life` (dinheiro, mochila, corpo, habilidades, fome, trabalhos do dia) e `economy` (modificadores de preço, comerciantes, contêineres). Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
 - Arquivo ilegível → erro tratado e volta ao menu, nunca crash (RF-365).
 - ID que sumiu do conteúdo (NPC ou item removido entre versões) → ignorado com aviso no log.
 - **Hash de estado:** SHA-256 do `state.json` em forma canônica (chaves ordenadas). É o que os testes AT-03 e AT-05 comparam.
@@ -552,7 +562,7 @@ Asset com ID no manifesto mas sem arquivo é **aviso**, não erro (vira placehol
 | AT-08 | fato plantado na taverna chega a ≥ 3 NPCs em ≤ 3 dias |
 | AT-09 | preço dos itens `sal` depois de E2; estoque depois do reabastecimento |
 
-- **Políticas de jogador headless:** `parado` (fica na oficina), `trabalhador` (trabalha, come, dorme) e `registro` (reexecuta comandos gravados).
+- **Políticas de jogador headless:** `parado` (fica na oficina), `trabalhador` (trabalha, come, dorme — `api.WorkerPolicy`, M5) e `registro` (reexecuta comandos gravados).
 - **Testes manuais** (AT-10 a AT-21): roteiro escrito em `docs/TESTES_MANUAIS.md`, criado conforme os marcos chegam.
 - Desempenho: 30 dias headless em ≤ 60 s (RNF-024) e salto de 12 h em ≤ 3 s (RNF-025) têm teste com tempo-limite.
 

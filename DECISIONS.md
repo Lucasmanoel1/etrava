@@ -277,3 +277,61 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Decisão:** o Capítulo I termina quando o dia 30 acaba (meia-noite): o epílogo é montado uma vez, aparece numa tela de papel e o jogo continua. A outra saída do PRD (deixar a região com intenção declarada) entra no M7, com a estrada. O ritmo Contemplativo (prazos ×2) já funciona na simulação e no `simulate --ritmo contemplativo`; a escolha no início do jogo entra com o menu (M7).
 - **Motivo:** sem a área da estrada e sem menu, as duas coisas não teriam onde aparecer.
 - **Observação:** em Contemplativo, A1 pode não ter terminado no dia 30; o epílogo usa então o fragmento "ainda não acabou".
+
+## D-046 — Fome é a única necessidade do personagem
+- **Data:** 2026-11-11
+- **Decisão:** a fome vai de 0 a 100 em um dia sem comer. A partir de 60 o HUD diz "com fome"; a partir de 90 o personagem está faminto e rende e aprende pela metade (pagamento e ganho de habilidade). Ninguém morre de fome. Comer não gasta tempo.
+- **Motivo:** o marco pede "viver 10 dias só trabalhando e comerciando", e a SPEC já previa a política `trabalhador` (trabalha, come, dorme). Sem um custo de vida, trabalhar seria só juntar dinheiro. Fome é o custo mais simples e mais legível.
+- **Alternativa descartada:** sono, frio ou aluguel como necessidades — mais telas e regras sem mudar o que o marco prova. O fôlego do combate entra no M6 e pode passar a sentir a fome.
+
+## D-047 — Fórmula do preço e "sem lucro garantido"
+- **Data:** 2026-11-11
+- **Decisão:** preço de compra = valor × modificador regional × (1 − opinião/500) × (1 − Comércio/400); o comerciante paga 40% disso, com os fatores invertidos, arredondando para baixo. Opinião ±100 mexe ±20%; Comércio 100 tira até 25%. Coisa barata demais vale 0 e o comerciante não compra. O modificador regional é por categoria ou marca e vale para o mundo todo (o MVP tem uma região); o efeito `priceMod` multiplica o atual. E2 multiplica a marca `sal` por 1,5.
+- **Motivo:** cumpre o RF-262 com números que se leem; mesmo no melhor caso o jogador não lucra comprando e revendendo no mesmo balcão.
+- **Ajustável:** constantes em `Economy`; valores e estoques em `content/`.
+
+## D-048 — Reposição volta o estoque ao máximo
+- **Data:** 2026-11-11
+- **Decisão:** à meia-noite, a cada `restockDays`, todo item abaixo do mínimo ou acima do máximo volta ao máximo, e o caixa volta ao valor inicial se tiver caído abaixo. Contêineres com reposição voltam ao conteúdo inicial (sem tirar o que o jogador pôs).
+- **Motivo:** é a leitura direta do AT-09 ("o estoque volta aos limites") e é determinística, sem sorteio.
+
+## D-049 — Trabalho é um salto de tempo oferecido na conversa
+- **Data:** 2026-11-11
+- **Decisão:** trabalho (`jobs.yaml`) é uma espera que paga: o tempo salta como no `esperar` (o mundo segue e um evento pode interromper; interrompido, paga proporcional), o personagem termina no posto de trabalho, as habilidades sobem por hora, e quem deu o trabalho pode contar uma novidade. Cada trabalho uma vez por dia, numa janela de horário, com quem o dá presente e acordado. É oferecido na conversa: escolha com `{when: {job: id}}` e efeito `{startJob: id}`. Três trabalhos: oficina (ferreiro), colheita (aldeã) e carga no Posto.
+- **Motivo:** PRD 7.2 pede ação temporizada sem minijogo, que também seja lugar de ouvir coisas. Oferecer pela conversa evita botão de "trabalhar" sem contexto e deixa quem detesta o jogador não oferecer (RF-282).
+- **Provisório:** até Avel existir (M7), quem dá o trabalho da oficina é o ferreiro.
+
+## D-050 — Onde ficam os dois comerciantes até o M7
+- **Data:** 2026-11-11
+- **Decisão:** o comércio do vilarejo é a taverna; para dar para negociar, a taberneira passa a servir do lado de fora das 15 h às 23 h. O comerciante do Posto (NPC novo, sem nome próprio) atende na área de teste, que já fazia as vezes da estrada para o viajante, até o Posto ganhar mapa no M7. Até lá, chegar ao Posto é pelo console (`area area_teste`).
+- **Motivo:** o MVP pede 2 comerciantes (vilarejo e Posto) e o AT-09 fala do Posto; interiores e o mapa do Posto são do M7.
+
+## D-051 — Contêiner com dono: pegar é roubo, se alguém vir
+- **Data:** 2026-11-11
+- **Decisão:** contêineres (`containers.yaml`) ficam num ponto do mapa; clicar perto abre a lista. Pegar de um contêiner com dono dispara o ato `roubo` — que, como todo ato (D-042), só pesa para quem estiver a até 10 m, acordado e à vista. O dono não descobre depois sozinho.
+- **Motivo:** RF-204 diz "se testemunhado"; descoberta posterior seria regra nova sem pedido.
+
+## D-052 — Reputação é a média das opiniões de quem é da comunidade
+- **Data:** 2026-11-11
+- **Decisão:** NPC ganha o campo `faction` (hoje `pedra_mansa` e `posto`). A reputação numa comunidade é a média das opiniões dos membros presentes; condição `{reputation: {faction, min, max}}`. A taverna não vende para quem tem reputação abaixo de −25 em Pedra-Mansa; os trabalhos não são oferecidos por quem tem opinião abaixo de −20.
+- **Motivo:** RF-280 pede reputação derivada, não onisciente; como cada opinião só muda pelo que o NPC viu ou ouviu (RF-281), a média herda isso sem estado novo.
+
+## D-053 — Mochila e ficha param o relógio; o comércio também
+- **Data:** 2026-11-11
+- **Decisão:** com o comércio ou um contêiner aberto, a simulação não avança (como no diálogo). Com a mochila (I) ou a ficha (C) abertas, o cliente aplica os comandos por `Simulation.stepPaused()`, que não avança o relógio. Comer e trocar de roupa valem a qualquer hora.
+- **Motivo:** RF-324 (o relógio pausa em menus e no inventário). Os comandos continuam no registro, então a partida segue reexecutável.
+
+## D-054 — Habilidades: curva 1,6 e o que treina cada uma
+- **Data:** 2026-11-11
+- **Decisão:** ganho = base × (1 − valor/100)^1,6. Ofício e Vigor sobem nos trabalhos (por hora), Comércio a cada compra e venda, Observação ao escutar uma conversa alheia até o fim (e cada ponto aumenta a distância de escuta em 6 cm, RF-184), Lábia ao usar uma fala com condição `skill` (que aparece com o rótulo da habilidade). Luta fica para o M6. Valores iniciais vêm da origem.
+- **Motivo:** RF-180–182; habilidade sobe pelo que se faz, sem pontos para distribuir. Em 10 dias de trabalho, Ofício vai de 20 a ~39.
+
+## D-055 — Origem já é um arquivo de dados
+- **Data:** 2026-11-11
+- **Decisão:** `content/origins/pedra_mansa.yaml` existe desde o M5, com dinheiro (8), itens, equipamento e habilidades iniciais. Local inicial, relações e conhecimentos entram no M7.
+- **Motivo:** o personagem precisava começar com alguma coisa, e pôr isso em código seria trabalho jogado fora (PRD 8.4: origem é pacote de dados).
+
+## D-056 — Save na versão 4, sem migração da 3
+- **Data:** 2026-11-11
+- **Decisão:** o M5 acrescentou dinheiro, mochila, equipamento, habilidades, fome, trabalhos do dia, modificadores de preço, comerciantes e contêineres. `SCHEMA_VERSION` = 4; saves da versão 3 são recusados com mensagem clara.
+- **Motivo:** o mesmo da D-035/D-044. Um save antigo começaria sem nada no bolso e sem habilidades.

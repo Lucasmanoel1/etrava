@@ -183,6 +183,75 @@ Em cada espaço entra um fragmento: o de maior `priority` cuja condição passa.
 
 Disparado por `{deed: roubo}`. Quem viu perde `witness` de opinião e passa a contar; quem ouve o rumor perde `hearsay`. Quem não soube não muda.
 
+## Itens — `content/items.yaml`
+
+```yaml
+- id: pao
+  name: Pão de centeio
+  description: "Duro por fora, quase duro por dentro."   # aparece na mochila
+  category: consumivel     # arma | armadura | ferramenta | consumivel | material | mercadoria | documento | especial
+  tags: [sal]              # marcas livres: eventos mexem no preço por elas (E2 sobe tudo com `sal`)
+  weight: 0.4              # kg
+  value: 2                 # preço-base, antes de opinião, Comércio e eventos
+  food: 30                 # quanto a fome cai ao comer
+  slot: mainHand           # mainHand | offHand | body | head | accessory — só para o que se veste ou empunha
+  use: [{learn: {who: player, fact: x, certainty: read}}]   # efeitos ao usar (opcional)
+  stats: {dano: 3, protecao: 1, luz: 6, carga: 6}          # números do M6; `carga` já aumenta a capacidade
+```
+
+## Comerciantes — `content/merchants.yaml`
+
+```yaml
+- id: taverna
+  npc: taberneira          # quem atende: só negocia acordado, à vista e na área do jogador
+  cash: 40                 # caixa; volta a esse valor na reposição
+  restockDays: 1
+  when: {reputation: {faction: pedra_mansa, min: -25}}   # quem tem má fama não compra
+  stock:
+    - {item: pao, min: 3, max: 10}   # na reposição, fora de [min, max] volta ao máximo
+  buys: [horta, moinho]    # categorias ou marcas que ele compra do jogador
+```
+
+Abre-se o comércio pela conversa: uma escolha com `effects: [{startTrade: taverna}]` (sem `goto`: a conversa fecha e o balcão abre).
+
+## Trabalhos — `content/jobs.yaml`
+
+```yaml
+- id: oficina
+  name: Serviço na oficina
+  giver: ferreiro          # quem dá: presente, acordado e na área do jogador
+  at: vila_ref/oficina_fora
+  from: "06:00"            # janela em que dá para COMEÇAR
+  to: "11:00"
+  hours: 4
+  pay: 9
+  paySkill: oficio         # até +50% com 100
+  train: {oficio: 0.8, vigor: 0.2}   # ganho-base por hora
+  when: {opinion: {npc: npc, min: -20}}   # "npc" = quem dá o trabalho
+  onFinish: [{opinion: {npc: ferreiro, add: 1}}]
+  gossip: 0.5              # chance de ele contar uma novidade durante o trabalho
+```
+
+Na conversa: escolha com `when: {job: oficina}` (só aparece se o trabalho pode começar agora) e `effects: [{startJob: oficina}]`.
+
+## Contêineres — `content/containers.yaml`
+
+```yaml
+- id: sacos_moinho
+  name: Sacos de farinha
+  at: vila_ref/feno        # ponto do mapa; o jogador clica perto para abrir
+  owner: moleiro           # pegar do que tem dono é roubo — se alguém vir
+  restockDays: 2
+  items: [{item: farinha, qty: 3}]
+```
+
+## Habilidades e origem
+
+- `content/skills.yaml`: as seis habilidades, com nome, descrição e a `curve` do ganho decrescente.
+- `content/origins/pedra_mansa.yaml`: dinheiro, itens, equipamento e habilidades com que o personagem começa.
+- Uma escolha de diálogo com condição `skill` mostra o rótulo (`tag: Lábia`) e treina a habilidade quando escolhida.
+- NPC ganha `faction: pedra_mansa` para contar na reputação da comunidade.
+
 ## Condições (`when`)
 
 | Condição | Exemplo |
@@ -198,6 +267,10 @@ Disparado por `{deed: roubo}`. Quem viu perde `witness` de opinião e passa a co
 | cenário | `{prop: {key: arvore_nalia, state: viva}}` |
 | lembrança | `{remembers: {npc: nalia, type: ajuda, subject: player}}` |
 | sorte | `{chance: 0.3}` |
+| jogador tem | `{has: {item: pao, qty: 2}}` · `{has: {money: 20}}` |
+| habilidade | `{skill: {name: labia, min: 30}}` |
+| reputação | `{reputation: {faction: pedra_mansa, min: -25}}` |
+| trabalho disponível agora | `{job: oficina}` |
 | combinar | `{all: [...]}` · `{any: [...]}` · `{not: {...}}` |
 
 ## Efeitos (`effects`)
@@ -214,6 +287,10 @@ Disparado por `{deed: roubo}`. Quem viu perde `witness` de opinião e passa a co
 | situação de NPC | `{npcStatus: {id: estudioso, status: present}}` |
 | lembrança | `{remember: {npc: npc, type: ajuda, subject: player}}` |
 | ato | `{deed: roubo}` |
+| dar / tirar | `{give: {item: pao, qty: 2}}` · `{give: {money: 5}}` · `{take: {item: pao}}` |
+| preço | `{priceMod: {tag: sal, factor: 1.5}}` (multiplica o atual) |
+| treinar | `{train: {skill: vigor, amount: 2}}` |
+| trabalho / comércio | `{startJob: oficina}` · `{startTrade: taverna}` (começam quando a conversa acabar) |
 
 Graus de certeza: `rumor` (ouvi dizer), `claim` (me afirmaram), `witnessed` (vi), `read` (li), `verified` (conferi).
 

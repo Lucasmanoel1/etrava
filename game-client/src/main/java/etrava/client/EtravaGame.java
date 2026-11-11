@@ -91,6 +91,8 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Legendas sobre quem fala: {NPC, texto, segundos restantes}. */
     private final List<Object[]> balloons = new ArrayList<>();
     private String hoverNpc;
+    /** Contêiner sob o cursor (quando não há NPC), ou null. */
+    private String hoverContainer;
     private String notice = "";
     private float noticeTime;
     private int autosaveCount;
@@ -140,6 +142,7 @@ public final class EtravaGame extends ApplicationAdapter {
         ui = new GameUi(font, assets, content, texts);
         ui.onChoice(this::chooseDialogue);
         ui.onToggleMark(f -> sim.submit(new Command.MarkFact(f, !sim.view().markedFacts().contains(f))));
+        ui.onCommand(sim::submit);
 
         InputMultiplexer input = new InputMultiplexer();
         input.addProcessor(new GlobalKeys());
@@ -168,7 +171,11 @@ public final class EtravaGame extends ApplicationAdapter {
         float dt = Math.min(Gdx.graphics.getDeltaTime(), MAX_FRAME_TIME);
         WorldView v = sim.view();
 
-        if (!paused && !ui.epilogueOpen()) { // o epílogo é lido com o mundo parado
+        if (paused || ui.epilogueOpen() || ui.inventoryOpen() || ui.characterOpen()) {
+            // mundo parado (pausa, epílogo, mochila, ficha): só os comandos de mochila valem, sem gastar tempo
+            List<SimEvent> events = sim.stepPaused();
+            if (!events.isEmpty()) handleEvents(events);
+        } else {
             pollMovementKeys();
             accumulator += dt * timeScale;
             while (accumulator >= Simulation.DT) {
@@ -197,7 +204,7 @@ public final class EtravaGame extends ApplicationAdapter {
         updateHover(v);
         drawBalloons(v, dt);
         if (showHud) drawHud(v);
-        ui.render(v, dt);
+        ui.render(v, sim.tradeView(), sim.economy(), dt);
         if (console != null) console.render(dt);
 
         frame++;
@@ -244,6 +251,21 @@ public final class EtravaGame extends ApplicationAdapter {
                     balloons.add(new Object[] {l.npcId(), l.text(), 2.2f + l.text().length() * 0.045f});
                 }
                 case SimEvent.FactLearned f -> showNotice(texts.get("caderno.atualizado"));
+                case SimEvent.JobFinished j -> {
+                    var job = content.jobs().get(j.jobId());
+                    String hours = String.format(Locale.ROOT, "%.1f", j.hours()).replace('.', ',');
+                    showNotice(texts.get(j.interrupted() ? "trabalho.interrompido" : "trabalho.feito",
+                            job != null ? job.displayName() : j.jobId(), hours, ui.coins(j.pay())));
+                    if (j.heard() != null) {
+                        var giver = content.npcs().get(j.giver());
+                        balloons.add(new Object[] {"jogador", texts.get("trabalho.ouviu",
+                                giver != null ? giver.displayName() : j.giver(), j.heard()), 7f});
+                    }
+                    previous.clear();
+                    capturePrevious(sim.view());
+                }
+                case SimEvent.JobRefused r -> showNotice(texts.get("trabalho.recusado"));
+                case SimEvent.DeedSeen d -> showNotice(texts.get("ato.visto"));
                 case SimEvent.ChapterEnded c -> {
                     ui.showEpilogue(c.epilogue());
                     autosave();
@@ -332,7 +354,11 @@ public final class EtravaGame extends ApplicationAdapter {
         batch.begin();
         float top = Gdx.graphics.getHeight() - 12;
         font.setColor(0.93f, 0.89f, 0.78f, 1f);
-        font.draw(batch, v.clock().format() + (paused ? "   [PAUSADO]" : ""), 14, top);
+        String life = texts.get("hud.dinheiro", ui.coins(v.money()))
+                + (v.hunger() >= etrava.sim.economy.Economy.HUNGRY ? "   " + texts.get(v.hunger()
+                        >= etrava.sim.economy.Economy.STARVING ? "fome.faminto" : "fome.com_fome") : "")
+                + (sim.economy().overloaded() ? "   " + texts.get("hud.carga") : "");
+        font.draw(batch, v.clock().format() + "   " + life + (paused ? "   [PAUSADO]" : ""), 14, top);
         if (noticeTime > 0) {
             noticeTime -= Gdx.graphics.getDeltaTime();
             font.draw(batch, notice, 14, top - (options.dev() ? 40 : 20));
@@ -350,7 +376,9 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Qual NPC está sob o cursor (RF-004). Compara em pixels de mundo com o retângulo do sprite. */
     private void updateHover(WorldView v) {
         hoverNpc = null;
-        if (v.dialogue() != null || ui.notebookOpen() || (console != null && console.isOpen())) return;
+        hoverContainer = null;
+        if (v.dialogue() != null || v.trade() != null || ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen()
+                || (console != null && console.isOpen())) return;
         camera.screenToWorldPx(Gdx.input.getX(), Gdx.input.getY(), px);
         double best = Double.MAX_VALUE;
         for (ActorDraw d : draws) {
@@ -361,6 +389,13 @@ public final class EtravaGame extends ApplicationAdapter {
                 best = -(d.x + d.y);
                 hoverNpc = d.id;
             }
+        }
+        if (hoverNpc != null) return;
+        // sem NPC sob o cursor: algum contêiner perto do ponto do chão apontado?
+        camera.screenToWorld(Gdx.input.getX(), Gdx.input.getY(), worldPoint);
+        for (var c : content.containers().values()) {
+            double[] p = sim.economy().containerPoint(c);
+            if (p != null && Math.hypot(p[0] - worldPoint[0], p[1] - worldPoint[1]) <= 0.9) hoverContainer = c.id();
         }
     }
 
@@ -379,6 +414,16 @@ public final class EtravaGame extends ApplicationAdapter {
         if (hoverNpc != null && drawOf(hoverNpc) != null && balloons.stream().noneMatch(b -> b[0].equals(hoverNpc))) {
             var def = content.npcs().get(hoverNpc);
             drawLabel(drawOf(hoverNpc), def != null ? def.displayName() : hoverNpc, 0.55f);
+        }
+        if (hoverContainer != null) {
+            var c = content.containers().get(hoverContainer);
+            double[] p = sim.economy().containerPoint(c);
+            if (p != null) {
+                ActorDraw spot = new ActorDraw();
+                spot.x = p[0];
+                spot.y = p[1];
+                drawLabel(spot, c.displayName(), 0.55f);
+            }
         }
         batch.end();
     }
@@ -445,7 +490,8 @@ public final class EtravaGame extends ApplicationAdapter {
     /** WASD relativo à câmera (RF-002): "cima" na tela é noroeste→(-1,-1) no mundo isométrico. */
     private void pollMovementKeys() {
         double dx = 0, dy = 0;
-        boolean busy = sim.view().dialogue() != null || ui.notebookOpen() || (console != null && console.isOpen());
+        boolean busy = sim.view().dialogue() != null || sim.view().trade() != null || ui.notebookOpen()
+                || (console != null && console.isOpen());
         if (!busy) {
             if (Gdx.input.isKeyPressed(Input.Keys.W)) { dx -= 1; dy -= 1; }
             if (Gdx.input.isKeyPressed(Input.Keys.S)) { dx += 1; dy += 1; }
@@ -477,6 +523,8 @@ public final class EtravaGame extends ApplicationAdapter {
                     if (console != null && console.isOpen()) console.toggle();
                     else if (ui.epilogueOpen()) ui.closeEpilogue();
                     else if (sim.view().dialogue() != null) sim.submit(new Command.LeaveDialogue());
+                    else if (sim.view().trade() != null) sim.submit(new Command.CloseTrade());
+                    else if (ui.closeWindows()) return true;
                     else if (ui.notebookOpen()) ui.closeNotebook();
                     else Gdx.app.exit();
                     return true;
@@ -513,11 +561,23 @@ public final class EtravaGame extends ApplicationAdapter {
                 else if (keycode == Input.Keys.SPACE || keycode == Input.Keys.ENTER) chooseDialogue(0);
                 return true;
             }
+            if (sim.view().trade() != null) return true; // no comércio, só o mouse e o Esc
             if (keycode == Input.Keys.J || keycode == Input.Keys.N) {
+                ui.closeWindows();
                 ui.toggleNotebook();
                 return true;
             }
-            if (ui.notebookOpen()) return true;
+            if (keycode == Input.Keys.I) {
+                ui.closeNotebook();
+                ui.toggleInventory();
+                return true;
+            }
+            if (keycode == Input.Keys.C) {
+                ui.closeNotebook();
+                ui.toggleCharacter();
+                return true;
+            }
+            if (ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen()) return true;
             if (keycode == Input.Keys.SPACE) {
                 paused = !paused;
                 return true;
@@ -532,8 +592,10 @@ public final class EtravaGame extends ApplicationAdapter {
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             if (button != Input.Buttons.LEFT || paused) return false;
-            if (sim.view().dialogue() != null || ui.notebookOpen() || ui.epilogueOpen()) return true;
+            if (sim.view().dialogue() != null || sim.view().trade() != null || ui.notebookOpen() || ui.epilogueOpen()
+                    || ui.inventoryOpen() || ui.characterOpen()) return true;
             if (hoverNpc != null) sim.submit(new Command.Talk(hoverNpc));
+            else if (hoverContainer != null) sim.submit(new Command.OpenContainer(hoverContainer));
             else moveToScreenPoint(screenX, screenY);
             return true;
         }
@@ -541,7 +603,8 @@ public final class EtravaGame extends ApplicationAdapter {
         @Override
         public boolean touchDragged(int screenX, int screenY, int pointer) {
             if (paused || !Gdx.input.isButtonPressed(Input.Buttons.LEFT)) return false;
-            if (sim.view().dialogue() != null || ui.notebookOpen() || hoverNpc != null) return true;
+            if (sim.view().dialogue() != null || sim.view().trade() != null || ui.notebookOpen() || ui.inventoryOpen()
+                    || ui.characterOpen() || hoverNpc != null || hoverContainer != null) return true;
             long tick = sim.view().clock().tick();
             if (tick - lastDragTick >= 6) { // segurar o botão: recalcula o caminho 5 vezes por segundo
                 lastDragTick = tick;
@@ -568,6 +631,8 @@ public final class EtravaGame extends ApplicationAdapter {
                         + "salvar [NOME] | carregar [NOME] | saves | npcs | cronica | agendar HORAS TEXTO\n"
                         + "falar NPC | escolher N | caderno | sabe NPC\n"
                         + "arcos | arco ID ESTAGIO | prop CHAVE ESTADO | status NPC SITUACAO | ato ID | epilogo\n"
+                        + "trabalhar ID | comercio ID | abrir CONTEINER | mochila | ficha | dar ITEM [N] | dinheiro N\n"
+                        + "fome N | vida | precos\n"
                         + "vel FATOR | zoom VALOR | semente | luz on/off | pos-fx on/off | colisao | hud | validar | sair";
             case "pos":
                 return String.format(Locale.ROOT, "(%.2f, %.2f) em %s", v.playerX(), v.playerY(), v.areaId());
@@ -642,6 +707,56 @@ public final class EtravaGame extends ApplicationAdapter {
                         .append(", dia ").append(m.day()).append(")\n"));
                 v.npcKnowledge(p[1]).values().forEach(k -> sb.append(k.fact()).append(" (").append(k.version())
                         .append(", ").append(k.certainty()).append(", ").append(k.source()).append(")\n"));
+                return sb.toString().trim();
+            }
+            case "trabalhar":
+                if (p.length < 2) return "trabalhos: " + String.join(", ", content.jobs().keySet());
+                sim.submit(new Command.Work(p[1]));
+                return sim.economy().canWork(content.jobs().get(p[1])) ? "trabalhando" : "agora não dá (hora, quem dá, ou já feito hoje)";
+            case "mochila":
+                ui.toggleInventory();
+                return "";
+            case "ficha":
+                ui.toggleCharacter();
+                return "";
+            case "abrir":
+                if (p.length < 2) return "contêineres: " + String.join(", ", content.containers().keySet());
+                sim.submit(new Command.OpenContainer(p[1]));
+                return "indo até " + p[1];
+            case "comercio":
+                if (p.length < 2) return "comércios: " + String.join(", ", content.merchants().keySet());
+                sim.submit(new Command.OpenTrade(p[1]));
+                return "abrindo " + p[1];
+            case "dar":
+                if (p.length < 2 || !content.items().containsKey(p[1]))
+                    return "itens: " + String.join(", ", content.items().keySet());
+                sim.applyNow(List.of(new Effect.Give(p[1], p.length > 2 ? (int) num(p, 2) : 1, 0)));
+                return "recebeu " + p[1];
+            case "dinheiro":
+                sim.applyNow(List.of(new Effect.Give(null, 0, (int) num(p, 1))));
+                return v.money() + " moedas";
+            case "fome":
+                sim.stateWorld().hunger = Math.max(0, Math.min(100, num(p, 1)));
+                return "fome " + v.hunger();
+            case "vida": {
+                StringBuilder sb = new StringBuilder(String.format(Locale.ROOT, "%d moedas · fome %.0f · carga %.1f/%.1f kg%n",
+                        v.money(), v.hunger(), sim.economy().weight(), sim.economy().capacity()));
+                v.skills().forEach((k, val) -> sb.append(String.format(Locale.ROOT, "%s %.1f  ", k, val)));
+                sb.append("\nmochila ").append(v.inventory()).append("\ncorpo ").append(v.equipment());
+                content.factionsInUse().forEach(f -> sb.append("\nreputação em ").append(f).append(": ")
+                        .append(sim.economy().reputation(f)));
+                return sb.toString();
+            }
+            case "precos": {
+                StringBuilder sb = new StringBuilder("modificadores: " + sim.stateWorld().priceMods + "\n");
+                for (var m : content.merchants().values()) {
+                    sb.append(m.id()).append(": ");
+                    for (var e : m.stockList()) {
+                        var item = content.items().get(e.item());
+                        sb.append(e.item()).append(" ").append(sim.economy().buyPrice(m, item)).append("  ");
+                    }
+                    sb.append("\n");
+                }
                 return sb.toString().trim();
             }
             case "esperar":

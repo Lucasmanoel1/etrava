@@ -18,19 +18,27 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import etrava.client.assets.Assets;
+import etrava.sim.api.Command;
 import etrava.sim.api.DialogueView;
+import etrava.sim.api.TradeView;
 import etrava.sim.api.WorldView;
 import etrava.sim.content.ContentDb;
 import etrava.sim.content.FactDef;
+import etrava.sim.content.ItemDef;
 import etrava.sim.content.NpcDef;
+import etrava.sim.content.SkillsDef;
+import etrava.sim.economy.Economy;
 import etrava.sim.world.KnowledgeEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 /**
- * Telas do jogo sobre o cenário: diálogo e caderno. Aparência de papel e tinta
+ * Telas do jogo sobre o cenário: diálogo, caderno, mochila, ficha do personagem,
+ * comércio e contêiner. Aparência de papel e tinta
  * (PRD 10.1), sem marcadores de objetivo. O caderno mostra o que o personagem
  * ouviu e viu, com a fonte — nunca o que fazer (RF-121).
  */
@@ -53,6 +61,13 @@ public final class GameUi implements Disposable {
     private final Table dialogueRoot = new Table();
     private final Table notebookRoot = new Table();
     private final Table epilogueRoot = new Table();
+    private final Table inventoryRoot = new Table();
+    private final Table characterRoot = new Table();
+    private final Table tradeRoot = new Table();
+    private boolean inventoryOpen, characterOpen;
+    /** O que estava na tela da última vez, para só remontar quando algo mudar. */
+    private String inventoryShown = "", characterShown = "", tradeShown = "";
+    private Consumer<Command> onCommand = c -> { };
     private boolean epilogueOpen;
     private IntConsumer onChoice = i -> { };
     private Consumer<String> onToggleMark = f -> { };
@@ -91,8 +106,16 @@ public final class GameUi implements Disposable {
         epilogueRoot.setFillParent(true);
         epilogueRoot.center();
         epilogueRoot.setVisible(false);
+        for (Table t : List.of(inventoryRoot, characterRoot, tradeRoot)) {
+            t.setFillParent(true);
+            t.center();
+            t.setVisible(false);
+        }
         stage.addActor(dialogueRoot);
         stage.addActor(notebookRoot);
+        stage.addActor(inventoryRoot);
+        stage.addActor(characterRoot);
+        stage.addActor(tradeRoot);
         stage.addActor(epilogueRoot);
     }
 
@@ -100,6 +123,30 @@ public final class GameUi implements Disposable {
     public void onChoice(IntConsumer handler) { this.onChoice = handler; }
     public void onToggleMark(Consumer<String> handler) { this.onToggleMark = handler; }
     public boolean notebookOpen() { return notebookOpen; }
+    /** Comandos que as telas da mochila e do comércio enviam (comer, vestir, comprar…). */
+    public void onCommand(Consumer<Command> handler) { this.onCommand = handler; }
+    public boolean inventoryOpen() { return inventoryOpen; }
+    public boolean characterOpen() { return characterOpen; }
+
+    /** Mochila (I) e ficha (C) param o relógio enquanto abertas, como o caderno não para. */
+    public void toggleInventory() {
+        inventoryOpen = !inventoryOpen;
+        characterOpen = false;
+        inventoryShown = "";
+    }
+
+    public void toggleCharacter() {
+        characterOpen = !characterOpen;
+        inventoryOpen = false;
+        characterShown = "";
+    }
+
+    /** Fecha mochila e ficha; devolve true se alguma estava aberta. */
+    public boolean closeWindows() {
+        boolean was = inventoryOpen || characterOpen;
+        inventoryOpen = characterOpen = false;
+        return was;
+    }
     public List<String> askFacts() { return askFacts; }
 
     public void toggleNotebook() {
@@ -149,10 +196,48 @@ public final class GameUi implements Disposable {
         stage.getViewport().update(width, height, true);
         dialogueLines = -1;
         notebookEntries = -1;
+        inventoryShown = characterShown = tradeShown = "";
     }
 
     /** Atualiza as telas conforme o estado e desenha. */
     public void render(WorldView view, float dt) {
+        render(view, null, null, dt);
+    }
+
+    /**
+     * @param trade comércio ou contêiner aberto (com preços), ou null
+     * @param eco   consultas de peso e capacidade; null = sem mochila nem ficha
+     */
+    public void render(WorldView view, TradeView trade, Economy eco, float dt) {
+        if (trade == null) {
+            tradeRoot.setVisible(false);
+            tradeShown = "";
+        } else {
+            String sig = trade.toString() + view.money();
+            if (!sig.equals(tradeShown)) {
+                buildTrade(view, trade);
+                tradeShown = sig;
+            }
+            tradeRoot.setVisible(true);
+        }
+        boolean showInventory = inventoryOpen && eco != null && trade == null && !epilogueOpen;
+        if (showInventory) {
+            String sig = view.money() + "|" + view.inventory() + "|" + view.equipment() + "|" + Math.round(view.hunger());
+            if (!sig.equals(inventoryShown)) {
+                buildInventory(view, eco);
+                inventoryShown = sig;
+            }
+        }
+        inventoryRoot.setVisible(showInventory);
+        boolean showCharacter = characterOpen && trade == null && !epilogueOpen;
+        if (showCharacter) {
+            String sig = view.skills().toString() + Math.round(view.hunger());
+            if (!sig.equals(characterShown)) {
+                buildCharacter(view);
+                characterShown = sig;
+            }
+        }
+        characterRoot.setVisible(showCharacter);
         DialogueView d = view.dialogue();
         if (d == null) {
             dialogueRoot.setVisible(false);
@@ -255,6 +340,193 @@ public final class GameUi implements Disposable {
             }
         });
         return label;
+    }
+
+    // ---------------------------------------------------------------- mochila, ficha e comércio
+
+    /** Folha de papel com borda escura e título, do tamanho pedido. */
+    private Table sheet(Table root, String title, float width, float height) {
+        root.clearChildren();
+        Table page = new Table();
+        page.setBackground(paper);
+        page.pad(18).top();
+        page.add(new Label(title, rust)).left().padBottom(8).row();
+        Table border = new Table();
+        border.setBackground(edge);
+        border.pad(3);
+        border.add(page).grow();
+        root.add(border).size(Math.min(stage.getWidth() - 60, width), Math.min(stage.getHeight() - 60, height));
+        return page;
+    }
+
+    private Label clickable(String text, Command command) {
+        Label label = new Label(text, ink);
+        label.setWrap(true);
+        if (command == null) {
+            label.setStyle(inkSoft);
+            return label;
+        }
+        label.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                onCommand.accept(command);
+            }
+
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor from) {
+                label.setColor(RUST);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor to) {
+                label.setColor(INK);
+            }
+        });
+        return label;
+    }
+
+    private static String kg(double v) {
+        return String.format(Locale.ROOT, "%.1f", v).replace('.', ',');
+    }
+
+    private String hungerText(double hunger) {
+        if (hunger >= Economy.STARVING) return texts.get("fome.faminto");
+        if (hunger >= Economy.HUNGRY) return texts.get("fome.com_fome");
+        return texts.get(hunger >= 35 ? "fome.pouca" : "fome.satisfeito");
+    }
+
+    /** "1 moeda", "12 moedas". */
+    public String coins(int n) {
+        return n == 1 ? texts.get("moeda.uma") : texts.get("moeda.varias", Integer.toString(n));
+    }
+
+    /** Mochila e equipamento (PRD 10.2): lista por categoria, peso, encaixes. Clique come, veste ou tira. */
+    private void buildInventory(WorldView view, Economy eco) {
+        Table page = sheet(inventoryRoot, texts.get("mochila.titulo"), 860, 540);
+        Table cols = new Table();
+        cols.top().left();
+
+        Table list = new Table();
+        list.top().left();
+        list.defaults().left().growX();
+        boolean any = false;
+        for (String category : ItemDef.CATEGORIES) {
+            boolean header = false;
+            for (Map.Entry<String, Integer> e : view.inventory().entrySet()) {
+                ItemDef item = content.items().get(e.getKey());
+                if (item == null || !category.equals(item.category())) continue;
+                if (!header) {
+                    list.add(new Label(texts.get("categoria." + category), rust)).padTop(any ? 8 : 0).row();
+                    header = true;
+                }
+                any = true;
+                Command action = item.usable() ? new Command.UseItem(item.id())
+                        : item.slot() != null ? new Command.Equip(item.id()) : null;
+                String verb = item.usable() ? texts.get(item.food() > 0 ? "mochila.comer" : "mochila.usar")
+                        : item.slot() != null ? texts.get("mochila.vestir") : "";
+                String line = item.displayName() + (e.getValue() > 1 ? " x" + e.getValue() : "") + "  ·  "
+                        + kg(item.weight() * e.getValue()) + " kg" + (verb.isEmpty() ? "" : "   [" + verb + "]");
+                list.add(clickable(line, action)).row();
+                Label desc = new Label(item.description() == null ? "" : item.description(), inkSoft);
+                desc.setWrap(true);
+                list.add(desc).padLeft(12).padBottom(3).row();
+            }
+        }
+        if (!any) list.add(new Label(texts.get("mochila.vazia"), inkSoft)).row();
+        ScrollPane scroll = new ScrollPane(list, new ScrollPane.ScrollPaneStyle());
+        scroll.setFadeScrollBars(false);
+
+        Table slots = new Table();
+        slots.top().left();
+        slots.defaults().left().growX();
+        slots.add(new Label(texts.get("mochila.corpo"), rust)).padBottom(4).row();
+        for (String slot : ItemDef.SLOTS) {
+            String itemId = view.equipment().get(slot);
+            ItemDef item = itemId == null ? null : content.items().get(itemId);
+            String line = texts.get("encaixe." + slot) + ": " + (item == null ? texts.get("encaixe.vazio") : item.displayName());
+            slots.add(clickable(line, item == null ? null : new Command.Unequip(slot))).padBottom(2).row();
+        }
+        slots.add(new Label(texts.get("mochila.peso", kg(eco.weight()), kg(eco.capacity())),
+                eco.overloaded() ? rust : ink)).padTop(14).row();
+        if (eco.overloaded()) slots.add(new Label(texts.get("mochila.pesado"), rust)).row();
+        slots.add(new Label(texts.get("mochila.dinheiro", coins(view.money())), ink)).padTop(6).row();
+        slots.add(new Label(hungerText(view.hunger()), view.hunger() >= Economy.HUNGRY ? rust : ink)).padTop(6).row();
+
+        cols.add(scroll).grow().padRight(16);
+        cols.add(slots).width(250).top();
+        page.add(cols).grow().row();
+        page.add(new Label(texts.get("mochila.dica"), inkSoft)).right().padTop(8);
+        stage.setScrollFocus(scroll);
+    }
+
+    /** Ficha do personagem (PRD 10.2): habilidades com valor e descrição. Sem nível, sem pontos (RF-181). */
+    private void buildCharacter(WorldView view) {
+        Table page = sheet(characterRoot, texts.get("ficha.titulo"), 640, 480);
+        Table list = new Table();
+        list.top().left();
+        list.defaults().left().growX();
+        for (SkillsDef.Skill skill : content.skills().list()) {
+            int value = (int) Math.floor(view.skills().getOrDefault(skill.id(), 0.0));
+            list.add(new Label(skill.displayName() + "  " + value, ink)).row();
+            Label desc = new Label(skill.description() == null ? "" : skill.description(), inkSoft);
+            desc.setWrap(true);
+            list.add(desc).padLeft(12).padBottom(8).row();
+        }
+        page.add(list).grow().row();
+        page.add(new Label(hungerText(view.hunger()), view.hunger() >= Economy.HUNGRY ? rust : inkSoft)).left().row();
+        page.add(new Label(texts.get("ficha.dica"), inkSoft)).right().padTop(8);
+    }
+
+    /** Comércio (PRD 10.2): duas colunas, preço, dinheiro dos dois e o efeito da opinião. Contêiner: só pegar. */
+    private void buildTrade(WorldView view, TradeView t) {
+        Table page = sheet(tradeRoot, t.name(), 860, 520);
+        Table head = new Table();
+        head.left();
+        if (t.container()) {
+            head.add(new Label(t.owner() == null ? texts.get("conteiner.sem_dono")
+                    : texts.get("conteiner.dono", t.owner()), t.owner() == null ? inkSoft : rust)).left();
+        } else {
+            head.add(new Label(texts.get("comercio.caixa", coins(t.partnerCash())), inkSoft)).padRight(20);
+            head.add(new Label(texts.get("comercio.seu_dinheiro", coins(view.money())), ink)).padRight(20);
+            int op = t.opinionPercent();
+            head.add(new Label(op == 0 ? texts.get("comercio.opiniao_neutra")
+                    : texts.get(op < 0 ? "comercio.opiniao_desconto" : "comercio.opiniao_acrescimo", Math.abs(op)), inkSoft));
+        }
+        page.add(head).left().padBottom(10).row();
+
+        Table cols = new Table();
+        cols.top();
+        cols.add(offerColumn(texts.get(t.container() ? "conteiner.tem" : "comercio.vende"), t.offers(),
+                t.container() ? "conteiner.pegar" : "comercio.comprar", t.container())).grow().top().padRight(16);
+        if (!t.container()) cols.add(offerColumn(texts.get("comercio.compra"), t.wants(), "comercio.vender", false)
+                ).grow().top();
+        page.add(cols).grow().row();
+        page.add(new Label(texts.get(t.container() ? "conteiner.dica" : "comercio.dica"), inkSoft)).right().padTop(8);
+    }
+
+    private Table offerColumn(String title, List<TradeView.Offer> offers, String verbKey, boolean container) {
+        Table col = new Table();
+        col.top().left();
+        col.defaults().left().growX();
+        col.add(new Label(title, rust)).padBottom(4).row();
+        Table list = new Table();
+        list.top().left();
+        list.defaults().left().growX();
+        for (TradeView.Offer o : offers) {
+            String price = container ? "" : "  ·  " + (o.price() > 0 ? coins(o.price()) : texts.get("comercio.sem_valor"));
+            Command cmd = !o.possible() ? null : switch (verbKey) {
+                case "comercio.comprar" -> new Command.Buy(o.item());
+                case "comercio.vender" -> new Command.Sell(o.item());
+                default -> new Command.TakeItem(o.item());
+            };
+            String line = o.name() + " x" + o.qty() + price + (cmd == null ? "" : "   [" + texts.get(verbKey) + "]");
+            list.add(clickable(line, cmd)).padBottom(2).row();
+        }
+        if (offers.isEmpty()) list.add(new Label(texts.get("comercio.nada"), inkSoft)).row();
+        ScrollPane scroll = new ScrollPane(list, new ScrollPane.ScrollPaneStyle());
+        scroll.setFadeScrollBars(false);
+        col.add(scroll).grow();
+        return col;
     }
 
     // ---------------------------------------------------------------- caderno
