@@ -1,6 +1,6 @@
 # SPEC — ETRAVA (especificação técnica do MVP)
 
-**Versão:** 0.4 · **Data:** 2026-11-10 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
+**Versão:** 0.5 · **Data:** 2026-11-11 · **Status:** aprovada pelo diretor; visual revisto para 2D isométrico (D-018)
 **Base:** `docs/PRD.md` v0.1 (seção 20.1), `docs/ponto-seguro.md`, `docs/lore-etrava.md`
 **Escopo:** só o MVP (Origem I + Capítulo I + Pedra-Mansa). Itens [PÓS]/[LP] aparecem apenas como "não fechar a porta".
 
@@ -437,7 +437,7 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 
 ### 5.3 Versão, migração e integridade
 
-- `schemaVersion` inteiro. Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
+- `schemaVersion` inteiro (hoje 2 — D-035). Migrações são passos `v(N) → v(N+1)` aplicados em cadeia sobre a árvore JSON, antes de virar objeto. Versão mais nova que o jogo, ou sem migração: recusa com mensagem clara (RF-363).
 - Arquivo ilegível → erro tratado e volta ao menu, nunca crash (RF-365).
 - ID que sumiu do conteúdo (NPC ou item removido entre versões) → ignorado com aviso no log.
 - **Hash de estado:** SHA-256 do `state.json` em forma canônica (chaves ordenadas). É o que os testes AT-03 e AT-05 comparam.
@@ -447,7 +447,7 @@ O save referencia definições **por ID**; nunca copia o conteúdo.
 ## 6. Apresentação (`game-client`)
 
 - **Laço:** acumulador de tempo → N × `sim.step()` → consome `SimEvent`s → desenha com interpolação.
-- **Cena (D-018):** tudo é sprite 2D em projeção isométrica 2:1. Chão a partir da camada `terrain`; props, construções e personagens são sprites com ponto de apoio no chão, desenhados de trás para a frente pela profundidade (x + y). Sombra de contato é um sprite simples sob cada objeto.
+- **Cena (D-018, D-033):** tudo é sprite 2D em **pixel art**, em projeção isométrica 2:1; um pixel de arte vale 4×4 pixels de mundo e o zoom é sempre inteiro. Chão a partir da camada `terrain`; props, construções e personagens são sprites com ponto de apoio no chão, desenhados de trás para a frente pela profundidade (x + y). Sombra de contato é um sprite simples sob cada objeto.
 - **Dia/noite e luzes (RF-027):** tabela de pontos-chave por hora (cor ambiente, gradação, névoa) com interpolação, em dados, por área. As luzes (declaradas nos props: janelas, lamparinas) são manchas aditivas desenhadas num buffer de luz, multiplicado sobre a cena — o mesmo princípio do raio de luz dos isométricos clássicos. O que brilha sozinho (vidraça acesa, chama) vai num buffer de brilho somado no fim (D-026). Sem normal maps no MVP. A tabela fica em `assets/config/daynight.yaml`.
 - **Pós-processamento (RF-028):** um passe próprio de tela cheia — gradação de cor e vinheta; névoa como camada; bloom opcional. Cada efeito desliga nas opções.
 - **Câmera (DP-02):** interface `CameraRig`; implementação do MVP = isométrica 2D ortográfica, zoom limitado, segue com suavização. Interação usa **posição de mundo** (ponto da tela → ponto do chão), nunca coordenada de tela (RF-024). Rotação em 90° (RF-022, opcional no PRD) fica fora: em 2D exigiria quatro versões de cada arte.

@@ -8,6 +8,7 @@ import etrava.sim.nav.Pathfinder;
 import etrava.sim.nav.Pathfinder.Point;
 import etrava.sim.rules.Effect;
 import etrava.sim.save.SaveGame;
+import etrava.sim.story.Story;
 import etrava.sim.time.GameClock;
 import etrava.sim.world.ActorState;
 import etrava.sim.world.ChronicleEntry;
@@ -47,16 +48,21 @@ public final class Simulation {
 
     private final List<Command> pending = new ArrayList<>();
     private final List<Command.Timed> commandLog = new ArrayList<>();
+    private final Story story;
+    /** Eventos gerados fora de um comando (efeitos agendados); saem no fim do próximo passo. */
+    private final List<SimEvent> buffered = new ArrayList<>();
 
     private Simulation(ContentDb content, World world) {
         this.content = content;
         this.world = world;
+        this.story = new Story(content, world, this::schedule);
     }
 
     public static Simulation newGame(ContentDb content, long seed, String areaId) {
         World world = new World(seed, GameClock.DEFAULT_TICKS_PER_DAY);
         for (NpcDef def : content.npcs().values()) world.npcs.put(def.id(), new ActorState(def.id(), def.sprite()));
         Simulation sim = new Simulation(content, world);
+        for (NpcDef def : content.npcs().values()) sim.story.initNpc(def);
         sim.loadArea(areaId);
         sim.placePlayer(AreaDef.PLAYER_SPAWN);
         sim.updateAgendas(true);
@@ -70,7 +76,10 @@ public final class Simulation {
         sim.loadArea(world.areaId);
         // NPCs que entraram no conteúdo depois do save começam onde a agenda manda
         for (NpcDef def : content.npcs().values()) {
-            world.npcs.computeIfAbsent(def.id(), id -> new ActorState(id, def.sprite()));
+            if (!world.npcs.containsKey(def.id())) {
+                world.npcs.put(def.id(), new ActorState(def.id(), def.sprite()));
+                sim.story.initNpc(def);
+            }
         }
         // só os recém-chegados são posicionados: mexer nos demais mudaria o estado carregado
         int minute = world.clock.minuteOfDay();
@@ -92,6 +101,8 @@ public final class Simulation {
 
     /** Grava o jogo. {@code savedAt} é a data real, informada pela apresentação. */
     public void save(Path file, String savedAt) throws SaveGame.SaveException {
+        if (world.dialogue != null)
+            throw new SaveGame.SaveException("Não dá para salvar no meio de uma conversa.");
         SaveGame.write(file, world, savedAt);
     }
 
@@ -140,15 +151,22 @@ public final class Simulation {
             skipped |= apply(c, events);
         }
         pending.clear();
-        if (!skipped) { // um salto de tempo já consumiu este passo
+        // durante uma conversa com o jogador o mundo fica parado (RF-105)
+        if (!skipped && world.dialogue == null) { // um salto de tempo já consumiu este passo
             movePlayer(events);
             for (ActorState npc : world.npcs.values()) {
                 if (!npc.path.isEmpty() && area.id().equals(npc.areaId)) {
                     if (followPath(npc, STROLL_SPEED * DT)) arrive(npc);
                 }
             }
-            advanceTo(world.clock.tick() + 1, false);
+            approachTalk(events);
+            if (world.dialogue == null) {
+                advanceTo(world.clock.tick() + 1, false);
+                story.tickAmbient(events);
+            }
         }
+        events.addAll(buffered);
+        buffered.clear();
         refreshVisible();
         return events;
     }
@@ -184,6 +202,7 @@ public final class Simulation {
             interrupted |= s.interrupts();
         }
         if (target % agendaInterval() == 0) updateAgendas(snap);
+        if (target % world.clock.ticksPerHour() == 0) story.spreadRumors();
         if (target % world.clock.ticksPerDay() == 0) {
             chronicle("dia", "", "Dia " + world.clock.day());
         }
@@ -209,11 +228,7 @@ public final class Simulation {
     }
 
     private void applyEffect(Effect effect) {
-        switch (effect) {
-            case Effect.SetFlag f -> world.flags.put(f.name(), f.value());
-            case Effect.SetVar v -> world.vars.put(v.name(), v.value());
-            case Effect.Chronicle c -> chronicle(c.type(), c.ref(), c.text());
-        }
+        story.apply(effect, null, "mundo", buffered);
     }
 
     private void chronicle(String type, String ref, String text) {
@@ -225,7 +240,33 @@ public final class Simulation {
     /** Aplica um comando. Devolve true se ele fez o tempo saltar. */
     private boolean apply(Command c, List<SimEvent> events) {
         ActorState player = world.player;
+        boolean talking = world.dialogue != null;
+        boolean talkCommand = c instanceof Command.Choose || c instanceof Command.Advance
+                || c instanceof Command.LeaveDialogue || c instanceof Command.AskAbout || c instanceof Command.MarkFact;
+        if (talking != talkCommand && !(c instanceof Command.MarkFact)) return false; // comando fora de hora
+        if (!talkCommand && !(c instanceof Command.Talk)) world.pendingTalk = null;
         switch (c) {
+            case Command.Talk t -> {
+                ActorState npc = world.npcs.get(t.npcId());
+                if (npc == null || npc.hidden || !area.id().equals(npc.areaId)) return false;
+                if (Math.hypot(npc.x - player.x, npc.y - player.y) <= Story.TALK_RANGE) {
+                    beginTalk(npc, events);
+                } else {
+                    world.dirX = world.dirY = 0;
+                    world.hasDestination = false;
+                    player.path.clear();
+                    player.path.addAll(Pathfinder.findPath(nav, player.x, player.y, npc.x, npc.y));
+                    world.pendingTalk = player.path.isEmpty() ? null : npc.id;
+                }
+            }
+            case Command.Choose ch -> story.choose(ch.index(), events);
+            case Command.Advance a -> story.advance(events);
+            case Command.LeaveDialogue l -> story.leave(events);
+            case Command.AskAbout a -> story.askAbout(a.factId(), events);
+            case Command.MarkFact m -> {
+                if (m.marked() && world.knows(m.factId())) world.marked.add(m.factId());
+                else world.marked.remove(m.factId());
+            }
             case Command.MoveTo m -> {
                 world.dirX = world.dirY = 0;
                 player.path.clear();
@@ -287,6 +328,32 @@ public final class Simulation {
             }
         }
         return false;
+    }
+
+    // ---------------------------------------------------------------- conversa
+
+    /** O jogador está indo falar com alguém: começa a conversa ao chegar perto. */
+    private void approachTalk(List<SimEvent> events) {
+        if (world.pendingTalk == null) return;
+        ActorState npc = world.npcs.get(world.pendingTalk), player = world.player;
+        if (npc == null || npc.hidden || !area.id().equals(npc.areaId)) {
+            world.pendingTalk = null;
+            return;
+        }
+        if (Math.hypot(npc.x - player.x, npc.y - player.y) <= Story.TALK_RANGE) {
+            beginTalk(npc, events);
+        } else if (player.path.isEmpty()) { // o NPC andou: tenta de novo, ou desiste
+            player.path.addAll(Pathfinder.findPath(nav, player.x, player.y, npc.x, npc.y));
+            if (player.path.isEmpty()) world.pendingTalk = null;
+        }
+    }
+
+    private void beginTalk(ActorState npc, List<SimEvent> events) {
+        stopPlayer();
+        world.pendingTalk = null;
+        world.player.facing = Math.atan2(npc.y - world.player.y, npc.x - world.player.x);
+        if (npc.path.isEmpty()) npc.facing = Math.atan2(world.player.y - npc.y, world.player.x - npc.x);
+        story.startDialogue(npc.id, events);
     }
 
     // ---------------------------------------------------------------- jogador

@@ -21,6 +21,24 @@ public sealed interface Command {
     /** Ir para outra área, entrando pelo ponto de chegada indicado. */
     record EnterArea(String areaId, String spawn) implements Command {}
 
+    /** Falar com um NPC: o personagem se aproxima e a conversa começa (RF-004). */
+    record Talk(String npcId) implements Command {}
+
+    /** Escolher uma das opções visíveis do diálogo (0 = a primeira). */
+    record Choose(int index) implements Command {}
+
+    /** Seguir adiante num trecho de diálogo sem escolhas. */
+    record Advance() implements Command {}
+
+    /** Abandonar a conversa. */
+    record LeaveDialogue() implements Command {}
+
+    /** Durante uma conversa, perguntar ao NPC sobre um fato do caderno (RF-126). */
+    record AskAbout(String factId) implements Command {}
+
+    /** Marcar ou desmarcar um fato do caderno como de interesse. */
+    record MarkFact(String factId, boolean marked) implements Command {}
+
     /** Depuração: teletransporta o jogador. */
     record Teleport(double x, double y) implements Command {}
 

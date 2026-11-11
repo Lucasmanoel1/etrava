@@ -8,9 +8,14 @@ import java.util.List;
  *
  * @param layer    A personagem | B morador | C figurante (PRD 9.1)
  * @param sprite   ID do asset de folha de sprites
+ * @param portrait ID do asset de retrato; se omitido, vale {@code retrato.<id>}
+ * @param dialogue ID do diálogo ao falar com o NPC; null = não puxa conversa
+ * @param opinion  opinião inicial sobre o jogador, de -100 a 100
+ * @param knows    fatos que já conhece no início: "fato" ou "fato:versão"
  * @param schedule agenda: blocos de horário que cobrem o dia inteiro
  */
-public record NpcDef(String id, String name, String layer, String sprite, List<Block> schedule) {
+public record NpcDef(String id, String name, String layer, String sprite, String portrait, String dialogue,
+        int opinion, List<String> knows, List<Block> schedule) {
 
     /**
      * Um bloco da agenda.
@@ -53,6 +58,9 @@ public record NpcDef(String id, String name, String layer, String sprite, List<B
     }
 
     public List<Block> blocks() { return schedule != null ? schedule : List.of(); }
+    public List<String> knowsList() { return knows != null ? knows : List.of(); }
+    public String portraitId() { return portrait != null ? portrait : "retrato." + id; }
+    public String displayName() { return name != null ? name : id; }
 
     /** Bloco em vigor num minuto do dia, ou null se a agenda tiver um buraco. */
     public Block blockAt(int minuteOfDay) {

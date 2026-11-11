@@ -333,12 +333,13 @@ class WorldSimulationTest {
         assertNull(SaveGame.readMeta(missing));
 
         Path partial = dir.resolve("parcial.etrava"); // ZIP válido, mas sem o estado
-        writeZip(partial, "{\"schemaVersion\":1}", null);
+        writeZip(partial, "{}", null);
         assertThrows(SaveException.class, () -> Simulation.load(content, partial));
 
         Path broken = dir.resolve("quebrado.etrava"); // estado com efeito que não existe
-        writeZip(broken, "{}", "{\"schemaVersion\":1,\"meta\":{\"ticksPerDay\":36000,\"area\":\"vila_ref\"},"
-                + "\"scheduled\":[{\"tick\":5,\"effects\":[{\"type\":\"explodir\"}]}]}");
+        writeZip(broken, "{}", "{\"schemaVersion\":" + SaveGame.SCHEMA_VERSION
+                + ",\"meta\":{\"ticksPerDay\":36000,\"area\":\"vila_ref\"},"
+                + "\"scheduled\":[{\"tick\":5,\"effects\":[{\"explodir\":{}}]}]}");
         e = assertThrows(SaveException.class, () -> Simulation.load(content, broken));
         assertTrue(e.getMessage().contains("corrompido"), e.getMessage());
     }
@@ -348,21 +349,22 @@ class WorldSimulationTest {
         Simulation sim = newSim(3);
         sim.fastForward(hours(sim, 5));
         ObjectNode state = SaveGame.toJson(sim.stateWorld());
-        // simula um formato antigo (versão 0), em que "vars" se chamava "variaveis"
-        state.put("schemaVersion", 0);
+        // simula o formato anterior, em que "vars" se chamava "variaveis"
+        int old = SaveGame.SCHEMA_VERSION - 1;
+        state.put("schemaVersion", old);
         state.set("variaveis", state.remove("vars"));
         ((ObjectNode) state.get("variaveis")).put("moedas", 12.0);
-        Path old = dir.resolve("antigo.etrava");
-        writeZip(old, "{\"schemaVersion\":0}", state.toString());
+        Path oldFile = dir.resolve("antigo.etrava");
+        writeZip(oldFile, "{}", state.toString());
 
-        SaveException refused = assertThrows(SaveException.class, () -> SaveGame.read(old));
+        SaveException refused = assertThrows(SaveException.class, () -> SaveGame.read(oldFile));
         assertTrue(refused.getMessage().contains("versão antiga"), refused.getMessage());
 
         SaveGame.Migration v0 = new SaveGame.Migration() {
-            @Override public int from() { return 0; }
+            @Override public int from() { return old; }
             @Override public void apply(ObjectNode s) { s.set("vars", s.remove("variaveis")); }
         };
-        SaveGame.Loaded migrated = SaveGame.read(old, List.of(v0));
+        SaveGame.Loaded migrated = SaveGame.read(oldFile, List.of(v0));
         assertEquals(12.0, migrated.world().var("moedas"));
         assertEquals(sim.view().clock().tick(), migrated.world().clock().tick());
 

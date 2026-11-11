@@ -1,0 +1,5 @@
+- id: conversa_ambiente_ruim
+  participants: [falador]
+  lines:
+    - {speaker: intruso, text: "Eu nem deveria estar aqui."}
+  facts: [segredo_v2]

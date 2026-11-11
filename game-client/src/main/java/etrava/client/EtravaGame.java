@@ -9,7 +9,9 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -21,7 +23,10 @@ import etrava.client.render.DayNight;
 import etrava.client.render.IsoProjection;
 import etrava.client.render.SceneRenderer;
 import etrava.client.render.SceneRenderer.ActorDraw;
+import etrava.client.ui.GameUi;
+import etrava.client.ui.Texts;
 import etrava.sim.api.ActorView;
+import etrava.sim.api.DialogueView;
 import etrava.sim.api.Command;
 import etrava.sim.api.SimEvent;
 import etrava.sim.api.Simulation;
@@ -78,6 +83,14 @@ public final class EtravaGame extends ApplicationAdapter {
     private final double[] worldPoint = new double[2];
     /** Posições do tick anterior, por personagem, para interpolar o desenho. */
     private final Map<String, double[]> previous = new HashMap<>();
+    private GameUi ui;
+    private Texts texts;
+    private Texture whitePx;
+    private final GlyphLayout layout = new GlyphLayout();
+    private final float[] px = new float[2];
+    /** Legendas sobre quem fala: {NPC, texto, segundos restantes}. */
+    private final List<Object[]> balloons = new ArrayList<>();
+    private String hoverNpc;
     private String notice = "";
     private float noticeTime;
     private int autosaveCount;
@@ -118,6 +131,15 @@ public final class EtravaGame extends ApplicationAdapter {
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
         font = new BitmapFont();
+        Pixmap white = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        white.setColor(1, 1, 1, 1);
+        white.fill();
+        whitePx = new Texture(white);
+        white.dispose();
+        texts = new Texts(options.contentDir());
+        ui = new GameUi(font, assets, content, texts);
+        ui.onChoice(this::chooseDialogue);
+        ui.onToggleMark(f -> sim.submit(new Command.MarkFact(f, !sim.view().markedFacts().contains(f))));
 
         InputMultiplexer input = new InputMultiplexer();
         input.addProcessor(new GlobalKeys());
@@ -126,6 +148,7 @@ public final class EtravaGame extends ApplicationAdapter {
             input.addProcessor(console.stage());
             for (String cmd : options.commands()) console.run(cmd);
         }
+        input.addProcessor(ui.stage());
         input.addProcessor(new GameInput());
         Gdx.input.setInputProcessor(input);
     }
@@ -137,6 +160,7 @@ public final class EtravaGame extends ApplicationAdapter {
         scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
         if (console != null) console.resize(width, height);
+        ui.resize(width, height);
     }
 
     @Override
@@ -170,10 +194,19 @@ public final class EtravaGame extends ApplicationAdapter {
         scene.render(camera, draws, hour, animTime, v.hasDestination(), v.destinationX(), v.destinationY());
 
         if (showCollision) drawCollisionOverlay();
+        updateHover(v);
+        drawBalloons(v, dt);
         if (showHud) drawHud(v);
+        ui.render(v, dt);
         if (console != null) console.render(dt);
 
         frame++;
+        if (console != null) {
+            for (String timed : options.timedCommands()) {
+                int colon = timed.indexOf(':');
+                if (colon > 0 && Integer.parseInt(timed.substring(0, colon)) == frame) console.run(timed.substring(colon + 1));
+            }
+        }
         if (options.screenshot() != null && frame == options.screenshotFrames()) {
             saveScreenshot(options.screenshot());
             Gdx.app.exit();
@@ -205,6 +238,11 @@ public final class EtravaGame extends ApplicationAdapter {
                     if (t.interrupted()) showNotice("Algo interrompeu " + (t.slept() ? "o sono." : "a espera."));
                     if (t.slept()) autosave();
                 }
+                case SimEvent.AmbientLine l -> {
+                    balloons.removeIf(b -> b[0].equals(l.npcId()));
+                    balloons.add(new Object[] {l.npcId(), l.text(), 2.2f + l.text().length() * 0.045f});
+                }
+                case SimEvent.FactLearned f -> showNotice(texts.get("caderno.atualizado"));
                 default -> { /* nada a fazer na apresentação */ }
             }
         }
@@ -232,6 +270,7 @@ public final class EtravaGame extends ApplicationAdapter {
     private void fill(ActorDraw d, ActorView a, float alpha) {
         double[] prev = previous.get(a.id());
         double px = prev != null ? prev[0] : a.x(), py = prev != null ? prev[1] : a.y();
+        d.id = a.id();
         d.sprite = a.sprite();
         d.x = px + (a.x() - px) * alpha;
         d.y = py + (a.y() - py) * alpha;
@@ -301,6 +340,75 @@ public final class EtravaGame extends ApplicationAdapter {
         batch.end();
     }
 
+    // ---------------------------------------------------------------- NPCs: apontar, falar, legendas
+
+    /** Qual NPC está sob o cursor (RF-004). Compara em pixels de mundo com o retângulo do sprite. */
+    private void updateHover(WorldView v) {
+        hoverNpc = null;
+        if (v.dialogue() != null || ui.notebookOpen() || (console != null && console.isOpen())) return;
+        camera.screenToWorldPx(Gdx.input.getX(), Gdx.input.getY(), px);
+        double best = Double.MAX_VALUE;
+        for (ActorDraw d : draws) {
+            if (d == draws.get(0)) continue; // o próprio jogador
+            float fx = IsoProjection.sx(d.x, d.y), fy = IsoProjection.sy(d.x, d.y, 0);
+            if (px[0] < fx - 40 || px[0] > fx + 40 || px[1] < fy - 8 || px[1] > fy + 116) continue;
+            if (d.x + d.y < best || hoverNpc == null) { // se houver dois, o da frente
+                best = -(d.x + d.y);
+                hoverNpc = d.id;
+            }
+        }
+    }
+
+    private void drawBalloons(WorldView v, float dt) {
+        batch.begin();
+        for (int i = balloons.size() - 1; i >= 0; i--) {
+            Object[] b = balloons.get(i);
+            b[2] = (float) b[2] - dt;
+            if ((float) b[2] <= 0) {
+                balloons.remove(i);
+                continue;
+            }
+            ActorDraw who = drawOf((String) b[0]);
+            if (who != null) drawLabel(who, (String) b[1], 0.80f);
+        }
+        if (hoverNpc != null && drawOf(hoverNpc) != null && balloons.stream().noneMatch(b -> b[0].equals(hoverNpc))) {
+            var def = content.npcs().get(hoverNpc);
+            drawLabel(drawOf(hoverNpc), def != null ? def.displayName() : hoverNpc, 0.55f);
+        }
+        batch.end();
+    }
+
+    private ActorDraw drawOf(String id) {
+        for (ActorDraw d : draws) if (id.equals(d.id)) return d;
+        return null;
+    }
+
+    /** Texto numa plaquinha escura acima da cabeça de um personagem. */
+    private void drawLabel(ActorDraw who, String text, float backgroundAlpha) {
+        camera.worldPxToScreen(IsoProjection.sx(who.x, who.y), IsoProjection.sy(who.x, who.y, 0) + 122, px);
+        layout.setText(font, text, new com.badlogic.gdx.graphics.Color(0.95f, 0.91f, 0.80f, 1f), 280,
+                com.badlogic.gdx.utils.Align.center, true);
+        float w = Math.min(280, layout.width) + 14, h = layout.height + 12;
+        float x = Math.round(px[0] - w / 2), y = Math.round(px[1]);
+        batch.setColor(0.08f, 0.06f, 0.07f, backgroundAlpha);
+        batch.draw(whitePx, x, y, w, h);
+        batch.setColor(1, 1, 1, 1);
+        font.draw(batch, layout, px[0] - 140, y + h - 6);
+    }
+
+    /** Opção do diálogo: primeiro as escolhas do NPC, depois "perguntar sobre" os fatos marcados. */
+    private void chooseDialogue(int index) {
+        DialogueView d = sim.view().dialogue();
+        if (d == null || index < 0) return;
+        if (d.choices().isEmpty()) {
+            if (index == 0) sim.submit(new Command.Advance());
+        } else if (index < d.choices().size()) {
+            sim.submit(new Command.Choose(index));
+        } else if (index - d.choices().size() < ui.askFacts().size()) {
+            sim.submit(new Command.AskAbout(ui.askFacts().get(index - d.choices().size())));
+        }
+    }
+
     /** Depuração: pinta de vermelho as células onde não se anda. */
     private void drawCollisionOverlay() {
         NavGrid nav = sim.nav();
@@ -332,7 +440,8 @@ public final class EtravaGame extends ApplicationAdapter {
     /** WASD relativo à câmera (RF-002): "cima" na tela é noroeste→(-1,-1) no mundo isométrico. */
     private void pollMovementKeys() {
         double dx = 0, dy = 0;
-        if (console == null || !console.isOpen()) {
+        boolean busy = sim.view().dialogue() != null || ui.notebookOpen() || (console != null && console.isOpen());
+        if (!busy) {
             if (Gdx.input.isKeyPressed(Input.Keys.W)) { dx -= 1; dy -= 1; }
             if (Gdx.input.isKeyPressed(Input.Keys.S)) { dx += 1; dy += 1; }
             if (Gdx.input.isKeyPressed(Input.Keys.A)) { dx -= 1; dy += 1; }
@@ -361,6 +470,8 @@ public final class EtravaGame extends ApplicationAdapter {
                 }
                 case Input.Keys.ESCAPE -> {
                     if (console != null && console.isOpen()) console.toggle();
+                    else if (sim.view().dialogue() != null) sim.submit(new Command.LeaveDialogue());
+                    else if (ui.notebookOpen()) ui.closeNotebook();
                     else Gdx.app.exit();
                     return true;
                 }
@@ -387,6 +498,16 @@ public final class EtravaGame extends ApplicationAdapter {
     private final class GameInput extends InputAdapter {
         @Override
         public boolean keyDown(int keycode) {
+            if (sim.view().dialogue() != null) { // na conversa, o teclado só escolhe falas
+                if (keycode >= Input.Keys.NUM_1 && keycode <= Input.Keys.NUM_9) chooseDialogue(keycode - Input.Keys.NUM_1);
+                else if (keycode == Input.Keys.SPACE || keycode == Input.Keys.ENTER) chooseDialogue(0);
+                return true;
+            }
+            if (keycode == Input.Keys.J || keycode == Input.Keys.N) {
+                ui.toggleNotebook();
+                return true;
+            }
+            if (ui.notebookOpen()) return true;
             if (keycode == Input.Keys.SPACE) {
                 paused = !paused;
                 return true;
@@ -401,13 +522,16 @@ public final class EtravaGame extends ApplicationAdapter {
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             if (button != Input.Buttons.LEFT || paused) return false;
-            moveToScreenPoint(screenX, screenY);
+            if (sim.view().dialogue() != null || ui.notebookOpen()) return true;
+            if (hoverNpc != null) sim.submit(new Command.Talk(hoverNpc));
+            else moveToScreenPoint(screenX, screenY);
             return true;
         }
 
         @Override
         public boolean touchDragged(int screenX, int screenY, int pointer) {
             if (paused || !Gdx.input.isButtonPressed(Input.Buttons.LEFT)) return false;
+            if (sim.view().dialogue() != null || ui.notebookOpen() || hoverNpc != null) return true;
             long tick = sim.view().clock().tick();
             if (tick - lastDragTick >= 6) { // segurar o botão: recalcula o caminho 5 vezes por segundo
                 lastDragTick = tick;
@@ -418,7 +542,7 @@ public final class EtravaGame extends ApplicationAdapter {
 
         @Override
         public boolean scrolled(float amountX, float amountY) {
-            camera.zoomBy(amountY * 0.1f);
+            camera.zoomBy(amountY);
             return true;
         }
     }
@@ -432,6 +556,7 @@ public final class EtravaGame extends ApplicationAdapter {
             case "ajuda":
                 return "pos | tp X Y | ir X Y | area ID | hora [H] | avancar HORAS | esperar HORAS | dormir\n"
                         + "salvar [NOME] | carregar [NOME] | saves | npcs | cronica | agendar HORAS TEXTO\n"
+                        + "falar NPC | escolher N | caderno | sabe NPC\n"
                         + "vel FATOR | zoom VALOR | semente | luz on/off | pos-fx on/off | colisao | hud | validar | sair";
             case "pos":
                 return String.format(Locale.ROOT, "(%.2f, %.2f) em %s", v.playerX(), v.playerY(), v.areaId());
@@ -448,6 +573,23 @@ public final class EtravaGame extends ApplicationAdapter {
                     sim.fastForward(Math.round(delta * v.clock().ticksPerHour()));
                 }
                 return v.clock().format() + " (tick " + v.clock().tick() + ")";
+            case "falar":
+                if (p.length < 2) return "use: falar NPC";
+                sim.submit(new Command.Talk(p[1]));
+                return "indo falar com " + p[1];
+            case "escolher":
+                chooseDialogue((int) num(p, 1) - 1);
+                return "";
+            case "caderno":
+                ui.toggleNotebook();
+                return "";
+            case "sabe": {
+                if (p.length < 2) return "use: sabe NPC";
+                StringBuilder sb = new StringBuilder("opinião " + v.opinion(p[1]) + "\n");
+                v.npcKnowledge(p[1]).values().forEach(k -> sb.append(k.fact()).append(" (").append(k.version())
+                        .append(", ").append(k.certainty()).append(", ").append(k.source()).append(")\n"));
+                return sb.toString().trim();
+            }
             case "esperar":
                 sim.submit(new Command.Wait((int) num(p, 1)));
                 return "esperando";
@@ -507,9 +649,8 @@ public final class EtravaGame extends ApplicationAdapter {
                 timeScale = (float) Math.max(0, Math.min(20, num(p, 1)));
                 return "velocidade x" + timeScale;
             case "zoom":
-                camera.zoomBy(-100);
-                camera.zoomBy((float) num(p, 1) - IsoCameraRig.MIN_ZOOM);
-                return "zoom ajustado";
+                ((IsoCameraRig) camera).setPixelScale((int) num(p, 1));
+                return "zoom: cada pixel de arte ocupa " + (int) num(p, 1) + " px da tela (1 a 4)";
             case "semente":
                 return "semente " + v.seed();
             case "luz":
@@ -574,6 +715,8 @@ public final class EtravaGame extends ApplicationAdapter {
     @Override
     public void dispose() {
         scene.dispose();
+        ui.dispose();
+        whitePx.dispose();
         assets.dispose();
         shapes.dispose();
         batch.dispose();

@@ -1,0 +1,36 @@
+# Conversas ambientes: NPCs falando entre si, sem pausar o jogo (RF-088).
+# Só tocam quando os participantes estão juntos e o jogador está por perto.
+# Quem ouvir até o fim fica sabendo dos `facts`, como rumor.
+
+- id: arvore_na_praca
+  participants: [aldea, taberneira]
+  when: {time: {hourFrom: 14, hourTo: 15}}
+  cooldownHours: 0
+  lines:
+    - {speaker: aldea, text: "Passou no moinho hoje?"}
+    - {speaker: taberneira, text: "Passei longe. Por quê?"}
+    - {speaker: aldea, text: "A árvore velha. Brotou."}
+    - {speaker: taberneira, text: "Árvore brota. É o que elas fazem."}
+    - {speaker: aldea, text: "Aquela estava morta desde que a mãe da menina se foi."}
+    - {speaker: taberneira, text: "Então alguém regou."}
+  facts: [arvore_voltou]
+
+- id: apostas
+  participants: [viajante, moleiro]
+  when: {time: {hourFrom: 18, hourTo: 20}}
+  cooldownHours: 24
+  lines:
+    - {speaker: viajante, text: "Você sempre diz que eu roubei quando perde."}
+    - {speaker: moleiro, text: "Porque você sempre rouba."}
+    - {speaker: viajante, text: "Então por que continua apostando comigo?"}
+    - {speaker: moleiro, text: "Porque um dia você fica honesto."}
+
+- id: sal_no_posto
+  participants: [viajante, aldea]
+  when: {time: {dayMin: 2, hourFrom: 18, hourTo: 20}}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "No Posto, o sal de remédio dobrou."}
+    - {speaker: aldea, text: "Dobrou de preço ou de tamanho?"}
+    - {speaker: viajante, text: "De preço. O tamanho continua pequeno."}
+  facts: [sal_subiu]

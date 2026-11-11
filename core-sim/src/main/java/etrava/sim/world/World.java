@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.TreeMap;
 
 /**
@@ -30,6 +32,27 @@ public final class World implements WorldView {
     public final List<Scheduled> scheduled = new ArrayList<>();
     public final List<ChronicleEntry> chronicle = new ArrayList<>();
     public long nextSeq;
+
+    /** O que o jogador sabe; pode haver várias entradas do mesmo fato (fontes e versões diferentes). */
+    public final List<KnowledgeEntry> playerKnowledge = new ArrayList<>();
+    /** Fatos que o jogador marcou no caderno como de interesse. */
+    public final Set<String> marked = new TreeSet<>();
+    /** O que cada NPC sabe: NPC → fato → entrada (um NPC acredita numa versão só). */
+    public final Map<String, Map<String, KnowledgeEntry>> npcKnowledge = new LinkedHashMap<>();
+    /** Opinião de cada NPC sobre o jogador, de -100 a 100. */
+    public final Map<String, Integer> opinions = new TreeMap<>();
+
+    /** Conversa ambiente em andamento (null = nenhuma), próxima fala e quando ela sai. */
+    public String ambientId;
+    public int ambientLine;
+    public long ambientNextTick;
+    /** Tick em que cada conversa ambiente tocou pela última vez. */
+    public final Map<String, Long> ambientLast = new TreeMap<>();
+
+    /** NPC com quem o jogador está indo falar (null = ninguém). */
+    public String pendingTalk;
+    /** Conversa com o jogador em andamento; não vai para o save. */
+    public DialogueSession dialogue;
 
     public String areaId;
     public boolean hasDestination;
@@ -63,6 +86,16 @@ public final class World implements WorldView {
     @Override public double var(String name) { return vars.getOrDefault(name, 0.0); }
     @Override public List<ChronicleEntry> chronicle() { return chronicle; }
     @Override public ActorView npc(String id) { return npcs.get(id); }
+    @Override public etrava.sim.api.DialogueView dialogue() { return dialogue; }
+    @Override public List<KnowledgeEntry> knowledge() { return playerKnowledge; }
+    @Override public Set<String> markedFacts() { return marked; }
+    @Override public int opinion(String npcId) { return opinions.getOrDefault(npcId, 0); }
+    @Override public Map<String, KnowledgeEntry> npcKnowledge(String npcId) {
+        return npcKnowledge.getOrDefault(npcId, Map.of());
+    }
+    @Override public boolean knows(String factId) {
+        return playerKnowledge.stream().anyMatch(k -> k.fact().equals(factId));
+    }
     @Override public String npcArea(String id) {
         ActorState n = npcs.get(id);
         return n == null ? null : n.areaId;

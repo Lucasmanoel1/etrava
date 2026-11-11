@@ -23,6 +23,12 @@ public interface CameraRig {
     /** Converte um ponto da tela no ponto do chão sob ele. {@code out} recebe (x, y) de mundo. */
     void screenToWorld(int screenX, int screenY, double[] out);
 
+    /** Ponto da tela em pixels de mundo (sem desfazer a projeção isométrica). */
+    void screenToWorldPx(int screenX, int screenY, float[] out);
+
+    /** Pixel de mundo em coordenadas de tela, com y para cima (as mesmas do HUD). */
+    void worldPxToScreen(float worldX, float worldY, float[] out);
+
     /** Retângulo visível em pixels de mundo: {minX, minY, maxX, maxY}. */
     float[] visibleBounds();
 }

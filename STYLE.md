@@ -1,110 +1,93 @@
-# STYLE — guia visual do ETRAVA (v1)
+# STYLE — guia visual do ETRAVA (v2)
 
-Vale para toda arte do jogo, feita por IA, por código ou à mão. Direção: **"gótico pintado"** — a luz e a sujeira dos isométricos clássicos, com materiais e silhuetas que dizem a cultura antes do texto (PRD 5.4).
+Vale para toda arte do jogo, venha de código, de IA ou de mão. Direção: **pixel art dark fantasy** — o capricho e a leitura de um bom jogo 16-bit, com a luz e a sujeira dos isométricos clássicos (D-033).
 
-**Estado da arte hoje:** tudo o que aparece no jogo é **arte provisória gerada por código** (`gradlew generateArt`). Ela serve para provar luz, escala e leitura. A arte definitiva substitui arquivo por arquivo, sem mexer em código (seção 5).
+**Regra de ouro: nada pode ter cara de "feito por IA".** Toda imagem, de qualquer origem, passa pelo mesmo funil antes de entrar no jogo: é reduzida para a grade de pixels do jogo e tem as cores trocadas pelas da paleta única. É a paleta compartilhada que faz o conjunto parecer de um autor só.
+
+**Estado da arte hoje:** cenário e personagens são gerados por código (`gradlew generateArt`) e já saem em pixel art. Os retratos de NPC são gerados na Dreamina e convertidos para a paleta (`gradlew importPortraits`).
 
 ---
 
 ## 1. Regras gerais
 
-1. **Leitura a distância.** O jogador vê tudo pequeno. Silhueta clara vale mais que detalhe fino.
-2. **Luz conta a história.** Luz quente (lamparina, forno, vela) contra ambiente frio à noite; dia suave e poeirento.
-3. **Pintado, não fotográfico.** Aparência de guache/óleo, pincelada visível, sem fotorrealismo e sem pixel art.
-4. **Saturação controlada.** Quase tudo dessaturado; cor forte só com significado (fogo, sangue, estandarte).
+1. **Leitura a distância.** Silhueta clara vale mais que detalhe. Um personagem tem ~24 px de altura.
+2. **Luz conta a história.** Âmbar de lamparina contra noite fria; dia suave e poeirento.
+3. **Pixel limpo.** Sem degradê suave, sem borrão, sem serrilhado suavizado: cada pixel é uma cor da paleta, opaco ou transparente. Dois ou três tons por material.
+4. **Saturação controlada.** Tudo terroso e dessaturado; o único brilho é o fogo.
 5. **Escuridão é lugar, não regra.** Ruína e noite são escuras; vilarejo ao meio-dia é quente e vivo.
-6. **A luz vem do alto, à esquerda.** Faces viradas para a esquerda da tela são claras; para a direita, sombreadas. Sombra no chão cai para a direita.
+6. **A luz vem do alto, à esquerda.** Faces viradas para a esquerda são claras; para a direita, sombreadas.
+7. **Contorno escuro** de 1 px em objetos e personagens; tiles de chão não têm contorno.
 
-## 2. Paleta de Pedra-Mansa (Terras de Ferrugem, interior)
+## 2. Paleta (única, 53 cores)
 
-| Uso | Cor | Hex |
+Definida em `tools/src/main/java/etrava/tools/art/PixelArt.java` (`PALETTE`). Famílias:
+
+| Família | Uso | Tons (do escuro ao claro) |
 |---|---|---|
-| Ocre (terra, reboco sujo) | ocre | `#9C7A45` |
-| Ferrugem (metal velho, folhas secas) | ferrugem | `#8A4E2E` |
-| Verde-oliva desbotado (mato, folhagem) | oliva | `#6B7045` |
-| Cinza quente (pedra) | cinza quente | `#7F776C` |
-| Palha (colmo, feno) | palha | `#B89A5A` |
-| Madeira escura | madeira | `#4A3526` |
-| Reboco | reboco | `#B9A888` |
-| Contorno e sombra funda | quase preto quente | `#241C18` |
-| Luz de lamparina | âmbar | `#FFBC66` |
+| Quase pretos | contorno, sombra funda | `#14101A` `#1E1A22` `#2A2428` |
+| Cinzas quentes | pedra | `#3A3634` `#524C46` `#6B645A` `#857D70` `#A39A8A` `#C4BBA8` |
+| Cinzas frios | ferro, ardósia | `#3B4048` `#565C66` `#7A808A` |
+| Terra, ocre, palha | chão, reboco sujo, colmo | `#3D2A1C` `#5A3F26` `#7A5632` `#9C7A45` `#B8975A` `#D4B878` `#E8D8A0` |
+| Ferrugem | metal velho, tecido, folha seca | `#4A1E1A` `#6E2C22` `#8A4E2E` `#A85F38` `#C47A48` |
+| Madeira | vigas, móveis | `#2E2018` `#4A3526` `#624632` `#7C5A40` |
+| Verde-oliva | mato, folhagem | `#1E2A1C` `#2E3C24` `#44502E` `#5A6438` `#6B7045` `#868C52` `#A4A866` |
+| Pele | rostos e mãos | `#7A4E3A` `#A06C50` `#C08A68` `#D8A884` `#ECC8A4` |
+| Azuis | noite, tecido | `#1C2238` `#2A3350` `#3E4A6E` `#5A6890` |
+| Reboco, linho | paredes, roupas claras | `#8C7E66` `#B9A888` `#D8CCB0` `#EEE6D2` |
+| Fogo | lamparina, janela acesa | `#C86428` `#F09A3C` `#FFC864` `#FFE9A8` |
+| Acento | sangue, estandarte | `#9C2A2A` |
 
-Materiais: pedra irregular, madeira gasta, ferro oxidado, palha. Nada novo, nada limpo.
+Mudar a paleta muda o jogo inteiro de uma vez: basta rodar `generateArt` e `importPortraits` de novo.
 
-As outras culturas (Caldris, Selvar, Orra, Nácre, Cantões do Sal) têm paleta própria no PRD 5.4; entram neste guia quando forem produzidas.
+## 3. Medidas
 
-## 3. Especificação técnica dos arquivos
+O jogo é **2D isométrico 2:1 em pixel art**. Um pixel de arte ocupa 4×4 pixels de mundo, e a câmera só usa zoom inteiro (cada pixel de arte vira 1, 2, 3 ou 4 pixels da tela).
 
-O jogo é **2D isométrico 2:1**. Um quadrado de 1 m no chão vira um losango de **128×64 px**. Um metro de altura são **56 px**.
+| Tipo | Tamanho em pixels de arte | Observações |
+|---|---|---|
+| Tile de chão | 64×32 | losango de 32×16 no centro; a borda irregular é o que mistura terrenos vizinhos |
+| 1 metro de altura | 14 | |
+| Personagem | quadro de 24×32 | folha com 8 linhas (direções) × 12 colunas (4 parado + 8 andando); pés em (12, 28) |
+| Objeto | livre | fundo transparente; informar o **ponto de apoio** (pixel que encosta no chão, no centro da base) |
+| Construção | livre (casa de 7×5 m ≈ 265×200) | vista de fora, duas paredes e o telhado |
+| Brilho noturno | igual ao da imagem principal | só o que acende: vidraças, chama |
+| Retrato de NPC | 96×128 | mostrado em dobro na tela de diálogo |
+| Ícone de item | 32×32 | |
 
-| Tipo | Formato | Tamanho | Observações |
-|---|---|---|---|
-| Tile de chão | PNG com transparência | 256×128 px | losango de 128×64 no centro; a textura continua para fora e some aos poucos (é o que mistura terrenos vizinhos); precisa emendar com cópias de si mesma |
-| Objeto (prop) | PNG com transparência | livre | fundo transparente; sombra suave no chão pintada junto; informar o **ponto de apoio** |
-| Construção | PNG com transparência | livre (uma casa de 7×5 m dá ~1050×800 px) | vista de fora, duas paredes e o telhado visíveis; porta numa das duas paredes da frente |
-| Brilho noturno (opcional) | PNG com transparência | igual ao da imagem principal | só o que acende: vidraças, chama. O resto transparente |
-| Personagem | PNG com transparência | folha de 12 colunas × 8 linhas, quadro de 96×128 px | linhas = 8 direções; colunas = 4 quadros parado + 8 andando; pés no pixel (48, 112) do quadro |
-| Retrato de NPC | PNG | 512×640 px | busto, fundo neutro escuro |
-| Ícone de item | PNG com transparência | 128×128 px | objeto único, centralizado |
+## 4. Arte por IA (Dreamina)
 
-**Ponto de apoio** (`anchor` no manifesto): o pixel da imagem, contado do canto superior esquerdo, que encosta no chão no centro da base do objeto. É ele que o jogo alinha com a posição do objeto no mapa.
+Uso atual: **retratos**. A IA gera a imagem grande; o jogo nunca usa essa imagem direto.
 
-**Ângulo.** Todo cenário usa exatamente o mesmo ângulo: câmera a ~30° acima do horizonte, girada 45°. Linhas horizontais do objeto descem na tela na proporção 2 para 1. Imagem em ângulo diferente destoa de tudo e não serve.
+1. Gerar pela CLI `dreamina-canvas` (canvas "ETRAVA arte"), um nó por imagem, sempre com teto de créditos.
+2. Salvar o original em `arte-bruta/retratos/<id>.png` (pasta fora do git).
+3. `gradlew importPortraits` recorta, reduz para 96×128, aplica a paleta e escreve `assets/retratos/<id>.png` e o manifesto.
 
-## 4. Modelos de prompt para IA de imagem
+**Trecho fixo de estilo (colar em todo pedido):**
+> Style: 16-bit pixel art game portrait, chunky clearly visible square pixels, limited muted palette of ochre, rust, faded olive green, warm grey and dark browns, strong readable shapes, flat shading with two or three tones per color, dark outline, warm lantern light from the upper left. No text, no watermark, no frame.
 
-Sempre no mesmo esqueleto: **[o quê] + [ângulo/enquadramento] + [estilo] + [paleta] + [luz] + [o que evitar]**. Os trechos fixos abaixo não mudam entre pedidos — é isso que mantém o conjunto coerente.
+**Retrato:**
+> Portrait of **{quem: idade, ofício, um detalhe de roupa, um detalhe de expressão}**, bust, three-quarter view, plain flat dark brown background. Dark fantasy rural village, late medieval, no modern items. **[trecho fixo]**
 
-**Trecho fixo de estilo (colar em todos):**
-> hand-painted gouache game art, visible brushwork, muted desaturated palette of ochre, rust, faded olive green and warm grey, weathered and worn materials, dark fantasy rural village, soft light from the upper left, no photorealism, no pixel art, no text, no watermark
+Modelo: Seedream 5.5 (30 créditos por imagem). Para peças de destaque (ilustrações de menu, mapa, epílogo), usar o modelo mais forte disponível.
 
-### 4.1 Objeto do cenário
-> Isometric game asset, single **{objeto, ex.: old wooden barrel with rusted iron hoops}**, 2:1 dimetric projection, camera 30 degrees above horizon rotated 45 degrees, centered, soft contact shadow on the ground falling to the right, plain flat magenta background for easy removal, **[trecho fixo]**
+**O que não pedir à IA:** personagens animados (não mantém a mesma pessoa em 8 direções e 12 quadros) e, por enquanto, cenário isométrico (o ângulo varia de imagem para imagem). Esses saem do gerador por código, que garante consistência.
 
-### 4.2 Construção
-> Isometric game asset, **{construção, ex.: small half-timbered village workshop, rough stone base, dirty plaster walls with dark wooden beams, steep thatched roof, one stone chimney, wooden door and two shuttered windows on the front-left wall}**, exterior only, 2:1 dimetric projection, camera 30 degrees above horizon rotated 45 degrees, front-left wall lit, front-right wall in shade, whole building visible with margin, plain flat magenta background, **[trecho fixo]**
+## 5. Trocar uma arte
 
-### 4.3 Tile de chão
-> Seamless tileable top-down ground texture, **{terreno, ex.: trampled dry grass with patches of bare ochre earth}**, even lighting, no shadows, no objects, no horizon, **[trecho fixo]**
+Cada asset é um ID no manifesto (`assets/manifest/*.yaml`). Para substituir uma imagem, salve o PNG novo e repita o ID em outro arquivo de manifesto — qualquer arquivo tem prioridade sobre `provisorio.yaml`. Medidas (`anchor`, `frame`) em pixels de arte. Arquivo ausente ou quebrado vira um xadrez magenta com aviso no log; o jogo não trava.
 
-A IA gera a textura vista de cima; a conversão para losango 2:1 com borda suave é feita por ferramenta nossa (a criar quando a primeira textura chegar).
-
-### 4.4 Retrato de NPC
-> Portrait of **{personagem, ex.: a tired miller in his fifties, flour on his sleeves, wary eyes}**, bust, three-quarter view, plain dark warm background, natural human proportions, painted like an old oil study, **[trecho fixo]**
-
-### 4.5 Ícone de item
-> Game inventory icon, single **{item, ex.: a small iron oil lamp}**, centered, slight three-quarter view, plain flat magenta background, **[trecho fixo]**
-
-### 4.6 Ilustração (mapa, menu, epílogo)
-> Wide illustration, **{cena}**, painted on aged parchment, restrained ink linework with gouache washes, **[trecho fixo]**
-
-**Personagens animados não são pedidos à IA de imagem** (D-019): manter a mesma pessoa em 8 direções × 12 quadros é justamente onde essas ferramentas falham. Eles saem de um modelo articulado desenhado por código, que garante consistência.
-
-## 5. Como trocar uma arte provisória pela definitiva
-
-1. Gere a imagem e remova o fundo (PNG com transparência).
-2. Salve em `assets/` — por exemplo `assets/props/barril_final.png`.
-3. Acrescente uma entrada em `assets/manifest/definitivo.yaml` (crie o arquivo se não existir), **com o mesmo `id`** da provisória:
-
-```yaml
-- id: prop.barril
-  type: sprite
-  file: props/barril_final.png
-  anchor: [60, 118]        # pixel que encosta no chão, no centro da base
-  source: "Gerado por IA (Dreamina), prompt 4.1 do STYLE.md"
-  license: proprio
-```
-
-4. Rode o jogo. Entradas fora de `provisorio.yaml` têm prioridade, então a nova imagem aparece no lugar da antiga. Se o arquivo faltar ou estiver quebrado, o jogo mostra um xadrez magenta e avisa no log — nunca trava.
-
-`gradlew validateContent` avisa de arquivos ausentes e de assets sem origem/licença. `gradlew licenses` atualiza o `ASSETS_LICENSES.md`.
+`gradlew validateContent` avisa de arquivos ausentes e de assets sem origem/licença; `gradlew licenses` atualiza o `ASSETS_LICENSES.md`.
 
 ## 6. Luz e pós-processamento
 
-- A hora do dia define a cor do céu que multiplica a cena, a saturação, o contraste e a vinheta. A tabela fica em `assets/config/daynight.yaml` e pode ser editada sem recompilar.
-- À noite, janelas e lamparinas acendem: cada uma é uma mancha de luz âmbar somada à cena, mais o brilho próprio da vidraça ou da chama.
-- Efeitos disponíveis: gradação de cor por hora, vinheta. No console de desenvolvimento, `luz off` e `pos-fx off` desligam cada um, para comparar.
+- A hora do dia define a cor do céu que multiplica a cena, a saturação, o contraste e a vinheta (`assets/config/daynight.yaml`, editável sem recompilar).
+- À noite, janelas e lamparinas acendem: mancha de luz âmbar somada à cena, mais o brilho próprio da vidraça ou da chama.
+- No console: `luz off` e `pos-fx off` desligam cada efeito, para comparar.
 
-## 7. Referências internas
+## 7. Interface
 
-Capturas da cena de referência com a arte provisória: `docs/capturas/m1/` (`dia.png`, `tarde.png`, `noite.png`, `noite_taverna.png`).
+Papel e tinta (PRD 10.1): fundo `#D8CCB0`, tinta `#241C18`, destaques em ferrugem `#6E2C22`, borda de madeira escura. Sem brilho, sem neon, sem marcadores de objetivo.
+
+## 8. Referências internas
+
+Capturas com a arte atual: `docs/capturas/pixel/` (`dia`, `noite`, `dialogo`, `caderno`). As de `docs/capturas/m1/` são do estilo pintado anterior, mantidas só como histórico.

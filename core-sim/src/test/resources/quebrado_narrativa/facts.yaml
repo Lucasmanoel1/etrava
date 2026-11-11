@@ -1,0 +1,14 @@
+- id: publico
+  layer: V0
+  versions: [{id: base, text: "Vá até o moinho e fale com o moleiro."}]
+- id: uma_fonte
+  layer: V0
+  versions: [{id: base, text: "Só uma pessoa conta isto."}]
+- id: segredo_v2
+  layer: V2
+  versions: [{id: base, text: "A Concordata transfere os custos."}]
+- id: pista_v1
+  layer: V1
+  versions: [{id: base, text: "Algo vai para outro lugar."}]
+- id: sem_texto
+  layer: V9

@@ -1,5 +1,6 @@
 package etrava.client.render;
 
+import static etrava.client.render.IsoProjection.snap;
 import static etrava.client.render.IsoProjection.sx;
 import static etrava.client.render.IsoProjection.sy;
 
@@ -38,9 +39,11 @@ import org.slf4j.LoggerFactory;
 public final class SceneRenderer implements Disposable {
     private static final Logger LOG = LoggerFactory.getLogger(SceneRenderer.class);
     private static final float OCCLUDED_ALPHA = 0.42f;
+    private static final int ART = IsoProjection.ART_SCALE;
 
     /** Um personagem a desenhar, já com a posição interpolada. */
     public static final class ActorDraw {
+        public String id;
         public String sprite;
         public double x, y, facing;
         public boolean moving;
@@ -142,7 +145,7 @@ public final class SceneRenderer implements Disposable {
         glowFbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sceneFbo = new FrameBuffer(Pixmap.Format.RGBA8888, w, h, false);
         lightFbo = new FrameBuffer(Pixmap.Format.RGBA8888, w, h, false);
-        sceneFbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        sceneFbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         lightFbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         screenMatrix.setToOrtho2D(0, 0, w, h);
     }
@@ -251,9 +254,9 @@ public final class SceneRenderer implements Disposable {
     private void drawGround(float[] b) {
         for (TileDraw t : tiles) {
             float cx = sx(t.tx() + 0.5, t.ty() + 0.5), cy = sy(t.tx() + 0.5, t.ty() + 0.5, 0);
-            float w = t.region().getRegionWidth(), h = t.region().getRegionHeight();
+            float w = t.region().getRegionWidth() * ART, h = t.region().getRegionHeight() * ART;
             if (cx + w / 2 < b[0] || cx - w / 2 > b[2] || cy + h / 2 < b[1] || cy - h / 2 > b[3]) continue;
-            batch.draw(t.region(), cx - w / 2, cy - h / 2);
+            batch.draw(t.region(), cx - w / 2, cy - h / 2, w, h);
         }
     }
 
@@ -299,8 +302,9 @@ public final class SceneRenderer implements Disposable {
             Static s = statics.get(i);
             Assets.Sprite sp = s.sprite();
             TextureRegion region = sp.region();
-            float w = sp.region().getRegionWidth(), h = sp.region().getRegionHeight();
-            float left = sx(s.x(), s.y()) - sp.anchorX(), bottom = sy(s.x(), s.y(), 0) - (h - sp.anchorY());
+            float w = sp.region().getRegionWidth() * ART, h = sp.region().getRegionHeight() * ART;
+            float left = snap(sx(s.x(), s.y()) - sp.anchorX() * ART);
+            float bottom = snap(sy(s.x(), s.y(), 0) - (h - sp.anchorY() * ART));
             if (left + w < b[0] || left > b[2] || bottom + h < b[1] || bottom > b[3]) continue;
             float alpha = 1f;
             if (playerDrawn && player != null) { // objeto na frente do jogador e cobrindo-o (RF-023)
@@ -311,14 +315,14 @@ public final class SceneRenderer implements Disposable {
             }
             if (glow) {
                 batch.setColor(0f, 0f, 0f, alpha);
-                batch.draw(region, left, bottom);
+                batch.draw(region, left, bottom, w, h);
                 if (sp.emissive() != null) {
                     batch.setColor(1f, 1f, 1f, alpha);
-                    batch.draw(sp.emissive(), left, bottom);
+                    batch.draw(sp.emissive(), left, bottom, w, h);
                 }
             } else {
                 batch.setColor(1f, 1f, 1f, alpha);
-                batch.draw(region, left, bottom);
+                batch.draw(region, left, bottom, w, h);
             }
         }
         batch.setColor(1f, 1f, 1f, 1f);
@@ -330,8 +334,9 @@ public final class SceneRenderer implements Disposable {
         int dir = Math.floorMod((int) Math.round(a.facing / (Math.PI * 2 / dirs)), dirs);
         var anim = sheet.anim(a.moving ? "walk" : "idle");
         int frame = anim.start() + (int) (animTime * anim.fps()) % Math.max(1, anim.frames());
-        float x = sx(a.x, a.y) - sheet.anchorX(), y = sy(a.x, a.y, 0) - (sheet.frameH() - sheet.anchorY());
-        batch.draw(sheet.texture(), x, y, sheet.frameW(), sheet.frameH(),
+        float x = snap(sx(a.x, a.y) - sheet.anchorX() * ART);
+        float y = snap(sy(a.x, a.y, 0) - (sheet.frameH() - sheet.anchorY()) * ART);
+        batch.draw(sheet.texture(), x, y, sheet.frameW() * ART, sheet.frameH() * ART,
                 frame * sheet.frameW(), dir * sheet.frameH(), sheet.frameW(), sheet.frameH(), false, false);
     }
 

@@ -201,3 +201,38 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-10
 - **Decisão:** o `.etrava` tem `meta.json` e `state.json`; a `thumb.png` prevista na SPEC entra junto com a tela de salvar/carregar (M7).
 - **Motivo:** sem tela de saves, a miniatura não teria uso.
+
+## D-033 — Direção visual: pixel art dark fantasy, paleta única
+- **Data:** 2026-11-11
+- **Decisão:** a arte do jogo é pixel art. Um pixel de arte vale 4×4 pixels de mundo (tile isométrico de 32×16, personagem de ~24 px). Toda imagem — de código, IA ou mão — é reduzida para essa grade e tem as cores trocadas pelas de uma paleta única de 53 cores (`PixelArt`). A câmera só usa zoom inteiro (1× a 4×) e os sprites são alinhados à grade.
+- **Motivo:** pedido do diretor ("pixel art, bonito, nível Stardew Valley e Diablo, bem dark fantasy", sem cara de feito por IA). A paleta compartilhada unifica origens diferentes e elimina o risco R2; na escala pequena os personagens deixam de parecer manequins.
+- **Alternativa descartada:** o estilo pintado em alta resolução do M1 (capturas em `docs/capturas/m1`).
+- **Consequência:** a mistura suave entre terrenos virou borda irregular de pixels; o projeto continua isométrico (D-018).
+
+## D-034 — Dreamina pela CLI, para retratos; cenário e personagens seguem por código
+- **Data:** 2026-11-11
+- **Decisão:** retratos de NPC são gerados na Dreamina (CLI `dreamina-canvas`, modelo Seedream 5.5, 30 créditos cada) e convertidos por `gradlew importPortraits`. Os originais ficam em `arte-bruta/` (fora do git). Cenário isométrico e personagens animados continuam saindo do gerador por código.
+- **Motivo:** retrato é onde a IA rende mais e onde consistência de ângulo não importa; já cenário isométrico e animação em 8 direções são onde ela falha. O diretor liberou os créditos da conta.
+- **Regra de uso:** sempre com teto de créditos por imagem; informar o gasto.
+- **Pendência:** conferir os termos de uso comercial da Dreamina antes de um release (registrado no manifesto de cada retrato).
+
+## D-035 — Formato do save subiu para a versão 2, sem migração da 1
+- **Data:** 2026-11-11
+- **Decisão:** o M3 mudou o formato dos efeitos agendados e acrescentou conhecimento, opiniões e conversas ao save. `SCHEMA_VERSION` = 2; saves da versão 1 são recusados com mensagem clara.
+- **Motivo:** ainda não existe jogo publicado nem save que valha migrar; escrever a migração seria trabalho sem usuário. O mecanismo de migração existe e é testado.
+
+## D-036 — Rumores por proximidade, uma vez por hora
+- **Data:** 2026-11-11
+- **Decisão:** a cada hora de jogo, NPCs acordados a até 6 m um do outro têm 50% de chance de contar um fato que o outro não sabe; em 15% das vezes ele passa noutra versão. Um NPC fica com a primeira versão que ouviu.
+- **Motivo:** é a regra simples que o PRD pede (RF-122, MVP-S) e passa no AT-08 em 10 sementes. Proximidade funciona melhor que "mesmo ponto da agenda": quem está dentro da taverna e quem está à porta conversam.
+- **Ajustável:** as três constantes ficam em `Story`.
+
+## D-037 — Conversa ambiente só acontece com o jogador por perto
+- **Data:** 2026-11-11
+- **Decisão:** uma conversa ambiente só começa se o jogador estiver a até 9 m; se ele se afastar antes do fim, não anota nada. Conversas com `cooldownHours: 0` tocam uma única vez.
+- **Motivo:** é o que torna "perder a conversa" possível (P3) sem gastar o conteúdo fora de cena. Como todo fato de ramificação tem duas fontes, perder uma não tranca o caminho.
+
+## D-038 — "Perguntar sobre" usa os fatos marcados no caderno
+- **Data:** 2026-11-11
+- **Decisão:** numa conversa, até 3 fatos que o jogador marcou no caderno aparecem como opções de pergunta. O NPC responde com a versão que conhece (o jogador anota como afirmação dele) ou diz que não sabe.
+- **Motivo:** cumpre o RF-126 na forma simples, sem tela extra, e dá uso à marcação do caderno.

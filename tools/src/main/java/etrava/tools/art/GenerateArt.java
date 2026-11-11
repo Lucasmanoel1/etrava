@@ -35,7 +35,8 @@ public final class GenerateArt {
 
     private void run() throws IOException {
         manifest.append("# GERADO por `gradlew generateArt` — não edite à mão.\n")
-                .append("# Arte provisória feita por código. Para trocar uma imagem pela definitiva,\n")
+                .append("# Arte provisória feita por código, já em pixel art (1 px de arte = 4 px de mundo).\n")
+                .append("# Medidas (anchor, frame) em pixels de arte. Para trocar uma imagem pela definitiva,\n")
                 .append("# copie a entrada para outro arquivo de manifesto desta pasta (ele tem prioridade)\n")
                 .append("# ou simplesmente substitua o PNG mantendo nome, tamanho e ponto de apoio.\n\n");
 
@@ -96,7 +97,7 @@ public final class GenerateArt {
         StringBuilder files = new StringBuilder();
         for (int i = 1; i <= variants; i++) {
             String file = "tiles/" + terrain + "_" + i + ".png";
-            write(file, painter.paint(i));
+            write(file, PixelArt.pixelize(painter.paint(i), false));
             files.append(i > 1 ? ", " : "").append(file);
         }
         manifest.append("- id: tile.").append(terrain).append('\n')
@@ -107,26 +108,29 @@ public final class GenerateArt {
     }
 
     private void sprite(String id, String file, Art art) throws IOException {
-        write(file, art.image());
+        write(file, PixelArt.pixelize(art.image(), true));
         manifest.append("- id: ").append(id).append('\n')
                 .append("  type: sprite\n")
                 .append("  file: ").append(file).append('\n')
-                .append(String.format(Locale.ROOT, "  anchor: [%.0f, %.0f]%n", art.anchorX(), art.anchorY()));
+                .append(String.format(Locale.ROOT, "  anchor: [%.0f, %.0f]%n",
+                        art.anchorX() / PixelArt.SCALE, art.anchorY() / PixelArt.SCALE));
         if (art.emissive() != null) {
             String glow = file.replace(".png", "_brilho.png");
-            write(glow, art.emissive());
+            write(glow, PixelArt.pixelize(art.emissive(), false));
             manifest.append("  emissive: ").append(glow).append('\n');
         }
         credits();
     }
 
     private void character(String id, String file, CharacterArt.Look look) throws IOException {
-        write(file, CharacterArt.sheet(look));
+        write(file, PixelArt.pixelize(CharacterArt.sheet(look), true));
         manifest.append("- id: ").append(id).append('\n')
                 .append("  type: spritesheet\n")
                 .append("  file: ").append(file).append('\n')
-                .append("  frame: [").append(CharacterArt.FRAME_W).append(", ").append(CharacterArt.FRAME_H).append("]\n")
-                .append("  anchor: [").append(CharacterArt.ANCHOR_X).append(", ").append(CharacterArt.ANCHOR_Y).append("]\n")
+                .append("  frame: [").append(CharacterArt.FRAME_W / PixelArt.SCALE).append(", ")
+                .append(CharacterArt.FRAME_H / PixelArt.SCALE).append("]\n")
+                .append("  anchor: [").append(CharacterArt.ANCHOR_X / PixelArt.SCALE).append(", ")
+                .append(CharacterArt.ANCHOR_Y / PixelArt.SCALE).append("]\n")
                 .append("  directions: ").append(CharacterArt.DIRECTIONS).append('\n')
                 .append("  animations:\n")
                 .append("    idle: {start: 0, frames: ").append(CharacterArt.IDLE_FRAMES).append(", fps: 3}\n")

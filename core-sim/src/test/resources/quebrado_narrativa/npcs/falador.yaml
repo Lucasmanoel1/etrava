@@ -1,0 +1,7 @@
+id: falador
+name: Falador
+sprite: s
+dialogue: conversa_ruim
+knows: [fato_que_nao_existe]
+schedule:
+  - {from: "00:00", to: "23:59", do: ficar, at: a/centro}

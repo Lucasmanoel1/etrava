@@ -28,6 +28,11 @@ public final class ContentDb {
     private final Map<String, AreaDef> areas = new LinkedHashMap<>();
     private final Map<String, AreaEntry> areaEntries = new LinkedHashMap<>();
     private final Map<String, NpcDef> npcs = new LinkedHashMap<>();
+    private final Map<String, FactDef> facts = new LinkedHashMap<>();
+    private final Map<String, DialogueDef> dialogues = new LinkedHashMap<>();
+    private final Map<String, AmbientDef> ambients = new LinkedHashMap<>();
+    private final Map<String, String> ambientFiles = new LinkedHashMap<>();
+    private final Map<String, String> texts = new LinkedHashMap<>();
     private final List<String> problems = new ArrayList<>();
 
     public static ContentDb load(Path contentDir) {
@@ -62,6 +67,7 @@ public final class ContentDb {
             }
         }
         db.loadNpcs(contentDir.resolve("npcs"));
+        db.loadNarrative(contentDir);
         for (String p : db.problems) LOG.warn("Conteúdo: {}", p);
         return db;
     }
@@ -88,6 +94,62 @@ public final class ContentDb {
         }
     }
 
+    /** Fatos, diálogos e conversas ambientes. Pastas ausentes são só conteúdo que ainda não existe. */
+    private void loadNarrative(Path contentDir) {
+        Path factsFile = contentDir.resolve("facts.yaml");
+        if (Files.exists(factsFile)) {
+            try {
+                List<FactDef> list = YAML.readValue(factsFile.toFile(), new TypeReference<List<FactDef>>() {});
+                for (FactDef f : list == null ? List.<FactDef>of() : list) {
+                    if (f.id() == null) problem("facts.yaml", "fato sem id");
+                    else if (facts.put(f.id(), f) != null) problem("facts.yaml", "fato duplicado: " + f.id());
+                }
+            } catch (Exception e) {
+                problem("facts.yaml", "não foi possível ler: " + e.getMessage());
+            }
+        }
+        Path textsFile = contentDir.resolve("textos.yaml");
+        if (Files.exists(textsFile)) {
+            try {
+                Map<String, String> map = YAML.readValue(textsFile.toFile(), new TypeReference<Map<String, String>>() {});
+                if (map != null) texts.putAll(map);
+            } catch (Exception e) {
+                problem("textos.yaml", "não foi possível ler: " + e.getMessage());
+            }
+        }
+        for (Path file : yamlFiles(contentDir.resolve("dialogues"), "dialogues")) {
+            String name = "dialogues/" + file.getFileName();
+            try {
+                DialogueDef def = DialogueDef.parse(YAML.readTree(file.toFile()));
+                if (dialogues.put(def.id(), def) != null) problem(name, "diálogo duplicado: " + def.id());
+            } catch (Exception e) {
+                problem(name, "não foi possível ler: " + e.getMessage());
+            }
+        }
+        for (Path file : yamlFiles(contentDir.resolve("ambient"), "ambient")) {
+            String name = "ambient/" + file.getFileName();
+            try {
+                for (com.fasterxml.jackson.databind.JsonNode n : YAML.readTree(file.toFile())) {
+                    AmbientDef def = AmbientDef.parse(n);
+                    if (ambients.put(def.id(), def) != null) problem(name, "conversa duplicada: " + def.id());
+                    ambientFiles.put(def.id(), name);
+                }
+            } catch (Exception e) {
+                problem(name, "não foi possível ler: " + e.getMessage());
+            }
+        }
+    }
+
+    private List<Path> yamlFiles(Path dir, String label) {
+        if (!Files.isDirectory(dir)) return List.of();
+        try (java.util.stream.Stream<Path> stream = Files.list(dir)) {
+            return stream.filter(p -> p.getFileName().toString().endsWith(".yaml")).sorted().toList();
+        } catch (java.io.IOException e) {
+            problem(label, "não foi possível listar: " + e.getMessage());
+            return List.of();
+        }
+    }
+
     private void problem(String file, String message) {
         problems.add(file + ": " + message);
     }
@@ -97,6 +159,13 @@ public final class ContentDb {
     public AreaEntry areaEntry(String id) { return areaEntries.get(id); }
     public AreaDef area(String id) { return areas.get(id); }
     public Map<String, NpcDef> npcs() { return npcs; }
+    public Map<String, FactDef> facts() { return facts; }
+    /** Texto avulso de content/textos.yaml (falas genéricas, rótulos); usa o padrão se faltar. */
+    public String text(String key, String fallback) { return texts.getOrDefault(key, fallback); }
+    public Map<String, DialogueDef> dialogues() { return dialogues; }
+    public Map<String, AmbientDef> ambients() { return ambients; }
+    /** Arquivo em que uma conversa ambiente foi definida, para mensagens do validador. */
+    public String ambientFile(String id) { return ambientFiles.getOrDefault(id, "ambient"); }
     /** Problemas encontrados durante o carregamento (arquivo: mensagem). */
     public List<String> problems() { return problems; }
 }

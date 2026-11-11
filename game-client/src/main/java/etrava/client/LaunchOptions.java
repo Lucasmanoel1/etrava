@@ -8,11 +8,12 @@ import java.util.List;
  * Opções de inicialização.
  * Propriedades: {@code -Detrava.home} (pasta com content/ e assets/), {@code -Detrava.dev=true}.
  * Argumentos: {@code --seed=N}, {@code --area=ID}, {@code --cmd="comando de console"} (repetível),
+ * {@code --cmdat=QUADRO:comando} (roda o comando de console naquele quadro; repetível),
  * {@code --screenshot=arquivo.png} e {@code --frames=N} (captura a tela após N quadros e sai).
  */
 public record LaunchOptions(
-        boolean dev, Path home, Long seed, String area, List<String> commands, Path screenshot,
-        int screenshotFrames) {
+        boolean dev, Path home, Long seed, String area, List<String> commands, List<String> timedCommands,
+        Path screenshot, int screenshotFrames) {
 
     public static LaunchOptions parse(String[] args) {
         boolean dev = Boolean.getBoolean("etrava.dev");
@@ -20,16 +21,18 @@ public record LaunchOptions(
         Long seed = null;
         String area = null;
         List<String> commands = new ArrayList<>();
+        List<String> timed = new ArrayList<>();
         Path screenshot = null;
         int frames = 90;
         for (String arg : args) {
             if (arg.startsWith("--seed=")) seed = Long.parseLong(value(arg));
             else if (arg.startsWith("--area=")) area = value(arg);
             else if (arg.startsWith("--cmd=")) commands.add(value(arg));
+            else if (arg.startsWith("--cmdat=")) timed.add(value(arg));
             else if (arg.startsWith("--screenshot=")) screenshot = Path.of(value(arg)).toAbsolutePath();
             else if (arg.startsWith("--frames=")) frames = Integer.parseInt(value(arg));
         }
-        return new LaunchOptions(dev, home, seed, area, List.copyOf(commands), screenshot, frames);
+        return new LaunchOptions(dev, home, seed, area, List.copyOf(commands), List.copyOf(timed), screenshot, frames);
     }
 
     private static String value(String arg) {

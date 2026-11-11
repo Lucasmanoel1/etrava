@@ -3,6 +3,8 @@ id: aldea
 name: Aldeã
 layer: B
 sprite: personagem.aldea
+dialogue: aldea
+knows: ["arvore_voltou:exagero"]
 schedule:
   - {from: "22:00", to: "06:00", do: dormir,      at: vila_ref/casa_porta, hidden: true}
   - {from: "06:00", to: "09:00", do: buscar_agua, at: vila_ref/poco}

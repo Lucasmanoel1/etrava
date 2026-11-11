@@ -27,3 +27,9 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `personagem.viajante` | spritesheet | personagens/viajante.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.bancada` | sprite | props/bancada.png | — | — | sem arquivo (placeholder) |
 | `prop.estaca` | sprite | props/estaca.png | — | — | sem arquivo (placeholder) |
+| `retrato.aldea` | portrait | retratos/aldea.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
+| `retrato.aprendiz` | portrait | retratos/aprendiz.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
+| `retrato.ferreiro` | portrait | retratos/ferreiro.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
+| `retrato.moleiro` | portrait | retratos/moleiro.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
+| `retrato.taberneira` | portrait | retratos/taberneira.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
+| `retrato.viajante` | portrait | retratos/viajante.png | Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import etrava.sim.nav.Pathfinder.Point;
 import etrava.sim.rules.Effect;
+import etrava.sim.rules.Rules;
+import etrava.sim.world.KnowledgeEntry;
 import etrava.sim.world.ActorState;
 import etrava.sim.world.ChronicleEntry;
 import etrava.sim.world.Scheduled;
@@ -35,7 +37,7 @@ import java.util.zip.ZipOutputStream;
  */
 public final class SaveGame {
     /** Aumenta a cada mudança incompatível no formato de state.json. */
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
     public static final String EXTENSION = ".etrava";
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -215,8 +217,25 @@ public final class SaveGame {
             ObjectNode n = scheduled.addObject();
             n.put("tick", s.tick()).put("seq", s.seq()).put("interrupts", s.interrupts());
             ArrayNode effects = n.putArray("effects");
-            for (Effect effect : s.effects()) effects.add(effect(effect));
+            for (Effect effect : s.effects()) effects.add(Rules.toJson(effect));
         }
+
+        ObjectNode story = root.putObject("story");
+        ArrayNode known = story.putArray("playerKnowledge");
+        for (KnowledgeEntry k : w.playerKnowledge) known.add(knowledge(k));
+        ArrayNode marked = story.putArray("marked");
+        w.marked.forEach(marked::add);
+        ObjectNode npcKnown = story.putObject("npcKnowledge");
+        for (Map.Entry<String, Map<String, KnowledgeEntry>> e : w.npcKnowledge.entrySet()) {
+            ArrayNode list = npcKnown.putArray(e.getKey());
+            for (KnowledgeEntry k : e.getValue().values()) list.add(knowledge(k));
+        }
+        ObjectNode opinions = story.putObject("opinions");
+        w.opinions.forEach(opinions::put);
+        ObjectNode ambientLast = story.putObject("ambientLast");
+        w.ambientLast.forEach(ambientLast::put);
+        story.put("ambientId", w.ambientId).put("ambientLine", w.ambientLine)
+                .put("ambientNextTick", w.ambientNextTick).put("pendingTalk", w.pendingTalk);
 
         ArrayNode chronicle = root.putArray("chronicle");
         for (ChronicleEntry c : w.chronicle) {
@@ -233,15 +252,14 @@ public final class SaveGame {
         return n;
     }
 
-    private static ObjectNode effect(Effect e) {
-        ObjectNode n = JSON.createObjectNode();
-        switch (e) {
-            case Effect.SetFlag f -> n.put("type", "setFlag").put("name", f.name()).put("value", f.value());
-            case Effect.SetVar v -> n.put("type", "setVar").put("name", v.name()).put("value", v.value());
-            case Effect.Chronicle c -> n.put("type", "chronicle").put("kind", c.type()).put("ref", c.ref())
-                    .put("text", c.text());
-        }
-        return n;
+    private static ObjectNode knowledge(KnowledgeEntry k) {
+        return JSON.createObjectNode().put("fact", k.fact()).put("version", k.version())
+                .put("certainty", k.certainty()).put("source", k.source()).put("day", k.day()).put("place", k.place());
+    }
+
+    private static KnowledgeEntry knowledge(JsonNode n) {
+        return new KnowledgeEntry(n.path("fact").asText(), n.path("version").asText(), n.path("certainty").asText(),
+                n.path("source").asText(), n.path("day").asInt(), text(n, "place"));
     }
 
     public static World fromJson(ObjectNode root) {
@@ -276,10 +294,28 @@ public final class SaveGame {
 
         for (JsonNode n : root.path("scheduled")) {
             List<Effect> effects = new ArrayList<>();
-            for (JsonNode e : n.path("effects")) effects.add(readEffect(e));
+            for (JsonNode e : n.path("effects")) effects.add(Rules.effect(e));
             w.scheduled.add(new Scheduled(n.path("tick").asLong(), n.path("seq").asLong(),
                     n.path("interrupts").asBoolean(), effects));
         }
+        JsonNode story = root.path("story");
+        for (JsonNode n : story.path("playerKnowledge")) w.playerKnowledge.add(knowledge(n));
+        for (JsonNode n : story.path("marked")) w.marked.add(n.asText());
+        story.path("npcKnowledge").properties().forEach(e -> {
+            Map<String, KnowledgeEntry> map = new java.util.LinkedHashMap<>();
+            for (JsonNode n : e.getValue()) {
+                KnowledgeEntry k = knowledge(n);
+                map.put(k.fact(), k);
+            }
+            w.npcKnowledge.put(e.getKey(), map);
+        });
+        story.path("opinions").properties().forEach(e -> w.opinions.put(e.getKey(), e.getValue().asInt()));
+        story.path("ambientLast").properties().forEach(e -> w.ambientLast.put(e.getKey(), e.getValue().asLong()));
+        w.ambientId = text(story, "ambientId");
+        w.ambientLine = story.path("ambientLine").asInt();
+        w.ambientNextTick = story.path("ambientNextTick").asLong();
+        w.pendingTalk = text(story, "pendingTalk");
+
         for (JsonNode n : root.path("chronicle")) {
             w.chronicle.add(new ChronicleEntry(n.path("tick").asLong(), n.path("type").asText(),
                     n.path("ref").asText(), n.path("text").asText()));
@@ -294,17 +330,6 @@ public final class SaveGame {
         a.facing = n.path("facing").asDouble();
         a.moving = n.path("moving").asBoolean();
         for (JsonNode p : n.path("path")) a.path.add(new Point(p.get(0).asDouble(), p.get(1).asDouble()));
-    }
-
-    private static Effect readEffect(JsonNode n) {
-        String type = n.path("type").asText();
-        return switch (type) {
-            case "setFlag" -> new Effect.SetFlag(n.path("name").asText(), n.path("value").asBoolean());
-            case "setVar" -> new Effect.SetVar(n.path("name").asText(), n.path("value").asDouble());
-            case "chronicle" -> new Effect.Chronicle(n.path("kind").asText(), n.path("ref").asText(),
-                    n.path("text").asText());
-            default -> throw new IllegalArgumentException("efeito desconhecido no save: " + type);
-        };
     }
 
     private static String text(JsonNode n, String field) {

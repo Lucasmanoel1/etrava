@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public final class Assets implements Disposable {
     private static final Logger LOG = LoggerFactory.getLogger(Assets.class);
 
-    /** Sprite com ponto de apoio no chão; {@code emissive} (opcional) acende à noite. */
+    /** Sprite com ponto de apoio no chão, em pixels de arte; {@code emissive} (opcional) acende à noite. */
     public record Sprite(TextureRegion region, float anchorX, float anchorY, TextureRegion emissive) {}
 
     /** Variações de um tipo de terreno. */
@@ -61,8 +61,8 @@ public final class Assets implements Disposable {
             AssetManifest.Entry e = manifest.get(key);
             Texture tex = e == null ? missing(key, "ID fora do manifesto") : load(key, e.file());
             if (e == null || tex == null) {
-                TextureRegion r = new TextureRegion(checker(), 0, 0, 48, 72);
-                return new Sprite(r, 24, 72, null);
+                TextureRegion r = new TextureRegion(checker(), 0, 0, 12, 18);
+                return new Sprite(r, 6, 18, null);
             }
             float ax = e.anchor() != null ? (float) e.anchor()[0] : tex.getWidth() / 2f;
             float ay = e.anchor() != null ? (float) e.anchor()[1] : tex.getHeight();
@@ -98,7 +98,7 @@ public final class Assets implements Disposable {
             Texture tex = e == null ? missing(key, "ID fora do manifesto") : load(key, e.file());
             if (e == null || tex == null || e.frame() == null) {
                 Texture t = placeholderCharacter();
-                return new Sheet(t, t.getWidth(), t.getHeight(), t.getWidth() / 2f, t.getHeight() - 6, 1, Map.of());
+                return new Sheet(t, t.getWidth(), t.getHeight(), t.getWidth() / 2f, t.getHeight() - 1, 1, Map.of());
             }
             float ax = e.anchor() != null ? (float) e.anchor()[0] : e.frame()[0] / 2f;
             float ay = e.anchor() != null ? (float) e.anchor()[1] : e.frame()[1];
@@ -106,6 +106,13 @@ public final class Assets implements Disposable {
                     e.directions() != null ? e.directions() : 1,
                     e.animations() != null ? e.animations() : Map.of());
         });
+    }
+
+    /** Retrato de NPC para a tela de diálogo; xadrez se faltar. */
+    public Texture portrait(String id) {
+        AssetManifest.Entry e = manifest.get(id);
+        Texture tex = e == null ? missing(id, "ID fora do manifesto") : load(id, e.file());
+        return tex != null ? tex : checker();
     }
 
     private Texture load(String id, String file) {
@@ -117,8 +124,8 @@ public final class Assets implements Disposable {
             missing(id, "arquivo ausente: " + file);
         } else {
             try {
-                tex = new Texture(Gdx.files.absolute(path.toString()), true);
-                tex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+                tex = new Texture(Gdx.files.absolute(path.toString()));
+                tex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest); // pixel art
             } catch (RuntimeException ex) {
                 missing(id, "falha ao carregar " + file + ": " + ex.getMessage());
             }
@@ -136,13 +143,14 @@ public final class Assets implements Disposable {
 
     private Texture checker() {
         if (checker == null) {
-            Pixmap px = new Pixmap(64, 96, Pixmap.Format.RGBA8888);
-            for (int y = 0; y < 96; y += 8)
-                for (int x = 0; x < 64; x += 8) {
-                    px.setColor(((x + y) / 8) % 2 == 0 ? new Color(0.85f, 0.1f, 0.75f, 1f) : new Color(0.1f, 0.1f, 0.1f, 1f));
-                    px.fillRectangle(x, y, 8, 8);
+            Pixmap px = new Pixmap(16, 24, Pixmap.Format.RGBA8888);
+            for (int y = 0; y < 24; y += 2)
+                for (int x = 0; x < 16; x += 2) {
+                    px.setColor(((x + y) / 2) % 2 == 0 ? new Color(0.85f, 0.1f, 0.75f, 1f) : new Color(0.1f, 0.1f, 0.1f, 1f));
+                    px.fillRectangle(x, y, 2, 2);
                 }
             checker = new Texture(px);
+            checker.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
             px.dispose();
             textures.put("(placeholder xadrez)", checker);
         }
@@ -153,11 +161,12 @@ public final class Assets implements Disposable {
         int hash = terrain.hashCode();
         Color c = new Color(0.35f + (hash & 0xFF) / 640f, 0.35f + ((hash >> 8) & 0xFF) / 640f,
                 0.35f + ((hash >> 16) & 0xFF) / 640f, 1f);
-        Pixmap px = new Pixmap(128, 64, Pixmap.Format.RGBA8888);
+        Pixmap px = new Pixmap(32, 16, Pixmap.Format.RGBA8888);
         px.setColor(c);
-        px.fillTriangle(0, 32, 64, 0, 128, 32);
-        px.fillTriangle(0, 32, 64, 64, 128, 32);
+        px.fillTriangle(0, 8, 16, 0, 32, 8);
+        px.fillTriangle(0, 8, 16, 16, 32, 8);
         Texture t = new Texture(px);
+        t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         px.dispose();
         textures.put("(placeholder tile " + terrain + ")", t);
         return t;
@@ -166,13 +175,13 @@ public final class Assets implements Disposable {
     private Texture placeholderCharacter() {
         String key = "(placeholder personagem)";
         if (textures.get(key) != null) return textures.get(key);
-        Pixmap px = new Pixmap(48, 104, Pixmap.Format.RGBA8888);
+        Pixmap px = new Pixmap(12, 26, Pixmap.Format.RGBA8888);
         px.setColor(0.72f, 0.52f, 0.24f, 1f);
-        px.fillRectangle(13, 22, 22, 74);
-        px.fillCircle(24, 96, 11);
+        px.fillRectangle(3, 6, 6, 19);
         px.setColor(0.86f, 0.70f, 0.55f, 1f);
-        px.fillCircle(24, 13, 11);
+        px.fillRectangle(3, 0, 6, 6);
         Texture t = new Texture(px);
+        t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         px.dispose();
         textures.put(key, t);
         return t;

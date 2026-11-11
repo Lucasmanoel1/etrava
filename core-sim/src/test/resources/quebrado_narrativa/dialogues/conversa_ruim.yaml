@@ -1,0 +1,16 @@
+id: conversa_ruim
+start:
+  - {goto: inicio}
+nodes:
+  inicio:
+    text: "Oi."
+    effects:
+      - {learn: {who: player, fact: uma_fonte, certainty: claim}}
+      - {learn: {who: player, fact: segredo_v2, certainty: claim}}
+      - {learn: {who: player, fact: pista_v1, certainty: verified}}
+      - {learn: {who: player, fact: publico, version: versao_fantasma, certainty: palpite}}
+    choices:
+      - {text: "Sei de uma coisa.", when: {knows: {who: player, fact: uma_fonte}}, goto: nao_existe}
+      - {text: "Mudo tudo.", relevant: true, channels: [dialogue], effects: [{opinion: {npc: ninguem, add: 1}}]}
+  ilha:
+    text: "Ninguém chega aqui."

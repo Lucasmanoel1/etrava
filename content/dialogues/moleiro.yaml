@@ -1,0 +1,66 @@
+# Diálogo de exemplo do M3, com três caminhos: a mó, a árvore e a menina.
+# O caminho da árvore só abre para quem já ouviu falar dela (por duas fontes possíveis:
+# a conversa na praça ou a aldeã).
+id: moleiro
+start:
+  - {when: {flag: moleiro_fechou}, goto: seco}
+  - {goto: inicio}
+nodes:
+  seco:
+    text: "A farinha sai amanhã. É só isso."
+
+  inicio:
+    text: "Se é farinha, só amanhã. A mó está parada."
+    effects: [{learn: {who: player, fact: mo_parada, certainty: claim}}]
+    choices:
+      - {text: "Parada, com trigo esperando?", goto: mo}
+      - text: "Ouvi falar da árvore."
+        when: {knows: {who: player, fact: arvore_voltou}}
+        goto: arvore
+      - {text: "E a menina, como vai?", goto: menina}
+      - {text: "Volto amanhã, então."}
+
+  mo:
+    text: "Pedra também cansa."
+    choices:
+      - {text: "Pedra não cansa.", goto: mo_eu}
+      - {text: "Deixa pra lá."}
+  mo_eu:
+    text: "Então sou eu."
+    effects: [{opinion: {npc: npc, add: 2}}]
+
+  arvore:
+    text: "Todo mundo ouviu. Parece que é só o que se ouve."
+    choices:
+      - text: "Dizem que foi ela quem fez."
+        relevant: true
+        channels: [dialogue, npc]
+        effects: [{opinion: {npc: npc, add: -6}}, {setFlag: moleiro_fechou}]
+        goto: arvore_ela
+      - text: "Meu tio diz que árvore velha engana. Parece morta e não está."
+        effects: [{opinion: {npc: npc, add: 6}}]
+        goto: arvore_tio
+  arvore_ela:
+    text: "Dizem muita coisa. Ontem diziam que ia chover."
+  arvore_tio:
+    text: "É. Deve ser isso."
+    goto: nao_dorme
+  nao_dorme:
+    text: "Ela não dorme. Desde aquele dia. Fica olhando o quintal."
+    effects: [{learn: {who: player, fact: nalia_nao_dorme, certainty: claim}}]
+    onLeave: [{opinion: {npc: npc, add: -4}}]
+    choices:
+      - {text: "Já chamaram a curandeira?", goto: curandeira}
+      - text: "Criança é assim."
+        effects: [{opinion: {npc: npc, add: -2}}]
+  curandeira:
+    text: "Chamamos. Ela olhou a árvore mais do que olhou a menina."
+    effects: [{learn: {who: player, fact: curandeira_olhou_arvore, certainty: claim}}]
+
+  menina:
+    text: "Crescendo."
+    choices:
+      - {text: "Faz tempo que não a vejo na praça.", goto: menina_casa}
+      - {text: "Bom saber."}
+  menina_casa:
+    text: "Tem tido serviço em casa."

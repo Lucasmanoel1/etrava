@@ -1,0 +1,31 @@
+# Gerado por `gradlew importPortraits`. Não edite à mão.
+- id: retrato.aldea
+  type: portrait
+  file: retratos/aldea.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.aprendiz
+  type: portrait
+  file: retratos/aprendiz.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.ferreiro
+  type: portrait
+  file: retratos/ferreiro.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.moleiro
+  type: portrait
+  file: retratos/moleiro.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.taberneira
+  type: portrait
+  file: retratos/taberneira.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.viajante
+  type: portrait
+  file: retratos/viajante.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"

@@ -63,3 +63,13 @@ tasks.register<JavaExec>("simulate") {
     jvmArgs("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
+
+tasks.register<JavaExec>("importPortraits") {
+    group = "assets"
+    description = "Converte os retratos brutos de arte-bruta/retratos para a paleta do jogo e atualiza o manifesto."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.ImportPortraits")
+    args(rootProject.file("arte-bruta/retratos").absolutePath, rootProject.file("assets").absolutePath)
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}

@@ -1,0 +1,68 @@
+# Fatos: a unidade de conhecimento do jogo (PRD 8.2, RF-120).
+#   layer:  V0 superfície · V1 suspeita (só como pista) · V2/V3 proibidos no Capítulo I
+#   truth:  oculto do jogador — true | false | partial | unknown
+#   spread: o quanto vira rumor entre NPCs — none | local | wide
+#   versions: como o fato é contado; a primeira é a padrão. O texto é o que vai para o caderno,
+#             depois de "Fulano disse:" — por isso é uma afirmação, nunca uma instrução.
+# Conteúdo de exemplo do M3 (arco da árvore e notícias de fora); o conteúdo final é do M7.
+
+- id: arvore_voltou
+  layer: V0
+  truth: true
+  spread: local
+  tags: [arvore, moinho]
+  versions:
+    - {id: base, text: "A árvore velha do moinho brotou de novo."}
+    - {id: exagero, text: "A filha do moleiro encostou na árvore morta e ela voltou."}
+    - {id: ceticismo, text: "A árvore do moinho voltou. Deve ter sido a chuva."}
+
+- id: nalia_nao_dorme
+  layer: V0
+  truth: true
+  spread: local
+  tags: [arvore, moinho]
+  versions:
+    - {id: base, text: "A menina do moinho não dorme desde que a árvore voltou."}
+    - {id: leve, text: "A menina do moinho anda acordada de noite. Coisa de criança."}
+
+- id: curandeira_olhou_arvore
+  layer: V1
+  truth: unknown
+  spread: none
+  tags: [arvore, moinho]
+  versions:
+    - {id: base, text: "Quando chamaram a curandeira, ela examinou a árvore mais do que a menina."}
+
+- id: mo_parada
+  layer: V0
+  truth: true
+  spread: local
+  tags: [moinho]
+  versions:
+    - {id: base, text: "A mó do moinho está parada, com trigo esperando."}
+
+- id: sal_subiu
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [sal, posto]
+  versions:
+    - {id: base, text: "O sal de remédio subiu de preço no Posto."}
+    - {id: exagero, text: "O sal de remédio vai acabar."}
+
+- id: trilhos_caldris
+  layer: V0
+  truth: partial
+  spread: wide
+  tags: [caldris, ferrovia]
+  versions:
+    - {id: base, text: "Caldris quer estender trilhos para o sul."}
+    - {id: exagero, text: "Vão passar uma estrada de ferro por cima das plantações."}
+
+- id: forasteiro_pergunta
+  layer: V0
+  truth: true
+  spread: local
+  tags: [estrada]
+  versions:
+    - {id: base, text: "Um homem de fora andou perguntando por gente que chegou aqui anos atrás."}

@@ -24,6 +24,16 @@ public interface WorldView {
     double var(String name);
     /** Crônica interna do mundo — só para depuração e relatórios (RF-143). */
     List<ChronicleEntry> chronicle();
+    /** Conversa com o jogador em andamento, ou null. */
+    DialogueView dialogue();
+    /** O caderno: tudo o que o personagem ouviu, viu ou leu, na ordem em que soube. */
+    List<etrava.sim.world.KnowledgeEntry> knowledge();
+    java.util.Set<String> markedFacts();
+    boolean knows(String factId);
+    /** Opinião do NPC sobre o jogador, de -100 a 100. */
+    int opinion(String npcId);
+    /** O que um NPC sabe (depuração). */
+    java.util.Map<String, etrava.sim.world.KnowledgeEntry> npcKnowledge(String npcId);
     /** Qualquer NPC do mundo, esteja onde estiver; null se não existir. */
     ActorView npc(String id);
     /** Área em que o NPC está agora; null se não existir. */

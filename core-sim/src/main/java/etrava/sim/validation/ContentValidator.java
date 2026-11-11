@@ -36,6 +36,10 @@ public final class ContentValidator {
     }
 
     public static List<String> validate(ContentDb db) {
+        return validate(db, new ArrayList<>());
+    }
+
+    private static List<String> validate(ContentDb db, List<String> warnings) {
         List<String> problems = new ArrayList<>(db.problems());
         if (db.areas().isEmpty()) problems.add("areas/areas.yaml: nenhuma área carregada");
 
@@ -51,6 +55,7 @@ public final class ContentValidator {
             checkPoints(problems, file, "ponto", area.spots(), nav);
         }
         for (NpcDef npc : db.npcs().values()) checkNpc(problems, db, npc);
+        NarrativeValidator.validate(db, problems, warnings);
         return problems;
     }
 
@@ -58,8 +63,8 @@ public final class ContentValidator {
     public static Report validate(Path contentDir, Path assetsDir) {
         ContentDb db = ContentDb.load(contentDir);
         AssetManifest manifest = AssetManifest.load(assetsDir);
-        List<String> errors = validate(db);
         List<String> warnings = new ArrayList<>();
+        List<String> errors = validate(db, warnings);
         errors.addAll(manifest.problems());
 
         for (PropDef prop : db.props().values()) {
@@ -76,6 +81,9 @@ public final class ContentValidator {
             String file = "npcs/" + npc.id() + ".yaml";
             if (npc.sprite() == null) errors.add(file + ": NPC sem sprite");
             else requireAsset(errors, manifest, file, "NPC '" + npc.id() + "'", npc.sprite());
+            if (npc.dialogue() != null) {
+                requireAsset(errors, manifest, file, "retrato do NPC '" + npc.id() + "'", npc.portraitId());
+            }
         }
         for (AssetManifest.Entry entry : manifest.entries().values()) {
             for (String f : entry.allFiles()) {

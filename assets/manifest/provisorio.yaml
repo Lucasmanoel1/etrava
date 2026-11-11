@@ -1,5 +1,6 @@
 # GERADO por `gradlew generateArt` — não edite à mão.
-# Arte provisória feita por código. Para trocar uma imagem pela definitiva,
+# Arte provisória feita por código, já em pixel art (1 px de arte = 4 px de mundo).
+# Medidas (anchor, frame) em pixels de arte. Para trocar uma imagem pela definitiva,
 # copie a entrada para outro arquivo de manifesto desta pasta (ele tem prioridade)
 # ou simplesmente substitua o PNG mantendo nome, tamanho e ponto de apoio.
 
@@ -27,49 +28,49 @@
 - id: prop.arvore
   type: sprite
   file: props/arvore.png
-  anchor: [150, 320]
+  anchor: [38, 80]
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: prop.arvore_b
   type: sprite
   file: props/arvore_b.png
-  anchor: [150, 320]
+  anchor: [38, 80]
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: prop.arvore_morta
   type: sprite
   file: props/arvore_morta.png
-  anchor: [150, 320]
+  anchor: [38, 80]
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: prop.barril
   type: sprite
   file: props/barril.png
-  anchor: [55, 100]
+  anchor: [14, 25]
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: prop.caixote
   type: sprite
   file: props/caixote.png
-  anchor: [85, 100]
+  anchor: [21, 25]
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: prop.poco
   type: sprite
   file: props/poco.png
-  anchor: [130, 230]
+  anchor: [33, 58]
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: prop.lampiao
   type: sprite
   file: props/lampiao.png
-  anchor: [60, 195]
+  anchor: [15, 49]
   emissive: props/lampiao_brilho.png
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
@@ -77,14 +78,14 @@
 - id: prop.feno
   type: sprite
   file: props/feno.png
-  anchor: [110, 140]
+  anchor: [28, 35]
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: prop.casa_oficina
   type: sprite
   file: props/casa_oficina.png
-  anchor: [445, 544]
+  anchor: [111, 136]
   emissive: props/casa_oficina_brilho.png
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
@@ -92,7 +93,7 @@
 - id: prop.casa_taverna
   type: sprite
   file: props/casa_taverna.png
-  anchor: [541, 631]
+  anchor: [135, 158]
   emissive: props/casa_taverna_brilho.png
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
@@ -100,7 +101,7 @@
 - id: prop.casa_pequena
   type: sprite
   file: props/casa_pequena.png
-  anchor: [381, 495]
+  anchor: [95, 124]
   emissive: props/casa_pequena_brilho.png
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
@@ -108,7 +109,7 @@
 - id: prop.casa_moinho
   type: sprite
   file: props/casa_moinho.png
-  anchor: [413, 606]
+  anchor: [103, 152]
   emissive: props/casa_moinho_brilho.png
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
@@ -116,8 +117,8 @@
 - id: personagem.aprendiz
   type: spritesheet
   file: personagens/aprendiz.png
-  frame: [96, 128]
-  anchor: [48, 112]
+  frame: [24, 32]
+  anchor: [12, 28]
   directions: 8
   animations:
     idle: {start: 0, frames: 4, fps: 3}
@@ -128,8 +129,8 @@
 - id: personagem.aldea
   type: spritesheet
   file: personagens/aldea.png
-  frame: [96, 128]
-  anchor: [48, 112]
+  frame: [24, 32]
+  anchor: [12, 28]
   directions: 8
   animations:
     idle: {start: 0, frames: 4, fps: 3}
@@ -140,8 +141,8 @@
 - id: personagem.ferreiro
   type: spritesheet
   file: personagens/ferreiro.png
-  frame: [96, 128]
-  anchor: [48, 112]
+  frame: [24, 32]
+  anchor: [12, 28]
   directions: 8
   animations:
     idle: {start: 0, frames: 4, fps: 3}
@@ -152,8 +153,8 @@
 - id: personagem.taberneira
   type: spritesheet
   file: personagens/taberneira.png
-  frame: [96, 128]
-  anchor: [48, 112]
+  frame: [24, 32]
+  anchor: [12, 28]
   directions: 8
   animations:
     idle: {start: 0, frames: 4, fps: 3}
@@ -164,8 +165,8 @@
 - id: personagem.moleiro
   type: spritesheet
   file: personagens/moleiro.png
-  frame: [96, 128]
-  anchor: [48, 112]
+  frame: [24, 32]
+  anchor: [12, 28]
   directions: 8
   animations:
     idle: {start: 0, frames: 4, fps: 3}
@@ -176,8 +177,8 @@
 - id: personagem.viajante
   type: spritesheet
   file: personagens/viajante.png
-  frame: [96, 128]
-  anchor: [48, 112]
+  frame: [24, 32]
+  anchor: [12, 28]
   directions: 8
   animations:
     idle: {start: 0, frames: 4, fps: 3}

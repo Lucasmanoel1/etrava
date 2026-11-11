@@ -17,6 +17,16 @@ public sealed interface SimEvent {
      */
     record TimeSkipped(long fromTick, long toTick, boolean slept, boolean interrupted) implements SimEvent {}
 
+    /** O caderno ganhou uma entrada nova. */
+    record FactLearned(String factId, String version) implements SimEvent {}
+
+    record DialogueOpened(String npcId) implements SimEvent {}
+
+    record DialogueClosed(String npcId) implements SimEvent {}
+
+    /** Fala de uma conversa ambiente (ou resmungo de um NPC), para legenda sobre quem fala (RF-088). */
+    record AmbientLine(String ambientId, String npcId, String text) implements SimEvent {}
+
     /** O jogador mudou de área; a apresentação precisa recarregar o cenário. */
     record AreaChanged(String fromArea, String toArea) implements SimEvent {}
 }
