@@ -1,0 +1,17 @@
+# Mestre-registrador Aurel Dask, chefe da comitiva de Caldris (DP-06, A2).
+id: registrador
+name: Aurel Dask, registrador
+layer: A
+sprite: personagem.registrador
+dialogue: registrador
+status: away
+faction: comitiva
+about: "Registrador de Caldris. Veio atualizar os registros de terra; fala como quem lê um decreto."
+relations: [{npc: agrimensora, kind: amizade}]
+schedule:
+  - {from: "22:00", to: "06:00", do: dormir, at: vila/comitiva, hidden: true}
+  - {from: "06:00", to: "09:00", do: escrever, at: vila/comitiva}
+  - {from: "09:00", to: "13:00", do: registrar, at: vila/praca_norte}
+  - {from: "13:00", to: "17:00", do: medir, at: vila/divisa}
+  - {from: "17:00", to: "19:00", do: escrever, at: vila/comitiva}
+  - {from: "19:00", to: "22:00", do: jantar, at: taverna/mesa_janela}

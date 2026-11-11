@@ -1,0 +1,75 @@
+# Conversas ambientes no Posto da Encruzilhada. É por aqui que as notícias de fora chegam.
+
+- id: dezessete_fardos
+  participants: [comerciante_posto, tobias]
+  when: {time: {hourFrom: 20, hourTo: 21}}
+  cooldownHours: 72
+  lines:
+    - {speaker: comerciante_posto, text: "Quantos fardos hoje?"}
+    - {speaker: tobias, text: "Dezoito."}
+    - {speaker: comerciante_posto, text: "Eu contei dezessete."}
+    - {speaker: tobias, text: "Eu contei o que eu carreguei."}
+
+- id: quem_nao_paga
+  participants: [vessa, comerciante_posto]
+  when: {all: [{time: {hourFrom: 18, hourTo: 20}}, {arc: {id: h4_posto, stage: rastros}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: vessa, text: "Rastro na curva de novo."}
+    - {speaker: comerciante_posto, text: "Rastro de quê?"}
+    - {speaker: vessa, text: "De quem não quer pagar o Posto nem o Torek."}
+    - {speaker: comerciante_posto, text: "Então de todo mundo."}
+  facts: [rastros_na_curva, torek_cobra_estrada]
+
+- id: mesmo_peso
+  participants: [viajante, tobias]
+  when: {all: [{time: {hourFrom: 12, hourTo: 13}}, {flag: sal_subiu}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "O sal subiu de novo?"}
+    - {speaker: tobias, text: "Subiu. Eu é que continuo carregando o mesmo peso."}
+  facts: [sal_subiu]
+
+- id: sal_so_some
+  participants: [viajante, comerciante_posto]
+  when: {all: [{time: {hourFrom: 12, hourTo: 13}}, {flag: sacerdote_sumiu}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "No norte dizem que um sacerdote de Orra sumiu na estrada."}
+    - {speaker: comerciante_posto, text: "Sacerdote some, aparece. Sal só some."}
+    - {speaker: viajante, text: "Viajava para o sul, com pouca escolta e muita pressa."}
+    - {speaker: comerciante_posto, text: "Pressa é a escolta mais cara que existe."}
+  facts: [sacerdote_sumiu, sacerdote_pressa]
+
+- id: a_mulher_do_fogo
+  participants: [viajante, tobias]
+  when: {all: [{time: {hourFrom: 12, hourTo: 13}}, {knows: {who: viajante, fact: berta_atravessou_fogo}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "Ouviu da mulher que atravessou o incêndio?"}
+    - {speaker: tobias, text: "Que incêndio?"}
+    - {speaker: viajante, text: "Lá para o leste. Andou no meio do fogo e saiu limpa."}
+    - {speaker: tobias, text: "Limpa como? Eu saio sujo de carregar sal."}
+  facts: ["berta_atravessou_fogo:santa"]
+
+- id: os_vizinhos_queimados
+  participants: [viajante, comerciante_posto]
+  when: {all: [{time: {hourFrom: 12, hourTo: 13}}, {knows: {who: viajante, fact: berta_vizinhos_queimados}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "Aquela mulher do incêndio. Agora dizem que quem se queimou foram os vizinhos."}
+    - {speaker: comerciante_posto, text: "Os que estavam longe do fogo?"}
+    - {speaker: viajante, text: "Esses."}
+    - {speaker: comerciante_posto, text: "Então não quero vender nada para essa mulher."}
+  facts: [berta_vizinhos_queimados]
+
+- id: trilhos_no_norte
+  participants: [viajante, comerciante_posto]
+  when: {all: [{time: {hourFrom: 12, hourTo: 13}}, {flag: ferrovia_aprovada}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "Caldris aprovou os trilhos. Os primeiros trechos."}
+    - {speaker: comerciante_posto, text: "Trem não para em posto."}
+    - {speaker: viajante, text: "Para onde tiver água e carvão."}
+    - {speaker: comerciante_posto, text: "Eu tenho água. Carvão eu arrumo."}
+  facts: [ferrovia_aprovada]

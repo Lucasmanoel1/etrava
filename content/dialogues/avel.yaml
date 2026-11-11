@@ -1,0 +1,138 @@
+# Avel (A2). Fala pouco do antes. Só conta uma parte com opinião alta, os papéis lidos e a
+# pergunta feita no tempo da comitiva ou da carta (PRD 8.5: Mir é "o acidente"; Iria é um nome).
+id: avel
+start:
+  - {when: {arc: {id: a2_avel, stage: confessa}}, goto: depois_confessou}
+  - {when: {arc: {id: a2_avel, stage: encontrado}}, goto: depois_encontro}
+  - {when: {time: {hourFrom: 19.5, hourTo: 6}}, goto: noite}
+  - {goto: bancada}
+nodes:
+  bancada:
+    text: "O eixo de ontem ainda está torto. Não vai se endireitar sozinho."
+    choices:
+      - text: "Termino o eixo agora."
+        when: {job: oficina}
+        effects: [{startJob: oficina}]
+      - text: "Tem um homem de fora perguntando por gente de Mir."
+        when: {all: [{knows: {who: player, fact: forasteiro_pergunta}}, {not: {flag: avel_negou}}]}
+        goto: nega
+      - text: "Viu o buraco no campo do Bento?"
+        when: {all: [{knows: {who: player, fact: campo_cedeu}}, {not: {flag: avel_falou_buraco}}]}
+        goto: buraco
+      - text: "O homem de fora perdeu um filho em Mir."
+        when: {all: [{knows: {who: player, fact: oren_procura_filho}}, {not: {flag: avel_ouviu_filho}}]}
+        goto: filho
+      - text: "Achei os seus papéis, tio. O nome raspado. A carta."
+        tag: Lábia
+        when: {all: [{arc: {id: a2_avel, stage: [comitiva, carta]}}, {any: [{flag: leu_papeis_avel}, {flag: leu_carta_iria}]}, {not: {flag: avel_contou_parte}}, {not: {flag: avel_fechou}}]}
+        relevant: true
+        channels: [dialogue, npc, caderno]
+        goto: papeis
+      - {text: "De onde a gente veio, tio?", goto: origem}
+      - {text: "Até mais."}
+
+  noite:
+    text: "Apaga a vela quando deitar. Vela não cresce em árvore."
+    choices:
+      - {text: "Boa noite.", goto: boa_noite}
+      - text: "Tem um homem de fora perguntando por gente de Mir."
+        when: {all: [{knows: {who: player, fact: forasteiro_pergunta}}, {not: {flag: avel_negou}}]}
+        goto: nega
+  boa_noite:
+    text: "Boa."
+
+  origem:
+    text: "De uma carroça. Você chorou o caminho inteiro. Eu também, mas por dentro."
+    choices:
+      - {text: "E antes da carroça?", goto: antes}
+      - {text: "Tá."}
+  antes:
+    text: "Antes da carroça tinha a estrada. Antes da estrada, você ainda não falava. Pega a lima."
+
+  nega:
+    text: "Mir é longe. E o mundo está cheio de homem de fora."
+    effects: [{setFlag: avel_negou}, {learn: {who: player, fact: avel_nega_estranho, certainty: claim}}]
+    choices:
+      - {text: "Ele parece procurar alguém de verdade.", goto: todo_mundo}
+      - {text: "Tá bom."}
+  todo_mundo:
+    text: "Todo mundo procura alguém. Por isso inventaram as tavernas."
+
+  buraco:
+    text: "Vi um buraco. Bento tem buraco no campo e no juízo."
+    effects: [{setFlag: avel_falou_buraco}]
+    choices:
+      - text: "Lá embaixo tem pedra riscada. Grupos de nove."
+        when: {any: [{flag: leu_placa}, {has: {item: placa_simbolos}}]}
+        goto: nove
+      - {text: "Disseram que tem pedra trabalhada lá.", goto: pedra}
+  nove:
+    text: "Pedra velha tem risco de pedra velha. Não desce mais lá."
+    effects: [{learn: {who: player, fact: avel_reconheceu_simbolos, certainty: witnessed}}]
+    choices:
+      - {text: "Você nem olhou.", goto: nem_olhou}
+      - {text: "Não desço."}
+  nem_olhou:
+    text: "Não preciso olhar. Vai buscar carvão."
+  pedra:
+    text: "Pedra trabalhada tem em toda parte. Gente trabalhou em toda parte, antes da gente."
+
+  filho:
+    text: "Então que procure no lugar certo."
+    effects: [{setFlag: avel_ouviu_filho}]
+    onLeave: [{opinion: {npc: npc, add: -2}}]
+    choices:
+      - {text: "Que lugar é esse?", goto: lugar}
+      - {text: "Desculpa."}
+  lugar:
+    text: "Um que não é aqui."
+
+  papeis:
+    branch:
+      - {when: {opinion: {npc: npc, min: 40}}, goto: mexeu}
+      - {goto: fecha}
+  fecha:
+    text: "Papel velho é papel velho. Põe de volta onde achou e não me pergunta mais isso."
+    effects: [{setFlag: avel_fechou}, {opinion: {npc: npc, add: -5}}]
+  mexeu:
+    text: "Você mexeu no meu baú."
+    choices:
+      - {text: "Mexi.", goto: mir}
+      - text: "Não interessa como. Quem é você?"
+        effects: [{opinion: {npc: npc, add: -10}}, {setFlag: avel_fechou}]
+        goto: quem
+  quem:
+    text: "Sou quem te deu de comer por vinte e quatro anos. Hoje isso basta."
+  mir:
+    text: "Eu trabalhei em Mir. Mexia em máquina que não devia existir. Na noite do acidente, saí com o que cabia no colo."
+    effects:
+      - {setFlag: avel_contou_parte}
+      - {learn: {who: player, fact: avel_trabalhou_em_mir, certainty: claim}}
+      - {remember: {npc: npc, type: confiou, subject: player}}
+    onLeave: [{opinion: {npc: npc, add: -6}}]
+    choices:
+      - {text: "Quem é Iria?", goto: iria}
+      - {text: "E eu?", goto: e_eu}
+  iria:
+    text: "Era. É. Não sei. Alguém a quem eu devia. Não me pergunte mais hoje."
+    effects: [{learn: {who: player, fact: iria_um_nome, certainty: claim}}]
+  e_eu:
+    text: "Você era o que cabia no colo. Hoje não cabe mais. Pega a lima."
+
+  depois_confessou:
+    text: "O torno ainda puxa para a esquerda. Isso eu não inventei."
+    choices:
+      - text: "Termino o eixo agora."
+        when: {job: oficina}
+        effects: [{startJob: oficina}]
+      - {text: "Até mais."}
+  depois_encontro:
+    text: "Ele foi embora. Era o que tinha de ser."
+    choices:
+      - {text: "O que ele queria?", goto: queria}
+      - text: "Termino o eixo agora."
+        when: {job: oficina}
+        effects: [{startJob: oficina}]
+      - {text: "Até mais."}
+  queria:
+    text: "Saber se uma pessoa estava viva. Eu disse o que sabia, que é pouco."

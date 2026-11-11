@@ -30,6 +30,9 @@ public sealed interface SimEvent {
     /** O jogador mudou de área; a apresentação precisa recarregar o cenário. */
     record AreaChanged(String fromArea, String toArea) implements SimEvent {}
 
+    /** Primeira vez num lugar nomeado (RF-007): vai para o caderno e para o mapa. */
+    record PlaceDiscovered(String place, String areaId) implements SimEvent {}
+
     /** Um objeto do cenário mudou de variante (a árvore brotou, foi cortada…). */
     record PropChanged(String key, String state) implements SimEvent {}
 

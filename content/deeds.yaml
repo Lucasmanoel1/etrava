@@ -29,3 +29,10 @@
   fact: jogador_executou
   witness: -50
   hearsay: -20
+
+# Contar à gente de Caldris de onde Avel veio (A2). Pedra-Mansa não perdoa fácil quem entrega um dos seus.
+- id: delatou
+  name: Delação
+  fact: jogador_delatou
+  witness: -40
+  hearsay: -25

@@ -42,7 +42,7 @@ public final class ContentValidator {
     private static List<String> validate(ContentDb db, List<String> warnings) {
         List<String> problems = new ArrayList<>(db.problems());
         if (db.areas().isEmpty()) problems.add("areas/areas.yaml: nenhuma área carregada");
-        java.util.Set<String> keys = new java.util.HashSet<>();
+        java.util.Map<String, String> keyProp = new java.util.HashMap<>();
 
         for (AreaDef area : db.areas().values()) {
             String file = "areas/" + db.areaEntry(area.id()).map();
@@ -54,8 +54,13 @@ public final class ContentValidator {
                 else if (p.key() != null && def.stateMap().isEmpty())
                     problems.add(file + ": o prop '" + p.propId() + "' tem a chave '" + p.key()
                             + "' mas não declara variantes ('states') em props.yaml");
-                if (p.key() != null && !keys.add(p.key()))
-                    problems.add(file + ": chave de prop repetida '" + p.key() + "'");
+                // vários objetos podem dividir uma chave (uma fileira de estacas), desde que sejam do mesmo tipo
+                if (p.key() != null) {
+                    String first = keyProp.putIfAbsent(p.key(), p.propId());
+                    if (first != null && !first.equals(p.propId()))
+                        problems.add(file + ": a chave '" + p.key() + "' é usada por props diferentes ('" + first
+                                + "' e '" + p.propId() + "')");
+                }
             }
             NavGrid nav = area.buildNavGrid(db.props());
             checkPoints(problems, file, "spawn", area.spawns(), nav);

@@ -1,28 +1,100 @@
-# Áreas jogáveis. Cada uma aponta para um mapa do Tiled (.tmj) nesta pasta.
-#   dark:    escura de dia e de noite; só se vê no raio de luz do personagem (RF-008)
-#   lethal:  perder aqui é morrer de verdade (RF-341); o padrão é a derrota não letal
-#   exits:   chegar ao ponto `spot` leva à área `to`, entrando pelo ponto de chegada `spawn`
-#   wakeAt:  onde se acorda depois de uma derrota não letal aqui ("area/ponto")
-#   finder:  quem acha o personagem desacordado (fica sabendo e lembra)
+# Áreas jogáveis da região do MVP (PRD 6.3). Cada uma aponta para um mapa do Tiled (.tmj) nesta pasta,
+# gerado por `gradlew generateRegion` (vila, estrada, interiores) e `gradlew generateEstrutura`.
+#   name:     como a área aparece no caderno e no mapa
+#   place:    lugar nomeado a que pertence; entrar a primeira vez anota no caderno (RF-007)
+#   mapPos:   onde fica no mapa ilustrado (0 a 1 em x e y)
+#   interior: dentro de uma construção — luz própria, sem dia e noite lá fora (D-068)
+#   dark:     escura de dia e de noite; só se vê no raio de luz do personagem (RF-008)
+#   lethal:   perder aqui é morrer de verdade (RF-341); o padrão é a derrota não letal
+#   exits:    chegar ao ponto `spot` leva à área `to`, entrando pelo ponto de chegada `spawn`;
+#             com `when`, só leva enquanto a condição valer. NPCs passam pelas mesmas portas.
+#   wakeAt:   onde se acorda depois de uma derrota não letal aqui ("area/ponto")
+#   finder:   quem acha o personagem desacordado (fica sabendo e lembra)
+#   music / ambience: faixa de música e som ambiente (IDs de asset; o cliente acrescenta .dia/.noite)
 
-- id: area_teste
-  name: Área de teste (faz as vezes da estrada e do Posto até o M7)
-  map: area_teste.tmj
+- id: vila
+  name: Pedra-Mansa
+  place: Pedra-Mansa
+  map: vila.tmj
+  mapPos: [0.38, 0.52]
+  music: musica.vila
+  ambience: amb.vila
   exits:
-    - {spot: buraco, to: estrutura, spawn: jogador}
-  wakeAt: area_teste/beira_estrada
+    - {spot: saida_estrada, to: estrada, spawn: vila}
+    - {spot: oficina_porta, to: oficina, spawn: porta}
+    - {spot: taverna_porta, to: taverna, spawn: porta}
+    - {spot: moinho_porta, to: moinho, spawn: porta}
+    - {spot: curandeira_porta, to: curandeira, spawn: porta}
+    # o campo de Bento cede durante o trabalho (A3); depois de tapado, não se desce mais
+    - {spot: buraco, to: estrutura, spawn: jogador, when: {prop: {key: buraco_campo, state: aberto}}}
+  wakeAt: vila/praca_banco
+  finder: curandeira
+
+- id: oficina
+  name: A oficina de Avel
+  place: Pedra-Mansa
+  map: oficina.tmj
+  mapPos: [0.33, 0.47]
+  interior: true
+  music: musica.casa
+  ambience: amb.interior
+  exits:
+    - {spot: porta, to: vila, spawn: oficina}
+
+- id: taverna
+  name: A taverna
+  place: Pedra-Mansa
+  map: taverna.tmj
+  mapPos: [0.42, 0.47]
+  interior: true
+  music: musica.taverna
+  ambience: amb.taverna
+  exits:
+    - {spot: porta, to: vila, spawn: taverna}
+
+- id: moinho
+  name: O moinho
+  place: Pedra-Mansa
+  map: moinho.tmj
+  mapPos: [0.43, 0.58]
+  interior: true
+  music: musica.casa
+  ambience: amb.interior
+  exits:
+    - {spot: porta, to: vila, spawn: moinho}
+
+- id: curandeira
+  name: A casa da curandeira
+  place: Pedra-Mansa
+  map: curandeira.tmj
+  mapPos: [0.30, 0.57]
+  interior: true
+  music: musica.casa
+  ambience: amb.interior
+  exits:
+    - {spot: porta, to: vila, spawn: curandeira}
+
+- id: estrada
+  name: A estrada e o Posto da Encruzilhada
+  place: Posto da Encruzilhada
+  map: estrada.tmj
+  mapPos: [0.72, 0.50]
+  music: musica.estrada
+  ambience: amb.estrada
+  exits:
+    - {spot: saida_vila, to: vila, spawn: estrada}
+  wakeAt: estrada/beira_estrada
   finder: comerciante_posto
 
-- id: vila_ref
-  name: Cena de referência (praça do vilarejo)
-  map: vila_ref.tmj
-
-# A estrutura enterrada (PRD 6, gancho 03). No M7 ela aparece durante um trabalho (A3);
-# até lá, entra-se pelo buraco da área de teste.
+# A estrutura enterrada (PRD 6, gancho 03): abre-se no campo de Bento durante um trabalho (A3).
 - id: estrutura
   name: A estrutura enterrada
+  place: O buraco no campo
   map: estrutura.tmj
+  mapPos: [0.45, 0.66]
   dark: true
   lethal: true
+  music: musica.ruina
+  ambience: amb.ruina
   exits:
-    - {spot: escada, to: area_teste, spawn: estrutura}
+    - {spot: escada, to: vila, spawn: buraco}

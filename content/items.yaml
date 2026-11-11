@@ -276,3 +276,129 @@
   tags: [estrutura]
   weight: 0.6
   value: 0
+  text: "Riscos curtos, fundos, em grupos de nove, dispostos em roda. Uma roda, duas, três. Na quarta, um risco a menos, como se alguém tivesse parado no meio da conta."
+  use:
+    - {setFlag: leu_placa}
+
+# ---------- M7: equipamento
+- id: lanca_curta
+  name: Lança curta
+  description: "Ponta de ferro num cabo de freixo. Mantém a briga a um braço e meio de distância."
+  category: arma
+  slot: mainHand
+  weight: 2.2
+  value: 18
+  stats: {dano: 6}
+
+- id: avental_couro
+  name: Avental de couro
+  description: "O de Avel tem os bolsos gastos no formato das ferramentas. Este é novo."
+  category: armadura
+  slot: body
+  weight: 1.4
+  value: 10
+  stats: {protecao: 1}
+
+# ---------- M7: documentos legíveis (RF-124). Usar = ler; o papel fica na mochila.
+- id: papeis_avel
+  name: Registro de passagem
+  description: "Papel dobrado em quatro, amarelo nas dobras."
+  category: documento
+  tags: [avel]
+  weight: 0.05
+  value: 0
+  text: "REGISTRO DE PASSAGEM — Posto de Vau-Seco. Portador: AVEL, técnico de máquinas, com uma criança de colo, parente. Destino: o sul. (O nome do portador está escrito por cima de outro, raspado com faca. A data é de vinte e quatro anos atrás.)"
+  use:
+    - {learn: {who: player, fact: papeis_nome_raspado, certainty: read}}
+    - {setFlag: leu_papeis_avel}
+
+- id: carta_iria
+  name: Carta curta
+  description: "Letra apertada, de quem escreve com pressa e pouca luz."
+  category: documento
+  tags: [avel]
+  weight: 0.05
+  value: 0
+  text: "A., não volte por mim. Leve o que der e não diga meu nome a ninguém, nem à criança quando crescer. Se perguntarem, foi um acidente. — Iria"
+  use:
+    - {learn: {who: player, fact: carta_assinada_iria, certainty: read}}
+    - {setFlag: leu_carta_iria}
+
+- id: esboco_simbolos
+  name: Desenho velho
+  description: "Papel encerado, dobrado muitas vezes. Um desenho de engrenagem e umas marcas na margem."
+  category: documento
+  tags: [avel, estrutura]
+  weight: 0.05
+  value: 0
+  text: "Um mecanismo redondo, de dentes finos, que não se parece com nada da oficina. Na margem, à mão de Avel: marcas curtas em grupos de nove, e uma palavra riscada até furar o papel."
+  use:
+    - {setFlag: leu_esboco}
+
+- id: bilhete_avel
+  name: Bilhete de Avel
+  description: "Estava no bolso do seu avental, dobrado como ele dobra as notas de encomenda."
+  category: documento
+  tags: [avel]
+  weight: 0.05
+  value: 0
+  text: "A oficina é sua. O torno puxa para a esquerda, não force. Não venha atrás. Não é por você que eu vou. — A."
+  use:
+    - {learn: {who: player, fact: avel_partiu, certainty: read}}
+
+- id: edital_caldris
+  name: Edital de Caldris
+  description: "Papel bom, carimbo vermelho. Pregado na porta da taverna, e alguém arrancou."
+  category: documento
+  tags: [comitiva]
+  weight: 0.05
+  value: 0
+  text: "A REPÚBLICA DE CALDRIS, pelo seu Escritório de Cadastro e Traçado, faz saber: as terras ao sul da Encruzilhada serão medidas e registradas. Toda terra sem título apresentado em trinta dias passa ao cadastro da República, para fins de utilidade pública. Assina: A. Dask, mestre-registrador."
+  use:
+    - {learn: {who: player, fact: edital_caldris, certainty: read}}
+    - {learn: {who: player, fact: faixa_para_caldris, certainty: read}}
+
+- id: tracado_agrimensora
+  name: Folha de traçado
+  description: "Uma folha da agrimensora, cheia de números, com uma linha reta a carvão."
+  category: documento
+  tags: [comitiva, ferrovia]
+  weight: 0.05
+  value: 0
+  text: "Pedra-Mansa, folha 3. Linha de eixo: do marco da Encruzilhada ao vau do sul, reta. Observação: atravessa campo-santo (aprox. 40 sepulturas). Sem desvio previsto. Ao lado, em letra miúda: 'perguntar de novo pelo pessoal de Mir'."
+  use:
+    - {learn: {who: player, fact: tracado_ferrovia, certainty: read}}
+
+- id: lista_oren
+  name: Lista de nomes
+  description: "Papel muito manuseado, com nomes em três letras diferentes."
+  category: documento
+  tags: [estranho, mir]
+  weight: 0.05
+  value: 0
+  text: "Pessoal da casa de máquinas de Mir, o que se lembra: Taren (transporte), Ivo, os dois irmãos Sal, a mulher dos registros, A. (técnico) — este último riscado, e escrito de novo ao lado, mais forte. Embaixo, outra letra: 'saiu na noite, com crianças'."
+  use:
+    - {learn: {who: player, fact: lista_nomes_mir, certainty: read}}
+
+- id: canto_carta
+  name: Canto de carta queimada
+  description: "Achado nas cinzas da lareira da oficina. Esfarela se apertar."
+  category: documento
+  tags: [avel]
+  weight: 0.01
+  value: 0
+  text: "...voltaram a contar. Se ainda tem a criança, não deixe que..."
+  use:
+    - {learn: {who: player, fact: avel_carta_queimada, certainty: read}}
+
+- id: livro_enterros
+  name: Livro de enterros
+  description: "O livro de Firmino. Capa de couro, páginas que cheiram a terra."
+  category: documento
+  tags: [cemiterio]
+  weight: 0.8
+  value: 0
+  text: "Ano do granizo: enterrado o velho Tobiel, levado pelo caminho dos mortos, entre as terras de Rusk e de Tarso, como sempre se fez. (Rusk é o avô de Bento; Tarso, o de Gil. O caminho é a faixa da divisa.)"
+  use:
+    - {learn: {who: player, fact: divisa_era_caminho, certainty: read}}
+    - {learn: {who: player, fact: firmino_conhece_mortos, certainty: read}}

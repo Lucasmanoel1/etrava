@@ -1,0 +1,13 @@
+# Vessa, guarda contratada do Posto (Cantões do Sal); H4.
+id: vessa
+name: Vessa
+layer: B
+sprite: personagem.vessa
+dialogue: vessa
+faction: posto
+about: "Guarda do Posto, paga pelos Cantões. Conta as pessoas que chegam pela estrada antes de contar as moedas."
+relations: [{npc: comerciante_posto, kind: amizade}]
+schedule:
+  - {from: "04:00", to: "12:00", do: dormir, at: estrada/posto_porta, hidden: true}
+  - {from: "12:00", to: "18:00", do: vigiar, at: estrada/encruzilhada}
+  - {from: "18:00", to: "04:00", do: vigiar, at: estrada/posto_guarda}

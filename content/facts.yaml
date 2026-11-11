@@ -93,7 +93,7 @@
   spread: local
   tags: [arvore, moinho]
   versions:
-    - {id: base, text: "O ferreiro acha que o jeito é cortar a árvore do moinho."}
+    - {id: base, text: "Doran, o ferreiro, acha que o jeito é cortar a árvore do moinho."}
 
 - id: custo_pode_ser_dividido
   layer: V1
@@ -126,7 +126,7 @@
   tags: [arvore, moinho]
   versions:
     - {id: base, text: "O moleiro cortou a árvore do quintal."}
-    - {id: ferreiro, text: "O ferreiro cortou a árvore do moinho, e o moleiro deixou."}
+    - {id: ferreiro, text: "Doran cortou a árvore do moinho, e o moleiro deixou."}
 
 - id: nalia_de_cama
   layer: V0
@@ -263,3 +263,494 @@
   versions:
     - {id: base, text: "Tem gente esperando na curva da estrada, no fim da tarde, para aliviar quem passa."}
     - {id: exagero, text: "A estrada virou terra de ninguém. Ninguém passa da curva com a bolsa cheia."}
+
+# ======================================================================== M7
+# ---------- A2: o homem de fora, a comitiva e Avel
+- id: estranho_procura_tecnico
+  layer: V0
+  truth: true
+  spread: local
+  tags: [mir, estranho]
+  versions:
+    - {id: base, text: "O homem de fora procura um técnico que saiu de Mir há vinte e poucos anos."}
+    - {id: exagero, text: "O homem de fora está caçando alguém. Diz que é por causa de uma dívida antiga."}
+
+- id: oren_procura_filho
+  layer: V0
+  truth: true
+  spread: none
+  tags: [mir, estranho]
+  versions:
+    - {id: base, text: "Oren, o homem de fora, perdeu um filho pequeno em Mir. Disseram a ele que o menino morreu na fuga; ele não acredita."}
+
+- id: avel_nega_estranho
+  layer: V0
+  truth: false
+  spread: local
+  tags: [avel, estranho]
+  versions:
+    - {id: base, text: "Avel diz que nunca viu o homem de fora na vida."}
+
+- id: avel_chegou_com_crianca
+  layer: V0
+  truth: true
+  spread: local
+  tags: [avel]
+  versions:
+    - {id: base, text: "Avel chegou a Pedra-Mansa há uns vinte e quatro anos, numa carroça, com uma criança de colo."}
+    - {id: exagero, text: "Avel chegou aqui com duas crianças. Uma ele deixou no caminho."}
+
+- id: comitiva_registra_terras
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [caldris, comitiva]
+  versions:
+    - {id: base, text: "Chegou uma comitiva de Caldris para medir as terras e atualizar os registros."}
+    - {id: medo, text: "Caldris mandou gente para tomar as terras de quem não tiver papel."}
+
+- id: agrimensora_pergunta_mir
+  layer: V0
+  truth: true
+  spread: local
+  tags: [mir, comitiva]
+  versions:
+    - {id: base, text: "A agrimensora de Caldris pergunta se ainda vive aqui alguém que veio de Mir."}
+
+- id: avel_desconfortavel
+  layer: V0
+  truth: true
+  spread: local
+  tags: [avel, comitiva]
+  versions:
+    - {id: base, text: "Avel saiu da taverna no meio do prato quando a agrimensora falou em Mir."}
+
+- id: avel_recebeu_carta
+  layer: V0
+  truth: true
+  spread: local
+  tags: [avel]
+  versions:
+    - {id: base, text: "Chegou uma carta para Avel pela estrada. Ele leu sozinho e jogou o envelope na lareira."}
+
+- id: avel_trabalhou_em_mir
+  layer: V1
+  truth: true
+  spread: none
+  tags: [avel, mir]
+  versions:
+    - {id: base, text: "Avel trabalhou em Mir antes do acidente, e saiu de lá na noite em que tudo aconteceu, com uma criança no colo."}
+
+- id: iria_um_nome
+  layer: V1
+  truth: true
+  spread: none
+  tags: [mir, iria]
+  versions:
+    - {id: base, text: "Um nome: Iria. Avel o disse como quem paga uma parcela pequena de uma conta grande."}
+
+- id: estranho_achou_avel
+  layer: V0
+  truth: true
+  spread: local
+  tags: [avel, estranho]
+  versions:
+    - {id: base, text: "O homem de fora passou a noite na oficina de Avel. De manhã foi embora pela estrada."}
+
+- id: avel_partiu
+  layer: V0
+  truth: true
+  spread: local
+  tags: [avel]
+  versions:
+    - {id: base, text: "Avel foi embora de Pedra-Mansa de noite, sem avisar ninguém."}
+    - {id: exagero, text: "Avel fugiu. Quem foge deve."}
+
+- id: avel_levado
+  layer: V0
+  truth: true
+  spread: local
+  tags: [avel, comitiva]
+  versions:
+    - {id: base, text: "A comitiva de Caldris levou Avel para averiguação."}
+
+- id: jogador_delatou
+  layer: V0
+  truth: true
+  spread: local
+  tags: [jogador, avel]
+  versions:
+    - {id: base, text: "Foi o aprendiz que contou à gente de Caldris de onde Avel tinha vindo."}
+
+- id: papeis_nome_raspado
+  layer: V1
+  truth: true
+  spread: none
+  tags: [avel, mir, documento]
+  versions:
+    - {id: base, text: "Num registro de passagem guardado por Avel, o nome dele está escrito por cima de outro, raspado. A data é de vinte e quatro anos atrás."}
+
+- id: carta_assinada_iria
+  layer: V1
+  truth: true
+  spread: none
+  tags: [avel, iria, documento]
+  versions:
+    - {id: base, text: "Avel guarda uma carta curta assinada por uma Iria. Ela pede que ele não volte por ela."}
+
+- id: lista_nomes_mir
+  layer: V1
+  truth: partial
+  spread: none
+  tags: [mir, estranho, documento]
+  versions:
+    - {id: base, text: "Oren carrega uma lista de gente que trabalhava em Mir. Um nome está riscado e reescrito: um técnico, A."}
+
+- id: avel_carta_queimada
+  layer: V1
+  truth: unknown
+  spread: none
+  tags: [avel, documento]
+  versions:
+    - {id: base, text: "Sobrou um canto da carta de Avel nas cinzas: 'voltaram a contar. Se ainda tem a criança'."}
+
+# ---------- A3: a estrutura
+- id: campo_cedeu
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [estrutura, bento]
+  versions:
+    - {id: base, text: "A terra cedeu no campo de Bento. Lá embaixo tem pedra trabalhada, e dá para descer."}
+    - {id: exagero, text: "Abriu um buraco sem fundo no campo de Bento. Dizem que sai bafo quente de lá."}
+
+- id: avel_olhou_buraco
+  layer: V0
+  truth: true
+  spread: local
+  tags: [estrutura, avel]
+  versions:
+    - {id: base, text: "Avel foi olhar o buraco no fim da tarde, sozinho, e disse para tapar antes da chuva."}
+
+- id: avel_reconheceu_simbolos
+  layer: V1
+  truth: true
+  spread: none
+  tags: [estrutura, avel]
+  versions:
+    - {id: base, text: "Avel disse que nunca viu as marcas do buraco. Disse rápido demais."}
+
+- id: simbolos_iguais
+  layer: V1
+  truth: true
+  spread: none
+  tags: [estrutura, avel, documento]
+  versions:
+    - {id: base, text: "As marcas em grupos de nove da placa do buraco são as mesmas de um desenho velho que Avel guarda."}
+
+- id: lasca_tira_calor
+  layer: V1
+  truth: unknown
+  spread: none
+  tags: [estrutura, custo]
+  versions:
+    - {id: base, text: "A curandeira diz que a lasca do buraco é morna porque tira o calor de algum lugar. De onde, ela não sabe."}
+
+- id: buraco_tapado
+  layer: V0
+  truth: true
+  spread: local
+  tags: [estrutura, bento]
+  versions:
+    - {id: base, text: "Bento tapou o buraco do campo e plantou por cima."}
+
+- id: comitiva_registrou_buraco
+  layer: V0
+  truth: true
+  spread: local
+  tags: [estrutura, comitiva]
+  versions:
+    - {id: base, text: "O registrador de Caldris desenhou o buraco num caderno e mandou tapar. O desenho foi para o norte."}
+
+- id: aprendiz_desceu
+  layer: V0
+  truth: true
+  spread: local
+  tags: [estrutura, jogador]
+  versions:
+    - {id: base, text: "O aprendiz da oficina desceu no buraco do campo e voltou com pedra riscada."}
+    - {id: exagero, text: "O aprendiz desceu no buraco e voltou falando sozinho."}
+
+- id: eco_no_buraco
+  layer: V1
+  truth: unknown
+  spread: none
+  tags: [estrutura]
+  versions:
+    - {id: base, text: "Lá embaixo, no escuro, uma voz longe chama alguém por um nome que não é o seu."}
+
+# ---------- H1: o ladrão de frutas
+- id: frutas_somem
+  layer: V0
+  truth: true
+  spread: local
+  tags: [pomar, celi]
+  versions:
+    - {id: base, text: "Somem maçãs do pomar de Celi, toda tarde, e ninguém vê quem leva."}
+    - {id: exagero, text: "Tem bicho grande no pomar de Celi. Leva as maçãs e não deixa pegada."}
+
+- id: cachorro_escondido
+  layer: V0
+  truth: true
+  spread: none
+  tags: [pomar, pipo]
+  versions:
+    - {id: base, text: "Pipo esconde um cachorro manco atrás do feno, no fundo do pomar, e dá maçã a ele."}
+
+- id: cachorro_da_celi
+  layer: V0
+  truth: true
+  spread: local
+  tags: [pomar, celi, pipo]
+  versions:
+    - {id: base, text: "O ladrão das maçãs era Pipo, dando de comer a um cachorro manco. Agora o cachorro é de Celi."}
+
+- id: frutas_pararam
+  layer: V0
+  truth: true
+  spread: local
+  tags: [pomar, celi]
+  versions:
+    - {id: base, text: "As maçãs de Celi pararam de sumir, do nada."}
+
+# ---------- H2: a divisa
+- id: divisa_disputada
+  layer: V0
+  truth: true
+  spread: local
+  tags: [divisa]
+  versions:
+    - {id: base, text: "Bento e Gil brigam por uma faixa de terra entre os dois campos."}
+    - {id: piada, text: "Bento e Gil vão morrer brigando por um palmo de terra, e vão ser enterrados lado a lado."}
+
+- id: divisa_era_caminho
+  layer: V0
+  truth: true
+  spread: none
+  tags: [divisa, cemiterio, firmino]
+  versions:
+    - {id: base, text: "A faixa entre os campos de Bento e Gil era o caminho dos enterros até o cemitério. Não era de ninguém."}
+
+- id: estacas_na_divisa
+  layer: V0
+  truth: true
+  spread: local
+  tags: [divisa, comitiva]
+  versions:
+    - {id: base, text: "A gente de Caldris fincou estacas com fita vermelha na divisa dos campos."}
+
+- id: estacas_favorecem_gil
+  layer: V0
+  truth: true
+  spread: local
+  tags: [divisa, comitiva]
+  versions:
+    - {id: base, text: "As estacas de Caldris deram a faixa da divisa a Gil. Bento quer arrancar uma por uma."}
+
+- id: divisa_acordo
+  layer: V0
+  truth: true
+  spread: local
+  tags: [divisa]
+  versions:
+    - {id: base, text: "Bento e Gil deixaram a faixa da divisa como caminho, de todo mundo. Arrancaram juntos as estacas."}
+
+- id: bento_arrancou_estacas
+  layer: V0
+  truth: true
+  spread: local
+  tags: [divisa, comitiva]
+  versions:
+    - {id: base, text: "Bento arrancou de noite as estacas de Caldris. Gil foi se queixar ao registrador."}
+
+- id: faixa_para_caldris
+  layer: V0
+  truth: partial
+  spread: none
+  tags: [divisa, comitiva]
+  versions:
+    - {id: base, text: "Terra cujo dono ninguém prova vira terra de Caldris, no registro novo."}
+
+# ---------- H3: os apostadores
+- id: lauro_ganha_sempre
+  layer: V0
+  truth: true
+  spread: local
+  tags: [taverna, apostas]
+  versions:
+    - {id: base, text: "Lauro ganha nos dados quase toda noite. Ciro perde quase toda noite e volta na seguinte."}
+
+- id: dado_viciado
+  layer: V0
+  truth: true
+  spread: local
+  tags: [taverna, apostas]
+  versions:
+    - {id: base, text: "O dado de Lauro cai sempre do mesmo lado. Tem chumbo de um lado só."}
+
+- id: briga_dados
+  layer: V0
+  truth: true
+  spread: local
+  tags: [taverna, apostas]
+  versions:
+    - {id: base, text: "Ciro virou a mesa da taverna e chamou Lauro de ladrão."}
+    - {id: exagero, text: "Ciro e Lauro saíram no tapa na taverna. Marta separou com a vassoura."}
+
+- id: apostadores_voltaram
+  layer: V0
+  truth: true
+  spread: local
+  tags: [taverna, apostas]
+  versions:
+    - {id: base, text: "Lauro e Ciro voltaram a jogar dados, como se nada fosse."}
+
+# ---------- H4: o Posto
+- id: posto_procura_braco
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [posto]
+  versions:
+    - {id: base, text: "Ibbo, do Posto, paga quem carregar carroça de dia e quem vigiar de noite."}
+
+- id: rastros_na_curva
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [posto, estrada]
+  versions:
+    - {id: base, text: "Vessa achou fogueira apagada e rastro de gente na curva da estrada."}
+
+- id: posto_defendido
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [posto, jogador]
+  versions:
+    - {id: base, text: "Os saqueadores foram ao Posto de noite. O aprendiz de Pedra-Mansa estava lá, e eles levaram pouco."}
+
+- id: posto_roubado
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [posto, estrada]
+  versions:
+    - {id: base, text: "Os saqueadores levaram dois fardos de sal do Posto. Vessa ficou com um corte no braço."}
+
+- id: vessa_conta
+  layer: V0
+  truth: true
+  spread: none
+  tags: [posto]
+  versions:
+    - {id: base, text: "Vessa conta quem chega pela estrada e quem vai. Diz que as contas não fecham há um mês."}
+
+# ---------- H5: a festa
+- id: festa_marcada
+  layer: V0
+  truth: true
+  spread: local
+  tags: [festa]
+  versions:
+    - {id: base, text: "Amanhã à noite tem festa da colheita na praça. Sopa de graça até acabar."}
+
+- id: anselmo_trem_cemiterio
+  layer: V0
+  truth: unknown
+  spread: local
+  tags: [festa, cemiterio, ferrovia]
+  versions:
+    - {id: base, text: "O velho Anselmo disse na festa que vão passar o trem por cima dos mortos de Pedra-Mansa."}
+    - {id: piada, text: "Anselmo bebeu e disse que os mortos vão andar de trem."}
+
+- id: estacas_no_cemiterio
+  layer: V0
+  truth: true
+  spread: wide
+  tags: [cemiterio, comitiva, ferrovia]
+  versions:
+    - {id: base, text: "A gente de Caldris fincou estacas atravessando o cemitério, em linha reta."}
+
+- id: tracado_ferrovia
+  layer: V0
+  truth: true
+  spread: none
+  tags: [ferrovia, comitiva, documento]
+  versions:
+    - {id: base, text: "No traçado da agrimensora, a linha da ferrovia de Caldris passa por cima do cemitério de Pedra-Mansa."}
+
+- id: festa_foi_boa
+  layer: V0
+  truth: true
+  spread: local
+  tags: [festa]
+  versions:
+    - {id: base, text: "A festa da colheita foi boa. Ninguém brigou, e Lauro dançou mal a noite toda."}
+
+# ---------- gente e lugar (cor local)
+- id: lina_quer_partir
+  layer: V0
+  truth: true
+  spread: none
+  tags: [lina]
+  versions:
+    - {id: base, text: "Lina quer ir embora com a primeira caravana decente que parar no Posto."}
+
+- id: marta_agua_na_cerveja
+  layer: V0
+  truth: partial
+  spread: local
+  tags: [taverna]
+  versions:
+    - {id: base, text: "Marta põe água na cerveja às quintas. Ela diz que é às terças."}
+
+- id: doran_avel_amigos
+  layer: V0
+  truth: true
+  spread: none
+  tags: [avel, doran]
+  versions:
+    - {id: base, text: "Doran conhece Avel desde que ele chegou. Nunca perguntou de onde, e diz que não vai começar agora."}
+
+- id: firmino_conhece_mortos
+  layer: V0
+  truth: true
+  spread: none
+  tags: [cemiterio, firmino]
+  versions:
+    - {id: base, text: "Firmino guarda um livro com cada enterro de Pedra-Mansa desde o tempo do avô dele."}
+
+- id: edital_caldris
+  layer: V0
+  truth: true
+  spread: local
+  tags: [caldris, comitiva, documento]
+  versions:
+    - {id: base, text: "O edital de Caldris diz que toda terra sem registro em trinta dias passa ao cadastro da República."}
+
+- id: torek_cobra_estrada
+  layer: V0
+  truth: partial
+  spread: wide
+  tags: [estrada, torek]
+  versions:
+    - {id: base, text: "O homem que cobra pela estrada se chama Torek. Uns dizem que é bandido; outros, que é o único que manda alguma coisa por aqui."}
+
+- id: sacerdote_pressa
+  layer: V0
+  truth: partial
+  spread: wide
+  tags: [orra]
+  versions:
+    - {id: base, text: "O sacerdote de Orra que sumiu viajava para o sul, com pouca escolta e muita pressa."}

@@ -1,14 +1,17 @@
-# NPC provisório do M2. Atende o comércio do vilarejo (merchants.yaml: taverna).
+# Marta, a taberneira; atende o comércio do vilarejo (merchants.yaml: taverna).
 id: taberneira
-name: Taberneira
+name: Marta, da taverna
 layer: B
 sprite: personagem.taberneira
 dialogue: taberneira
 faction: pedra_mansa
+about: "Toca a taverna. Sabe de tudo antes de todo mundo e finge que não."
+relations: [{npc: lina, kind: familia}]
 schedule:
-  - {from: "23:00", to: "06:00", do: dormir,    at: vila_ref/taverna_porta, hidden: true}
-  - {from: "06:00", to: "08:00", do: varrer,    at: vila_ref/taverna_fora}
-  - {from: "08:00", to: "09:30", do: buscar_agua, at: vila_ref/poco}
-  - {from: "09:30", to: "14:00", do: trabalhar, at: vila_ref/taverna_porta, hidden: true}
-  - {from: "14:00", to: "15:00", do: descansar, at: vila_ref/praca}
-  - {from: "15:00", to: "23:00", do: servir,    at: vila_ref/taverna_fora}   # balcão do lado de fora (M5)
+  - {from: "18:00", to: "00:00", do: servir, at: vila/taverna_fora, when: {flag: festa}}
+  - {from: "00:00", to: "06:00", do: dormir, at: taverna/atras_balcao, hidden: true}
+  - {from: "06:00", to: "08:00", do: varrer, at: vila/taverna_fora}
+  - {from: "08:00", to: "09:30", do: buscar_agua, at: vila/poco}
+  - {from: "09:30", to: "14:00", do: trabalhar, at: taverna/balcao}
+  - {from: "14:00", to: "15:00", do: descansar, at: vila/praca}
+  - {from: "15:00", to: "00:00", do: servir, at: taverna/balcao}

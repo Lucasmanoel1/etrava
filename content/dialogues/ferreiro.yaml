@@ -1,22 +1,43 @@
-# O ferreiro propõe cortar a árvore (arco A1). O jogador pode apoiar, discordar ou pedir outra coisa.
+# Doran, o ferreiro. Amigo de Avel há vinte anos. No A1 propõe cortar a árvore; sem Avel (A2),
+# é quem passa serviço ao aprendiz.
 id: ferreiro
 start:
   - {when: {arc: {id: a1_nalia, stage: impasse}}, goto: machado}
+  - {when: {arc: {id: a2_avel, stage: [partiu, averiguacao]}}, goto: sem_avel}
   - {goto: forja}
 nodes:
   forja:
     text: "Ferradura é amanhã. Prego é hoje, se tiver o ferro."
     choices:
-      - text: "Precisa de mão na oficina?"
-        when: {job: oficina}
+      - text: "Precisa de mão na forja?"
+        when: {job: forja}
         goto: servico
+      - {text: "Você conhece o Avel há quanto tempo?", goto: avel}
+      - text: "O Avel anda estranho."
+        when: {arc: {id: a2_avel, stage: [estranho_chega, comitiva, carta]}}
+        goto: estranho
       - {text: "Só passando."}
   servico:
     text: "Tem prego para bater e dobradiça para endireitar. Quatro horas, nove moedas. E não me queima a mão."
     choices:
       - text: "Começo agora."
-        effects: [{startJob: oficina}]
+        effects: [{startJob: forja}]
       - {text: "Mais tarde."}
+  avel:
+    text: "Desde que ele desceu de uma carroça com você embrulhado num casaco. Nunca perguntei de onde. Não vou começar agora."
+    effects: [{learn: {who: player, fact: doran_avel_amigos, certainty: claim}}, {learn: {who: player, fact: avel_chegou_com_crianca, certainty: claim}}]
+  estranho:
+    text: "Ele anda é cansado. Homem velho cansa de coisa velha. Não fica cutucando."
+  sem_avel:
+    text: "A oficina é sua agora. Se precisar de encomenda, eu passo. Se precisar de outra coisa, não sei dar."
+    choices:
+      - text: "Precisa de mão na forja?"
+        when: {job: forja}
+        goto: servico
+      - {text: "Ele disse alguma coisa a você?", goto: disse}
+      - {text: "Obrigado, Doran."}
+  disse:
+    text: "Disse que o torno puxa para a esquerda. Vinte anos e é isso que ele me deixa."
   machado:
     text: "Árvore que come gente, a gente corta. Não precisa de curandeira para isso."
     effects: [{learn: {who: player, fact: ferreiro_quer_cortar, certainty: claim}}]

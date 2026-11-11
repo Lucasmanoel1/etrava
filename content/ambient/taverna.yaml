@@ -1,0 +1,164 @@
+# Conversas ambientes dentro da taverna, à noite. Os apostadores (H3) são a Cena 1 da lore.
+
+- id: apostas
+  participants: [lauro, ciro]
+  when: {time: {hourFrom: 19, hourTo: 23}}
+  cooldownHours: 48
+  lines:
+    - {speaker: ciro, text: "Você sempre diz que eu roubei quando perde."}
+    - {speaker: lauro, text: "Porque você sempre rouba."}
+    - {speaker: ciro, text: "Então por que continua apostando comigo?"}
+    - {speaker: lauro, text: "Porque um dia você fica honesto."}
+
+- id: seis_de_novo
+  participants: [lauro, ciro]
+  when: {all: [{time: {hourFrom: 20, hourTo: 24}}, {arc: {id: h3_apostas, stage: rotina}}]}
+  cooldownHours: 30
+  lines:
+    - {speaker: lauro, text: "Seis de novo."}
+    - {speaker: ciro, text: "O dado gosta de você."}
+    - {speaker: lauro, text: "O dado gosta de quem trata bem."}
+    - {speaker: ciro, text: "Ou de quem pesa ele."}
+    - {speaker: lauro, text: "Pesa o quê? Joga."}
+  facts: [lauro_ganha_sempre]
+
+- id: quatro_seis
+  participants: [taberneira, lina]
+  when: {all: [{time: {hourFrom: 22, hourTo: 23.5}}, {arc: {id: h3_apostas, stage: rotina}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: taberneira, text: "O Lauro ganhou de novo?"}
+    - {speaker: lina, text: "Ganhou. Vi o dado dele cair seis quatro vezes seguidas."}
+    - {speaker: taberneira, text: "Dado com chumbo cai assim."}
+    - {speaker: lina, text: "E a senhora deixa?"}
+    - {speaker: taberneira, text: "Eu vendo cerveja. Quem perde bebe mais."}
+  facts: [dado_viciado]
+
+- id: a_ultima
+  participants: [lauro, ciro]
+  when: {all: [{time: {hourFrom: 19, hourTo: 23}}, {arc: {id: h3_apostas, stage: as_pazes}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: lauro, text: "Uma rodada?"}
+    - {speaker: ciro, text: "Uma. A última."}
+    - {speaker: lauro, text: "A última de hoje."}
+  facts: [apostadores_voltaram]
+
+- id: plantar_outra
+  participants: [anselmo, bento]
+  when: {all: [{time: {hourFrom: 18, hourTo: 21}}, {knows: {who: bento, fact: arvore_voltou}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: bento, text: "Ouviu falar da menina que recuperou aquela árvore?"}
+    - {speaker: anselmo, text: "A filha do moleiro?"}
+    - {speaker: bento, text: "Aquela mesma."}
+    - {speaker: anselmo, text: "Meu avô fazia isso toda primavera. Chamava-se plantar outra."}
+  facts: ["arvore_voltou:ceticismo"]
+
+- id: bebo_por_dois
+  participants: [moleiro, bento]
+  when: {all: [{time: {hourFrom: 18, hourTo: 21}}, {arc: {id: a1_nalia, stage: [insonia, vozes]}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: bento, text: "Bebe, Tomé."}
+    - {speaker: moleiro, text: "Bebo para dormir. Ela não dorme. Eu durmo por dois."}
+    - {speaker: bento, text: "E dorme?"}
+    - {speaker: moleiro, text: "Não."}
+  facts: [nalia_nao_dorme]
+
+- id: caravana_dos_cantoes
+  participants: [taberneira, lina]
+  when: {time: {hourFrom: 17, hourTo: 22}}
+  cooldownHours: 120
+  lines:
+    - {speaker: lina, text: "Passou uma caravana dos Cantões hoje. Dez carroças."}
+    - {speaker: taberneira, text: "E você ficou."}
+    - {speaker: lina, text: "Fiquei."}
+    - {speaker: taberneira, text: "Então lava a caneca."}
+  facts: [lina_quer_partir]
+
+- id: brotou_que_nem_arvore
+  participants: [agrimensora, taberneira]
+  when: {time: {hourFrom: 17, hourTo: 19}}
+  cooldownHours: 0
+  lines:
+    - {speaker: agrimensora, text: "Alguém aqui veio de Mir? Faz uns vinte anos."}
+    - {speaker: taberneira, text: "Aqui ninguém veio de lugar nenhum. A gente brotou."}
+    - {speaker: agrimensora, text: "Que nem árvore."}
+    - {speaker: taberneira, text: "Que nem árvore. E o Avel, que acabou de sair sem pagar a sopa."}
+  facts: [agrimensora_pergunta_mir, avel_desconfortavel]
+
+- id: lugar_ocupado
+  participants: [registrador, anselmo]
+  when: {time: {hourFrom: 19, hourTo: 21}}
+  cooldownHours: 0
+  lines:
+    - {speaker: registrador, text: "Este assento está ocupado?"}
+    - {speaker: anselmo, text: "Está. Por mim. Faz quarenta anos."}
+    - {speaker: registrador, text: "Constará."}
+
+- id: quarenta_sepulturas
+  participants: [registrador, agrimensora]
+  when: {time: {hourFrom: 19, hourTo: 22}}
+  cooldownHours: 0
+  lines:
+    - {speaker: registrador, text: "Amanhã, o cemitério."}
+    - {speaker: agrimensora, text: "São quarenta sepulturas no traçado."}
+    - {speaker: registrador, text: "Quarenta é um número pequeno para uma ferrovia."}
+    - {speaker: agrimensora, text: "Para uma ferrovia."}
+  facts: [tracado_ferrovia]
+
+- id: com_engrenagem
+  participants: [estranho, taberneira]
+  when: {time: {hourFrom: 17, hourTo: 22}}
+  cooldownHours: 0
+  lines:
+    - {speaker: estranho, text: "Ninguém aqui chegou de longe, faz uns vinte anos? Com crianças?"}
+    - {speaker: taberneira, text: "Todo mundo chegou de longe um dia. Uns mais depressa."}
+    - {speaker: estranho, text: "Um técnico. Que mexe com engrenagem."}
+    - {speaker: taberneira, text: "Engrenagem, aqui, só o Avel. Mas o Avel é daqui. Faz tempo."}
+  facts: [estranho_procura_tecnico, avel_chegou_com_crianca]
+
+- id: meio_papel_taverna
+  participants: [gil, ciro]
+  when: {time: {hourFrom: 19, hourTo: 21.5}}
+  cooldownHours: 72
+  lines:
+    - {speaker: gil, text: "A faixa é minha, Ciro. Tenho papel."}
+    - {speaker: ciro, text: "Meio papel."}
+    - {speaker: gil, text: "Meio papel é mais que nenhum."}
+    - {speaker: ciro, text: "Meio papel é meia faixa."}
+  facts: ["divisa_disputada:piada"]
+
+- id: anda_com_alguma_coisa
+  participants: [ferreiro, bento]
+  when: {all: [{time: {hourFrom: 18.5, hourTo: 21}}, {arc: {id: a2_avel, stage: [estranho_chega, comitiva, carta]}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: bento, text: "O Avel não vem mais beber."}
+    - {speaker: ferreiro, text: "Anda com trabalho."}
+    - {speaker: bento, text: "Anda com alguma coisa."}
+    - {speaker: ferreiro, text: "Todo mundo anda com alguma coisa, Bento. Ele só anda com a dele mais perto."}
+  facts: [avel_desconfortavel]
+
+- id: sal_no_balcao
+  participants: [viajante, taberneira]
+  when: {all: [{time: {hourFrom: 17, hourTo: 20}}, {knows: {who: viajante, fact: sal_subiu}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "No Posto, o sal de remédio dobrou."}
+    - {speaker: taberneira, text: "Dobrou de preço ou de tamanho?"}
+    - {speaker: viajante, text: "De preço. O tamanho continua pequeno."}
+  facts: [sal_subiu]
+
+- id: carta_pela_estrada
+  participants: [viajante, taberneira]
+  when: {all: [{time: {hourFrom: 17, hourTo: 20}}, {arc: {id: a2_avel, stage: carta}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: viajante, text: "Entreguei uma carta ao Avel. Pesada, para uma carta."}
+    - {speaker: taberneira, text: "E ele?"}
+    - {speaker: viajante, text: "Leu ali mesmo, de pé, e jogou o envelope no fogo."}
+    - {speaker: taberneira, text: "O envelope. E a carta?"}
+    - {speaker: viajante, text: "A carta ele guardou no bolso de dentro."}
+  facts: [avel_recebeu_carta]

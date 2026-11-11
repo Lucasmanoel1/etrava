@@ -1,0 +1,24 @@
+# Avel (lore): mantém a oficina de ferramentas e mecanismos; diz ser tio do protagonista.
+# Arco pessoal A2. Some da praça enquanto o homem de fora está no vilarejo.
+id: avel
+name: Avel
+layer: A
+sprite: personagem.avel
+dialogue: avel
+opinion: 35
+faction: pedra_mansa
+about: "O tio. Faz ferramentas e mecanismos pequenos na oficina; fala pouco do que fazia antes."
+knows: [avel_trabalhou_em_mir]
+relations: [{npc: ferreiro, kind: amizade}, {npc: curandeira, kind: amizade}]
+schedule:
+  # A3: vai olhar o buraco no fim da tarde, sozinho
+  - {from: "17:00", to: "18:30", do: olhar, at: vila/beira_buraco, when: {arc: {id: a3_estrutura, stage: desabamento}}}
+  # A2: com o homem de fora no vilarejo, não sai da oficina
+  - {from: "08:00", to: "22:00", do: trabalhar, at: oficina/bancada, when: {arc: {id: a2_avel, stage: [estranho_chega, comitiva, carta]}}}
+  - {from: "18:00", to: "23:00", do: festejar, at: vila/praca_banco, when: {flag: festa}}
+  - {from: "22:00", to: "06:00", do: dormir, at: oficina/cama_avel}
+  - {from: "06:00", to: "12:00", do: trabalhar, at: oficina/bancada}
+  - {from: "12:00", to: "13:00", do: comer, at: oficina/mesa}
+  - {from: "13:00", to: "17:00", do: trabalhar, at: vila/oficina_fora}
+  - {from: "17:00", to: "19:30", do: conversar, at: vila/forja}
+  - {from: "19:30", to: "22:00", do: descansar, at: oficina/lareira}

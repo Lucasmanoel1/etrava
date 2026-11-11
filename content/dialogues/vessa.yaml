@@ -1,0 +1,27 @@
+# Vessa, guarda do Posto (H4). Conta quem chega e quem vai.
+id: vessa
+start:
+  - {when: {arc: {id: h4_posto, stage: defendido}}, goto: obrigada}
+  - {when: {arc: {id: h4_posto, stage: roubado}}, goto: roubado}
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Veio pela estrada do oeste. Sozinho. Sem carga. Anotado."
+    choices:
+      - {text: "Anotado onde?", goto: onde}
+      - {text: "Algum perigo por aqui?", goto: perigo}
+      - {text: "Até."}
+  onde:
+    text: "Aqui. Conto quem chega e quem vai. Faz um mês que as contas não fecham."
+    effects: [{learn: {who: player, fact: vessa_conta, certainty: claim}}]
+  perigo:
+    branch:
+      - {when: {arc: {id: h4_posto, stage: [rastros, ataque]}}, goto: rastros}
+    text: "Sempre tem. De dia, menos."
+  rastros:
+    text: "Fogueira apagada na curva, e gente que não passou pelo Posto. Quem não passa pelo Posto não quer ser contado."
+    effects: [{learn: {who: player, fact: rastros_na_curva, certainty: claim}}]
+  obrigada:
+    text: "Pela outra noite. Não conta ao Ibbo que eu disse obrigada."
+  roubado:
+    text: "Levaram dois fardos e um pedaço do meu braço. O braço volta."

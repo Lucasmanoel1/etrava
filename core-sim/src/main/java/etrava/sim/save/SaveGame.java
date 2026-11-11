@@ -41,7 +41,7 @@ import java.util.zip.ZipOutputStream;
  */
 public final class SaveGame {
     /** Aumenta a cada mudança incompatível no formato de state.json. */
-    public static final int SCHEMA_VERSION = 5;
+    public static final int SCHEMA_VERSION = 6;
     public static final String EXTENSION = ".etrava";
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -68,13 +68,42 @@ public final class SaveGame {
     /**
      * Migrações em produção. 4 → 5 (M6): o bloco "combat" é novo; sem ele, o personagem
      * começa com vida e fôlego cheios e ninguém por perto — basta marcar o save.
+     * 5 → 6 (M7, D-070): a cena de referência virou Pedra-Mansa ({@code vila}) e a área de teste
+     * virou a estrada ({@code estrada}). Os nomes mudam em todo o estado; quem cair num lugar que
+     * agora é parede é reposto no ponto de chegada ao carregar ({@code Simulation.fromWorld}).
      */
     private static final List<Migration> MIGRATIONS = List.of(new Migration() {
         @Override public int from() { return 4; }
         @Override public void apply(ObjectNode state) {
             state.putObject("combat").put("health", -1).put("stamina", -1);
         }
+    }, new Migration() {
+        @Override public int from() { return 5; }
+        @Override public void apply(ObjectNode state) {
+            renameAreas(state);
+        }
     });
+
+    /** Troca, em qualquer texto do estado, os ids e os "area/ponto" das áreas que mudaram de nome no M7. */
+    private static void renameAreas(JsonNode node) {
+        if (node instanceof ObjectNode obj) {
+            for (Map.Entry<String, JsonNode> e : List.copyOf(obj.properties())) {
+                if (e.getValue().isTextual()) obj.put(e.getKey(), renamed(e.getValue().asText()));
+                else renameAreas(e.getValue());
+            }
+        } else if (node instanceof com.fasterxml.jackson.databind.node.ArrayNode arr) {
+            for (int i = 0; i < arr.size(); i++) {
+                if (arr.get(i).isTextual()) arr.set(i, arr.textNode(renamed(arr.get(i).asText())));
+                else renameAreas(arr.get(i));
+            }
+        }
+    }
+
+    private static String renamed(String s) {
+        if (s.equals("vila_ref") || s.startsWith("vila_ref/")) return "vila" + s.substring(8);
+        if (s.equals("area_teste") || s.startsWith("area_teste/")) return "estrada" + s.substring(10);
+        return s;
+    }
 
     private SaveGame() {}
 

@@ -1,4 +1,5 @@
-# O Posto vende o que vem de fora e comenta o preço do sal quando ele sobe (RF-263).
+# Ibbo, do Posto: vende o que vem de fora, comenta o sal quando sobe (RF-263), dá trabalho de
+# carga e de vigia (H4) e se lembra de quem achou caído na estrada (M6).
 id: comerciante_posto
 start:
   - {when: {all: [{flag: sal_subiu}, {not: {flag: posto_falou_sal}}]}, goto: sal}
@@ -12,6 +13,9 @@ nodes:
       - text: "Precisa de braço para descarregar?"
         when: {job: carga_posto}
         goto: carga
+      - text: "Precisa de alguém de vigia esta noite?"
+        when: {job: vigia_posto}
+        goto: vigia
       - text: "Pelo tanto que eu já carreguei aqui, merecia preço de amigo."
         tag: Lábia
         when: {all: [{skill: {name: labia, min: 5}}, {var: {name: dias_de_trabalho, min: 1}}, {not: {flag: posto_preco_amigo}}]}
@@ -23,6 +27,10 @@ nodes:
       - text: "Foi você que me achou na beira da estrada?"
         when: {all: [{remembers: {npc: npc, type: socorreu}}, {not: {flag: posto_falou_socorro}}]}
         goto: socorro
+      - {text: "O que dizem os que passam?", goto: novidades}
+      - text: "Sobre a outra noite..."
+        when: {arc: {id: h4_posto, stage: [defendido, roubado]}}
+        goto: noite
       - {text: "Só olhando."}
   estrada:
     text: "De manhã é estrada. No fim da tarde, na curva, tem quem espere. Quem passa ali de bolsa cheia costuma voltar de bolsa leve."
@@ -49,3 +57,24 @@ nodes:
       - text: "Fechado."
         effects: [{startJob: carga_posto}]
       - {text: "Hoje não."}
+  vigia:
+    text: "Cinco horas olhando o escuro, doze moedas. Se o escuro olhar de volta, grita. Vessa vem."
+    effects: [{learn: {who: player, fact: posto_procura_braco, certainty: claim}}]
+    choices:
+      - text: "Fico."
+        effects: [{startJob: vigia_posto}]
+      - {text: "Hoje não."}
+  novidades:
+    gossip: nada
+    text: "Quem passa pelo Posto diz:"
+    choices:
+      - {text: "E mais?", goto: novidades}
+      - {text: "Hm."}
+  nada:
+    text: "Ninguém trouxe nada que eu possa vender. Nem notícia."
+  noite:
+    branch:
+      - {when: {arc: {id: h4_posto, stage: defendido}}, goto: defendido}
+    text: "Dois fardos. Sabe quanto custa um fardo de sal agora? Não sabe. Ninguém sabe, muda toda semana."
+  defendido:
+    text: "Levaram meio fardo, e um deles foi embora mancando. Não é pouca coisa. Fica com o desconto de amigo, desta vez de verdade."

@@ -10,9 +10,12 @@ import java.util.List;
  * @param owner       NPC dono; null = de ninguém
  * @param items       o que tem no começo, e o que volta a ter na reposição
  * @param restockDays de quantos em quantos dias o dono repõe; 0 = nunca
+ * @param when        só existe (aparece e abre) enquanto a condição valer; null = sempre
  */
 public record ContainerDef(String id, String name, String at, String owner, List<ItemDef.Stack> items,
-        int restockDays) {
+        int restockDays, com.fasterxml.jackson.databind.JsonNode when) {
+
+    public etrava.sim.rules.Condition condition() { return etrava.sim.rules.Rules.condition(when); }
 
     public String displayName() { return name != null ? name : id; }
     public List<ItemDef.Stack> itemList() { return items != null ? items : List.of(); }

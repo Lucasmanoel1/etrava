@@ -1,12 +1,33 @@
 # Contêineres (RF-204): cestos, sacos, baús. Clique para abrir; pegar do que tem dono é roubo
 # (ato `roubo` de deeds.yaml) — mas só pesa para quem estiver vendo (RF-089). Ninguém vendo,
-# ninguém sabe. O dono repõe de tantos em tantos dias.
+# ninguém sabe. O dono repõe de tantos em tantos dias (restockDays: 0 = nunca).
 #   at:    area/ponto do mapa
 #   owner: NPC dono (omitido = de ninguém)
 
+# O baú de Avel, na oficina (A2). Os papéis não se repõem: quem pega, fica com eles.
+- id: bau_avel
+  name: Baú de Avel
+  at: oficina/bau
+  owner: avel
+  restockDays: 0
+  items:
+    - {item: papeis_avel, qty: 1}
+    - {item: carta_iria, qty: 1}
+    - {item: esboco_simbolos, qty: 1}
+    - {item: pregos, qty: 2}
+
+# As cinzas da lareira da oficina: depois que Avel queima a carta (A2), sobra um canto.
+- id: cinzas_oficina
+  name: Cinzas da lareira
+  at: oficina/lareira
+  restockDays: 0
+  when: {arc: {id: a2_avel, stage: [carta, confessa, encontrado, partiu, averiguacao]}}
+  items:
+    - {item: canto_carta, qty: 1}
+
 - id: sacos_moinho
   name: Sacos de farinha
-  at: vila_ref/feno
+  at: moinho/mo
   owner: moleiro
   restockDays: 2
   items:
@@ -14,12 +35,57 @@
 
 - id: cesto_horta
   name: Cesto da horta
-  at: vila_ref/horta
+  at: vila/horta
   owner: curandeira
   restockDays: 2
   items:
     - {item: ervas, qty: 4}
     - {item: legumes, qty: 3}
+
+- id: prateleira_curandeira
+  name: Potes da curandeira
+  at: curandeira/ervas
+  owner: curandeira
+  restockDays: 3
+  items:
+    - {item: unguento_sal, qty: 1}
+    - {item: cha_ervas, qty: 2}
+
+- id: cesto_pomar
+  name: Cesto de maçãs
+  at: vila/pomar
+  owner: aldea
+  restockDays: 1
+  items:
+    - {item: maca, qty: 4}
+
+- id: barris_taverna
+  name: Barris da taverna
+  at: taverna/atras_balcao
+  owner: taberneira
+  restockDays: 2
+  items:
+    - {item: cerveja, qty: 3}
+    - {item: queijo, qty: 1}
+
+- id: mesa_registrador
+  name: Papéis da comitiva
+  at: vila/comitiva
+  owner: registrador
+  restockDays: 0
+  when: {arc: {id: a2_avel, stage: [comitiva, carta]}}
+  items:
+    - {item: edital_caldris, qty: 1}
+    - {item: tracado_agrimensora, qty: 1}
+
+- id: caixotes_posto
+  name: Caixotes do Posto
+  at: estrada/posto_carga
+  owner: comerciante_posto
+  restockDays: 3
+  items:
+    - {item: biscoito, qty: 2}
+    - {item: corda, qty: 1}
 
 # A estrutura enterrada (M6). De ninguém — ou de alguém que não reclama.
 - id: nicho_estrutura

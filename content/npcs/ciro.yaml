@@ -1,0 +1,18 @@
+# Ciro, apostador da taverna (H3). Perde, reclama, volta.
+id: ciro
+name: Ciro
+layer: B
+sprite: personagem.ciro
+dialogue: ciro
+faction: pedra_mansa
+about: "Joga dados com Lauro toda noite e jura toda noite que é a última."
+relations: [{npc: lauro, kind: rivalidade}]
+schedule:
+  - {from: "18:00", to: "00:00", do: festejar, at: vila/taverna_fora, when: {flag: festa}}
+  # depois da briga (H3), passa uns dias longe da mesa
+  - {from: "18:00", to: "00:30", do: emburrar, at: vila/casa_ciro, when: {arc: {id: h3_apostas, stage: briga}}}
+  - {from: "00:30", to: "07:00", do: dormir, at: vila/casa_ciro, hidden: true}
+  - {from: "07:00", to: "12:00", do: trabalhar, at: vila/campo_gil}
+  - {from: "12:00", to: "13:00", do: comer, at: vila/casa_ciro}
+  - {from: "13:00", to: "18:00", do: consertar, at: vila/casa_ciro}
+  - {from: "18:00", to: "00:30", do: jogar, at: taverna/mesa_jogo_b}

@@ -32,14 +32,26 @@ public final class ContentDb {
      * @param exits  saídas: chegar perto do ponto leva a outra área
      * @param wakeAt onde se acorda depois de uma derrota não letal aqui ("area/ponto"); ausente = na própria área
      * @param finder NPC que encontra o jogador desacordado (fica sabendo e lembra); pode faltar
+     * @param interior dentro de uma construção: luz própria (lareira, lampião), sem dia e noite lá fora
+     * @param place  lugar nomeado a que a área pertence (Pedra-Mansa, Posto…): entrar a primeira vez anota (RF-007)
+     * @param mapPos onde a área fica no mapa ilustrado, de 0 a 1 em cada eixo (RF-385)
+     * @param music  faixa de música da área (ID de asset); ausente = a da exploração
+     * @param ambience som ambiente da área; o cliente acrescenta {@code .dia}/{@code .noite} se existir
      */
     public record AreaEntry(String id, String name, String map, boolean dark, boolean lethal, List<Exit> exits,
-            String wakeAt, String finder) {
+            String wakeAt, String finder, boolean interior, String place, List<Double> mapPos, String music,
+            String ambience) {
         public List<Exit> exitList() { return exits != null ? exits : List.of(); }
+        public String displayName() { return name != null ? name : id; }
     }
 
-    /** Saída de uma área: o ponto do mapa e para onde leva (área e ponto de chegada em {@code spawns}). */
-    public record Exit(String spot, String to, String spawn) {}
+    /**
+     * Saída de uma área: o ponto do mapa e para onde leva (área e ponto de chegada em {@code spawns}).
+     * Com {@code when}, só leva enquanto a condição valer (o buraco que se abre, a porta trancada).
+     */
+    public record Exit(String spot, String to, String spawn, com.fasterxml.jackson.databind.JsonNode when) {
+        public etrava.sim.rules.Condition condition() { return etrava.sim.rules.Rules.condition(when); }
+    }
 
     private final Map<String, PropDef> props = new LinkedHashMap<>();
     private final Map<String, AreaDef> areas = new LinkedHashMap<>();

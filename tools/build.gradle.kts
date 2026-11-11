@@ -34,12 +34,12 @@ tasks.register<JavaExec>("generateEstrutura") {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
-tasks.register<JavaExec>("generateRefMap") {
+tasks.register<JavaExec>("generateRegion") {
     group = "assets"
-    description = "Gera o mapa da cena de referência (content/areas/vila_ref.tmj). Sobrescreve o arquivo."
+    description = "Gera os mapas da região (vila, estrada e interiores) em content/areas. Sobrescreve os arquivos."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("etrava.tools.maps.GenerateRefMap")
-    args(rootProject.file("content/areas/vila_ref.tmj").absolutePath)
+    mainClass.set("etrava.tools.maps.GenerateRegion")
+    args(rootProject.file("content/areas").absolutePath)
     jvmArgs("-Dstdout.encoding=UTF-8")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }

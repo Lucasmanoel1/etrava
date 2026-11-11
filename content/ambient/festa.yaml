@@ -1,0 +1,62 @@
+# A festa da colheita (H5): só tocam com a flag `festa`, na praça. Uma noite feliz — e, no meio
+# dela, a frase de Anselmo que dias depois se prova verdadeira (gancho 30).
+
+- id: primeiro_os_mortos
+  participants: [anselmo, firmino]
+  when: {flag: festa}
+  cooldownHours: 0
+  lines:
+    - {speaker: firmino, text: "Bela festa."}
+    - {speaker: anselmo, text: "Bela. Aproveita. Ano que vem passa o trem por cima dos nossos mortos."}
+    - {speaker: firmino, text: "Que trem, homem?"}
+    - {speaker: anselmo, text: "O que vem. Primeiro os mortos, depois a gente."}
+    - {speaker: firmino, text: "Bebe sua sopa, Anselmo."}
+  facts: [anselmo_trem_cemiterio]
+
+- id: morto_nao_danca
+  participants: [lauro, ciro]
+  when: {flag: festa}
+  cooldownHours: 0
+  lines:
+    - {speaker: lauro, text: "Dança comigo, Ciro."}
+    - {speaker: ciro, text: "Nem morto."}
+    - {speaker: lauro, text: "Morto não dança. Por isso é agora."}
+
+- id: hoje_nao
+  participants: [bento, gil]
+  when: {flag: festa}
+  cooldownHours: 0
+  lines:
+    - {speaker: bento, text: "Hoje não falo de divisa."}
+    - {speaker: gil, text: "Nem eu."}
+    - {speaker: bento, text: "Mas é minha."}
+    - {speaker: gil, text: "Amanhã."}
+  facts: [divisa_disputada]
+
+- id: mesa_tres
+  participants: [lina, aldea]
+  when: {flag: festa}
+  cooldownHours: 0
+  lines:
+    - {speaker: lina, text: "Se eu fosse embora, você sentia falta?"}
+    - {speaker: aldea, text: "Da mesa três eu sentia."}
+    - {speaker: lina, text: "Eu sou a mesa três."}
+    - {speaker: aldea, text: "Então sentia."}
+
+- id: dancam_mais
+  participants: [agrimensora, lina]
+  when: {flag: festa}
+  cooldownHours: 0
+  lines:
+    - {speaker: agrimensora, text: "Vocês dançam assim em toda colheita?"}
+    - {speaker: lina, text: "Só nas boas. Nas ruins a gente dança mais."}
+
+- id: pipo_e_a_sopa
+  participants: [pipo, aldea]
+  when: {flag: festa}
+  cooldownHours: 0
+  lines:
+    - {speaker: pipo, text: "Dona Celi, posso levar uma tigela para casa?"}
+    - {speaker: aldea, text: "Para quem?"}
+    - {speaker: pipo, text: "Para mim. Mais tarde."}
+    - {speaker: aldea, text: "Leva. Mais tarde a gente conversa sobre o mais tarde."}

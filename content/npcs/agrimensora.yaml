@@ -1,0 +1,18 @@
+# Sena Brask, agrimensora da comitiva; é quem pergunta por antigos moradores de Mir (A2).
+id: agrimensora
+name: Sena, agrimensora
+layer: A
+sprite: personagem.agrimensora
+dialogue: agrimensora
+status: away
+faction: comitiva
+about: "Agrimensora de Caldris. Mede a terra com uma corda de nós e pergunta por Mir quando acha que ninguém escuta."
+relations: [{npc: registrador, kind: amizade}]
+schedule:
+  - {from: "18:00", to: "23:00", do: festejar, at: vila/praca, when: {flag: festa}}
+  - {from: "22:00", to: "06:00", do: dormir, at: vila/comitiva, hidden: true}
+  - {from: "06:00", to: "12:00", do: medir, at: vila/campo_gil}
+  - {from: "12:00", to: "13:00", do: comer, at: vila/comitiva}
+  - {from: "13:00", to: "17:00", do: medir, at: vila/cemiterio}
+  - {from: "17:00", to: "19:00", do: perguntar, at: taverna/balcao}
+  - {from: "19:00", to: "22:00", do: jantar, at: taverna/mesa_janela}

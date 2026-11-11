@@ -254,6 +254,7 @@ final class NarrativeValidator {
             }
             effects(file, where, node.effects(), "dialogo:" + d.id());
             effects(file, where, node.onLeave(), "dialogo:" + d.id());
+            for (DialogueDef.Start b : node.branch()) condition(file, where, b.when());
             for (DialogueDef.Choice c : node.choices()) {
                 condition(file, where, c.when());
                 effects(file, where, c.effects(), "dialogo:" + d.id());
@@ -270,6 +271,7 @@ final class NarrativeValidator {
             String where = "nó '" + id + "'";
             if (node.next() != null) target(file, where, d, node.next(), queue);
             if (node.gossip() != null && d.nodes().containsKey(node.gossip())) queue.add(node.gossip());
+            for (DialogueDef.Start b : node.branch()) target(file, where, d, b.target(), queue);
             for (DialogueDef.Choice c : node.choices()) {
                 if (c.target() != null) target(file, where, d, c.target(), queue);
             }
@@ -350,6 +352,9 @@ final class NarrativeValidator {
             }
             case Condition.Job j -> {
                 if (!db.jobs().containsKey(j.id())) errors.add(file + ": " + where + ": trabalho inexistente '" + j.id() + "'");
+            }
+            case Condition.Here h -> {
+                if (db.area(h.area()) == null) errors.add(file + ": " + where + ": área inexistente '" + h.area() + "'");
             }
             default -> { /* sem referências a conferir */ }
         }
@@ -548,6 +553,11 @@ final class NarrativeValidator {
                             + Economy.THEFT_DEED + "'");
             }
             for (ItemDef.Stack s : c.itemList()) item("containers.yaml", where, s.item());
+            try {
+                condition("containers.yaml", where, c.condition());
+            } catch (IllegalArgumentException e) {
+                errors.add("containers.yaml: " + where + ": condição inválida: " + e.getMessage());
+            }
         }
     }
 

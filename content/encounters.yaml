@@ -1,5 +1,5 @@
 # Encontros (PRD 7.3). Sorteados quando o jogador chega à área e a cada hora em que fica nela —
-# também dormindo ou esperando, e aí o ataque interrompe o descanso (RF-323).
+# também dormindo, esperando ou trabalhando, e aí o ataque interrompe (RF-323).
 #   at:       pontos do mapa (spots ou spawns) onde os inimigos surgem; um é sorteado
 #   enemies:  quem aparece e quantos
 #   when:     condição (vocabulário de CONTENT.md); ausente = sempre
@@ -7,25 +7,35 @@
 #   cooldown: horas de jogo até poder acontecer de novo
 #   once:     no máximo uma vez por partida
 # O efeito {encounter: id} força um encontro (RF-102, "iniciar combate"), se o jogador estiver na área.
-# Até a estrada ganhar mapa (M7), a área de teste faz as vezes dela.
 
 - id: lobos_estrada
-  area: area_teste
-  at: [bosque_norte, bosque_oeste]
+  area: estrada
+  at: [bosque_norte, bosque_oeste, bosque_sul]
   enemies:
     - {enemy: lobo, qty: 2}
   when: {time: {hourFrom: 20, hourTo: 5}}
-  chance: 0.3
+  chance: 0.25
   cooldown: 20
 
 - id: saqueadores_estrada
-  area: area_teste
-  at: [curva_estrada, bosque_oeste]
+  area: estrada
+  at: [curva_estrada, bosque_sul]
   enemies:
     - {enemy: saqueador, qty: 2}
-  when: {time: {hourFrom: 16, hourTo: 23}}
-  chance: 0.12
+  when: {all: [{time: {hourFrom: 16, hourTo: 23}}, {not: {arc: {id: h4_posto, stage: [defendido]}}}]}
+  chance: 0.10
   cooldown: 48
+
+# H4: na noite do ataque, quem estiver no Posto dá de cara com eles.
+- id: saqueadores_posto
+  area: estrada
+  at: [encruzilhada, bosque_sul]
+  enemies:
+    - {enemy: saqueador, qty: 3}
+  when: {arc: {id: h4_posto, stage: ataque}}
+  chance: 1.0
+  cooldown: 24
+  once: true
 
 - id: vulto_camara
   area: estrutura

@@ -1,0 +1,15 @@
+# Oren Talm, o homem de fora que procura alguém de Mir (A2, Q-08 — proposta D-069).
+# Começa fora do mundo; chega pelo arco A2 e vai embora quando o arco termina.
+id: estranho
+name: Oren, o homem de fora
+layer: A
+sprite: personagem.estranho
+dialogue: estranho
+status: away
+about: "Um homem de fora. Pergunta por gente que veio de Mir, há muitos anos."
+schedule:
+  - {from: "22:00", to: "07:00", do: dormir, at: taverna/mesa_canto}
+  - {from: "07:00", to: "10:00", do: perguntar, at: vila/praca}
+  - {from: "10:00", to: "13:00", do: andar, at: vila/cemiterio}
+  - {from: "13:00", to: "17:00", do: perguntar, at: vila/praca_norte}
+  - {from: "17:00", to: "22:00", do: esperar, at: taverna/mesa_canto}

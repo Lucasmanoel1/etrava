@@ -1,27 +1,4 @@
 # Assets que o conteúdo já usa mas que ainda não têm imagem.
 # O jogo mostra um placeholder e avisa no log (RF-421). Quando a imagem existir,
 # basta salvá-la no caminho indicado em `file`.
-
-- id: prop.bancada
-  type: sprite
-  file: props/bancada.png
-  anchor: [96, 110]
-
-- id: prop.estaca
-  type: sprite
-  file: props/estaca.png
-  anchor: [20, 80]
-
-# Retratos ainda não gerados (os NPCs entraram no M4).
-- id: retrato.nalia
-  type: portrait
-  file: retratos/nalia.png
-
-- id: retrato.curandeira
-  type: portrait
-  file: retratos/curandeira.png
-
-# Retrato ainda não gerado (o comerciante do Posto entrou no M5).
-- id: retrato.comerciante_posto
-  type: portrait
-  file: retratos/comerciante_posto.png
+[]

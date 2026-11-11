@@ -20,10 +20,11 @@ import java.util.function.Predicate;
  * @param status    situação inicial: present (padrão) | away | departed | dead
  * @param relations laços com outros NPCs: mudam com quem ele troca rumores (RF-086)
  * @param faction   comunidade a que pertence; a reputação nela é a média das opiniões dos membros (RF-280)
+ * @param about     uma linha para a aba Pessoas do caderno: quem o personagem acha que essa pessoa é
  */
 public record NpcDef(String id, String name, String layer, String sprite, String portrait, String dialogue,
         int opinion, List<String> knows, List<Block> schedule, String status, List<Relation> relations,
-        String faction) {
+        String faction, String about) {
 
     public static final List<String> STATUSES = List.of("present", "away", "departed", "dead");
     public static final List<String> RELATION_KINDS = List.of("familia", "amizade", "rivalidade");

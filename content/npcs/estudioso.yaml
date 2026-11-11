@@ -1,10 +1,12 @@
-# O estudioso de passagem: só aparece se o arco A1 terminar em `estabilizada`, e vai embora
-# três dias depois (RF-087). Começa fora do mundo (`status: away`).
+# Halden, o estudioso de passagem: só aparece se o arco A1 terminar em `estabilizada`, e vai
+# embora três dias depois (RF-087). Começa fora do mundo (`status: away`).
 id: estudioso
-name: Homem de fora
+name: Halden, homem de livros
 layer: C
 sprite: personagem.estudioso
+dialogue: estudioso
 status: away
+about: "Um homem de livros que parou no moinho para olhar a árvore."
 schedule:
-  - {from: "21:00", to: "07:00", do: dormir,  at: vila_ref/moinho_porta, hidden: true}
-  - {from: "07:00", to: "21:00", do: estudar, at: vila_ref/quintal_cerca}
+  - {from: "21:00", to: "07:00", do: dormir, at: moinho/lareira}
+  - {from: "07:00", to: "21:00", do: estudar, at: vila/quintal_cerca}

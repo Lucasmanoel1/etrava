@@ -55,15 +55,21 @@ public final class WorkerPolicy {
         eat();
         int hour = v.clock().hour();
         for (JobDef job : content.jobs().values()) {
+            if (!dayJob(job)) continue;
+            if (!sim.economy().canWork(job) && !goWhere(job.area(), job.giver())) continue;
             if (sim.economy().canWork(job)) {
                 sim.submit(new Command.Work(job.id()));
                 sim.step();
                 return;
             }
         }
-        if (hour >= SHOP_FROM && hour < SLEEP_FROM && foodStored() < FOOD_RESERVE && shopOpen()) {
-            shop();
-            return;
+        if (hour >= SHOP_FROM && hour < SLEEP_FROM && foodStored() < FOOD_RESERVE) {
+            MerchantDef m = content.merchants().get(shop);
+            if (m != null && !shopOpen()) goWhere(v.npcArea(m.npc()), m.npc());
+            if (shopOpen()) {
+                shop();
+                return;
+            }
         }
         if (hour >= SLEEP_FROM || hour < WAKE_AT - 1) {
             sim.submit(new Command.Sleep());
@@ -92,6 +98,24 @@ public final class WorkerPolicy {
             if (item != null) total += item.food() * e.getValue();
         }
         return total;
+    }
+
+    /** O trabalhador só pega serviço de dia: a vigia noturna do Posto (H4) fica para quem quer briga. */
+    private static boolean dayJob(JobDef job) {
+        return job.from() != null && Integer.parseInt(job.from().substring(0, 2)) < 17;
+    }
+
+    /**
+     * Vai para a área onde alguém está (atalho da simulação headless: o trajeto a pé não muda nada
+     * que a política precise). Devolve true se agora está lá.
+     */
+    private boolean goWhere(String area, String npc) {
+        WorldView v = sim.view();
+        if (area == null || area.equals(v.areaId())) return area != null;
+        if (npc != null && !area.equals(v.npcArea(npc))) return false; // quem dá o serviço não está lá
+        sim.submit(new Command.EnterArea(area, null));
+        sim.step();
+        return area.equals(sim.view().areaId());
     }
 
     private boolean shopOpen() {

@@ -1,0 +1,54 @@
+# Pipo (H1). Some com as maçãs de Celi para dar a um cachorro manco, atrás do feno.
+id: pipo
+start:
+  - {when: {arc: {id: h1_frutas, stage: [celi_descobre, contado]}}, goto: cachorro_celi}
+  - {when: {arc: {id: h1_frutas, stage: segredo_guardado}}, goto: segredo}
+  - {when: {all: [{arc: {id: h1_frutas, stage: sumindo}}, {time: {hourFrom: 17.5, hourTo: 19}}]}, goto: pego}
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Eu não fiz nada."
+    choices:
+      - {text: "Ninguém disse que fez.", goto: entao}
+      - {text: "Fez o quê?", goto: nada}
+  entao:
+    text: "Então tá."
+  nada:
+    text: "Nada! Já disse."
+
+  pego:
+    text: "Shh! Ele tem medo de gente grande."
+    effects: [{learn: {who: player, fact: cachorro_escondido, certainty: witnessed}}]
+    choices:
+      - {text: "De onde saiu esse cachorro?", goto: estrada}
+      - {text: "Essas maçãs são da Celi.", goto: celi}
+  estrada:
+    text: "Da estrada. Tem uma pata ruim. Ele come maçã, sabia? Só as da dona Celi, que são doces."
+    goto: celi
+  celi:
+    text: "Ela tem um monte! Ele não tem nenhuma."
+    choices:
+      - text: "Vou contar a ela."
+        relevant: true
+        channels: [npc, dialogue]
+        effects: [{setFlag: contou_celi_pipo}, {opinion: {npc: npc, add: -15}}]
+        goto: conta
+      - text: "Fica entre nós. Mas troca a maçã por pão. Toma."
+        when: {has: {item: pao}}
+        relevant: true
+        channels: [npc, ambiente]
+        effects: [{take: {item: pao}}, {setFlag: guardou_segredo_pipo}, {opinion: {npc: npc, add: 15}}]
+        goto: pao
+      - {text: "Vou pensar no que faço.", goto: pensa}
+  conta:
+    text: "Se contar, ela bota ele na estrada de novo!"
+  pao:
+    text: "Pão ele também come! Ele come tudo. Até sapato."
+  pensa:
+    text: "Pensa rápido, que ele está com fome."
+
+  cachorro_celi:
+    text: "O nome dele é Toco. A dona Celi que deu. Eu queria Trovão."
+    effects: [{learn: {who: player, fact: cachorro_da_celi, certainty: claim}}]
+  segredo:
+    text: "Ele já anda melhor! Ainda manca, mas acho que é de propósito, para ganhar mais pão."

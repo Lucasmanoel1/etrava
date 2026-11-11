@@ -1,0 +1,16 @@
+# Lauro, apostador da taverna (H3; Cena 1 da lore).
+id: lauro
+name: Lauro
+layer: B
+sprite: personagem.lauro
+dialogue: lauro
+faction: pedra_mansa
+about: "Joga dados na taverna toda noite. Ganha mais do que a sorte explica."
+relations: [{npc: ciro, kind: rivalidade}, {npc: gil, kind: amizade}]
+schedule:
+  - {from: "18:00", to: "00:00", do: festejar, at: vila/taverna_fora, when: {flag: festa}}
+  - {from: "00:30", to: "08:00", do: dormir, at: vila/casa_lauro, hidden: true}
+  - {from: "08:00", to: "12:00", do: carregar, at: vila/celeiro}
+  - {from: "12:00", to: "14:00", do: comer, at: vila/casa_lauro}
+  - {from: "14:00", to: "18:00", do: carregar, at: vila/feno}
+  - {from: "18:00", to: "00:30", do: jogar, at: taverna/mesa_jogo}

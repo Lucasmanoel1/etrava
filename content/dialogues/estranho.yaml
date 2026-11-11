@@ -1,0 +1,61 @@
+# Oren, o homem de fora (A2, Q-08: D-069, proposta). Procura o filho que perdeu na fuga de Mir.
+# Nada do que ele diz confirma nada: são lembranças dele e uma lista de nomes.
+id: estranho
+start:
+  - {when: {arc: {id: a2_avel, stage: [confessa, encontrado, partiu, averiguacao]}}, goto: depois}
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Você é daqui? Procuro gente que veio de Mir. Faz tempo. Vinte e tantos anos."
+    choices:
+      - {text: "Que gente?", goto: quem}
+      - text: "Avel, da oficina, chegou aqui com uma criança. Uns vinte e quatro anos atrás."
+        when: {all: [{knows: {who: player, fact: avel_chegou_com_crianca}}, {not: {flag: estranho_conversou_avel}}]}
+        relevant: true
+        channels: [npc, dialogue]
+        effects: [{setFlag: estranho_conversou_avel}]
+        goto: avel
+      - {text: "Não conheço ninguém de Mir.", goto: ninguem}
+  ninguem:
+    text: "Ninguém conhece. É curioso como Mir não teve gente nenhuma."
+  quem:
+    text: "Um técnico. Mexia com as máquinas de baixo. Saiu na noite do acidente, e dizem que levou umas crianças."
+    effects: [{learn: {who: player, fact: estranho_procura_tecnico, certainty: claim}}]
+    choices:
+      - {text: "Por que procura?", goto: porque}
+      - {text: "Boa sorte."}
+  porque:
+    text: "Uma das crianças podia ser meu filho. Me disseram que ele morreu na estrada. Ninguém me mostrou onde."
+    effects: [{learn: {who: player, fact: oren_procura_filho, certainty: claim}}]
+    choices:
+      - text: "Tem os nomes de quem trabalhava lá?"
+        when: {not: {has: {item: lista_oren}}}
+        goto: lista
+      - {text: "Sinto muito."}
+  lista:
+    text: "Fica com uma cópia. Eu sei de cor; a lista é que não sabe de mim."
+    effects: [{give: {item: lista_oren}}]
+  avel:
+    text: "Avel. Vinte e quatro anos."
+    choices:
+      - {text: "A criança sou eu.", goto: sou_eu}
+      - {text: "Não sei de mais nada.", goto: obrigado}
+  sou_eu:
+    text: "Meu menino tinha uma mancha escura atrás da orelha esquerda. Você tem?"
+    choices:
+      - {text: "Não.", goto: falta}
+      - {text: "Nunca vi atrás da minha orelha.", goto: ninguem_ve}
+  falta:
+    text: "Então ainda falta um."
+  ninguem_ve:
+    text: "Ninguém vê. Por isso a gente pergunta aos outros."
+  obrigado:
+    text: "Já é mais do que me deram em três vilas."
+
+  depois:
+    text: "Vou embora amanhã. Já perguntei tudo o que dava para perguntar."
+    choices:
+      - {text: "Achou o que procurava?", goto: achou}
+      - {text: "Boa estrada."}
+  achou:
+    text: "Achei uma resposta. Não sei se era para a minha pergunta."

@@ -1,0 +1,43 @@
+# Aurel Dask, mestre-registrador de Caldris (DP-06). Fala como quem lê um decreto.
+id: registrador
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Se o senhor tem título de terra, apresente-o até o fim do prazo. Se não tem, apresente-se do mesmo modo."
+    choices:
+      - {text: "Que prazo?", goto: prazo}
+      - {text: "Para que tanta medição?", goto: medir}
+      - text: "Vocês fincaram estaca no cemitério."
+        when: {knows: {who: player, fact: estacas_no_cemiterio}}
+        goto: cemiterio
+      - text: "Viu o buraco no campo de Bento?"
+        when: {arc: {id: a3_estrutura, stage: desabamento}}
+        goto: buraco
+      - text: "Avel, da oficina, chegou aqui com uma criança, há uns vinte e quatro anos. Veio do norte."
+        when: {all: [{knows: {who: player, fact: avel_chegou_com_crianca}}, {arc: {id: a2_avel, stage: comitiva}}, {not: {flag: contou_comitiva_avel}}]}
+        relevant: true
+        channels: [npc, ambiente, dialogue]
+        effects: [{setFlag: contou_comitiva_avel}, {opinion: {npc: npc, add: 10}}]
+        goto: anotado
+      - {text: "Bom dia."}
+  prazo:
+    text: "Trinta dias a partir do edital. Está pregado na taverna, se ninguém o tiver usado para acender o fogo."
+    effects: [{learn: {who: player, fact: edital_caldris, certainty: claim}}]
+  medir:
+    text: "Para que Caldris saiba o que tem. A República não gosta de surpresas no próprio mapa."
+  cemiterio:
+    text: "O traçado é reto. Os mortos, felizmente, não reclamam de desvio."
+    choices:
+      - text: "Os vivos reclamam."
+        relevant: true
+        channels: [npc, dialogue]
+        effects: [{opinion: {npc: npc, add: -8}}, {opinion: {npc: firmino, add: 8}}, {setFlag: reclamou_cemiterio}]
+        goto: anotado_seco
+      - {text: "Entendo."}
+  anotado_seco:
+    text: "Anotado. Reclamações por escrito, em duas vias."
+  buraco:
+    text: "Vi. Constará do relatório. Recomendo que ninguém desça; não por superstição, por responsabilidade civil."
+  anotado:
+    text: "Interessante. A senhora Brask vai querer saber. Caldris agradece a sua colaboração."

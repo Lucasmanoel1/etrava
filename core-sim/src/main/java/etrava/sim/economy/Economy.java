@@ -224,7 +224,7 @@ public final class Economy {
     public boolean use(String itemId, List<SimEvent> events) {
         ItemDef def = content.items().get(itemId);
         if (def == null || !def.usable() || world.inventory.getOrDefault(itemId, 0) <= 0) return false;
-        removeOne(itemId);
+        if (!def.document()) removeOne(itemId); // ler não gasta o papel
         if (def.food() > 0) world.hunger = Math.max(0, world.hunger - def.food());
         story.applyAll(def.useEffects(), null, "item:" + itemId, events);
         events.add(new SimEvent.ItemUsed(itemId));
@@ -332,6 +332,7 @@ public final class Economy {
     /** Ponto do mapa onde fica o contêiner, ou null se ele não está na área carregada. */
     public double[] containerPoint(ContainerDef c) {
         if (!c.wellFormed() || !c.area().equals(world.areaId) || content.area(c.area()) == null) return null;
+        if (!story.test(c.condition(), c.owner())) return null; // ainda não está lá (ou não está mais)
         var p = content.area(c.area()).spots().get(c.spot());
         return p == null ? null : new double[] {p.x(), p.y()};
     }

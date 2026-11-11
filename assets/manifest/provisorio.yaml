@@ -312,3 +312,508 @@
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
+- id: tile.tabuas
+  type: tile
+  files: [tiles/tabuas_1.png, tiles/tabuas_2.png]
+  priority: 6
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: tile.lajota
+  type: tile
+  files: [tiles/lajota_1.png, tiles/lajota_2.png]
+  priority: 4
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: tile.plantio
+  type: tile
+  files: [tiles/plantio_1.png, tiles/plantio_2.png, tiles/plantio_3.png]
+  priority: 8
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_x_lisa
+  type: sprite
+  file: props/interior/parede_x_lisa.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_x_lisa_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_y_lisa
+  type: sprite
+  file: props/interior/parede_y_lisa.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_y_lisa_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_x_janela
+  type: sprite
+  file: props/interior/parede_x_janela.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_x_janela_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_y_janela
+  type: sprite
+  file: props/interior/parede_y_janela.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_y_janela_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_x_porta
+  type: sprite
+  file: props/interior/parede_x_porta.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_x_porta_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_y_porta
+  type: sprite
+  file: props/interior/parede_y_porta.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_y_porta_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_x_prateleira
+  type: sprite
+  file: props/interior/parede_x_prateleira.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_x_prateleira_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_y_prateleira
+  type: sprite
+  file: props/interior/parede_y_prateleira.png
+  anchor: [25, 53]
+  emissive: props/interior/parede_y_prateleira_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.parede_canto
+  type: sprite
+  file: props/interior/parede_canto.png
+  anchor: [10, 53]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.mesa
+  type: sprite
+  file: props/interior/mesa.png
+  anchor: [33, 30]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.mesa_longa
+  type: sprite
+  file: props/interior/mesa_longa.png
+  anchor: [33, 30]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.banco
+  type: sprite
+  file: props/interior/banco.png
+  anchor: [30, 25]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.cama
+  type: sprite
+  file: props/interior/cama.png
+  anchor: [33, 33]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.balcao
+  type: sprite
+  file: props/interior/balcao.png
+  anchor: [41, 38]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.lareira
+  type: sprite
+  file: props/interior/lareira.png
+  anchor: [33, 60]
+  emissive: props/interior/lareira_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.bancada
+  type: sprite
+  file: props/interior/bancada.png
+  anchor: [38, 38]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.bau
+  type: sprite
+  file: props/interior/bau.png
+  anchor: [21, 25]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.sacos
+  type: sprite
+  file: props/interior/sacos.png
+  anchor: [25, 28]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.mo
+  type: sprite
+  file: props/interior/mo.png
+  anchor: [33, 38]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.ervas
+  type: sprite
+  file: props/interior/ervas.png
+  anchor: [25, 50]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.bigorna
+  type: sprite
+  file: props/bigorna.png
+  anchor: [21, 25]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.forja
+  type: sprite
+  file: props/forja.png
+  anchor: [53, 75]
+  emissive: props/forja_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.cerca_x
+  type: sprite
+  file: props/cerca_x.png
+  anchor: [19, 20]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.cerca_y
+  type: sprite
+  file: props/cerca_y.png
+  anchor: [19, 20]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.lapide
+  type: sprite
+  file: props/lapide.png
+  anchor: [15, 28]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.lapide_b
+  type: sprite
+  file: props/lapide_b.png
+  anchor: [15, 28]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.estaca
+  type: sprite
+  file: props/estaca.png
+  anchor: [10, 25]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.marco
+  type: sprite
+  file: props/marco.png
+  anchor: [13, 20]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.tenda
+  type: sprite
+  file: props/tenda.png
+  anchor: [45, 50]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.carroca
+  type: sprite
+  file: props/carroca.png
+  anchor: [40, 38]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.banca
+  type: sprite
+  file: props/banca.png
+  anchor: [43, 55]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.espantalho
+  type: sprite
+  file: props/espantalho.png
+  anchor: [18, 50]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.arvore_fruto
+  type: sprite
+  file: props/arvore_fruto.png
+  anchor: [38, 80]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.arvore_fruto_b
+  type: sprite
+  file: props/arvore_fruto_b.png
+  anchor: [38, 80]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.terra_remexida
+  type: sprite
+  file: props/terra_remexida.png
+  anchor: [33, 23]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.vazio
+  type: sprite
+  file: props/vazio.png
+  anchor: [1, 1]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.placa
+  type: sprite
+  file: props/placa.png
+  anchor: [20, 48]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.pedras
+  type: sprite
+  file: props/pedras.png
+  anchor: [20, 18]
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_curandeira
+  type: sprite
+  file: props/casa_curandeira.png
+  anchor: [87, 118]
+  emissive: props/casa_curandeira_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_media
+  type: sprite
+  file: props/casa_media.png
+  anchor: [103, 132]
+  emissive: props/casa_media_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_estreita
+  type: sprite
+  file: props/casa_estreita.png
+  anchor: [95, 125]
+  emissive: props/casa_estreita_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.celeiro
+  type: sprite
+  file: props/celeiro.png
+  anchor: [127, 158]
+  emissive: props/celeiro_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: prop.casa_posto
+  type: sprite
+  file: props/casa_posto.png
+  anchor: [143, 163]
+  emissive: props/casa_posto_brilho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.avel
+  type: spritesheet
+  file: personagens/avel.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.estranho
+  type: spritesheet
+  file: personagens/estranho.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.registrador
+  type: spritesheet
+  file: personagens/registrador.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.agrimensora
+  type: spritesheet
+  file: personagens/agrimensora.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.bento
+  type: spritesheet
+  file: personagens/bento.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.gil
+  type: spritesheet
+  file: personagens/gil.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.pipo
+  type: spritesheet
+  file: personagens/pipo.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.lauro
+  type: spritesheet
+  file: personagens/lauro.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.ciro
+  type: spritesheet
+  file: personagens/ciro.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.anselmo
+  type: spritesheet
+  file: personagens/anselmo.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.lina
+  type: spritesheet
+  file: personagens/lina.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.tobias
+  type: spritesheet
+  file: personagens/tobias.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.vessa
+  type: spritesheet
+  file: personagens/vessa.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: personagem.firmino
+  type: spritesheet
+  file: personagens/firmino.png
+  frame: [24, 32]
+  anchor: [12, 28]
+  directions: 8
+  animations:
+    idle: {start: 0, frames: 4, fps: 3}
+    walk: {start: 4, frames: 8, fps: 11}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+

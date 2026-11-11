@@ -1,0 +1,15 @@
+# Tobias, carregador do Posto.
+id: tobias
+name: Tobias
+layer: B
+sprite: personagem.tobias
+dialogue: tobias
+faction: posto
+about: "Carregador do Posto. Levanta um fardo de sal com cada mão e pede desculpa quando esbarra."
+relations: [{npc: comerciante_posto, kind: amizade}]
+schedule:
+  - {from: "21:00", to: "05:00", do: dormir, at: estrada/posto_porta, hidden: true}
+  - {from: "05:00", to: "12:00", do: carregar, at: estrada/posto_carga}
+  - {from: "12:00", to: "13:00", do: comer, at: estrada/posto_fogo}
+  - {from: "13:00", to: "19:00", do: carregar, at: estrada/posto_carga}
+  - {from: "19:00", to: "21:00", do: conversar, at: estrada/posto_fogo}

@@ -38,7 +38,7 @@ class StoryTest {
     }
 
     private static Simulation newSim(long seed) {
-        return Simulation.newGame(content, seed, "vila_ref");
+        return Simulation.newGame(content, seed, "vila");
     }
 
     /** Leva o arco da árvore, estágio por estágio, até onde o teste precisa (cada um ensina fatos aos NPCs). */
@@ -56,8 +56,13 @@ class StoryTest {
         return Math.round(h * sim.view().clock().ticksPerHour());
     }
 
-    /** Manda falar com o NPC e anda até a conversa abrir. */
+    /** Vai até a área do NPC (atalho de teste), manda falar com ele e anda até a conversa abrir. */
     private static DialogueView talk(Simulation sim, String npc) {
+        String area = sim.view().npcArea(npc);
+        if (area != null && !area.equals(sim.view().areaId())) {
+            sim.submit(new Command.EnterArea(area, null));
+            sim.step();
+        }
         sim.submit(new Command.Talk(npc));
         for (int i = 0; i < 30 * 40 && sim.view().dialogue() == null; i++) sim.step();
         assertNotNull(sim.view().dialogue(), "a conversa com " + npc + " deveria ter começado");
@@ -142,8 +147,8 @@ class StoryTest {
         assertTrue(tree.spreads());
         assertFalse(content.facts().get("curandeira_olhou_arvore").spreads());
         assertEquals(1, content.facts().get("curandeira_olhou_arvore").layerIndex());
-        assertEquals(8, content.dialogues().size());
-        assertEquals(5, content.ambients().size());
+        assertTrue(content.dialogues().size() >= 20, "uma conversa por NPC com fala");
+        assertTrue(content.ambients().size() >= 40, "PRD 13.2: 40 conversas ambientes");
         assertEquals("Você", content.text("dialogo.voce", "?"));
         assertEquals("padrão", content.text("chave.que.nao.existe", "padrão"));
         assertEquals("retrato.moleiro", content.npcs().get("moleiro").portraitId());
@@ -161,7 +166,9 @@ class StoryTest {
         assertTrue(sim.view().npcKnowledge("ferreiro").isEmpty());
         assertEquals(10, sim.view().opinion("moleiro"));
         assertEquals(0, sim.view().opinion("aldea"));
-        assertTrue(sim.view().knowledge().isEmpty(), "o jogador começa sem nada no caderno");
+        // o caderno começa só com o que a origem diz que o aprendiz já sabe
+        assertEquals(content.origin().knowList().size(), sim.view().knowledge().size());
+        assertTrue(sim.view().knowledge().stream().allMatch(k -> k.source().equals("inicio")));
         assertNull(sim.view().dialogue());
     }
 
@@ -171,7 +178,7 @@ class StoryTest {
     void caminhoDaMo_conversaPausaOMundo() {
         Simulation sim = newSim(1);
         DialogueView d = talk(sim, "moleiro");
-        assertEquals("Moleiro", d.npcName());
+        assertEquals("Tomé, o moleiro", d.npcName());
         assertEquals("retrato.moleiro", d.portrait());
         assertEquals("Se é farinha, só amanhã. A mó está parada.", d.text());
         // sem ter ouvido falar da árvore, esse caminho nem aparece
@@ -247,7 +254,7 @@ class StoryTest {
         KnowledgeEntry clue = entry(sim, "curandeira_olhou_arvore", "npc:moleiro");
         assertEquals("claim", clue.certainty(), "pista de camada V1 chega como afirmação de alguém, não como verdade");
         assertEquals(1, clue.day());
-        assertEquals("vila_ref", clue.place());
+        assertEquals("moinho", clue.place(), "anotado onde a conversa aconteceu");
         assertEquals("claim", entry(sim, "arvore_tira_algo", "npc:moleiro").certainty());
         assertEquals(16, sim.view().opinion("moleiro"));
     }
@@ -318,13 +325,13 @@ class StoryTest {
         sim.submit(new Command.Talk("estudioso")); // ainda nem chegou ao vilarejo
         run(sim, 10);
         assertNull(sim.view().dialogue());
-        // o homem de fora não tem conversa escrita: só resmunga
+        // quando o estudioso chega, já tem o que dizer
         sim.applyNow(List.of(new Effect.NpcStatus("estudioso", "present")));
         sim.fastForward(hours(sim, 1.5));
-        sim.submit(new Command.Talk("estudioso"));
-        List<SimEvent> events = run(sim, 30 * 30);
+        talk(sim, "estudioso");
+        sim.submit(new Command.LeaveDialogue());
+        sim.step();
         assertNull(sim.view().dialogue());
-        assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.AmbientLine l && l.npcId().equals("estudioso")));
 
         talk(sim, "aldea");
         SaveException e = assertThrows(SaveException.class, () -> sim.save(dir.resolve("x.etrava"), ""));

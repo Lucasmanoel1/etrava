@@ -1,0 +1,18 @@
+# Bento, lavrador; dono do campo onde a terra cede (A3) e de um lado da divisa (H2).
+id: bento
+name: Bento
+layer: B
+sprite: personagem.bento
+dialogue: bento
+faction: pedra_mansa
+about: "Lavrador. Tem o campo maior e a certeza maior ainda de que a faixa da divisa é dele."
+relations: [{npc: pipo, kind: familia}, {npc: gil, kind: rivalidade}, {npc: moleiro, kind: amizade}]
+schedule:
+  - {from: "17:00", to: "18:00", do: olhar, at: vila/beira_buraco, when: {arc: {id: a3_estrutura, stage: desabamento}}}
+  - {from: "18:00", to: "23:00", do: festejar, at: vila/praca_norte, when: {flag: festa}}
+  - {from: "21:00", to: "05:00", do: dormir, at: vila/casa_bento, hidden: true}
+  - {from: "05:00", to: "12:00", do: lavrar, at: vila/campo_bento}
+  - {from: "12:00", to: "13:00", do: comer, at: vila/casa_bento}
+  - {from: "13:00", to: "17:00", do: lavrar, at: vila/campo_bento}
+  - {from: "17:00", to: "18:00", do: vigiar, at: vila/divisa}
+  - {from: "18:00", to: "21:00", do: beber, at: taverna/mesa_fundo}

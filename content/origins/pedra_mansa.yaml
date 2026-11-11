@@ -1,8 +1,9 @@
 # Origem I — O aprendiz de Pedra-Mansa (PRD 8.4). Pacote de dados: outra origem = outro arquivo.
-# No M5: dinheiro, itens, equipamento e habilidades iniciais. Local inicial, relações,
-# conhecimentos e arcos pessoais entram no M7.
+# O personagem acorda na oficina de Avel, numa manhã comum, com um serviço por terminar (lore 5).
 id: pedra_mansa
 name: O aprendiz de Pedra-Mansa
+description: "Você cresceu na oficina de Avel, que diz ser seu tio, no interior das Terras de Ferrugem. Sabe consertar uma dobradiça, carregar um saco e ficar quieto quando convém. Pedra-Mansa é tudo o que você conhece."
+start: oficina/jogador
 money: 8
 items:
   - {item: pao, qty: 2}
@@ -17,3 +18,10 @@ skills:
   labia: 8
   observacao: 12
   comercio: 5
+# O que o aprendiz já sabe da própria vida: o vilarejo inteiro sabe, e ninguém comenta.
+knows: [avel_chegou_com_crianca, doran_avel_amigos, marta_agua_na_cerveja]
+opinions:
+  avel: 10
+  ferreiro: 10
+  taberneira: 5
+flags: [aprendiz_de_avel]

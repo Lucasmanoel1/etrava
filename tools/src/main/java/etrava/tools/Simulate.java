@@ -25,7 +25,7 @@ public final class Simulate {
         Path content = Path.of("content");
         int days = 30;
         long seed = 1;
-        String policy = "parado", area = "vila_ref";
+        String policy = "parado", area = null; // null = onde a origem começa (a oficina)
         double pace = Simulation.PACE_NORMAL;
         boolean brief = false;
         for (int i = 0; i < args.length; i++) {

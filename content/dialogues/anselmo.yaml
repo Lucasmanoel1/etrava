@@ -1,0 +1,27 @@
+# O velho Anselmo (H5). Diz coisas sem pé nem cabeça que às vezes têm os dois.
+id: anselmo
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Senta. Não para conversar: para ficar sentado. Faz bem."
+    choices:
+      - {text: "O que o senhor faz tanto no cemitério?", goto: cemiterio}
+      - text: "Já viu árvore morta voltar?"
+        when: {knows: {who: player, fact: arvore_voltou}}
+        goto: arvore
+      - text: "As estacas de Caldris atravessam o cemitério."
+        when: {knows: {who: player, fact: estacas_no_cemiterio}}
+        goto: eu_disse
+      - text: "O senhor disse na festa que o trem vai passar por cima dos mortos."
+        when: {all: [{knows: {who: player, fact: anselmo_trem_cemiterio}}, {not: {knows: {who: player, fact: estacas_no_cemiterio}}}]}
+        goto: disse
+      - {text: "Fico em pé mesmo."}
+  cemiterio:
+    text: "Visito. Lá eu conheço mais gente do que aqui."
+  arvore:
+    text: "Já. Meu avô fazia isso toda primavera. Chamava-se plantar outra."
+  disse:
+    text: "Disse? Então deve ser verdade. Eu bebo pouco."
+  eu_disse:
+    text: "Eu disse. Ninguém escuta velho até o velho estar certo, e aí é tarde."

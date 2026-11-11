@@ -28,7 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 /** M6: combate, inimigos, fuga e rendição, derrota não letal e morte, estrutura enterrada e luz (AT-13, AT-14). */
 class CombatTest {
-    private static final String ROAD = "area_teste", RUIN = "estrutura";
+    private static final String ROAD = "estrada", RUIN = "estrutura";
     private static ContentDb content;
 
     @BeforeAll
@@ -92,10 +92,10 @@ class CombatTest {
         assertEquals(3, content.enemies().size());
         assertTrue(content.enemies().get("saqueador").human());
         assertTrue(content.enemies().get("vulto").fearsLight());
-        assertEquals(3, content.encounters().size());
+        assertEquals(4, content.encounters().size());
         ContentDb.AreaEntry ruin = content.areaEntry(RUIN);
         assertTrue(ruin.dark() && ruin.lethal());
-        assertEquals("area_teste/beira_estrada", content.areaEntry(ROAD).wakeAt());
+        assertEquals("estrada/beira_estrada", content.areaEntry(ROAD).wakeAt());
         assertEquals(List.of(), ContentValidator.validate(content));
     }
 
@@ -136,7 +136,7 @@ class CombatTest {
     void at13_nenhumArcoExigeVencerCombate() {
         // o validador já confere caminho pacífico até cada desfecho (conteudoDoM6CarregaEValida);
         // aqui, a prova em jogo: 30 dias sem lutar e todo arco chega a um desfecho
-        Simulation sim = Simulation.newGame(content, 11, "vila_ref");
+        Simulation sim = Simulation.newGame(content, 11, "vila");
         sim.fastForward(hours(sim, 24 * 30));
         for (var e : sim.view().arcs().entrySet())
             assertNotNull(sim.arcOutcome(e.getKey()), "arco sem desfecho sem combate: " + e.getKey());
@@ -384,7 +384,7 @@ class CombatTest {
 
     @Test
     void saveDaVersao4CarregaComVidaCheia(@TempDir Path dir) throws Exception {
-        Simulation sim = Simulation.newGame(content, 8, "vila_ref");
+        Simulation sim = Simulation.newGame(content, 8, "vila");
         Path file = dir.resolve("v5.etrava");
         sim.save(file, "x");
         // reescreve o state.json como a versão 4 gravava: sem o bloco de combate
@@ -416,10 +416,15 @@ class CombatTest {
 
     @Test
     void descerPeloBuraco_aEstruturaEEscura_eALamparinaAumentaOQueSeVe() {
-        Simulation sim = Simulation.newGame(content, 12, ROAD);
+        Simulation sim = Simulation.newGame(content, 12, "vila");
         at(sim, 12);
-        assertEquals(Double.POSITIVE_INFINITY, sim.combat().lightRadius(), "de dia, na estrada, vê-se tudo");
-        var hole = content.area(ROAD).spots().get("buraco");
+        assertEquals(Double.POSITIVE_INFINITY, sim.combat().lightRadius(), "de dia, no vilarejo, vê-se tudo");
+        // o buraco só leva para baixo depois que a terra cede no campo de Bento (A3)
+        var hole = content.area("vila").spots().get("buraco");
+        step(sim, new Command.Teleport(hole.x() - 2, hole.y()));
+        for (int i = 0; i < 45; i++) step(sim, new Command.MoveDir(1, 0));
+        assertEquals("vila", sim.view().areaId(), "com a terra fechada, não há por onde descer");
+        sim.applyNow(List.of(new Effect.SetProp("buraco_campo", "aberto")));
         step(sim, new Command.Teleport(hole.x() - 2, hole.y()));
         List<SimEvent> ev = new ArrayList<>();
         for (int i = 0; i < 90 && RUIN.equals(sim.view().areaId()) == false; i++)
@@ -457,7 +462,7 @@ class CombatTest {
 
     @Test
     void vidaVoltaComOTempo_eUnguentoCura() {
-        Simulation sim = Simulation.newGame(content, 14, "vila_ref");
+        Simulation sim = Simulation.newGame(content, 14, "vila");
         sim.stateWorld().health = 20;
         sim.fastForward(hours(sim, 1));
         assertEquals(20 + 6 * Combat.HEAL_PER_10_MIN, sim.view().health(), 1e-9);

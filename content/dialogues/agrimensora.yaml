@@ -1,0 +1,51 @@
+# Sena Brask, agrimensora de Caldris. Pergunta por Mir por motivo dela. É por ela que a divisa pode
+# virar caminho de novo (H2), se alguém lhe mostrar o que diz o livro de Firmino.
+id: agrimensora
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Cuidado com a corda. Cada nó é um passo de Caldris."
+    choices:
+      - text: "Por que você pergunta por Mir?"
+        when: {knows: {who: player, fact: agrimensora_pergunta_mir}}
+        goto: mir
+      - {text: "Essa linha de vocês passa por onde?", goto: linha}
+      - text: "A faixa da divisa: vocês deram para Gil."
+        when: {arc: {id: h2_divisa, stage: [disputa, demarcada]}}
+        goto: divisa
+      - {text: "Bom serviço."}
+  mir:
+    text: "Minha mãe era de lá. Não sobrou túmulo. Às vezes sobra gente que lembra."
+    choices:
+      - {text: "Alguém aqui pode ter vindo de lá.", goto: talvez}
+      - {text: "Sinto muito."}
+  talvez:
+    text: "Talvez. Aqui ninguém diz de onde veio. É educação ou é medo, e eu nunca sei qual."
+  linha:
+    text: "Reto, do marco da Encruzilhada até o vau do sul."
+    choices:
+      - text: "Me deixa ver a folha?"
+        tag: Lábia
+        when: {all: [{skill: {name: labia, min: 12}}, {not: {knows: {who: player, fact: tracado_ferrovia}}}]}
+        goto: folha
+      - {text: "Reto por cima do quê?", goto: por_cima}
+  folha:
+    text: "Olha e me devolve com os olhos. A folha fica comigo."
+    effects: [{learn: {who: player, fact: tracado_ferrovia, certainty: read}}]
+  por_cima:
+    text: "Do que estiver no caminho. É o que reto quer dizer."
+  divisa:
+    text: "Dei a faixa ao papel que Gil me mostrou. Bento não me mostrou papel nenhum."
+    choices:
+      - text: "A faixa era o caminho dos enterros. Está no livro de Firmino."
+        when: {all: [{knows: {who: player, fact: divisa_era_caminho}}, {not: {flag: acordo_divisa}}]}
+        relevant: true
+        channels: [ambiente, npc, dialogue]
+        effects: [{setFlag: acordo_divisa}, {opinion: {npc: npc, add: 6}}, {opinion: {npc: firmino, add: 6}}]
+        goto: caminho
+      - {text: "Bento não sabe ler.", goto: ler}
+  caminho:
+    text: "Caminho público. Então não é de nenhum dos dois. Nem de Caldris, por enquanto. Vou riscar as estacas da folha."
+  ler:
+    text: "Então que aprenda. Caldris escreve muito."

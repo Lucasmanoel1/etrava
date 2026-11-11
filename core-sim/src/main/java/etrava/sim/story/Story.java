@@ -52,8 +52,11 @@ public final class Story {
     public static final double CLOSE_FACTOR = 1.5, RIVAL_FACTOR = 0.4;
     /** Fonte do conhecimento que vem de arcos e eventos, não de uma pessoa. */
     public static final String WORLD = "mundo";
+    /** Flag de quem o jogador já conversou: {@code conheceu.<npc>} (aba Pessoas do caderno). */
+    public static final String MET = "conheceu.";
     private static final int LINE_TICKS = 80, AMBIENT_CHECK_TICKS = 25;
-    private static final String PLAYER = "player", THIS_NPC = "npc", SLEEPING = "dormir";
+    public static final String PLAYER = "player";
+    private static final String THIS_NPC = "npc", SLEEPING = "dormir";
 
     /** Como o {@link Story} pede à simulação para agendar efeitos. */
     public interface Scheduler {
@@ -159,6 +162,7 @@ public final class Story {
                 yield (r.min() == null || value >= r.min()) && (r.max() == null || value <= r.max());
             }
             case Condition.Job j -> economy.canWork(content.jobs().get(j.id()));
+            case Condition.Here h -> h.area().equals(world.areaId);
         };
     }
 
@@ -409,6 +413,7 @@ public final class Story {
         }
         DialogueSession session = new DialogueSession(dialogue.id(), npcId, def.displayName(), def.portraitId());
         world.dialogue = session;
+        world.flags.put(MET + npcId, true); // aba Pessoas do caderno
         events.add(new SimEvent.DialogueOpened(npcId));
         for (DialogueDef.Start s : dialogue.start()) {
             if (test(s.when(), npcId)) {
@@ -427,6 +432,19 @@ public final class Story {
             return;
         }
         String text = node.text();
+        if (!node.branch().isEmpty()) { // desvio: a sorte ou o estado do mundo decidem o próximo nó
+            applyAll(node.effects(), session.npcId, "npc:" + session.npcId, events);
+            for (DialogueDef.Start b : node.branch()) {
+                if (test(b.when(), session.npcId)) {
+                    enter(session, dialogue, b.target(), events);
+                    return;
+                }
+            }
+            if (text.isBlank()) {
+                close(events);
+                return;
+            }
+        }
         if (node.gossip() != null) { // nó de novidades: conta algo que o jogador ainda não sabe (RF-125)
             KnowledgeEntry news = news(session.npcId);
             DialogueDef.Node fallback = dialogue.nodes().get(node.gossip());
@@ -440,7 +458,7 @@ public final class Story {
         }
         session.nodeId = nodeId;
         String speaker = node.speaker() != null ? node.speaker() : session.npcId;
-        applyAll(node.effects(), session.npcId, "npc:" + speaker, events);
+        if (node.branch().isEmpty()) applyAll(node.effects(), session.npcId, "npc:" + speaker, events);
         NpcDef speakerDef = content.npcs().get(speaker);
         session.speakerName = speakerDef != null ? speakerDef.displayName() : session.npcName;
         session.text = text;

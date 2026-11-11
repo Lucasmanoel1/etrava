@@ -1,7 +1,8 @@
-# Conversas ambientes: NPCs falando entre si, sem pausar o jogo (RF-088).
-# Só tocam quando os participantes estão juntos e o jogador está por perto.
-# Quem ouvir até o fim fica sabendo dos `facts`, como rumor.
+# Conversas ambientes de Pedra-Mansa ao ar livre (RF-088): NPCs falando entre si, sem pausar o
+# jogo. Só tocam quando os participantes estão juntos (a até 6 m), parados e à vista, e o jogador
+# está por perto. Quem ouvir até o fim fica sabendo dos `facts`, como rumor.
 
+# ---------------------------------------------------------------- praça e poço
 - id: arvore_na_praca
   participants: [aldea, taberneira]
   when: {all: [{time: {hourFrom: 14, hourTo: 15}}, {knows: {who: aldea, fact: arvore_voltou}}]}
@@ -14,26 +15,6 @@
     - {speaker: aldea, text: "Aquela estava morta desde que a mãe da menina se foi."}
     - {speaker: taberneira, text: "Então alguém regou."}
   facts: [arvore_voltou]
-
-- id: apostas
-  participants: [viajante, moleiro]
-  when: {time: {hourFrom: 18, hourTo: 20}}
-  cooldownHours: 24
-  lines:
-    - {speaker: viajante, text: "Você sempre diz que eu roubei quando perde."}
-    - {speaker: moleiro, text: "Porque você sempre rouba."}
-    - {speaker: viajante, text: "Então por que continua apostando comigo?"}
-    - {speaker: moleiro, text: "Porque um dia você fica honesto."}
-
-- id: sal_no_posto
-  participants: [viajante, aldea]
-  when: {all: [{time: {hourFrom: 18, hourTo: 20}}, {knows: {who: viajante, fact: sal_subiu}}]}
-  cooldownHours: 0
-  lines:
-    - {speaker: viajante, text: "No Posto, o sal de remédio dobrou."}
-    - {speaker: aldea, text: "Dobrou de preço ou de tamanho?"}
-    - {speaker: viajante, text: "De preço. O tamanho continua pequeno."}
-  facts: [sal_subiu]
 
 - id: curandeira_no_banco
   participants: [curandeira, aldea]
@@ -56,3 +37,208 @@
     - {speaker: taberneira, text: "E a menina?"}
     - {speaker: aldea, text: "Dormiu até o meio-dia. Depois chorou até a noite."}
   facts: [arvore_cortada]
+
+- id: macas_e_velhice
+  participants: [aldea, anselmo]
+  when: {all: [{time: {hourFrom: 15, hourTo: 18}}, {arc: {id: h1_frutas, stage: sumindo}}]}
+  cooldownHours: 48
+  lines:
+    - {speaker: aldea, text: "Somem maçãs, seu Anselmo. Toda tarde."}
+    - {speaker: anselmo, text: "Na minha idade some tudo. Maçã é o de menos."}
+    - {speaker: aldea, text: "O senhor não está ajudando."}
+    - {speaker: anselmo, text: "Não estou. Mas estou sentado aqui, que já é alguma coisa."}
+  facts: [frutas_somem]
+
+- id: cachorro_come_maca
+  participants: [pipo, anselmo]
+  when: {all: [{time: {hourFrom: 15, hourTo: 17.5}}, {arc: {id: h1_frutas, stage: sumindo}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: pipo, text: "Seu Anselmo. Cachorro come maçã?"}
+    - {speaker: anselmo, text: "Cachorro come o que tiver. Feito menino."}
+    - {speaker: pipo, text: "Eu só perguntei."}
+    - {speaker: anselmo, text: "Eu só respondi."}
+
+- id: cheiro_do_cha
+  participants: [curandeira, anselmo]
+  when: {time: {hourFrom: 17, hourTo: 18}}
+  cooldownHours: 72
+  lines:
+    - {speaker: curandeira, text: "Tomou o chá que eu deixei?"}
+    - {speaker: anselmo, text: "Tomei o cheiro."}
+    - {speaker: curandeira, text: "Cheiro não cura."}
+    - {speaker: anselmo, text: "O chá também não. Mas o cheiro é mais barato."}
+
+- id: homem_de_fora_no_poco
+  participants: [estranho, aldea]
+  when: {time: {hourFrom: 7, hourTo: 9}}
+  cooldownHours: 0
+  lines:
+    - {speaker: estranho, text: "A senhora mora aqui faz tempo?"}
+    - {speaker: aldea, text: "Senhora é a minha mãe. Moro desde sempre. Por quê?"}
+    - {speaker: estranho, text: "Procuro alguém que chegou de fora, há muitos anos. Com uma criança."}
+    - {speaker: aldea, text: "Aqui todo mundo tem criança. Às vezes até a própria."}
+  facts: [forasteiro_pergunta]
+
+- id: papel_de_terra
+  participants: [aldea, taberneira]
+  when: {all: [{time: {hourFrom: 14, hourTo: 15}}, {arc: {id: a2_avel, stage: [comitiva, carta]}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: taberneira, text: "Viu o homem de Caldris? Tem óculos para ler até a cara da gente."}
+    - {speaker: aldea, text: "Dizem que quem não tiver papel perde a terra."}
+    - {speaker: taberneira, text: "Eu tenho papel. Não sei onde, mas tenho."}
+  facts: ["comitiva_registra_terras:medo"]
+
+- id: puxa_com_a_boca
+  participants: [taberneira, lina]
+  when: {time: {hourFrom: 8, hourTo: 9.5}}
+  cooldownHours: 96
+  lines:
+    - {speaker: taberneira, text: "Puxa com as costas, não com o braço."}
+    - {speaker: lina, text: "Puxo com o que eu tenho."}
+    - {speaker: taberneira, text: "Então puxa com a boca, que é o que você mais usa."}
+
+- id: agua_e_vozes
+  participants: [nalia, aldea]
+  when: {all: [{time: {hourFrom: 6, hourTo: 8}}, {arc: {id: a1_nalia, stage: [vozes, impasse]}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: aldea, text: "Você está branca, menina."}
+    - {speaker: nalia, text: "É a farinha."}
+    - {speaker: aldea, text: "Farinha não deixa olheira."}
+    - {speaker: nalia, text: "De noite tem gente falando no quintal. Baixinho. Com a voz da minha mãe."}
+  facts: [nalia_ouve_vozes]
+
+# ---------------------------------------------------------------- pomar, quintal e lavoura
+- id: contar_macas
+  participants: [aldea, lina]
+  when: {all: [{time: {hourFrom: 10, hourTo: 12}}, {arc: {id: h1_frutas, stage: sumindo}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: aldea, text: "Conta comigo. Desta árvore."}
+    - {speaker: lina, text: "Dezenove."}
+    - {speaker: aldea, text: "Ontem eram vinte e cinco."}
+    - {speaker: lina, text: "Ontem você contou com fome."}
+  facts: [frutas_somem]
+
+- id: folhas_novas
+  participants: [nalia, lina]
+  when: {all: [{time: {hourFrom: 14, hourTo: 17}}, {arc: {id: a1_nalia, stage: restauracao}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: lina, text: "Tem folha nova."}
+    - {speaker: nalia, text: "Tem. Conta comigo."}
+    - {speaker: lina, text: "Contar o quê?"}
+    - {speaker: nalia, text: "As folhas. Toda manhã tem mais."}
+  facts: [arvore_voltou]
+
+- id: uma_cara
+  participants: [nalia, lina]
+  when: {all: [{time: {hourFrom: 14, hourTo: 17}}, {arc: {id: a1_nalia, stage: [insonia, vozes]}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: lina, text: "Você está com uma cara."}
+    - {speaker: nalia, text: "É a única que eu tenho."}
+    - {speaker: lina, text: "Dormiu?"}
+    - {speaker: nalia, text: "Fiquei ouvindo."}
+  facts: [nalia_nao_dorme]
+
+- id: terra_mole
+  participants: [bento, moleiro]
+  when: {all: [{time: {hourFrom: 13, hourTo: 17}}, {arc: {id: a3_estrutura, stage: antes}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: bento, text: "A terra está mole demais neste canto."}
+    - {speaker: moleiro, text: "Terra mole é bom."}
+    - {speaker: bento, text: "Mole assim, não. Pisa. Parece que tem nada embaixo."}
+    - {speaker: moleiro, text: "Embaixo de tudo tem alguma coisa, Bento."}
+
+- id: terra_cedeu
+  participants: [bento, moleiro]
+  when: {all: [{time: {hourFrom: 13, hourTo: 17}}, {arc: {id: a3_estrutura, stage: desabamento}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: moleiro, text: "Desceu alguém lá?"}
+    - {speaker: bento, text: "O Pipo quis. Puxei pela orelha."}
+    - {speaker: moleiro, text: "E o que tem?"}
+    - {speaker: bento, text: "Pedra. Pedra cortada. E uma escada de mão, velha, que não fui eu que pus."}
+  facts: [campo_cedeu]
+
+- id: com_caroco
+  participants: [bento, pipo]
+  when: {all: [{time: {hourFrom: 9, hourTo: 12}}, {arc: {id: h1_frutas, stage: sumindo}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: bento, text: "Cadê as maçãs que estavam no seu bolso?"}
+    - {speaker: pipo, text: "Comi."}
+    - {speaker: bento, text: "Com caroço?"}
+    - {speaker: pipo, text: "Com caroço."}
+
+- id: meio_papel
+  participants: [gil, agrimensora]
+  when: {time: {hourFrom: 6, hourTo: 12}}
+  cooldownHours: 0
+  lines:
+    - {speaker: gil, text: "Daqui até a pedra grande é meu. Desde o marco."}
+    - {speaker: agrimensora, text: "O senhor tem documento?"}
+    - {speaker: gil, text: "Tenho a palavra do meu pai."}
+    - {speaker: agrimensora, text: "Seu pai assina?"}
+    - {speaker: gil, text: "Assinava."}
+  facts: [divisa_disputada]
+
+- id: nem_olhou
+  participants: [avel, bento]
+  when: {all: [{time: {hourFrom: 17, hourTo: 18.5}}, {arc: {id: a3_estrutura, stage: desabamento}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: bento, text: "Já viu isso, Avel? As marcas na pedra?"}
+    - {speaker: avel, text: "Não."}
+    - {speaker: bento, text: "Você nem olhou."}
+    - {speaker: avel, text: "Tapa isso antes da chuva."}
+  facts: [avel_olhou_buraco, avel_reconheceu_simbolos]
+
+- id: lima_fina
+  participants: [avel, ferreiro]
+  when: {time: {hourFrom: 17, hourTo: 18.5}}
+  cooldownHours: 96
+  lines:
+    - {speaker: ferreiro, text: "Me empresta a lima fina."}
+    - {speaker: avel, text: "Te emprestei em março."}
+    - {speaker: ferreiro, text: "E devolvi em abril."}
+    - {speaker: avel, text: "Devolveu outra."}
+
+# ---------------------------------------------------------------- cemitério
+- id: lugar_guardado
+  participants: [firmino, anselmo]
+  when: {time: {hourFrom: 11, hourTo: 12}}
+  cooldownHours: 72
+  lines:
+    - {speaker: anselmo, text: "Guarda um lugar para mim, Firmino."}
+    - {speaker: firmino, text: "Guardo faz dez anos. Você é que não usa."}
+    - {speaker: anselmo, text: "Estou testando a paciência dele."}
+    - {speaker: firmino, text: "O livro já tem a sua linha. Só falta a data."}
+  facts: [firmino_conhece_mortos]
+
+- id: estaca_na_cova
+  participants: [firmino, anselmo]
+  when: {all: [{time: {hourFrom: 11, hourTo: 12}}, {prop: {key: estacas_cemiterio, state: fincada}}]}
+  cooldownHours: 0
+  lines:
+    - {speaker: firmino, text: "Fincaram estaca na cova da Rosália."}
+    - {speaker: anselmo, text: "Eu disse."}
+    - {speaker: firmino, text: "Você diz tudo. Uma hora acerta."}
+    - {speaker: anselmo, text: "Uma hora. Esta."}
+  facts: [estacas_no_cemiterio, anselmo_trem_cemiterio]
+
+- id: criancas_no_livro
+  participants: [estranho, firmino]
+  when: {time: {hourFrom: 10, hourTo: 12}}
+  cooldownHours: 0
+  lines:
+    - {speaker: estranho, text: "Tem gente de Mir enterrada aqui?"}
+    - {speaker: firmino, text: "Tem gente. De onde, o livro não pergunta."}
+    - {speaker: estranho, text: "E crianças? De uns vinte anos para cá? Um menino de quatro anos?"}
+    - {speaker: firmino, text: "Crianças, sempre tem. É a parte do livro que eu leio menos. Era seu?"}
+    - {speaker: estranho, text: "Disseram que morreu na estrada. Ninguém me mostrou onde."}
+  facts: [estranho_procura_tecnico, oren_procura_filho]

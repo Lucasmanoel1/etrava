@@ -28,7 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 /** M2: tempo, agendas, eventos agendados, save/load e determinismo (AT-03, AT-05, AT-06, AT-07). */
 class WorldSimulationTest {
-    private static final String AREA = "vila_ref";
+    private static final String AREA = "vila";
     private static ContentDb content;
 
     @BeforeAll
@@ -58,7 +58,7 @@ class WorldSimulationTest {
 
     @Test
     void agendaDosNpcsCobreODiaInteiro() {
-        assertEquals(9, content.npcs().size());
+        assertEquals(23, content.npcs().size());
         for (NpcDef npc : content.npcs().values()) {
             for (int minute = 0; minute < 1440; minute += 5) {
                 assertNotNull(npc.blockAt(minute), npc.id() + " sem bloco no minuto " + minute);
@@ -66,8 +66,8 @@ class WorldSimulationTest {
         }
         NpcDef.Block night = content.npcs().get("ferreiro").blockAt(2 * 60);
         assertEquals("dormir", night.activity());
-        assertEquals("vila_ref", night.area());
-        assertEquals("oficina_porta", night.spot());
+        assertEquals("vila", night.area());
+        assertEquals("casa_doran", night.spot());
         assertTrue(night.hidden());
         assertTrue(night.wellFormed());
     }
@@ -77,8 +77,8 @@ class WorldSimulationTest {
         Simulation sim = newSim(1); // 06:00
         ActorView ferreiro = sim.view().npc("ferreiro");
         assertEquals("trabalhar", ferreiro.activity());
-        assertEquals("vila_ref", sim.view().npcArea("ferreiro"));
-        assertEquals(16.2, ferreiro.x(), 1e-9);
+        assertEquals("vila", sim.view().npcArea("ferreiro"));
+        assertEquals(14.8, ferreiro.x(), 1e-9); // na forja
         // o viajante ainda dorme na taverna: está na área, mas não aparece
         assertEquals("dormir", sim.view().npc("viajante").activity());
         assertTrue(sim.view().actors().stream().noneMatch(a -> a.id().equals("viajante")));
@@ -90,14 +90,14 @@ class WorldSimulationTest {
     @Test
     void blocoNovoNoMesmoLugarTrocaAAtividade() {
         Simulation sim = newSim(1);
-        sim.fastForward(hours(sim, 22)); // 04:00: o moleiro dorme dentro do moinho
-        assertEquals("dormir", sim.view().npc("moleiro").activity());
-        assertTrue(sim.view().actors().stream().noneMatch(a -> a.id().equals("moleiro")));
-        run(sim, (int) hours(sim, 1.2)); // 05:12: trabalha à porta, no mesmo ponto
-        assertEquals("trabalhar", sim.view().npc("moleiro").activity());
-        assertTrue(sim.view().actors().stream().anyMatch(a -> a.id().equals("moleiro")));
+        sim.fastForward(hours(sim, 22)); // 04:00: o velho Anselmo dorme dentro de casa
+        assertEquals("dormir", sim.view().npc("anselmo").activity());
+        assertTrue(sim.view().actors().stream().noneMatch(a -> a.id().equals("anselmo")));
+        run(sim, (int) hours(sim, 3.2)); // 07:12: senta à porta, no mesmo ponto
+        assertEquals("sentar", sim.view().npc("anselmo").activity());
+        assertTrue(sim.view().actors().stream().anyMatch(a -> a.id().equals("anselmo")));
         sim.fastForward(hours(sim, 24)); // e o mesmo vale no avanço rápido
-        assertEquals("trabalhar", sim.view().npc("moleiro").activity());
+        assertEquals("sentar", sim.view().npc("anselmo").activity());
     }
 
     @Test
@@ -113,10 +113,10 @@ class WorldSimulationTest {
             walked |= aldea.moving();
             assertFalse(sim.nav().isBlockedAt(aldea.x(), aldea.y()), "NPC dentro de obstáculo");
         }
-        assertTrue(walked, "depois das 09:00 ela deveria andar até o feno");
+        assertTrue(walked, "depois das 09:00 ela deveria andar até o pomar");
         assertTrue(Math.hypot(aldea.x() - x0, aldea.y() - y0) > 2);
         assertEquals("trabalhar", sim.view().npc("aldea").activity());
-        assertEquals(20.5, aldea.x(), 1e-6);
+        assertEquals(24.0, aldea.x(), 1e-6);
     }
 
     @Test
@@ -124,34 +124,34 @@ class WorldSimulationTest {
         Simulation sim = newSim(1);
         sim.fastForward(hours(sim, 1.5));            // 07:30: viajante na praça
         ActorView viajante = sim.view().npc("viajante");
-        assertEquals("vila_ref", sim.view().npcArea("viajante"));
+        assertEquals("vila", sim.view().npcArea("viajante"));
         assertTrue(sim.view().actors().contains(viajante));
         run(sim, (int) hours(sim, 0.6));             // passa das 08:00: começa a ir embora, a pé
         assertEquals(Simulation.WALKING, viajante.activity());
-        assertEquals("vila_ref", sim.view().npcArea("viajante"));
+        assertEquals("vila", sim.view().npcArea("viajante"));
         run(sim, 30 * 40);                           // tempo de sobra para chegar à saída
-        assertEquals("area_teste", sim.view().npcArea("viajante"));
+        assertEquals("estrada", sim.view().npcArea("viajante"));
         assertFalse(sim.view().actors().contains(viajante));
         assertEquals("viajar", viajante.activity());
-        sim.fastForward(hours(sim, 9.5));            // 17:30 em diante: de volta
-        assertEquals("vila_ref", sim.view().npcArea("viajante"));
+        sim.fastForward(hours(sim, 9.5));            // 17:30 em diante: de volta, no balcão da taverna
+        assertEquals("taverna", sim.view().npcArea("viajante"));
     }
 
     @Test
     void jogadorEncontraOViajanteNaOutraArea() {
         Simulation sim = newSim(1);
         sim.fastForward(hours(sim, 4));              // 10:00
-        sim.submit(new Command.EnterArea("area_teste", null));
+        sim.submit(new Command.EnterArea("estrada", null));
         List<SimEvent> events = sim.step();
-        assertTrue(events.contains(new SimEvent.AreaChanged("vila_ref", "area_teste")));
-        assertEquals("area_teste", sim.view().areaId());
-        assertEquals(20.5, sim.view().playerX(), 1e-9);
-        // na área de teste estão o viajante e o comerciante do Posto (M5)
-        assertEquals(List.of("viajante", "comerciante_posto"),
+        assertTrue(events.contains(new SimEvent.AreaChanged("vila", "estrada")));
+        assertEquals("estrada", sim.view().areaId());
+        assertEquals(60.0, sim.view().playerX(), 1e-9);
+        // no Posto, de manhã: o viajante, o carregador e o comerciante (Vessa ainda dorme)
+        assertEquals(List.of("viajante", "tobias", "comerciante_posto"),
                 sim.view().actors().stream().map(a -> a.id()).sorted(java.util.Comparator.reverseOrder()).toList());
         sim.submit(new Command.EnterArea("nao_existe", null)); // ignorado
         sim.step();
-        assertEquals("area_teste", sim.view().areaId());
+        assertEquals("estrada", sim.view().areaId());
     }
 
     // ---------------------------------------------------------------- tempo
@@ -248,9 +248,9 @@ class WorldSimulationTest {
         sim.submit(new Command.MoveDir(1, 0));
         run(sim, 40);
         sim.submit(new Command.MoveDir(0, 0));
-        sim.submit(new Command.EnterArea("area_teste", null));
+        sim.submit(new Command.EnterArea("estrada", null));
         run(sim, 300);
-        sim.submit(new Command.EnterArea("vila_ref", null));
+        sim.submit(new Command.EnterArea("vila", null));
         sim.submit(new Command.Sleep());
         run(sim, 500);
         return sim;
@@ -297,7 +297,7 @@ class WorldSimulationTest {
         SaveGame.Meta meta = SaveGame.readMeta(file);
         assertEquals(SaveGame.SCHEMA_VERSION, meta.schemaVersion());
         assertEquals(7, meta.day());
-        assertEquals("vila_ref", meta.areaId());
+        assertEquals("vila", meta.areaId());
         assertEquals("2026-11-10T20:00:00", meta.savedAt());
 
         Simulation loaded = Simulation.load(content, file);
@@ -358,10 +358,10 @@ class WorldSimulationTest {
         Path oldFile = dir.resolve("antigo.etrava");
         writeZip(oldFile, "{}", state.toString());
 
-        // a 4 tem migração em produção (M6); uma versão sem migração nenhuma é recusada
+        // a 4 e a 5 têm migração em produção (M6, M7); uma versão sem migração nenhuma é recusada
         assertDoesNotThrow(() -> SaveGame.read(oldFile).world());
         ObjectNode ancient = state.deepCopy();
-        ancient.put("schemaVersion", old - 1);
+        ancient.put("schemaVersion", 3);
         Path ancientFile = dir.resolve("antiquissimo.etrava");
         writeZip(ancientFile, "{}", ancient.toString());
         SaveException refused = assertThrows(SaveException.class, () -> SaveGame.read(ancientFile));
@@ -392,7 +392,7 @@ class WorldSimulationTest {
         writeZip(file, "{}", state.toString());
         Simulation loaded = Simulation.load(content, file);
         assertEquals("trabalhar", loaded.view().npc("moleiro").activity());
-        assertEquals("vila_ref", loaded.view().npcArea("moleiro"));
+        assertEquals("moinho", loaded.view().npcArea("moleiro"));
         run(loaded, 30 * 60 * 2); // o NPC sem definição não derruba nada
         assertNotNull(loaded.view().npc("fantasma"));
     }

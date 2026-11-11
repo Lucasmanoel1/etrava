@@ -1,0 +1,55 @@
+# Bento: dono do campo onde a terra cede (A3) e de um lado da divisa (H2).
+id: bento
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Se veio pela vala, a pá está ali. Se veio pela divisa, a resposta é não."
+    choices:
+      - text: "Vim pela vala."
+        when: {job: vala_campo}
+        goto: vala
+      - {text: "Que divisa?", goto: divisa}
+      - text: "A faixa era o caminho dos enterros. Está no livro de Firmino."
+        when: {all: [{knows: {who: player, fact: divisa_era_caminho}}, {not: {flag: acordo_divisa}}, {not: {arc: {id: h2_divisa, stage: [acordo, firmino_resolve, piorou]}}}]}
+        goto: caminho
+      - text: "E o buraco no seu campo?"
+        when: {arc: {id: a3_estrutura, stage: desabamento}}
+        goto: buraco
+      - text: "Olha o que eu trouxe lá de baixo."
+        when: {all: [{arc: {id: a3_estrutura, stage: desabamento}}, {any: [{has: {item: placa_simbolos}}, {has: {item: lasca_fibra}}]}, {not: {flag: mostrou_achado}}]}
+        relevant: true
+        channels: [ambiente, npc]
+        effects: [{setFlag: mostrou_achado}, {learn: {who: npc, fact: aprendiz_desceu, certainty: witnessed}}]
+        goto: mostrou
+      - text: "Seu menino e o cachorro..."
+        when: {knows: {who: player, fact: cachorro_da_celi}}
+        goto: menino
+      - {text: "Bom trabalho."}
+  vala:
+    text: "Quatro horas de lama, sete moedas. E não me alaga o campo do Gil, que ele vai dizer que foi de propósito."
+    choices:
+      - text: "Pego a pá."
+        effects: [{startJob: vala_campo}]
+      - {text: "Amanhã."}
+  divisa:
+    text: "A faixa entre o meu campo e o do Gil. Meu avô plantou ali. O avô dele diz que também. Os dois mortos, e a gente brigando por eles."
+    effects: [{learn: {who: player, fact: divisa_disputada, certainty: claim}}]
+  caminho:
+    text: "Caminho de morto. Meu avô passou por ali. Só de ida."
+    choices:
+      - text: "Então não é seu nem dele. É de todo mundo."
+        relevant: true
+        channels: [ambiente, npc, dialogue]
+        effects: [{setFlag: acordo_divisa}, {opinion: {npc: npc, add: 5}}]
+        goto: arranca
+      - {text: "Só achei que devia saber."}
+  arranca:
+    text: "Fala com o Gil. Se ele arrancar a primeira estaca, eu arranco a segunda. E o resto da tarde a gente não se fala."
+  buraco:
+    text: "A terra cedeu debaixo da pá. Tem pedra trabalhada lá embaixo, e uma escada de mão que não fui eu que pus. Buraco eu tapo. Isso aí é só mais fundo."
+    effects: [{learn: {who: player, fact: campo_cedeu, certainty: claim}}]
+  mostrou:
+    text: "Pedra riscada. Pedra morna. Põe isso longe do meu trigo."
+  menino:
+    text: "O cachorro. Eu sei. Não conta para ele que eu sei."

@@ -1,12 +1,16 @@
-# Comerciante do Posto da Encruzilhada (PRD 13.2: o segundo comerciante; H4 dá trabalho de carga).
-# O Posto só ganha mapa no M7; até lá ele atende na área de teste, que faz as vezes da estrada.
+# Ibbo Saran, comerciante do Posto da Encruzilhada (Cantões do Sal); dá trabalho (H4).
 id: comerciante_posto
-name: Comerciante do Posto
-layer: B
+name: Ibbo, do Posto
+layer: A
 sprite: personagem.comerciante
 dialogue: comerciante_posto
 faction: posto
-knows: [estrada_tem_saqueadores]   # ele vê quem chega da curva sem a bolsa
+knows: [estrada_tem_saqueadores]
+about: "Comerciante dos Cantões do Sal. Toca o Posto da Encruzilhada; troca, paga e cobra."
+relations: [{npc: vessa, kind: amizade}, {npc: tobias, kind: amizade}]
 schedule:
-  - {from: "22:00", to: "06:00", do: dormir, at: area_teste/oficina_bancada, hidden: true}
-  - {from: "06:00", to: "22:00", do: vender, at: area_teste/praca}
+  - {from: "22:00", to: "06:00", do: dormir, at: estrada/posto_porta, hidden: true}
+  - {from: "06:00", to: "12:00", do: vender, at: estrada/posto_banca}
+  - {from: "12:00", to: "13:00", do: comer, at: estrada/posto_fogo}
+  - {from: "13:00", to: "20:00", do: vender, at: estrada/posto_banca}
+  - {from: "20:00", to: "22:00", do: contar, at: estrada/posto_fogo}

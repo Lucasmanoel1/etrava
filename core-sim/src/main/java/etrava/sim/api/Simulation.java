@@ -10,6 +10,8 @@ import etrava.sim.content.EpilogueDef;
 import etrava.sim.content.JobDef;
 import etrava.sim.economy.Economy;
 import etrava.sim.content.NpcDef;
+import etrava.sim.content.AmbientDef;
+import etrava.sim.content.OriginDef;
 import etrava.sim.nav.NavGrid;
 import etrava.sim.nav.Pathfinder;
 import etrava.sim.nav.Pathfinder.Point;
@@ -27,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Fachada da simulação. A apresentação envia {@link Command}s, chama
@@ -60,6 +63,8 @@ public final class Simulation {
     public static final String FOUND_FACT = "jogador_achado_desacordado";
     /** Distância de um ponto de saída que leva a outra área. */
     public static final double EXIT_RANGE = 0.9;
+    /** Flags que marcam as áreas e os lugares nomeados por onde o personagem já passou (RF-007). */
+    public static final String VISITED = "visitou.", VISITED_PLACE = "visitou.lugar.";
 
     private final ContentDb content;
     private final World world;
@@ -91,18 +96,33 @@ public final class Simulation {
         return newGame(content, seed, areaId, PACE_NORMAL);
     }
 
-    /** @param pace ritmo de eventos: {@link #PACE_NORMAL} ou {@link #PACE_CONTEMPLATIVE} (RF-145) */
+    /**
+     * @param areaId área inicial; null = a da origem (content/origins), que também diz o ponto de chegada
+     * @param pace   ritmo de eventos: {@link #PACE_NORMAL} ou {@link #PACE_CONTEMPLATIVE} (RF-145)
+     */
     public static Simulation newGame(ContentDb content, long seed, String areaId, double pace) {
         World world = new World(seed, GameClock.DEFAULT_TICKS_PER_DAY);
         world.pace = pace > 0 ? pace : PACE_NORMAL;
         for (NpcDef def : content.npcs().values()) world.npcs.put(def.id(), new ActorState(def.id(), def.sprite()));
         Simulation sim = new Simulation(content, world);
         for (NpcDef def : content.npcs().values()) sim.story.initNpc(def);
-        sim.economy.newGame(content.origin());
+        OriginDef origin = content.origin();
+        sim.economy.newGame(origin);
+        for (Map.Entry<String, Integer> o : origin.opinionMap().entrySet())
+            world.opinions.merge(o.getKey(), o.getValue(), (a, b) -> Math.max(-100, Math.min(100, a + b)));
+        for (String f : origin.flagList()) world.flags.put(f, true);
+        for (String ref : origin.knowList()) sim.story.learn(Story.PLAYER, AmbientDef.factId(ref),
+                AmbientDef.factVersion(ref), "witnessed", "inicio", null);
         world.health = sim.combat.maxHealth();
         world.stamina = sim.combat.maxStamina();
+        String spawn = AreaDef.PLAYER_SPAWN;
+        if (areaId == null) {
+            areaId = origin.startArea() != null && content.area(origin.startArea()) != null
+                    ? origin.startArea() : content.areas().keySet().iterator().next();
+            if (origin.startSpawn() != null) spawn = origin.startSpawn();
+        }
         sim.loadArea(areaId);
-        sim.placePlayer(AreaDef.PLAYER_SPAWN);
+        sim.placePlayer(spawn);
         sim.arcs.init(sim.buffered);
         sim.story.takeDirty();
         sim.story.takeAgendaDirty();
@@ -129,6 +149,8 @@ public final class Simulation {
         if (world.stamina < 0) world.stamina = sim.combat.maxStamina();
         sim.story.takeDirty();
         sim.story.takeAgendaDirty();
+        // save de uma versão com outro mapa: quem ficou dentro de uma parede volta ao ponto de chegada
+        if (sim.nav.isBlockedAt(world.player.x, world.player.y)) sim.placePlayer(AreaDef.PLAYER_SPAWN);
         // só os recém-chegados são posicionados: mexer nos demais mudaria o estado carregado
         for (ActorState npc : world.npcs.values()) {
             NpcDef.Block block = sim.block(npc);
@@ -170,6 +192,16 @@ public final class Simulation {
         this.nav = def.buildNavGrid(content.props());
         world.areaId = areaId;
         world.player.areaId = areaId;
+        // primeira vez num lugar nomeado: vai para o caderno e para o mapa (RF-007)
+        if (!world.flag(VISITED + areaId)) {
+            world.flags.put(VISITED + areaId, true);
+            ContentDb.AreaEntry entry = content.areaEntry(areaId);
+            String place = entry == null ? null : entry.place();
+            if (place != null && !world.flag(VISITED_PLACE + place)) {
+                world.flags.put(VISITED_PLACE + place, true);
+                buffered.add(new SimEvent.PlaceDiscovered(place, areaId));
+            }
+        }
     }
 
     private void placePlayer(String spawn) {
@@ -561,6 +593,10 @@ public final class Simulation {
         for (ContentDb.Exit exit : entry.exitList()) {
             Point p = area.spots().get(exit.spot());
             if (p == null || Math.hypot(p.x() - world.player.x, p.y() - world.player.y) > EXIT_RANGE) continue;
+            // seguindo um clique, só entra se o destino era a porta; quem só passa por ela não entra
+            if (!world.player.path.isEmpty() && (!world.hasDestination
+                    || Math.hypot(p.x() - world.destinationX, p.y() - world.destinationY) > EXIT_RANGE * 2)) continue;
+            if (!story.test(exit.condition(), null)) continue; // fechada por enquanto
             if (enterArea(exit.to(), exit.spawn(), events)) return;
         }
     }
@@ -824,12 +860,12 @@ public final class Simulation {
             } else if (here && goingHere) {
                 Point p = spot(block.area(), block.spot());
                 walk(npc, p, false);
-            } else if (here) { // sai desta área pelo ponto de entrada, se houver
-                Point exit = area.spots().get(ENTRY_SPOT);
+            } else if (here) { // sai desta área pela porta que leva aonde vai, ou pelo ponto de entrada
+                Point exit = doorway(block.area());
                 if (exit == null) arriveAtTarget(npc);
                 else walk(npc, exit, true);
-            } else { // chega de outra área
-                Point entry = area.spots().get(ENTRY_SPOT);
+            } else { // chega de outra área, pela porta que vem de lá
+                Point entry = doorway(npc.areaId);
                 if (entry == null) {
                     arriveAtTarget(npc);
                 } else {
@@ -840,6 +876,23 @@ public final class Simulation {
                 }
             }
         }
+    }
+
+    /**
+     * Por onde se passa, na área carregada, para ir à (ou vir da) área dada: o ponto da saída
+     * que leva até ela; senão, o ponto de entrada geral do mapa; senão, nenhum (null).
+     */
+    private Point doorway(String otherArea) {
+        ContentDb.AreaEntry entry = content.areaEntry(area.id());
+        if (entry != null && otherArea != null) {
+            for (ContentDb.Exit exit : entry.exitList()) {
+                if (otherArea.equals(exit.to()) && exit.when() == null) {
+                    Point p = area.spots().get(exit.spot());
+                    if (p != null) return p;
+                }
+            }
+        }
+        return area.spots().get(ENTRY_SPOT);
     }
 
     private void walk(ActorState npc, Point to, boolean leaving) {

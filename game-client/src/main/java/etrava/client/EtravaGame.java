@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class EtravaGame extends ApplicationAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(EtravaGame.class);
-    private static final String DEFAULT_AREA = "vila_ref";
+    private static final String DEFAULT_AREA = null; // null = onde a origem começa (a oficina de Avel)
     private static final float MAX_FRAME_TIME = 0.25f;
 
     private static volatile String crashContext = "jogo ainda não iniciado";
@@ -126,7 +126,7 @@ public final class EtravaGame extends ApplicationAdapter {
         }
         long seed = options.seed() != null ? options.seed() : System.nanoTime();
         String areaId = options.area() != null ? options.area() : DEFAULT_AREA;
-        if (content.area(areaId) == null && !content.areas().isEmpty()) {
+        if (areaId != null && content.area(areaId) == null && !content.areas().isEmpty()) {
             String fallback = content.areas().keySet().iterator().next();
             LOG.warn("Área '{}' não existe; abrindo '{}'", areaId, fallback);
             areaId = fallback;

@@ -1,0 +1,17 @@
+# Gil, lavrador; o outro lado da divisa (H2). Foi o primeiro a falar com a comitiva.
+id: gil
+name: Gil
+layer: B
+sprite: personagem.gil
+dialogue: gil
+faction: pedra_mansa
+about: "Lavrador do campo de leste. Diz que o pai dele plantou a faixa da divisa antes de Bento nascer."
+relations: [{npc: bento, kind: rivalidade}, {npc: lauro, kind: amizade}]
+schedule:
+  - {from: "18:00", to: "23:00", do: festejar, at: vila/praca_norte, when: {flag: festa}}
+  - {from: "21:30", to: "05:30", do: dormir, at: vila/casa_gil, hidden: true}
+  - {from: "05:30", to: "12:00", do: lavrar, at: vila/campo_gil}
+  - {from: "12:00", to: "13:00", do: comer, at: vila/casa_gil}
+  - {from: "13:00", to: "17:30", do: lavrar, at: vila/campo_gil}
+  - {from: "17:30", to: "19:00", do: conversar, at: vila/praca_norte}
+  - {from: "19:00", to: "21:30", do: beber, at: taverna/mesa_canto}

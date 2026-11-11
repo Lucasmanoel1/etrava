@@ -1,0 +1,16 @@
+# Anselmo, o velho que diz coisas (H5: a frase "absurda" na festa).
+id: anselmo
+name: Velho Anselmo
+layer: B
+sprite: personagem.anselmo
+dialogue: anselmo
+faction: pedra_mansa
+about: "O mais velho do vilarejo. Diz coisas sem pé nem cabeça que às vezes têm os dois."
+relations: [{npc: firmino, kind: amizade}]
+schedule:
+  - {from: "18:00", to: "22:00", do: festejar, at: vila/praca_banco, when: {flag: festa}}
+  - {from: "21:00", to: "07:00", do: dormir, at: vila/casa_anselmo, hidden: true}
+  - {from: "07:00", to: "11:00", do: sentar, at: vila/casa_anselmo}
+  - {from: "11:00", to: "15:00", do: visitar, at: vila/cemiterio_dentro}
+  - {from: "15:00", to: "18:00", do: sentar, at: vila/praca_banco}
+  - {from: "18:00", to: "21:00", do: beber, at: taverna/mesa_janela}

@@ -1,0 +1,33 @@
+# Firmino, o coveiro. Tem o livro de enterros: é a fonte que resolve a divisa (H2).
+id: firmino
+start:
+  - {when: {all: [{prop: {key: estacas_cemiterio, state: fincada}}, {not: {flag: firmino_falou_estacas}}]}, goto: estacas}
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Cova eu abro de manhã, que de tarde a terra endurece. Morreu alguém?"
+    choices:
+      - {text: "Ninguém, graças.", goto: gracas}
+      - text: "Bento e Gil brigam pela faixa da divisa."
+        when: {knows: {who: player, fact: divisa_disputada}}
+        goto: faixa
+      - text: "Fincaram estacas no cemitério."
+        when: {knows: {who: player, fact: estacas_no_cemiterio}}
+        goto: estacas
+      - {text: "Bom dia, Firmino."}
+  gracas:
+    text: "Graças. Mas uma hora morre."
+  faixa:
+    text: "Aquela faixa? Era por onde se levava os mortos ao cemitério. Está no livro. Ninguém pergunta ao livro."
+    effects: [{learn: {who: player, fact: divisa_era_caminho, certainty: claim}}]
+    choices:
+      - text: "Me empresta o livro?"
+        when: {not: {has: {item: livro_enterros}}}
+        effects: [{give: {item: livro_enterros}}, {opinion: {npc: npc, add: 3}}]
+        goto: empresta
+      - {text: "Obrigado."}
+  empresta:
+    text: "Devolve. É o único lugar onde essa gente ainda está junta."
+  estacas:
+    text: "Fincaram estaca no meio das covas. Arranquei duas; fincaram de novo. Eu tenho mais tempo do que eles; eles têm mais estaca."
+    effects: [{setFlag: firmino_falou_estacas}, {learn: {who: player, fact: estacas_no_cemiterio, certainty: claim}}]

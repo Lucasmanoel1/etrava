@@ -1,16 +1,19 @@
-# NPC provisório do M2; pai de Nalia no arco A1.
+# Tomé, o moleiro; pai de Nalia (A1).
 id: moleiro
-name: Moleiro
-layer: B
+name: Tomé, o moleiro
+layer: A
 sprite: personagem.moleiro
 dialogue: moleiro
 opinion: 10
-knows: [mo_parada]          # o resto ele fica sabendo conforme o arco A1 anda
-relations: [{npc: nalia, kind: familia}]
+knows: [mo_parada]
+relations: [{npc: nalia, kind: familia}, {npc: bento, kind: amizade}]
 faction: pedra_mansa
+about: "O moleiro, pai de Nalia. Viúvo. A mó anda parada mais do que devia."
 schedule:
-  - {from: "21:00", to: "05:00", do: dormir,    at: vila_ref/moinho_porta, hidden: true}
-  - {from: "05:00", to: "11:00", do: trabalhar, at: vila_ref/moinho_porta}
-  - {from: "11:00", to: "12:00", do: comer,     at: vila_ref/praca}
-  - {from: "12:00", to: "18:00", do: trabalhar, at: vila_ref/feno}
-  - {from: "18:00", to: "21:00", do: conversar, at: vila_ref/taverna_fora}
+  - {from: "21:00", to: "05:00", do: vigiar, at: vila/quintal_cerca, when: {arc: {id: a1_nalia, stage: [vozes, impasse]}}}
+  - {from: "18:00", to: "22:00", do: festejar, at: vila/praca_banco, when: {flag: festa}}
+  - {from: "21:00", to: "05:00", do: dormir, at: moinho/lareira}
+  - {from: "05:00", to: "11:00", do: trabalhar, at: moinho/mo}
+  - {from: "11:00", to: "12:00", do: comer, at: vila/praca}
+  - {from: "12:00", to: "18:00", do: trabalhar, at: vila/campo_bento}
+  - {from: "18:00", to: "21:00", do: beber, at: taverna/mesa_fundo}

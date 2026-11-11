@@ -14,6 +14,15 @@ slots:
   - {id: a1_nalia, arc: a1_nalia}
   - arvore
   - moinho
+  - {id: a2_avel, arc: a2_avel}
+  - oficina
+  - {id: a3_estrutura, arc: a3_estrutura}
+  - {id: h1_frutas, arc: h1_frutas}
+  - {id: h2_divisa, arc: h2_divisa}
+  - {id: h3_apostas, arc: h3_apostas}
+  - {id: h4_posto, arc: h4_posto}
+  - {id: h5_festa, arc: h5_festa}
+  - cemiterio
   - ferrovia
   - sal
   - sacerdote
@@ -71,7 +80,7 @@ fragments:
   - slot: moinho
     priority: 5
     when: {flag: jogador_apoiou_corte}
-    text: "O ferreiro ainda lhe agradece a ajuda com o machado. Nalia desvia o olhar quando você entra no moinho."
+    text: "Doran ainda lhe agradece a ajuda com o machado. Nalia desvia o olhar quando você entra no moinho."
   - slot: moinho
     priority: 5
     when: {flag: ligacao_cortada}
@@ -79,6 +88,127 @@ fragments:
   - slot: moinho
     when: {not: {knows: {who: player, fact: arvore_voltou}}}
     text: "Você soube de pouca coisa do que se passou no moinho. A farinha atrasou alguns dias; foi só o que chegou à oficina."
+
+  # ---- A2: Avel
+  - slot: a2_avel
+    priority: 10
+    when: {arc: {id: a2_avel, stage: confessa}}
+    text: "Avel contou uma parte. Não a melhor, nem a pior: a que cabia numa noite. Depois voltou à bancada, e o torno continua puxando para a esquerda."
+  - slot: a2_avel
+    priority: 10
+    when: {arc: {id: a2_avel, stage: encontrado}}
+    text: "O homem de fora achou Avel. Passaram a noite na oficina, de porta fechada. De manhã o homem foi embora pela estrada, e Avel não disse uma palavra sobre aquilo, nem nos dias seguintes."
+  - slot: a2_avel
+    priority: 10
+    when: {arc: {id: a2_avel, stage: partiu}}
+    text: "Avel foi embora numa noite sem lua. Deixou a oficina, as ferramentas arrumadas por tamanho e um bilhete no bolso do seu avental. Não disse para onde."
+  - slot: a2_avel
+    priority: 10
+    when: {arc: {id: a2_avel, stage: averiguacao}}
+    text: "A comitiva levou Avel para averiguação. Ninguém em Pedra-Mansa sabe o que se averigua num homem de sessenta anos, nem para onde se leva alguém para isso."
+  - slot: a2_avel
+    text: "Avel continua na oficina, fazendo o que sempre fez, falando o que sempre falou, que é pouco."
+
+  - slot: oficina
+    priority: 10
+    when: {all: [{flag: oficina_do_aprendiz}, {var: {name: dias_de_trabalho, min: 5}}]}
+    text: "A oficina é sua agora. As encomendas continuam chegando, e você descobriu que sabe fazer mais do que achava, e menos do que Avel fazia."
+  - slot: oficina
+    priority: 8
+    when: {flag: oficina_do_aprendiz}
+    text: "A oficina é sua agora. Às vezes você ainda deixa a lima fina separada, para quando ele voltar."
+  - slot: oficina
+    priority: 5
+    when: {any: [{knows: {who: player, fact: papeis_nome_raspado}}, {knows: {who: player, fact: carta_assinada_iria}}]}
+    text: "Você sabe de um nome raspado e de uma carta assinada por uma mulher chamada Iria. Não sabe o que fazer com nenhum dos dois."
+  - slot: oficina
+    priority: 4
+    when: {knows: {who: player, fact: avel_trabalhou_em_mir}}
+    text: "Mir deixou de ser só o nome de um acidente distante. Agora tem a forma de uma carroça e de alguém chorando o caminho inteiro."
+
+  # ---- A3: a estrutura enterrada
+  - slot: a3_estrutura
+    priority: 12
+    when: {knows: {who: player, fact: eco_no_buraco}}
+    text: "Lá embaixo, no escuro, alguém chamou um nome que não era o seu. Você não contou isso a ninguém. Bento tapou o buraco, e o trigo cresceu por cima."
+  - slot: a3_estrutura
+    priority: 10
+    when: {arc: {id: a3_estrutura, stage: mostrado}}
+    text: "Você desceu no buraco do campo e voltou com pedra riscada e lascas mornas. Durante uma semana não se falou de outra coisa. Depois Bento tapou o buraco, e o trigo cresceu por cima como se nada houvesse embaixo."
+  - slot: a3_estrutura
+    priority: 10
+    when: {arc: {id: a3_estrutura, stage: registrado}}
+    text: "O registrador de Caldris desenhou o buraco do campo num caderno e mandou tapar. O desenho seguiu para o norte. O que havia embaixo ficou onde estava."
+  - slot: a3_estrutura
+    priority: 10
+    when: {arc: {id: a3_estrutura, stage: tapado}}
+    text: "Bento tapou o buraco do campo com terra e pedra e plantou por cima. Nas noites quietas, quem passa ali jura que o chão está morno."
+  - slot: a3_estrutura
+    text: "No campo de Bento, a terra continua mole num canto. Ninguém pisa ali sem pensar."
+
+  # ---- H1: o ladrão de frutas
+  - slot: h1_frutas
+    priority: 10
+    when: {arc: {id: h1_frutas, stage: [celi_descobre, contado]}}
+    text: "O ladrão das maçãs era Pipo, alimentando um cachorro manco atrás do feno. O cachorro se chama Toco, dorme na porta de Celi e come mais maçã do que antes."
+  - slot: h1_frutas
+    priority: 10
+    when: {arc: {id: h1_frutas, stage: segredo_guardado}}
+    text: "As maçãs de Celi pararam de sumir. Ela nunca soube por quê. Atrás do feno, um cachorro manco come pão, e um menino guarda um segredo com você."
+  - slot: h1_frutas
+    text: "Ainda somem maçãs do pomar de Celi. Ela já desconfia de todo mundo, menos de quem devia."
+
+  # ---- H2: a divisa
+  - slot: h2_divisa
+    priority: 10
+    when: {arc: {id: h2_divisa, stage: [acordo, firmino_resolve]}}
+    text: "A faixa entre os campos de Bento e Gil voltou a ser o que era: o caminho dos mortos. Os dois arrancaram juntos as estacas de Caldris e passaram o resto da tarde sem se falar, o que entre eles é paz."
+  - slot: h2_divisa
+    priority: 10
+    when: {arc: {id: h2_divisa, stage: piorou}}
+    text: "Bento arrancou as estacas da divisa numa noite, e Gil foi se queixar ao registrador. Os dois não se falam mais. Na faixa entre os campos cresce mato, a única coisa ali que ninguém disputa."
+  - slot: h2_divisa
+    text: "Bento e Gil continuam brigando pela faixa entre os campos. Os avôs dos dois não foram consultados."
+
+  # ---- H3: os apostadores
+  - slot: h3_apostas
+    priority: 10
+    when: {arc: {id: h3_apostas, stage: lauro_barrado}}
+    text: "Marta proibiu o dado de Lauro na taverna. Ele devolveu umas moedas a Ciro, e agora joga sozinho no canto, contra ninguém, e ainda assim ganha."
+  - slot: h3_apostas
+    priority: 10
+    when: {arc: {id: h3_apostas, stage: as_pazes}}
+    text: "Ciro virou a mesa da taverna e chamou Lauro de ladrão. Dois dias depois estavam jogando de novo. Um dia Lauro fica honesto."
+  - slot: h3_apostas
+    text: "Na taverna, Lauro e Ciro continuam jogando dados toda noite. Ciro continua perdendo, e jurando que é a última."
+
+  # ---- H4: o Posto
+  - slot: h4_posto
+    priority: 10
+    when: {arc: {id: h4_posto, stage: defendido}}
+    text: "Na noite em que os saqueadores vieram ao Posto, você estava lá. Levaram menos do que vieram buscar. Ibbo faz preço de amigo, e Vessa conta você entre os que chegam, não entre os que passam."
+  - slot: h4_posto
+    priority: 10
+    when: {arc: {id: h4_posto, stage: roubado}}
+    text: "Os saqueadores levaram dois fardos de sal do Posto, numa noite. Vessa ficou com uma cicatriz no braço. Ibbo subiu os preços, e diz que não foi por isso."
+  - slot: h4_posto
+    text: "No Posto da Encruzilhada, Ibbo ainda procura braço para carga e vigia. Vessa ainda conta quem chega e quem vai, e as contas ainda não fecham."
+
+  # ---- H5: a festa
+  - slot: h5_festa
+    priority: 10
+    when: {arc: {id: h5_festa, stage: acabou}}
+    text: "Houve festa da colheita na praça. Sopa de graça até acabar, Lauro dançando mal e ninguém brigando. Foi uma noite boa, dessas de que só se lembra depois."
+  - slot: h5_festa
+    text: "O trigo está no celeiro. A festa da colheita ficou para quando der."
+
+  - slot: cemiterio
+    priority: 10
+    when: {all: [{prop: {key: estacas_cemiterio, state: fincada}}, {knows: {who: player, fact: anselmo_trem_cemiterio}}]}
+    text: "Na festa, o velho Anselmo disse que o trem ia passar por cima dos mortos. Riram. Dias depois as estacas de Caldris atravessaram o cemitério em linha reta. Ninguém riu mais, e Anselmo também não."
+  - slot: cemiterio
+    when: {prop: {key: estacas_cemiterio, state: fincada}}
+    text: "Há estacas com fita vermelha atravessando o cemitério. Firmino arranca, e alguém finca de novo."
 
   # ---- o mundo lá fora
   - slot: ferrovia

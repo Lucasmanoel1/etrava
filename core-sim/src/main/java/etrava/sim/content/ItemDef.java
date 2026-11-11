@@ -18,9 +18,11 @@ import java.util.Map;
  * @param use      efeitos ao usar (comer, beber, ler); ver CONTENT.md
  * @param icon     ID do asset do ícone; se omitido, vale {@code icone.<id>}
  * @param stats    números para sistemas futuros (dano, proteção, luz — M6)
+ * @param text     o que está escrito, para documentos (RF-124): aparece ao ler, e o papel não se gasta
  */
 public record ItemDef(String id, String name, String description, double weight, int value, String category,
-        List<String> tags, String slot, int food, JsonNode use, String icon, Map<String, Double> stats) {
+        List<String> tags, String slot, int food, JsonNode use, String icon, Map<String, Double> stats,
+        String text) {
 
     public static final List<String> CATEGORIES = List.of("arma", "armadura", "ferramenta", "consumivel",
             "material", "mercadoria", "documento", "especial");
@@ -35,7 +37,11 @@ public record ItemDef(String id, String name, String description, double weight,
     public List<String> tagList() { return tags != null ? tags : List.of(); }
     public String iconId() { return icon != null ? icon : "icone." + id; }
     /** Dá para comer, beber ou usar: tem comida, efeitos de uso ou cura (stat {@code cura}, M6). */
-    public boolean usable() { return food > 0 || stat("cura") > 0 || (use != null && !use.isNull() && use.size() > 0); }
+    public boolean usable() {
+        return food > 0 || stat("cura") > 0 || document() || (use != null && !use.isNull() && use.size() > 0);
+    }
+    /** Documento legível: usar é ler, e ele continua na mochila. */
+    public boolean document() { return "documento".equals(category) || text != null; }
     public List<Effect> useEffects() { return Rules.effects(use); }
     public double stat(String name) { return stats != null ? stats.getOrDefault(name, 0.0) : 0.0; }
 

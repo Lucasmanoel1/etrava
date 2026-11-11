@@ -1,0 +1,138 @@
+# A2 — A comitiva e o segredo de Avel (PRD 8.5, arco pessoal). Q-08: o homem de fora (D-069, proposta).
+#
+# Linha do tempo sem o jogador (dias aproximados): o homem de fora chega (d2) e pergunta por gente de
+# Mir; Avel diz não conhecê-lo e para de sair da oficina. A comitiva de Caldris chega (d6), mede as
+# terras e finca estacas na divisa (d7) e, depois, atravessando o cemitério (d13). Avel recebe uma
+# carta (d14). Um ou dois dias depois, a história fecha.
+#
+# Limite de revelação (PRD 8.5): Mir é "o acidente"; Iria é um nome; nada confirma V2.
+#
+# Desfechos:
+#   confessa      leve      Avel conta uma parte: trabalhou em Mir e saiu de lá com a criança.
+#                           Só com opinião alta, os papéis achados e a pergunta feita.        (só com o jogador)
+#   encontrado    ambiguo   o homem de fora acha Avel; conversam uma noite; o homem vai embora (padrão, sorteado)
+#   partiu        ambiguo   Avel vai embora de noite e deixa um bilhete; a oficina fica      (padrão, sorteado)
+#   averiguacao   tragico   a comitiva leva Avel "para averiguação"                           (só se alguém contar à comitiva)
+id: a2_avel
+name: A comitiva e o segredo de Avel
+major: true
+start: antes
+stages:
+  antes:
+    chronicle: Avel discute com um comerciante por causa de uma peça torta, como sempre
+    timeout: {after: {days: 1, jitterHours: 10}, to: estranho_chega}
+
+  estranho_chega:
+    chronicle: um homem de fora chegou ao vilarejo perguntando por gente de Mir
+    onEnter:
+      - {npcStatus: {id: estranho, status: present}}
+      - {learn: {who: taberneira, fact: forasteiro_pergunta, certainty: witnessed}}
+      - {learn: {who: taberneira, fact: estranho_procura_tecnico, certainty: claim}}
+      - {learn: {who: aldea, fact: forasteiro_pergunta, certainty: rumor}}
+      - {learn: {who: avel, fact: forasteiro_pergunta, certainty: claim}}
+      - {learn: {who: ferreiro, fact: avel_nega_estranho, certainty: witnessed}}
+    timeout: {after: {days: 4, jitterHours: 18}, to: comitiva}
+
+  comitiva:
+    chronicle: chegou a comitiva de Caldris, para medir as terras e atualizar os registros
+    onEnter:
+      - {npcStatus: {id: registrador, status: present}}
+      - {npcStatus: {id: agrimensora, status: present}}
+      - {setProp: {key: tenda_comitiva, state: montada}}
+      - {learn: {who: registrador, fact: comitiva_registra_terras, certainty: witnessed}}
+      - {learn: {who: agrimensora, fact: comitiva_registra_terras, certainty: witnessed}}
+      - {learn: {who: gil, fact: comitiva_registra_terras, certainty: claim}}
+      - {learn: {who: taberneira, fact: agrimensora_pergunta_mir, certainty: witnessed}}
+      - {learn: {who: taberneira, fact: avel_desconfortavel, certainty: witnessed}}
+      - {learn: {who: agrimensora, fact: agrimensora_pergunta_mir, certainty: witnessed}}
+      # um dia depois, a divisa; uma semana depois, o cemitério (H2 e H5)
+      - schedule:
+          hours: 24
+          effects:
+            - {setProp: {key: estacas_divisa, state: fincada}}
+            - {learn: {who: gil, fact: estacas_na_divisa, certainty: witnessed}}
+            - {learn: {who: bento, fact: estacas_na_divisa, certainty: witnessed}}
+      - schedule:
+          hours: 168
+          effects:
+            - {setProp: {key: estacas_cemiterio, state: fincada}}
+            - {learn: {who: firmino, fact: estacas_no_cemiterio, certainty: witnessed}}
+            - {learn: {who: anselmo, fact: estacas_no_cemiterio, certainty: witnessed}}
+            - {learn: {who: taberneira, fact: estacas_no_cemiterio, certainty: rumor}}
+    transitions:
+      # alguém contou à comitiva que Avel chegou aqui com uma criança, há vinte e poucos anos
+      - {when: {flag: contou_comitiva_avel}, to: carta}
+    timeout: {after: {days: 8, jitterHours: 24}, to: carta}
+
+  carta:
+    chronicle: Avel recebeu uma carta pela estrada e queimou o envelope na lareira
+    onEnter:
+      - {learn: {who: viajante, fact: avel_recebeu_carta, certainty: witnessed}}
+      - {learn: {who: avel, fact: avel_recebeu_carta, certainty: witnessed}}
+      - {learn: {who: ferreiro, fact: avel_recebeu_carta, certainty: claim}}
+      # a comitiva termina o serviço e vai embora três dias depois
+      - schedule:
+          hours: 72
+          effects:
+            - {npcStatus: {id: registrador, status: departed}}
+            - {npcStatus: {id: agrimensora, status: departed}}
+            - {setProp: {key: tenda_comitiva, state: ausente}}
+            - {setFlag: comitiva_partiu}
+    transitions:
+      - when: {all: [{flag: avel_contou_parte}]}
+        to: confessa
+      - when: {flag: contou_comitiva_avel}
+        to: averiguacao
+    timeout:
+      after: {days: 1, jitterHours: 18}
+      choose:
+        - when: {all: [{flag: estranho_conversou_avel}, {npc: {id: estranho, status: present}}]}
+          to: encontrado
+        - {weight: 1, to: encontrado}
+        - {weight: 2, to: partiu}
+
+  confessa:
+    terminal: true
+    outcome: leve
+    chronicle: Avel contou ao aprendiz uma parte do que foi antes de Pedra-Mansa, e ficou
+    onEnter:
+      - {learn: {who: player, fact: avel_trabalhou_em_mir, certainty: claim}}
+      - {learn: {who: player, fact: iria_um_nome, certainty: claim}}
+      - {remember: {npc: avel, type: confiou, subject: player}}
+      - {schedule: {hours: 30, effects: [{npcStatus: {id: estranho, status: departed}}]}}
+
+  encontrado:
+    terminal: true
+    outcome: ambiguo
+    chronicle: o homem de fora achou Avel; conversaram a noite inteira na oficina, e de manhã ele foi embora
+    onEnter:
+      - {learn: {who: ferreiro, fact: estranho_achou_avel, certainty: witnessed}}
+      - {learn: {who: taberneira, fact: estranho_achou_avel, certainty: rumor}}
+      - {learn: {who: avel, fact: estranho_achou_avel, certainty: witnessed}}
+      - {schedule: {hours: 10, effects: [{npcStatus: {id: estranho, status: departed}}]}}
+
+  partiu:
+    terminal: true
+    outcome: ambiguo
+    chronicle: Avel foi embora de noite, sem avisar ninguém; deixou um bilhete no bolso do avental do aprendiz
+    onEnter:
+      - {npcStatus: {id: avel, status: departed}}
+      - {give: {item: bilhete_avel}}
+      - {learn: {who: player, fact: avel_partiu, certainty: read}}
+      - {learn: {who: ferreiro, fact: avel_partiu, certainty: witnessed}}
+      - {learn: {who: taberneira, fact: avel_partiu, certainty: rumor}}
+      - {setFlag: oficina_do_aprendiz}
+      - {schedule: {hours: 30, effects: [{npcStatus: {id: estranho, status: departed}}]}}
+
+  averiguacao:
+    terminal: true
+    outcome: tragico
+    chronicle: a comitiva de Caldris levou Avel "para averiguação"; ninguém sabe para onde
+    onEnter:
+      - {npcStatus: {id: avel, status: departed}}
+      - {learn: {who: player, fact: avel_levado, certainty: witnessed}}
+      - {learn: {who: ferreiro, fact: avel_levado, certainty: witnessed}}
+      - {learn: {who: taberneira, fact: avel_levado, certainty: witnessed}}
+      - {setFlag: oficina_do_aprendiz}
+      - {deed: delatou}
+      - {schedule: {hours: 30, effects: [{npcStatus: {id: estranho, status: departed}}]}}

@@ -1,0 +1,20 @@
+# Pipo, filho de Bento (H1): é quem some com as frutas — para dar a um cachorro manco.
+id: pipo
+name: Pipo
+layer: B
+sprite: personagem.pipo
+dialogue: pipo
+faction: pedra_mansa
+about: "O menino de Bento. Anda sempre com os bolsos cheios de alguma coisa."
+relations: [{npc: bento, kind: familia}, {npc: nalia, kind: amizade}]
+schedule:
+  - {from: "18:00", to: "21:00", do: festejar, at: vila/praca, when: {flag: festa}}
+  # depois que o segredo acaba, o cachorro fica com Celi e o menino passa lá
+  - {from: "17:30", to: "19:00", do: brincar, at: vila/casa_celi, when: {arc: {id: h1_frutas, stage: [celi_descobre, contado, segredo_guardado]}}}
+  - {from: "20:00", to: "06:30", do: dormir, at: vila/casa_bento, hidden: true}
+  - {from: "06:30", to: "09:00", do: buscar_agua, at: vila/poco}
+  - {from: "09:00", to: "12:00", do: ajudar, at: vila/campo_bento}
+  - {from: "12:00", to: "13:00", do: comer, at: vila/casa_bento, hidden: true}
+  - {from: "13:00", to: "17:30", do: brincar, at: vila/praca}
+  - {from: "17:30", to: "19:00", do: esconder, at: vila/pomar_fundo}
+  - {from: "19:00", to: "20:00", do: em_casa, at: vila/casa_bento}

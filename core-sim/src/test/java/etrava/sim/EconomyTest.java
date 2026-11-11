@@ -32,8 +32,13 @@ class EconomyTest {
         content = ContentDb.load(Path.of(System.getProperty("etrava.content", "../content")));
     }
 
+    /** Começa onde a origem manda: na oficina de Avel, às 06:00. */
     private static Simulation newSim(long seed) {
-        return Simulation.newGame(content, seed, "vila_ref");
+        return Simulation.newGame(content, seed, null);
+    }
+
+    private static void enter(Simulation sim, String area) {
+        if (!area.equals(sim.view().areaId())) step(sim, new Command.EnterArea(area, null));
     }
 
     private static long hours(Simulation sim, double h) {
@@ -51,8 +56,9 @@ class EconomyTest {
         return sim.step();
     }
 
-    /** Põe o jogador em cima de um NPC (os pontos da agenda nunca são bloqueados). */
+    /** Põe o jogador em cima de um NPC, na área dele (os pontos da agenda nunca são bloqueados). */
     private static void goTo(Simulation sim, String npcId) {
+        enter(sim, sim.view().npcArea(npcId));
         ActorView npc = sim.view().npc(npcId);
         step(sim, new Command.Teleport(npc.x(), npc.y()));
     }
@@ -74,7 +80,7 @@ class EconomyTest {
     void conteudoDoM5CarregaEValida() {
         assertTrue(content.items().size() >= 25);
         assertEquals(2, content.merchants().size());
-        assertEquals(3, content.jobs().size());
+        assertEquals(6, content.jobs().size());
         assertEquals(6, content.skills().list().size());
         assertEquals("pedra_mansa", content.origin().id());
         assertTrue(ContentValidator.validate(content).isEmpty(), ContentValidator.validate(content).toString());
@@ -117,7 +123,7 @@ class EconomyTest {
                 > Math.round(content.items().get("carne_salgada").value() * comercio));
 
         // o jogador esvazia o sal e entope o comerciante de pregos
-        step(sim, new Command.EnterArea("area_teste", null));
+        step(sim, new Command.EnterArea("estrada", null));
         give(sim, null, 0, 500);
         give(sim, "pregos", 12, 0);
         step(sim, new Command.OpenTrade("posto"));
@@ -145,12 +151,13 @@ class EconomyTest {
     @Test
     void comprarEVenderMexemNoDinheiroDosDoisLadosETreinamComercio() {
         Simulation sim = newSim(2);
-        at(sim, 16); // a taberneira serve do lado de fora à tarde
+        at(sim, 16); // Marta serve no balcão à tarde
+        enter(sim, "taverna");
         assertTrue(sim.economy().canTrade(content.merchants().get("taverna")));
         long tick = sim.view().clock().tick();
         step(sim, new Command.OpenTrade("taverna"));
         TradeView t = sim.tradeView();
-        assertEquals("Taberneira", t.name());
+        assertEquals("Marta, da taverna", t.name());
         assertFalse(t.container());
         assertEquals(40, t.partnerCash());
         TradeView.Offer pao = t.offers().stream().filter(o -> o.item().equals("pao")).findFirst().orElseThrow();
@@ -189,7 +196,7 @@ class EconomyTest {
         assertEquals(0, sim.view().inventory().getOrDefault("queijo", 0));
         assertTrue(sim.tradeView().offers().stream().noneMatch(TradeView.Offer::possible));
         // andar com o comércio aberto não vale
-        step(sim, new Command.MoveTo(10, 10));
+        step(sim, new Command.MoveTo(4, 5));
         assertFalse(sim.view().hasDestination());
         List<SimEvent> fechou = step(sim, new Command.CloseTrade());
         assertTrue(fechou.contains(new SimEvent.TradeClosed("taverna")));
@@ -219,9 +226,10 @@ class EconomyTest {
     void reputacaoRuimFechaACozinhaMasNaoAConversa() {
         Simulation sim = newSim(4);
         at(sim, 16);
+        enter(sim, "taverna");
         List<Effect> raiva = new ArrayList<>();
-        for (String id : List.of("aldea", "curandeira", "ferreiro", "moleiro", "nalia", "taberneira"))
-            raiva.add(new Effect.Opinion(id, -30 - sim.view().opinion(id)));
+        for (var npc : content.npcs().values())
+            if ("pedra_mansa".equals(npc.faction())) raiva.add(new Effect.Opinion(npc.id(), -30 - sim.view().opinion(npc.id())));
         sim.applyNow(raiva);
         assertEquals(-30, sim.economy().reputation("pedra_mansa"));
         assertEquals(0, sim.economy().reputation("comunidade_que_nao_existe"));
@@ -258,12 +266,12 @@ class EconomyTest {
         SimEvent.JobFinished done = events.stream().filter(e -> e instanceof SimEvent.JobFinished)
                 .map(e -> (SimEvent.JobFinished) e).findFirst().orElseThrow();
         assertEquals(4.0, done.hours(), 1e-9);
-        assertEquals(Math.round(9 * (1 + oficio / 100 * Economy.PAY_SKILL_BONUS)), done.pay());
+        assertEquals(Math.round(8 * (1 + oficio / 100 * Economy.PAY_SKILL_BONUS)), done.pay());
         assertEquals(8 + done.pay(), sim.view().money());
         assertEquals(10, sim.view().clock().hour());
         assertTrue(sim.view().skills().get("oficio") > oficio);
         assertEquals(1.0, sim.view().var("dias_de_trabalho"), 1e-9);
-        assertEquals(1, sim.view().opinion("ferreiro"));
+        assertEquals(46, sim.view().opinion("avel"), "35 do arquivo, 10 da origem e 1 do serviço");
         assertTrue(sim.view().hunger() > 15, "quatro horas de trabalho dão fome");
         assertTrue(sim.view().chronicle().stream().anyMatch(c -> c.type().equals("trabalho")));
 
@@ -286,7 +294,7 @@ class EconomyTest {
         SimEvent.JobFinished done = (SimEvent.JobFinished) events.stream()
                 .filter(e -> e instanceof SimEvent.JobFinished).findFirst().orElseThrow();
         double oficio = 20;
-        assertEquals(Math.round(9 * (1 + oficio / 100 * Economy.PAY_SKILL_BONUS) * 0.5), done.pay());
+        assertEquals(Math.round(8 * (1 + oficio / 100 * Economy.PAY_SKILL_BONUS) * 0.5), done.pay());
         assertEquals(100, sim.view().hunger(), 1e-9);
     }
 
@@ -298,7 +306,7 @@ class EconomyTest {
         step(sim, new Command.Choose(choiceIndex(sim, "Precisa de mão")));
         List<SimEvent> events = step(sim, new Command.Choose(choiceIndex(sim, "Começo agora")));
         assertNull(sim.view().dialogue());
-        assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.JobFinished j && j.jobId().equals("oficina")));
+        assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.JobFinished j && j.jobId().equals("forja")));
         // depois de trabalhar, a oferta some da conversa
         goTo(sim, "ferreiro");
         step(sim, new Command.Talk("ferreiro"));
@@ -308,7 +316,7 @@ class EconomyTest {
     @Test
     void labiaNaConversaTreinaEMudaAOpiniao() {
         Simulation sim = newSim(10);
-        step(sim, new Command.EnterArea("area_teste", null));
+        step(sim, new Command.EnterArea("estrada", null));
         sim.applyNow(List.of(new Effect.SetVar("dias_de_trabalho", 1)));
         goTo(sim, "comerciante_posto");
         step(sim, new Command.Talk("comerciante_posto"));
@@ -327,11 +335,11 @@ class EconomyTest {
         Simulation sim = newSim(11);
         sim.fastForward(hours(sim, 12));
         assertEquals(50, sim.view().hunger(), 0.5);
-        List<SimEvent> events = sim.stepPaused();
-        assertTrue(events.isEmpty());
+        List<SimEvent> events = sim.stepPaused(); // só o que o tempo deixou pendente; nada foi usado
+        assertTrue(events.stream().noneMatch(e -> e instanceof SimEvent.ItemUsed));
         sim.submit(new Command.UseItem("pao"));
         events = sim.stepPaused();
-        assertTrue(events.contains(new SimEvent.ItemUsed("pao")));
+        assertTrue(events.contains(new SimEvent.ItemUsed("pao")), events.toString());
         assertEquals(20, sim.view().hunger(), 0.5);
         assertEquals(1, sim.view().inventory().get("pao"));
         sim.submit(new Command.UseItem("martelo")); // não se come martelo
@@ -392,20 +400,23 @@ class EconomyTest {
     @Test
     void pegarDoQueTemDonoERouboSeAlguemVir() {
         Simulation sim = newSim(14);
-        at(sim, 10); // a aldeã trabalha no feno
+        at(sim, 10); // o moleiro e a filha trabalham na mó
+        enter(sim, "moinho");
         double[] feno = sim.economy().containerPoint(content.containers().get("sacos_moinho"));
         step(sim, new Command.Teleport(feno[0], feno[1]));
         step(sim, new Command.OpenContainer("sacos_moinho"));
         TradeView t = sim.tradeView();
         assertTrue(t.container());
-        assertEquals("Moleiro", t.owner());
+        assertEquals("Tomé, o moleiro", t.owner());
         assertEquals(3, t.offers().get(0).qty());
+        int nalia = sim.view().opinion("nalia");
         List<SimEvent> events = step(sim, new Command.TakeItem("farinha"));
         assertEquals(1, sim.view().inventory().get("farinha"));
         assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.DeedSeen d && d.deedId().equals("roubo")));
-        assertEquals(-30, sim.view().opinion("aldea"));
-        assertTrue(sim.view().npcKnowledge("aldea").containsKey("jogador_roubou"));
+        assertEquals(nalia - 30, sim.view().opinion("nalia"));
+        assertTrue(sim.view().npcKnowledge("nalia").containsKey("jogador_roubou"));
         step(sim, new Command.CloseTrade());
+        enter(sim, "vila");
 
         // de madrugada, todo mundo dorme: ninguém vê
         at(sim, 2);
@@ -420,7 +431,8 @@ class EconomyTest {
         step(sim, new Command.CloseTrade());
 
         // longe do contêiner, o personagem anda até lá e abre ao chegar
-        step(sim, new Command.Teleport(feno[0] + 0.5, feno[1] + 0.5));
+        var praca = content.area("vila").spots().get("praca");
+        step(sim, new Command.Teleport(praca.x(), praca.y()));
         step(sim, new Command.MoveTo(horta[0] - 6, horta[1]));
         for (int i = 0; i < 300 && sim.view().playerMoving(); i++) sim.step();
         step(sim, new Command.OpenContainer("cesto_horta"));
@@ -474,6 +486,7 @@ class EconomyTest {
 
         // não se salva com o comércio aberto
         at(a, 16);
+        step(a, new Command.EnterArea("taverna", null));
         step(a, new Command.OpenTrade("taverna"));
         assertThrows(etrava.sim.save.SaveGame.SaveException.class, () -> a.save(dir.resolve("x.etrava"), ""));
     }

@@ -57,6 +57,7 @@ public final class Rules {
             case "skill" -> new Condition.Skill(text(v, "name"), number(v, "min"), number(v, "max"));
             case "reputation" -> new Condition.Reputation(text(v, "faction"), integer(v, "min"), integer(v, "max"));
             case "job" -> new Condition.Job(v.isTextual() ? v.asText() : text(v, "id"));
+            case "here" -> new Condition.Here(v.isTextual() ? v.asText() : text(v, "area"));
             default -> throw new IllegalArgumentException("condição desconhecida: '" + key + "'");
         };
     }

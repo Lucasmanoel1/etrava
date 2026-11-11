@@ -1,0 +1,40 @@
+# Lina, filha de Marta. Quer ir embora; por enquanto, serve a mesa três.
+id: lina
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Se for pedir, pede rápido, que a mesa três está com sede."
+    choices:
+      - {text: "Cansada?", goto: cansada}
+      - {text: "O que andam dizendo?", goto: novidades}
+      - text: "Quem é a moça de Caldris?"
+        when: {npc: {id: agrimensora, status: present}}
+        goto: moca
+      - text: "Alguma ideia de quem leva as maçãs da Celi?"
+        when: {arc: {id: h1_frutas, stage: sumindo}}
+        goto: macas
+      - text: "Lauro ganha sempre, não?"
+        when: {knows: {who: player, fact: lauro_ganha_sempre}}
+        goto: lauro
+      - {text: "Nada, obrigado."}
+  cansada:
+    text: "Do mesmo caminho. Da mesma mesa três. Um dia passa uma caravana que presta, eu subo e só desço onde ninguém me conhece."
+    effects: [{learn: {who: player, fact: lina_quer_partir, certainty: claim}}]
+  lauro:
+    text: "O dado dele gosta dele. Eu não confio em nada que gosta tanto de alguém."
+    effects: [{learn: {who: player, fact: lauro_ganha_sempre, certainty: claim}}]
+  moca:
+    text: "A da corda de nós? Pergunta por Mir no balcão toda noite, baixinho, como quem pergunta o preço de uma coisa que não vai comprar."
+    effects: [{learn: {who: player, fact: agrimensora_pergunta_mir, certainty: claim}}]
+  macas:
+    text: "Ideia, não. Mas o Pipo vive atrás do feno do pomar no fim da tarde, falando sozinho. E menino não fala sozinho com feno."
+    effects: [{learn: {who: player, fact: cachorro_escondido, certainty: claim}}]
+  novidades:
+    gossip: nada
+    text: "Nas mesas, dizem:"
+    choices:
+      - {text: "Mais alguma?", goto: novidades}
+      - {text: "Hm."}
+  nada:
+    text: "Hoje só falam do tempo. O tempo está bom, então nem disso."

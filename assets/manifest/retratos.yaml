@@ -1,7 +1,17 @@
 # Gerado por `gradlew importPortraits`. Não edite à mão.
+- id: retrato.agrimensora
+  type: portrait
+  file: retratos/agrimensora.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
 - id: retrato.aldea
   type: portrait
   file: retratos/aldea.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.anselmo
+  type: portrait
+  file: retratos/anselmo.png
   source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
   license: "Dreamina — conferir termos de uso comercial antes do release"
 - id: retrato.aprendiz
@@ -9,9 +19,64 @@
   file: retratos/aprendiz.png
   source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
   license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.avel
+  type: portrait
+  file: retratos/avel.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.bento
+  type: portrait
+  file: retratos/bento.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.ciro
+  type: portrait
+  file: retratos/ciro.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.comerciante_posto
+  type: portrait
+  file: retratos/comerciante_posto.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.curandeira
+  type: portrait
+  file: retratos/curandeira.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.estranho
+  type: portrait
+  file: retratos/estranho.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.estudioso
+  type: portrait
+  file: retratos/estudioso.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
 - id: retrato.ferreiro
   type: portrait
   file: retratos/ferreiro.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.firmino
+  type: portrait
+  file: retratos/firmino.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.gil
+  type: portrait
+  file: retratos/gil.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.lauro
+  type: portrait
+  file: retratos/lauro.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.lina
+  type: portrait
+  file: retratos/lina.png
   source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
   license: "Dreamina — conferir termos de uso comercial antes do release"
 - id: retrato.moleiro
@@ -19,9 +84,34 @@
   file: retratos/moleiro.png
   source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
   license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.nalia
+  type: portrait
+  file: retratos/nalia.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.pipo
+  type: portrait
+  file: retratos/pipo.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.registrador
+  type: portrait
+  file: retratos/registrador.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
 - id: retrato.taberneira
   type: portrait
   file: retratos/taberneira.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.tobias
+  type: portrait
+  file: retratos/tobias.png
+  source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: retrato.vessa
+  type: portrait
+  file: retratos/vessa.png
   source: "Gerado por IA (Dreamina, Seedream 5.5) e convertido para a paleta do jogo"
   license: "Dreamina — conferir termos de uso comercial antes do release"
 - id: retrato.viajante

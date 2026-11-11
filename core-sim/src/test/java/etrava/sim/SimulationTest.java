@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 /** Testes com o conteúdo real do repositório (pasta content/). */
 class SimulationTest {
-    private static final String AREA = "area_teste";
+    private static final String AREA = "vila";
     private static ContentDb content;
 
     @BeforeAll
@@ -44,23 +44,23 @@ class SimulationTest {
     @Test
     void mapaDeTesteCarregaCamadas() {
         AreaDef area = content.area(AREA);
-        assertEquals(40, area.width());
-        assertEquals("terra", area.terrainAt(19, 2));
-        assertEquals("pedra", area.terrainAt(15, 15));
-        assertEquals("grama", area.terrainAt(2, 2));
+        assertEquals(64, area.width());
+        assertEquals("terra", area.terrainAt(5, 31), "a estrada atravessa a vila");
+        assertEquals("pedra", area.terrainAt(32, 31), "a praça é calçada");
+        assertEquals("plantio", area.terrainAt(40, 52), "a lavoura de Bento");
         assertEquals(AreaDef.NO_TERRAIN, area.terrainAt(-1, 0));
         assertTrue(area.collisionAt(0, 0));
         assertTrue(area.collisionAt(99, 99));
-        assertFalse(area.collisionAt(9, 11), "a porta da oficina fica aberta");
-        assertTrue(area.spots().containsKey("oficina_bancada"));
+        assertFalse(area.collisionAt(30, 33));
+        assertTrue(area.spots().containsKey("oficina_porta"));
         assertFalse(area.props().isEmpty());
     }
 
     @Test
     void jogadorComecaNoSpawn() {
         WorldView v = newSim().view();
-        assertEquals(20.5, v.playerX(), 1e-9);
-        assertEquals(23.5, v.playerY(), 1e-9);
+        assertEquals(30.0, v.playerX(), 1e-9);
+        assertEquals(33.0, v.playerY(), 1e-9);
         assertEquals(AREA, v.areaId());
         assertEquals(42, v.seed());
     }
@@ -68,11 +68,11 @@ class SimulationTest {
     @Test
     void cliqueLevaOJogadorAteODestino() {
         Simulation sim = newSim();
-        sim.submit(new Command.MoveTo(17.5, 28.5));
+        sim.submit(new Command.MoveTo(26.0, 31.0));
         List<SimEvent> events = run(sim, 30 * 10);
         assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.PlayerArrived));
-        assertEquals(17.5, sim.view().playerX(), 1e-6);
-        assertEquals(28.5, sim.view().playerY(), 1e-6);
+        assertEquals(26.0, sim.view().playerX(), 1e-6);
+        assertEquals(31.0, sim.view().playerY(), 1e-6);
         assertFalse(sim.view().playerMoving());
         assertFalse(sim.view().hasDestination());
     }
@@ -80,32 +80,32 @@ class SimulationTest {
     @Test
     void jogadorEntraNaOficinaPelaPortaSemAtravessarParede() {
         Simulation sim = newSim();
-        sim.submit(new Command.MoveTo(8.5, 9.0)); // ponto "oficina_bancada", dentro da construção
+        sim.submit(new Command.MoveTo(14.8, 28.8)); // ponto "forja": o caminho contorna casas e árvores
         for (int i = 0; i < 30 * 30; i++) {
             sim.step();
             assertFalse(sim.nav().isBlockedAt(sim.view().playerX(), sim.view().playerY()),
                     "jogador dentro de obstáculo no tick " + i);
         }
-        assertEquals(8.5, sim.view().playerX(), 1e-6);
-        assertEquals(9.0, sim.view().playerY(), 1e-6);
+        assertEquals(14.8, sim.view().playerX(), 1e-6);
+        assertEquals(28.8, sim.view().playerY(), 1e-6);
     }
 
     @Test
     void cliqueEmObstaculoAjustaODestino() {
         Simulation sim = newSim();
-        sim.submit(new Command.MoveTo(20, 20)); // em cima do poço
+        sim.submit(new Command.MoveTo(34.5, 33.5)); // em cima do poço
         List<SimEvent> events = run(sim, 30 * 10);
         assertTrue(events.stream().anyMatch(e -> e instanceof SimEvent.DestinationAdjusted));
         assertFalse(sim.nav().isBlockedAt(sim.view().playerX(), sim.view().playerY()));
-        assertTrue(Math.hypot(sim.view().playerX() - 20, sim.view().playerY() - 20) < 2.0);
+        assertTrue(Math.hypot(sim.view().playerX() - 34.5, sim.view().playerY() - 33.5) < 2.0);
     }
 
     @Test
     void wasdAndaEParaNaParede() {
         Simulation sim = newSim();
-        sim.submit(new Command.MoveDir(0, 1)); // sul, em direção à borda do mapa
+        sim.submit(new Command.MoveDir(0, 1)); // sul, até a cerca do pomar
         run(sim, 30 * 20);
-        assertTrue(sim.view().playerY() > 38.0, "deveria ter chegado perto da borda");
+        assertTrue(sim.view().playerY() > 40.0, "deveria ter chegado até a cerca");
         assertFalse(sim.nav().isBlockedAt(sim.view().playerX(), sim.view().playerY()));
         assertFalse(sim.view().playerMoving(), "encostado na parede não está andando");
         sim.submit(new Command.MoveDir(0, 0));

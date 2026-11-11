@@ -1,0 +1,233 @@
+# Histórias menores H1–H5 (PRD 8.5). Todas andam sozinhas; o jogador pode mudar o fim, nunca é
+# esperado. Pelo menos duas terminam bem sem ninguém fazer nada (AT-21): H1 e H5.
+
+# ---------------------------------------------------------------- H1
+# O ladrão de frutas. Celi reclama que somem maçãs do pomar. É Pipo, o menino de Bento, que dá
+# as maçãs a um cachorro manco escondido atrás do feno, no fundo do pomar (explicação simples, L8).
+- id: h1_frutas
+  name: O ladrão de frutas
+  start: sumindo
+  stages:
+    sumindo:
+      chronicle: somem maçãs do pomar de Celi, toda tarde
+      onEnter:
+        - {learn: {who: aldea, fact: frutas_somem, certainty: witnessed}}
+        - {learn: {who: taberneira, fact: frutas_somem, certainty: claim}}
+        - {learn: {who: pipo, fact: cachorro_escondido, certainty: witnessed}}
+      transitions:
+        - {when: {flag: contou_celi_pipo}, to: contado}
+        - {when: {flag: guardou_segredo_pipo}, to: segredo_guardado}
+      timeout: {after: {days: 7, jitterHours: 48}, to: celi_descobre}
+    celi_descobre:
+      terminal: true
+      outcome: leve
+      chronicle: Celi pegou Pipo no flagra dando maçã a um cachorro manco; o cachorro agora dorme na porta dela
+      onEnter:
+        - {learn: {who: aldea, fact: cachorro_da_celi, certainty: witnessed}}
+        - {learn: {who: taberneira, fact: cachorro_da_celi, certainty: rumor}}
+        - {learn: {who: pipo, fact: cachorro_da_celi, certainty: witnessed}}
+    contado:
+      terminal: true
+      outcome: leve
+      chronicle: o aprendiz contou a Celi quem levava as maçãs; ela foi ver o cachorro, e voltou com ele no colo
+      onEnter:
+        - {learn: {who: aldea, fact: cachorro_da_celi, certainty: witnessed}}
+        - {learn: {who: taberneira, fact: cachorro_da_celi, certainty: rumor}}
+        - {opinion: {npc: pipo, add: -10}}
+        - {opinion: {npc: aldea, add: 8}}
+    segredo_guardado:
+      terminal: true
+      outcome: leve
+      chronicle: o aprendiz e Pipo passaram a dividir o pão com o cachorro; as maçãs pararam de sumir
+      onEnter:
+        - {learn: {who: aldea, fact: frutas_pararam, certainty: witnessed}}
+        - {remember: {npc: pipo, type: ajuda, subject: player}}
+
+# ---------------------------------------------------------------- H2
+# A divisa. Bento e Gil disputam a faixa entre os dois campos. As estacas da comitiva põem a linha
+# do lado de Bento: piora tudo. O livro de enterros de Firmino diz que a faixa era o caminho dos
+# mortos até o cemitério velho — de ninguém, de todos.
+- id: h2_divisa
+  name: A divisa
+  start: disputa
+  stages:
+    disputa:
+      chronicle: Bento e Gil discutem por uma faixa de terra entre os campos
+      onEnter:
+        - {learn: {who: bento, fact: divisa_disputada, certainty: witnessed}}
+        - {learn: {who: gil, fact: divisa_disputada, certainty: witnessed}}
+        - {learn: {who: lauro, fact: divisa_disputada, version: piada, certainty: rumor}}
+        - {learn: {who: firmino, fact: divisa_era_caminho, certainty: witnessed}}
+      transitions:
+        - {when: {flag: acordo_divisa}, to: acordo}
+        - {when: {prop: {key: estacas_divisa, state: fincada}}, to: demarcada}
+      timeout: {after: {days: 20}, to: piorou}
+    demarcada:
+      chronicle: as estacas de Caldris passaram pela divisa e deram a faixa a Gil
+      onEnter:
+        - {learn: {who: bento, fact: estacas_favorecem_gil, certainty: witnessed}}
+        - {learn: {who: gil, fact: estacas_favorecem_gil, certainty: witnessed}}
+        - {learn: {who: taberneira, fact: estacas_favorecem_gil, certainty: rumor}}
+      transitions:
+        - {when: {flag: acordo_divisa}, to: acordo}
+      timeout:
+        after: {days: 3, jitterHours: 24}
+        choose:
+          - {weight: 2, to: piorou}
+          - {weight: 1, to: firmino_resolve}
+    acordo:
+      terminal: true
+      outcome: leve
+      chronicle: Bento e Gil deixaram a faixa como caminho, de todos, e arrancaram juntos as estacas
+      onEnter:
+        - {setProp: {key: estacas_divisa, state: arrancada}}
+        - {learn: {who: taberneira, fact: divisa_acordo, certainty: rumor}}
+        - {learn: {who: bento, fact: divisa_acordo, certainty: witnessed}}
+        - {learn: {who: gil, fact: divisa_acordo, certainty: witnessed}}
+        - {opinion: {npc: bento, add: 10}}
+        - {opinion: {npc: gil, add: 10}}
+    firmino_resolve:
+      terminal: true
+      outcome: leve
+      chronicle: Firmino levou o livro de enterros à divisa; Bento e Gil leram, resmungaram e deixaram a faixa como caminho
+      onEnter:
+        - {setProp: {key: estacas_divisa, state: arrancada}}
+        - {learn: {who: taberneira, fact: divisa_acordo, certainty: rumor}}
+        - {learn: {who: bento, fact: divisa_acordo, certainty: witnessed}}
+    piorou:
+      terminal: true
+      outcome: ambiguo
+      chronicle: Bento arrancou as estacas de noite; Gil foi reclamar com o registrador; os dois não se falam mais
+      onEnter:
+        - {setProp: {key: estacas_divisa, state: arrancada}}
+        - {learn: {who: gil, fact: bento_arrancou_estacas, certainty: witnessed}}
+        - {learn: {who: taberneira, fact: bento_arrancou_estacas, certainty: rumor}}
+        - {learn: {who: lauro, fact: bento_arrancou_estacas, certainty: rumor}}
+
+# ---------------------------------------------------------------- H3
+# Os apostadores da taverna (Cena 1 da lore). Lauro ganha mais do que a sorte explica: o dado dele
+# cai do mesmo lado. Um dia Ciro perde demais e a mesa vira.
+- id: h3_apostas
+  name: Os apostadores da taverna
+  start: rotina
+  stages:
+    rotina:
+      chronicle: Lauro e Ciro jogam dados na taverna toda noite
+      onEnter:
+        - {learn: {who: taberneira, fact: lauro_ganha_sempre, certainty: witnessed}}
+        - {learn: {who: ciro, fact: lauro_ganha_sempre, certainty: witnessed}}
+      transitions:
+        - {when: {flag: ciro_sabe_dado}, to: briga}
+      timeout: {after: {days: 9, jitterHours: 48}, to: briga}
+    briga:
+      chronicle: Ciro virou a mesa da taverna e chamou Lauro de ladrão; Marta pôs os dois para fora
+      onEnter:
+        - {learn: {who: taberneira, fact: briga_dados, certainty: witnessed}}
+        - {learn: {who: lina, fact: briga_dados, certainty: witnessed}}
+        - {learn: {who: gil, fact: briga_dados, certainty: rumor}}
+      timeout:
+        after: {days: 2, jitterHours: 12}
+        choose:
+          - {when: {flag: ciro_sabe_dado}, to: lauro_barrado}
+          - {weight: 1, to: as_pazes}
+    as_pazes:
+      terminal: true
+      outcome: leve
+      chronicle: Lauro e Ciro voltaram a jogar dois dias depois, como se nada fosse
+      onEnter:
+        - {learn: {who: taberneira, fact: apostadores_voltaram, certainty: witnessed}}
+    lauro_barrado:
+      terminal: true
+      outcome: ambiguo
+      chronicle: Marta proibiu o dado de Lauro na taverna; Lauro devolveu umas moedas a Ciro e joga sozinho
+      onEnter:
+        - {learn: {who: taberneira, fact: dado_viciado, certainty: witnessed}}
+        - {learn: {who: lina, fact: dado_viciado, certainty: witnessed}}
+        - {opinion: {npc: lauro, add: -20}}
+        - {opinion: {npc: ciro, add: 15}}
+
+# ---------------------------------------------------------------- H4
+# O trabalho temporário. Ibbo dá serviço no Posto (carga de dia, vigia de noite). Vessa vê rastros
+# na curva; numa noite os saqueadores vêm ao Posto. Quem estiver lá luta, foge ou se rende.
+- id: h4_posto
+  name: O trabalho no Posto
+  start: normal
+  stages:
+    normal:
+      chronicle: Ibbo, do Posto, procura braço para carga e vigia
+      onEnter:
+        - {learn: {who: comerciante_posto, fact: posto_procura_braco, certainty: witnessed}}
+        - {learn: {who: viajante, fact: posto_procura_braco, certainty: rumor}}
+      timeout: {after: {days: 8, jitterHours: 60}, to: rastros}
+    rastros:
+      chronicle: Vessa achou rastros de gente acampada na curva da estrada
+      onEnter:
+        - {learn: {who: vessa, fact: rastros_na_curva, certainty: witnessed}}
+        - {learn: {who: comerciante_posto, fact: rastros_na_curva, certainty: claim}}
+        - {learn: {who: tobias, fact: rastros_na_curva, certainty: claim}}
+      transitions:
+        - {when: {time: {hourFrom: 21, hourTo: 23}}, to: ataque}
+      timeout: {after: {days: 1}, to: ataque}
+    ataque:
+      chronicle: saqueadores vieram ao Posto de noite
+      transitions:
+        # quem estava lá naquela noite (de vigia ou não) fez diferença, ganhando ou perdendo
+        - {when: {here: estrada}, to: defendido}
+      timeout: {after: {hours: 2}, to: roubado}
+    defendido:
+      terminal: true
+      outcome: leve
+      chronicle: o aprendiz estava no Posto quando os saqueadores chegaram; levaram menos do que vieram buscar
+      onEnter:
+        - {learn: {who: comerciante_posto, fact: posto_defendido, certainty: witnessed}}
+        - {learn: {who: vessa, fact: posto_defendido, certainty: witnessed}}
+        - {learn: {who: viajante, fact: posto_defendido, certainty: rumor}}
+        - {opinion: {npc: comerciante_posto, add: 10}}
+        - {opinion: {npc: vessa, add: 10}}
+    roubado:
+      terminal: true
+      outcome: ambiguo
+      chronicle: os saqueadores levaram dois fardos de sal do Posto; Vessa ficou com um corte no braço
+      onEnter:
+        - {learn: {who: comerciante_posto, fact: posto_roubado, certainty: witnessed}}
+        - {learn: {who: vessa, fact: posto_roubado, certainty: witnessed}}
+        - {learn: {who: viajante, fact: posto_roubado, certainty: rumor}}
+
+# ---------------------------------------------------------------- H5
+# A festa da colheita. Uma noite feliz na praça. No meio dela, o velho Anselmo diz que vão passar o
+# trem por cima dos mortos — e dias depois as estacas de Caldris atravessam o cemitério (gancho 30).
+- id: h5_festa
+  name: A festa da colheita
+  start: antes
+  stages:
+    antes:
+      chronicle: o trigo está quase todo no celeiro
+      timeout: {after: {days: 8, jitterHours: 30}, to: anuncio}
+    anuncio:
+      chronicle: Marta anunciou a festa da colheita para a noite seguinte
+      onEnter:
+        - {learn: {who: taberneira, fact: festa_marcada, certainty: witnessed}}
+        - {learn: {who: aldea, fact: festa_marcada, certainty: claim}}
+        - {learn: {who: lina, fact: festa_marcada, certainty: claim}}
+        - {learn: {who: bento, fact: festa_marcada, certainty: claim}}
+      timeout: {after: {days: 1}, to: vespera}
+    vespera:
+      chronicle: o vilarejo arruma a praça para a festa
+      transitions:
+        - {when: {time: {hourFrom: 18, hourTo: 22}}, to: festa}
+      timeout: {after: {days: 1}, to: festa}
+    festa:
+      chronicle: a festa da colheita na praça, com música, sopa de graça e Lauro dançando mal
+      onEnter:
+        - {setFlag: festa}
+        - {learn: {who: firmino, fact: anselmo_trem_cemiterio, certainty: witnessed}}
+        - {learn: {who: lina, fact: anselmo_trem_cemiterio, version: piada, certainty: rumor}}
+      timeout: {after: {hours: 6}, to: acabou}
+    acabou:
+      terminal: true
+      outcome: leve
+      chronicle: a festa acabou tarde; ninguém brigou, e o trigo ficou guardado
+      onEnter:
+        - {setFlag: {name: festa, value: false}}
+        - {learn: {who: taberneira, fact: festa_foi_boa, certainty: witnessed}}
+        - {learn: {who: aldea, fact: festa_foi_boa, certainty: witnessed}}

@@ -12,17 +12,34 @@
 # Um trabalho por dia, de cada. Faminto, rende e ensina metade.
 # Oferece-se pela conversa: escolha com {when: {job: <id>}} e efeito {startJob: <id>}.
 
-# Até Avel chegar (M7), quem toca a oficina é o ferreiro.
+# A oficina de Avel: o serviço de todo dia do aprendiz (Origem I).
 - id: oficina
   name: Serviço na oficina
-  giver: ferreiro
-  at: vila_ref/oficina_fora
+  giver: avel
+  at: oficina/bancada
   from: "06:00"
   to: "11:00"
   hours: 4
+  pay: 8
+  paySkill: oficio
+  train: {oficio: 0.9, observacao: 0.1}
+  when: {opinion: {npc: npc, min: -20}}
+  onFinish:
+    - {opinion: {npc: avel, add: 1}}
+    - {addVar: {name: dias_de_trabalho, value: 1}}
+  gossip: 0.3
+
+# Sem Avel, quem passa encomenda ao aprendiz é Doran (A2: partiu ou averiguação).
+- id: forja
+  name: Bater prego na forja
+  giver: ferreiro
+  at: vila/forja
+  from: "06:00"
+  to: "12:00"
+  hours: 4
   pay: 9
   paySkill: oficio
-  train: {oficio: 0.8, vigor: 0.2}
+  train: {oficio: 0.7, vigor: 0.3}
   when: {opinion: {npc: npc, min: -20}}
   onFinish:
     - {opinion: {npc: ferreiro, add: 1}}
@@ -30,26 +47,44 @@
   gossip: 0.5
 
 - id: colheita
-  name: Ajudar na colheita
+  name: Colher no pomar
   giver: aldea
-  at: vila_ref/feno
+  at: vila/pomar
   from: "09:00"
   to: "11:30"
   hours: 3
   pay: 6
   paySkill: vigor
-  train: {vigor: 0.7, observacao: 0.2}
+  train: {vigor: 0.6, observacao: 0.3}
   when: {opinion: {npc: npc, min: -20}}
   onFinish:
-    - {give: {item: legumes, qty: 2}}
+    - {give: {item: maca, qty: 2}}
     - {opinion: {npc: aldea, add: 1}}
     - {addVar: {name: dias_de_trabalho, value: 1}}
   gossip: 0.6
 
+# A3: abrir vala de drenagem no campo de Bento. Na segunda vala, a terra cede.
+- id: vala_campo
+  name: Abrir vala no campo
+  giver: bento
+  at: vila/campo_bento
+  from: "05:00"
+  to: "10:00"
+  hours: 4
+  pay: 7
+  paySkill: vigor
+  train: {vigor: 0.9}
+  when: {all: [{opinion: {npc: npc, min: -20}}, {arc: {id: a3_estrutura, stage: antes}}]}
+  onFinish:
+    - {addVar: {name: valas_abertas, value: 1}}
+    - {opinion: {npc: bento, add: 1}}
+    - {addVar: {name: dias_de_trabalho, value: 1}}
+  gossip: 0.4
+
 - id: carga_posto
   name: Descarregar no Posto
   giver: comerciante_posto
-  at: area_teste/praca
+  at: estrada/posto_carga
   from: "07:00"
   to: "13:00"
   hours: 5
@@ -61,3 +96,21 @@
     - {opinion: {npc: comerciante_posto, add: 1}}
     - {addVar: {name: dias_de_trabalho, value: 1}}
   gossip: 0.7
+
+# H4: vigiar o Posto de noite. Se os saqueadores vierem, o trabalho é interrompido por eles.
+- id: vigia_posto
+  name: Vigiar o Posto
+  giver: comerciante_posto
+  at: estrada/posto_guarda
+  from: "19:00"
+  to: "21:30"
+  hours: 5
+  pay: 12
+  paySkill: luta
+  train: {observacao: 0.5, luta: 0.2}
+  when: {opinion: {npc: npc, min: -10}}
+  onFinish:
+    - {opinion: {npc: comerciante_posto, add: 2}}
+    - {opinion: {npc: vessa, add: 1}}
+    - {addVar: {name: dias_de_trabalho, value: 1}}
+  gossip: 0.2

@@ -1,0 +1,16 @@
+# Firmino, o coveiro; cuida do cemitério (H5).
+id: firmino
+name: Firmino, o coveiro
+layer: B
+sprite: personagem.firmino
+dialogue: firmino
+faction: pedra_mansa
+about: "Cuida do cemitério. Conhece cada morto pelo nome e cada vivo pelo jeito de andar."
+relations: [{npc: anselmo, kind: amizade}]
+schedule:
+  - {from: "19:00", to: "22:00", do: festejar, at: vila/praca_banco, when: {flag: festa}}
+  - {from: "20:00", to: "05:00", do: dormir, at: vila/casa_firmino, hidden: true}
+  - {from: "05:00", to: "12:00", do: cuidar, at: vila/cemiterio_dentro}
+  - {from: "12:00", to: "13:00", do: comer, at: vila/casa_firmino}
+  - {from: "13:00", to: "17:00", do: cuidar, at: vila/cemiterio}
+  - {from: "17:00", to: "20:00", do: sentar, at: vila/casa_firmino}

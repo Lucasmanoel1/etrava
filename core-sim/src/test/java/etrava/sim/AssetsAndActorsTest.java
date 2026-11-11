@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 /** Manifesto de assets e cena de referência (M1). */
 class AssetsAndActorsTest {
-    private static final String AREA = "vila_ref";
+    private static final String AREA = "vila";
     private static Path contentDir, assetsDir;
     private static ContentDb content;
 
@@ -72,8 +72,11 @@ class AssetsAndActorsTest {
         ContentValidator.Report report = ContentValidator.validate(contentDir, assetsDir);
         assertEquals(List.of(), report.errors());
         assertTrue(report.ok());
-        assertTrue(report.warnings().stream().anyMatch(w -> w.contains("prop.bancada") && w.contains("arquivo ausente")),
-                "imagem ausente é aviso, não erro: " + report.warnings());
+        // AT-19: todo NPC nomeado tem retrato de verdade (nenhum arquivo ausente no manifesto)
+        assertTrue(report.warnings().stream().noneMatch(w -> w.contains("arquivo ausente")), report.warnings().toString());
+        AssetManifest manifest = AssetManifest.load(assetsDir);
+        for (var npc : content.npcs().values())
+            if (!"C".equals(npc.layer())) assertTrue(manifest.has(npc.portraitId()), "sem retrato: " + npc.id());
     }
 
     @Test
@@ -105,7 +108,7 @@ class AssetsAndActorsTest {
     @Test
     void cenaDeReferenciaTemConstrucoesTerrenosEFigurante() {
         AreaDef area = content.area(AREA);
-        assertEquals(List.of("grama", "pedra", "terra"), List.copyOf(area.terrainsUsed()));
+        assertEquals(List.of("grama", "pedra", "plantio", "terra"), List.copyOf(area.terrainsUsed()));
         assertTrue(area.props().stream().anyMatch(p -> p.propId().equals("casa_taverna")));
         assertTrue(area.spots().containsKey("entrada"));
         assertEquals("personagem.aldea", content.npcs().get("aldea").sprite());
@@ -114,8 +117,8 @@ class AssetsAndActorsTest {
     @Test
     void construcaoBloqueiaAPassagem() {
         Simulation sim = Simulation.newGame(content, 1, AREA);
-        assertTrue(sim.nav().isBlockedAt(14.5, 15.5), "centro da oficina");
-        assertFalse(sim.nav().isBlockedAt(14.5, 19.2), "diante da porta");
+        assertTrue(sim.nav().isBlockedAt(22.5, 24.5), "centro da oficina");
+        assertFalse(sim.nav().isBlockedAt(22.5, 27.6), "diante da porta");
     }
 
     @Test

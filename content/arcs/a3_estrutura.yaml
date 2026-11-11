@@ -1,0 +1,93 @@
+# A3 — A estrutura enterrada (PRD 8.5, gancho 03). Q-07: ver D-063.
+#
+# Bento manda abrir uma vala de drenagem no campo. Na segunda vala aberta (pelo jogador, no
+# trabalho `vala_campo`) ou por volta do dia 7 (pelo próprio Bento), a terra cede e aparece
+# pedra trabalhada lá embaixo. Avel vai olhar no fim da tarde e diz que não reconhece nada.
+# O buraco fica aberto alguns dias; depois alguém o tapa. Não explica nada (PRD 8.5).
+#
+# Desfechos (nenhum trágico; nenhum depende de luta, RF-225):
+#   tapado        ambiguo   Bento tapa o buraco e planta por cima                         (padrão)
+#   registrado    ambiguo   a comitiva anota o achado e manda tapar; um relatório vai para Caldris
+#   mostrado      leve      o jogador desceu, trouxe o que achou e mostrou a alguém; o vilarejo
+#                           fala disso por uma semana, e Bento tapa o buraco assim mesmo
+- id: a3_estrutura
+  name: A estrutura enterrada
+  major: true
+  start: antes
+  stages:
+    antes:
+      chronicle: o campo de Bento está encharcado; ele quer abrir valas
+      transitions:
+        - {when: {var: {name: valas_abertas, min: 2}}, to: desabamento}
+      timeout: {after: {days: 6, jitterHours: 36}, to: desabamento}
+
+    desabamento:
+      chronicle: a terra cedeu no campo de Bento; lá embaixo há pedra trabalhada
+      onEnter:
+        - {setProp: {key: buraco_campo, state: aberto}}
+        - {learn: {who: bento, fact: campo_cedeu, certainty: witnessed}}
+        - {learn: {who: pipo, fact: campo_cedeu, certainty: witnessed}}
+        - {learn: {who: moleiro, fact: campo_cedeu, certainty: witnessed}}
+        - {learn: {who: gil, fact: campo_cedeu, version: exagero, certainty: rumor}}
+        - {learn: {who: bento, fact: avel_olhou_buraco, certainty: witnessed}}
+        - {learn: {who: avel, fact: campo_cedeu, certainty: witnessed}}
+      transitions:
+        - {when: {flag: mostrou_achado}, to: mostrado}
+      timeout:
+        after: {days: 6, jitterHours: 24}
+        choose:
+          - when: {arc: {id: a2_avel, stage: comitiva}}
+            to: registrado
+          - {weight: 1, to: tapado}
+
+    tapado:
+      terminal: true
+      outcome: ambiguo
+      chronicle: Bento tapou o buraco com terra e pedra e plantou por cima
+      onEnter:
+        - {setProp: {key: buraco_campo, state: tapado}}
+        - {learn: {who: bento, fact: buraco_tapado, certainty: witnessed}}
+        - {learn: {who: taberneira, fact: buraco_tapado, certainty: rumor}}
+
+    registrado:
+      terminal: true
+      outcome: ambiguo
+      chronicle: o registrador de Caldris anotou o achado e mandou tapar o buraco; o relatório seguiu para o norte
+      onEnter:
+        - {setProp: {key: buraco_campo, state: tapado}}
+        - {learn: {who: bento, fact: comitiva_registrou_buraco, certainty: witnessed}}
+        - {learn: {who: taberneira, fact: comitiva_registrou_buraco, certainty: rumor}}
+        - {learn: {who: registrador, fact: comitiva_registrou_buraco, certainty: witnessed}}
+
+    mostrado:
+      terminal: true
+      outcome: leve
+      chronicle: o aprendiz desceu no buraco e voltou com uma placa riscada e lascas mornas; o vilarejo não fala de outra coisa
+      onEnter:
+        - {learn: {who: taberneira, fact: aprendiz_desceu, certainty: rumor}}
+        - {learn: {who: bento, fact: aprendiz_desceu, certainty: rumor}}
+        - {learn: {who: lauro, fact: aprendiz_desceu, version: exagero, certainty: rumor}}
+        - schedule:
+            hours: 48
+            effects:
+              - {setProp: {key: buraco_campo, state: tapado}}
+              - {learn: {who: bento, fact: buraco_tapado, certainty: witnessed}}
+
+# Dedução: quem leu a placa riscada do buraco e o desenho velho de Avel liga uma coisa à outra.
+- id: a3_deducao
+  name: As marcas em grupos de nove
+  start: espera
+  stages:
+    espera:
+      transitions:
+        - {when: {all: [{flag: leu_placa}, {flag: leu_esboco}]}, to: ligou}
+      timeout: {after: {days: 28}, to: nunca}
+    ligou:
+      terminal: true
+      outcome: neutro
+      chronicle: o aprendiz reparou que as marcas da placa do buraco e as do desenho de Avel são as mesmas
+      onEnter:
+        - {learn: {who: player, fact: simbolos_iguais, certainty: witnessed}}
+    nunca:
+      terminal: true
+      outcome: neutro

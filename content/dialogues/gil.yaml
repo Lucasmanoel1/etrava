@@ -1,0 +1,27 @@
+# Gil: o outro lado da divisa (H2). Foi o primeiro a mostrar papel à comitiva.
+id: gil
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Pode passar, mas pela minha terra, não pela do Bento. Lá dá azar."
+    choices:
+      - {text: "Que história é essa da divisa?", goto: divisa}
+      - text: "As estacas deram a faixa para você."
+        when: {arc: {id: h2_divisa, stage: demarcada}}
+        goto: deram
+      - text: "Se vocês dois não se acertarem, quem fica com a faixa é Caldris."
+        tag: Lábia
+        when: {all: [{skill: {name: labia, min: 15}}, {arc: {id: h2_divisa, stage: [disputa, demarcada]}}, {npc: {id: registrador, status: present}}, {not: {flag: acordo_divisa}}]}
+        relevant: true
+        channels: [ambiente, npc, dialogue]
+        effects: [{learn: {who: player, fact: faixa_para_caldris, certainty: claim}}, {setFlag: acordo_divisa}, {opinion: {npc: npc, add: 5}}]
+        goto: caldris
+      - {text: "Até."}
+  divisa:
+    text: "Meu pai plantou ali antes de o Bento nascer. Tenho até papel. Bom, tenho meio papel."
+    effects: [{learn: {who: player, fact: divisa_disputada, certainty: claim}}]
+  deram:
+    text: "Deram o que já era meu. Isso não é dar."
+  caldris:
+    text: "Caldris. Com aquele homem de óculos. Diz ao Bento que eu arranco a primeira estaca. Ele que arranque a segunda."

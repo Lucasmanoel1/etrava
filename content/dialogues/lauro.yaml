@@ -1,0 +1,53 @@
+# Lauro (H3). Na taverna, joga dados por duas moedas. O dado dele cai sempre do mesmo lado.
+id: lauro
+start:
+  - {when: {here: taverna}, goto: mesa}
+  - {goto: oi}
+nodes:
+  oi:
+    text: "De dia eu carrego feno. De noite eu fico rico. Volta de noite."
+  mesa:
+    text: "Duas moedas e um pouco de coragem. Sentou, jogou."
+    choices:
+      - text: "Uma rodada."
+        when: {has: {money: 2}}
+        goto: rodada
+      - text: "Esse dado cai sempre no seis."
+        tag: Observação
+        when: {all: [{skill: {name: observacao, min: 16}}, {not: {flag: viu_dado_viciado}}]}
+        goto: vicio
+      - {text: "Hoje não."}
+  rodada:
+    effects: [{take: {money: 2}}]
+    branch:
+      - {when: {chance: 0.38}, goto: ganhou}
+      - {goto: perdeu}
+  ganhou:
+    text: "Olha a sorte de quem não sabe jogar. Quatro moedas, e não se acostuma."
+    effects: [{give: {money: 4}}]
+    choices:
+      - text: "Outra."
+        when: {has: {money: 2}}
+        goto: rodada
+      - {text: "Chega."}
+  perdeu:
+    text: "O dado gosta de mim. Não leva para o lado pessoal."
+    choices:
+      - text: "Outra."
+        when: {has: {money: 2}}
+        goto: rodada
+      - {text: "Chega."}
+  vicio:
+    text: "Dado é assim, gosta de um número. Feito gente. Fica quieto, que eu te pago a próxima."
+    effects: [{setFlag: viu_dado_viciado}, {learn: {who: player, fact: dado_viciado, certainty: witnessed}}]
+    choices:
+      - text: "Paga com o quê?"
+        relevant: true
+        channels: [economia, npc]
+        effects: [{give: {money: 3}}, {opinion: {npc: npc, add: 5}}, {setFlag: lauro_comprou_silencio}]
+        goto: disso
+      - {text: "Não quero nada seu.", goto: nada}
+  disso:
+    text: "Disso. E da minha amizade, que vale menos."
+  nada:
+    text: "Então quer o quê? Ninguém quer nada."

@@ -99,6 +99,80 @@ final class TileArt {
         return mask(img, 3 + variant);
     }
 
+    /** Assoalho de tábuas (interiores), correndo no eixo x. */
+    static BufferedImage planks(int variant) {
+        Random rnd = new Random(4000 + variant);
+        double[] tone = new double[8];
+        for (int i = 0; i < tone.length; i++) tone[i] = 0.85 + rnd.nextDouble() * 0.25;
+        BufferedImage img = base((u, v) -> {
+            int row = (int) Math.floor(v * 4) % 4;
+            double inRow = v * 4 - Math.floor(v * 4);
+            double seam = (u * 2 + row * 0.37) % 1.0;
+            Color wood = mix(new Color(0x4A3526), new Color(0x7C5A40), 0.35 + fbm(u, v * 0.3, 8, 2, 40 + variant) * 0.4);
+            wood = shade(wood, tone[row + (seam < 0.5 ? 0 : 4)]);
+            if (inRow < 0.07 || seam < 0.012) wood = shade(wood, 0.55);
+            return wood;
+        });
+        return mask(img, 20 + variant);
+    }
+
+    /** Lajotas de pedra (taverna, moinho). */
+    static BufferedImage flagstone(int variant) {
+        Random rnd = new Random(5000 + variant);
+        BufferedImage img = base((u, v) -> shade(new Color(0x3A3634), 0.9 + 0.15 * fbm(u, v, 8, 2, 7)));
+        Graphics2D g = graphics(img);
+        int cells = 2;
+        for (int cy = 0; cy < cells; cy++) {
+            for (int cx = 0; cx < cells; cx++) {
+                double u = (cx + 0.5) / cells, v = (cy + 0.5) / cells;
+                Color c = jitter(mix(new Color(0x6B645A), OCHRE, rnd.nextDouble() * 0.25), rnd, 0.08);
+                double hw = 0.46 / cells;
+                wrapped(u, v, (x, y) -> {
+                    java.awt.geom.Path2D p = new java.awt.geom.Path2D.Double();
+                    p.moveTo(x + sx(-hw, -hw), y + sy(-hw, -hw, 0));
+                    p.lineTo(x + sx(hw, -hw), y + sy(hw, -hw, 0));
+                    p.lineTo(x + sx(hw, hw), y + sy(hw, hw, 0));
+                    p.lineTo(x + sx(-hw, hw), y + sy(-hw, hw, 0));
+                    p.closePath();
+                    g.setColor(c);
+                    g.fill(p);
+                    g.setColor(alpha(shade(c, 1.2), 0.5));
+                    g.setStroke(new BasicStroke(1.5f));
+                    g.draw(new Line2D.Double(x + sx(-hw, -hw), y + sy(-hw, -hw, 0), x + sx(hw, -hw), y + sy(hw, -hw, 0)));
+                });
+            }
+        }
+        g.dispose();
+        return mask(img, 30 + variant);
+    }
+
+    /** Lavoura: sulcos de terra no eixo y com trigo ou verdura. */
+    static BufferedImage crops(int variant) {
+        Random rnd = new Random(6000 + variant);
+        BufferedImage img = base((u, v) -> {
+            double furrow = Math.abs(Math.sin(u * Math.PI * 4));
+            Color soil = mix(new Color(0x3D2A1C), new Color(0x5A3F26), fbm(u, v, 4, 2, 50 + variant));
+            return shade(soil, 0.75 + furrow * 0.35);
+        });
+        Graphics2D g = graphics(img);
+        for (int row = 0; row < 4; row++) {
+            for (int i = 0; i < 26; i++) {
+                double u = (row + 0.5) / 4 + (rnd.nextDouble() - 0.5) * 0.04, v = rnd.nextDouble();
+                double h = 6 + rnd.nextDouble() * 9;
+                Color c = variant == 3 ? jitter(new Color(0x5A6438), rnd, 0.1)
+                        : jitter(mix(STRAW, OCHRE, rnd.nextDouble() * 0.5), rnd, 0.08);
+                wrapped(u, v, (x, y) -> {
+                    g.setColor(alpha(c, 0.9));
+                    g.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g.draw(new Line2D.Double(x, y, x + (rnd.nextDouble() - 0.5) * 3, y - h));
+                    g.draw(new Line2D.Double(x, y, x + 3, y - h * 0.8));
+                });
+            }
+        }
+        g.dispose();
+        return mask(img, 40 + variant);
+    }
+
     // ---------------------------------------------------------------- base
 
     private interface Shader { Color at(double u, double v); }

@@ -1,4 +1,4 @@
-# A curandeira é a primeira fonte de duas pistas do arco A1: a árvore tira algo da menina,
+# Odila, a curandeira. É a primeira fonte de duas pistas do arco A1: a árvore tira algo da menina,
 # e o que se tira de um talvez possa ser tirado de vários (a segunda fonte é o viajante).
 id: curandeira
 start:
@@ -11,6 +11,9 @@ nodes:
       - text: "É a menina do moinho."
         when: {arc: {id: a1_nalia, stage: [insonia, vozes]}}
         goto: cedo
+      - text: "Olha isto. Veio do buraco do campo."
+        when: {all: [{has: {item: lasca_fibra}}, {not: {flag: curandeira_viu_lasca}}]}
+        goto: lasca
       - {text: "Nada, não."}
   cedo:
     text: "Criança que não dorme, eu vejo toda semana. Árvore que acorda, nunca vi."
@@ -19,6 +22,9 @@ nodes:
     text: "Já sei o que vai perguntar. Todo mundo pergunta, e ninguém gosta da resposta."
     choices:
       - {text: "O que a menina tem?", goto: tira}
+      - text: "Olha isto. Veio do buraco do campo."
+        when: {all: [{has: {item: lasca_fibra}}, {not: {flag: curandeira_viu_lasca}}]}
+        goto: lasca
       - {text: "Bom dia para a senhora."}
   tira:
     text: "A menina não tem nada. A árvore é que tem a menina. Tira dela alguma coisa, toda noite."
@@ -42,3 +48,10 @@ nodes:
       - {text: "Vou pensar."}
   entra:
     text: "Já entrei em coisa pior por menos."
+  lasca:
+    text: "Morna. Pedra não esquenta sozinha, nem raiz. Isso tira o calor de algum lugar, e eu queria saber de onde antes de pôr a mão de novo."
+    effects:
+      - {setFlag: curandeira_viu_lasca}
+      - {setFlag: mostrou_achado}
+      - {learn: {who: player, fact: lasca_tira_calor, certainty: claim}}
+      - {learn: {who: npc, fact: aprendiz_desceu, certainty: witnessed}}

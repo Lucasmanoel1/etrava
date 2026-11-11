@@ -1,4 +1,4 @@
-# Nalia, filha do moleiro (PRD 8.5, arco A1). Nome vindo da lore.
+# Nalia, filha do moleiro (lore; arco A1).
 # Os blocos com `when` vêm primeiro e sobrepõem a rotina normal conforme o estágio do arco (RF-083).
 id: nalia
 name: Nalia
@@ -6,20 +6,21 @@ layer: A
 sprite: personagem.nalia
 dialogue: nalia
 opinion: 5
-relations: [{npc: moleiro, kind: familia}]
+relations: [{npc: moleiro, kind: familia}, {npc: pipo, kind: amizade}]
 faction: pedra_mansa
+about: "A filha do moleiro. Cuida da árvore velha do quintal."
 schedule:
-  # se ninguém fez nada: não sai mais de casa
-  - {from: "00:00", to: "12:00", do: de_cama, at: vila_ref/moinho_porta, hidden: true, when: {arc: {id: a1_nalia, stage: nalia_piora}}}
-  - {from: "12:00", to: "00:00", do: de_cama, at: vila_ref/moinho_porta, hidden: true, when: {arc: {id: a1_nalia, stage: nalia_piora}}}
+  # se ninguém fez nada: não sai mais da cama
+  - {from: "00:00", to: "12:00", do: de_cama, at: moinho/cama_nalia, when: {arc: {id: a1_nalia, stage: nalia_piora}}}
+  - {from: "12:00", to: "00:00", do: de_cama, at: moinho/cama_nalia, when: {arc: {id: a1_nalia, stage: nalia_piora}}}
   # sem dormir: passa a noite debaixo da árvore
-  - {from: "21:00", to: "05:00", do: vigiar, at: vila_ref/quintal_moinho, when: {arc: {id: a1_nalia, stage: [insonia, vozes, impasse]}}}
+  - {from: "21:00", to: "05:00", do: vigiar, at: vila/quintal_moinho, when: {arc: {id: a1_nalia, stage: [insonia, vozes, impasse]}}}
+  - {from: "18:00", to: "22:00", do: festejar, at: vila/praca, when: {all: [{flag: festa}, {not: {arc: {id: a1_nalia, stage: [vozes, impasse]}}}]}}
   # enquanto a árvore vive, as tardes são dela
-  - {from: "14:00", to: "18:00", do: descansar, at: vila_ref/quintal_moinho, when: {prop: {key: arvore_nalia, state: viva}}}
-  # rotina normal
-  - {from: "21:00", to: "06:00", do: dormir,      at: vila_ref/moinho_porta, hidden: true}
-  - {from: "06:00", to: "08:00", do: buscar_agua, at: vila_ref/poco}
-  - {from: "08:00", to: "12:00", do: trabalhar,   at: vila_ref/moinho_porta}
-  - {from: "12:00", to: "13:00", do: comer,       at: vila_ref/moinho_porta, hidden: true}
-  - {from: "13:00", to: "18:00", do: trabalhar,   at: vila_ref/quintal_cerca}
-  - {from: "18:00", to: "21:00", do: em_casa,     at: vila_ref/moinho_porta, hidden: true}
+  - {from: "14:00", to: "18:00", do: descansar, at: vila/quintal_moinho, when: {prop: {key: arvore_nalia, state: viva}}}
+  - {from: "21:00", to: "06:00", do: dormir, at: moinho/cama_nalia}
+  - {from: "06:00", to: "08:00", do: buscar_agua, at: vila/poco}
+  - {from: "08:00", to: "12:00", do: trabalhar, at: moinho/mo}
+  - {from: "12:00", to: "13:00", do: comer, at: moinho/mesa}
+  - {from: "13:00", to: "18:00", do: trabalhar, at: vila/quintal_cerca}
+  - {from: "18:00", to: "21:00", do: em_casa, at: moinho/mesa}

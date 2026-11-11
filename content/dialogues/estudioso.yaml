@@ -1,0 +1,12 @@
+# Halden, o homem de livros (A1: desfecho `estabilizada`).
+id: estudioso
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Não toque na casca. Ela está aprendendo a tirar devagar."
+    choices:
+      - {text: "Tirar o quê?", goto: oque}
+      - {text: "Não toco."}
+  oque:
+    text: "Se eu soubesse, não estaria olhando para ela há três dias."

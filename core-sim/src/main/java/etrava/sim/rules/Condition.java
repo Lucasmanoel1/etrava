@@ -65,4 +65,7 @@ public sealed interface Condition {
 
     /** O trabalho pode começar agora: na janela de horário, com quem o dá disponível, ainda não feito hoje. */
     record Job(String id) implements Condition {}
+
+    /** O jogador está nesta área agora ({@code {here: estrada}}). */
+    record Here(String area) implements Condition {}
 }

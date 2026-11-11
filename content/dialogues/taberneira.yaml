@@ -1,26 +1,12 @@
-# A taverna é onde os rumores se cruzam: o nó `novidades` conta o que ela ouviu e o jogador não.
-# É também o comércio do vilarejo (merchants.yaml: taverna). À tarde ela serve do lado de fora.
+# Marta, da taverna: onde os rumores se cruzam — o nó `novidades` conta o que ela ouviu e o jogador
+# não. É também o comércio do vilarejo (merchants.yaml: taverna). Atende no balcão, lá dentro.
 id: taberneira
 start:
-  - {when: {time: {hourFrom: 15, hourTo: 23}}, goto: balcao}
-  - {goto: oi}
+  - {when: {flag: festa}, goto: festa}
+  - {goto: balcao}
 nodes:
-  oi:
-    text: "Balcão é lá dentro. Aqui fora eu só respiro."
-    choices:
-      - {text: "O que andam dizendo?", goto: novidades}
-      - text: "Tem alguma coisa para comer?"
-        when: {reputation: {faction: pedra_mansa, min: -25}}
-        effects: [{startTrade: taverna}]
-      - text: "Tem alguma coisa para comer?"
-        when: {reputation: {faction: pedra_mansa, max: -26}}
-        goto: fechado
-      - text: "É sobre a menina do moinho. Repartir o peso entre três."
-        when: {all: [{knows: {who: player, fact: custo_pode_ser_dividido}}, {arc: {id: a1_nalia, stage: impasse}}, {not: {flag: vol_taberneira}}]}
-        goto: repartir
-      - {text: "Então respire."}
   balcao:
-    text: "Lá dentro está um forno. Hoje o balcão é aqui fora."
+    text: "Senta, pede ou sai da frente da porta. Uma das três."
     choices:
       - text: "O que tem no caldeirão?"
         when: {reputation: {faction: pedra_mansa, min: -25}}
@@ -29,6 +15,18 @@ nodes:
         when: {reputation: {faction: pedra_mansa, max: -26}}
         goto: fechado
       - {text: "O que andam dizendo?", goto: novidades}
+      - text: "Quem é o homem de fora?"
+        when: {npc: {id: estranho, status: present}}
+        goto: homem_de_fora
+      - text: "Olha o que eu trouxe do buraco do campo."
+        when: {all: [{arc: {id: a3_estrutura, stage: desabamento}}, {any: [{has: {item: placa_simbolos}}, {has: {item: lasca_fibra}}]}, {not: {flag: mostrou_achado}}]}
+        relevant: true
+        channels: [ambiente, npc]
+        effects: [{setFlag: mostrou_achado}, {learn: {who: npc, fact: aprendiz_desceu, certainty: witnessed}}]
+        goto: achado
+      - text: "Vai ter festa?"
+        when: {arc: {id: h5_festa, stage: [anuncio, vespera]}}
+        goto: festa_vai
       - text: "É sobre a menina do moinho. Repartir o peso entre três."
         when: {all: [{knows: {who: player, fact: custo_pode_ser_dividido}}, {arc: {id: a1_nalia, stage: impasse}}, {not: {flag: vol_taberneira}}]}
         goto: repartir
@@ -42,7 +40,26 @@ nodes:
       - {text: "E o que mais?", goto: novidades}
       - {text: "Hm."}
   nada:
-    text: "Hoje, só o de sempre."
+    text: "Hoje, só o de sempre. Que a cerveja está fraca. Não está."
+  homem_de_fora:
+    text: "Paga a cama adiantado, come pouco e pergunta muito. Gosto de dois terços dele."
+    effects: [{learn: {who: player, fact: forasteiro_pergunta, certainty: claim}}]
+  achado:
+    text: "Tira isso do meu balcão. E conta tudo, devagar, que eu vou contar para os outros depressa."
+  festa_vai:
+    text: "Amanhã de noite, na praça. Sopa de graça até acabar. A cerveja, não."
+    effects: [{learn: {who: player, fact: festa_marcada, certainty: claim}}]
+  festa:
+    text: "Hoje não tem balcão, tem praça. Pega uma tigela e não me pede fiado."
+    choices:
+      - text: "Uma tigela, então."
+        when: {reputation: {faction: pedra_mansa, min: -25}}
+        effects: [{give: {item: sopa}}]
+        goto: tigela
+      - {text: "O que andam dizendo?", goto: novidades}
+      - {text: "Boa festa, Marta."}
+  tigela:
+    text: "Essa é de graça. A segunda tem gosto de cobrança."
   repartir:
     text: "Eu já durmo quatro horas. Tira de onde?"
     choices:

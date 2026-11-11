@@ -1,0 +1,16 @@
+# Lina, filha de Marta; ajuda na taverna.
+id: lina
+name: Lina
+layer: B
+sprite: personagem.lina
+dialogue: lina
+faction: pedra_mansa
+about: "Filha de Marta. Serve as mesas e quer ver o que fica depois da encruzilhada."
+relations: [{npc: taberneira, kind: familia}, {npc: nalia, kind: amizade}]
+schedule:
+  - {from: "18:00", to: "00:00", do: festejar, at: vila/praca, when: {flag: festa}}
+  - {from: "23:30", to: "07:00", do: dormir, at: taverna/atras_balcao, hidden: true}
+  - {from: "07:00", to: "10:00", do: lavar, at: vila/poco}
+  - {from: "10:00", to: "14:00", do: colher, at: vila/pomar}
+  - {from: "14:00", to: "17:00", do: conversar, at: vila/quintal_cerca}
+  - {from: "17:00", to: "23:30", do: servir, at: taverna/mesa_jogo_b}

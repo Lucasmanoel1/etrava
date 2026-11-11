@@ -1,0 +1,27 @@
+# Ciro (H3). Joga com Lauro toda noite e jura que é a última.
+id: ciro
+start:
+  - {when: {arc: {id: h3_apostas, stage: briga}}, goto: emburrado}
+  - {when: {here: taverna}, goto: mesa}
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Hoje eu não jogo. Hoje é só para olhar."
+  mesa:
+    text: "Hoje eu recupero tudo. Ontem eu também ia recuperar."
+    effects: [{learn: {who: player, fact: lauro_ganha_sempre, certainty: claim}}]
+    choices:
+      - text: "O dado do Lauro tem chumbo."
+        when: {all: [{knows: {who: player, fact: dado_viciado}}, {not: {flag: ciro_sabe_dado}}]}
+        relevant: true
+        channels: [npc, ambiente, dialogue]
+        effects: [{setFlag: ciro_sabe_dado}, {opinion: {npc: lauro, add: -25}}, {opinion: {npc: npc, add: 8}}]
+        goto: sabia
+      - {text: "Por que continua jogando com ele?", goto: honesto}
+      - {text: "Boa sorte."}
+  sabia:
+    text: "Eu sabia. Eu sempre soube. Por que ninguém me disse antes?"
+  honesto:
+    text: "Porque um dia ele fica honesto."
+  emburrado:
+    text: "Não estou emburrado. Estou consertando a porta. Com força."

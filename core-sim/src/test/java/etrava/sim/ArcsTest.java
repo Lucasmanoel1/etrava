@@ -39,7 +39,7 @@ class ArcsTest {
     }
 
     private static Simulation newSim(long seed) {
-        return Simulation.newGame(content, seed, "vila_ref");
+        return Simulation.newGame(content, seed, "vila");
     }
 
     private static long days(Simulation sim, double d) {
@@ -61,6 +61,11 @@ class ArcsTest {
     }
 
     private static DialogueView talk(Simulation sim, String npc) {
+        String area = sim.view().npcArea(npc);
+        if (area != null && !area.equals(sim.view().areaId())) { // atalho de teste: vai até a área dele
+            sim.submit(new Command.EnterArea(area, null));
+            sim.step();
+        }
         sim.submit(new Command.Talk(npc));
         for (int i = 0; i < 30 * 60 && sim.view().dialogue() == null; i++) sim.step();
         assertNotNull(sim.view().dialogue(), "a conversa com " + npc + " deveria ter começado");
@@ -77,6 +82,18 @@ class ArcsTest {
             }
         }
         fail("escolha não disponível: \"" + text + "\" em " + choices);
+    }
+
+    /** Um ponto livre da área carregada a mais de 14 m de qualquer NPC visível. */
+    private static double[] emptyCorner(Simulation sim) {
+        for (int y = 3; y < sim.area().height() - 3; y++)
+            for (int x = 3; x < sim.area().width() - 3; x++) {
+                double px = x + 0.5, py = y + 0.5;
+                if (sim.nav().isBlockedAt(px, py)) continue;
+                if (sim.view().actors().stream().allMatch(a -> Math.hypot(a.x() - px, a.y() - py) > 14))
+                    return new double[] {px, py};
+            }
+        throw new AssertionError("nenhum canto vazio");
     }
 
     private static void endTalk(Simulation sim) {
@@ -111,7 +128,9 @@ class ArcsTest {
         // epílogo coerente mesmo sem o jogador ter feito nada (RF-163)
         assertTrue(sim.view().flag(Simulation.CHAPTER_ENDED));
         assertTrue(sim.view().epilogue().size() >= 6, "epílogo curto demais: " + sim.view().epilogue());
-        assertTrue(sim.view().knowledge().isEmpty(), "parado, o personagem não soube de nada");
+        // parado, o personagem só sabe o que trouxe da origem e o que o mundo lhe pôs na mão (o bilhete de Avel)
+        assertTrue(sim.view().knowledge().stream().allMatch(k -> k.source().equals("inicio") || k.source().equals("mundo")),
+                "parado, o personagem não ouviu ninguém: " + sim.view().knowledge());
     }
 
     @Test
@@ -174,7 +193,7 @@ class ArcsTest {
     @Test
     void ritmoContemplativoDobraOsPrazos() {
         Simulation normal = newSim(3);
-        Simulation slow = Simulation.newGame(content, 3, "vila_ref", Simulation.PACE_CONTEMPLATIVE);
+        Simulation slow = Simulation.newGame(content, 3, "vila", Simulation.PACE_CONTEMPLATIVE);
         long start = normal.view().clock().tick();
         long fast = normal.view().arcs().get(A1).deadline() - start, lazy = slow.view().arcs().get(A1).deadline() - start;
         assertTrue(fast <= days(normal, 1.5), "normal: 1 dia + até 12 h");
@@ -329,13 +348,14 @@ class ArcsTest {
         sim.fastForward(sim.view().clock().ticksPerHour() + 100); // 07:00 e pouco: o viajante está na praça
         talk(sim, "viajante");
         choose(sim, "O que há de novo lá fora?");
-        assertEquals("Na estrada, dizem: O sal de remédio subiu de preço no Posto.", sim.view().dialogue().text());
+        assertTrue(sim.view().dialogue().text().startsWith("Na estrada, dizem: "));
+        // ele conta uma novidade por vez, da mais nova para a mais velha, até não ter mais o que contar
+        for (int i = 0; i < 20 && !sim.view().dialogue().text().equals("Nada que valha a viagem."); i++)
+            choose(sim, "Mais alguma coisa?");
+        assertEquals("Nada que valha a viagem.", sim.view().dialogue().text(), "sem novidade, ele diz que não tem");
         assertEquals("claim", sim.view().knowledge().stream().filter(k -> k.fact().equals("sal_subiu"))
                 .findFirst().orElseThrow().certainty());
-        choose(sim, "Mais alguma coisa?");
         assertTrue(sim.view().knows("trilhos_caldris"));
-        choose(sim, "Mais alguma coisa?");
-        assertEquals("Nada que valha a viagem.", sim.view().dialogue().text(), "sem novidade, ele diz que não tem");
     }
 
     // ---------------------------------------------------------------- memória, opinião, atos
@@ -345,6 +365,8 @@ class ArcsTest {
         Simulation sim = newSim(1);
         // 06:00: a aldeã está no poço, a poucos metros; o moleiro, longe, à porta do moinho
         int before = sim.view().opinion("aldea"), miller = sim.view().opinion("moleiro");
+        java.util.Map<String, Integer> start = new java.util.HashMap<>();
+        for (String id : content.npcs().keySet()) start.put(id, sim.view().opinion(id));
         sim.applyNow(List.of(new Effect.Deed("roubo")));
         assertEquals(before - 30, sim.view().opinion("aldea"));
         assertEquals(miller, sim.view().opinion("moleiro"), "quem não viu não muda de atitude (RF-281)");
@@ -360,22 +382,26 @@ class ArcsTest {
         assertTrue(heard >= 1, "em quatro dias o caso deveria ter corrido");
         for (String id : content.npcs().keySet()) {
             if (sim.view().memories(id).stream().anyMatch(m -> m.type().equals("ouviu:roubo")))
-                assertEquals(content.npcs().get(id).opinion() - 12, sim.view().opinion(id), id);
+                assertEquals(start.get(id) - 12, sim.view().opinion(id), id);
         }
     }
 
     @Test
     void atoSemTestemunhaNaoMudaNada_eQuemDetestaOJogadorNaoConversa() {
         Simulation sim = newSim(1);
-        sim.submit(new Command.Teleport(8.0, 8.0)); // canto vazio do mapa
+        java.util.Map<String, Integer> start = new java.util.HashMap<>();
+        for (String id : content.npcs().keySet()) start.put(id, sim.view().opinion(id));
+        double[] empty = emptyCorner(sim); // um canto vazio do mapa, longe de todo mundo
+        sim.submit(new Command.Teleport(empty[0], empty[1]));
         sim.step();
         sim.applyNow(List.of(new Effect.Deed("agressao"), new Effect.Deed("ato_que_nao_existe")));
         for (String id : content.npcs().keySet())
-            assertEquals(content.npcs().get(id).opinion(), sim.view().opinion(id), id);
+            assertEquals(start.get(id), sim.view().opinion(id), id);
         assertTrue(sim.view().chronicle().stream().anyMatch(c -> c.text().contains("ninguém viu")));
 
         sim.applyNow(List.of(new Effect.Opinion("aldea", -50)));
-        sim.submit(new Command.Teleport(24.5, 29.5));
+        var aldea = sim.view().npc("aldea");
+        sim.submit(new Command.Teleport(aldea.x(), aldea.y()));
         sim.submit(new Command.Talk("aldea"));
         List<SimEvent> events = run(sim, 30 * 20);
         assertNull(sim.view().dialogue(), "recusa de diálogo (RF-089)");
@@ -447,7 +473,7 @@ class ArcsTest {
     @Test
     void conteudoDosArcosCarregaEPassaNoValidador() {
         assertEquals(List.of(), ContentValidator.validate(content));
-        assertEquals(7, content.arcs().size());
+        assertEquals(15, content.arcs().size());
         ArcDef a1 = content.arcs().get(A1);
         assertTrue(a1.major());
         assertEquals("Nalia e a árvore", a1.displayName());

@@ -114,10 +114,93 @@ public final class GenerateArt {
         sprite("prop.luz_buraco", "props/luz_buraco.png", RuinArt.ladder());
         sprite("prop.buraco_terra", "props/buraco_terra.png", RuinArt.pit());
 
+        m7();
+
         Path file = assets.resolve("manifest/provisorio.yaml");
         Files.createDirectories(file.getParent());
         Files.writeString(file, manifest.toString(), StandardCharsets.UTF_8);
         System.out.println("Arte provisória gerada em " + assets.toAbsolutePath());
+    }
+
+    /** M7: a região inteira — interiores, casas novas, lavoura, cemitério, estrada, Posto e o elenco. */
+    private void m7() throws IOException {
+        tiles("tabuas", 2, 6, TileArt::planks);
+        tiles("lajota", 2, 4, TileArt::flagstone);
+        tiles("plantio", 3, 8, TileArt::crops);
+
+        // paredes de fundo dos cômodos: um metro cada, no eixo x (norte) ou y (oeste)
+        for (String kind : new String[] {"lisa", "janela", "porta", "prateleira"}) {
+            sprite("prop.parede_x_" + kind, "props/interior/parede_x_" + kind + ".png", FurnitureArt.wall(true, kind, kind.length()));
+            sprite("prop.parede_y_" + kind, "props/interior/parede_y_" + kind + ".png", FurnitureArt.wall(false, kind, kind.length() + 7));
+        }
+        sprite("prop.parede_canto", "props/interior/parede_canto.png", FurnitureArt.wallCorner());
+        sprite("prop.mesa", "props/interior/mesa.png", FurnitureArt.table(false));
+        sprite("prop.mesa_longa", "props/interior/mesa_longa.png", FurnitureArt.table(true));
+        sprite("prop.banco", "props/interior/banco.png", FurnitureArt.bench());
+        sprite("prop.cama", "props/interior/cama.png", FurnitureArt.bed());
+        sprite("prop.balcao", "props/interior/balcao.png", FurnitureArt.counter());
+        sprite("prop.lareira", "props/interior/lareira.png", FurnitureArt.hearth());
+        sprite("prop.bancada", "props/interior/bancada.png", FurnitureArt.workbench());
+        sprite("prop.bau", "props/interior/bau.png", FurnitureArt.chest());
+        sprite("prop.sacos", "props/interior/sacos.png", FurnitureArt.sacks());
+        sprite("prop.mo", "props/interior/mo.png", FurnitureArt.millstone());
+        sprite("prop.ervas", "props/interior/ervas.png", FurnitureArt.herbRack());
+        sprite("prop.bigorna", "props/bigorna.png", FurnitureArt.anvil());
+        sprite("prop.forja", "props/forja.png", FurnitureArt.forge());
+
+        sprite("prop.cerca_x", "props/cerca_x.png", FurnitureArt.fence(true));
+        sprite("prop.cerca_y", "props/cerca_y.png", FurnitureArt.fence(false));
+        sprite("prop.lapide", "props/lapide.png", FurnitureArt.gravestone(0));
+        sprite("prop.lapide_b", "props/lapide_b.png", FurnitureArt.gravestone(1));
+        sprite("prop.estaca", "props/estaca.png", FurnitureArt.stake());
+        sprite("prop.marco", "props/marco.png", FurnitureArt.marker());
+        sprite("prop.tenda", "props/tenda.png", FurnitureArt.tent());
+        sprite("prop.carroca", "props/carroca.png", FurnitureArt.cart());
+        sprite("prop.banca", "props/banca.png", FurnitureArt.stall());
+        sprite("prop.espantalho", "props/espantalho.png", FurnitureArt.scarecrow());
+        sprite("prop.arvore_fruto", "props/arvore_fruto.png", FurnitureArt.fruitTree(1));
+        sprite("prop.arvore_fruto_b", "props/arvore_fruto_b.png", FurnitureArt.fruitTree(2));
+        sprite("prop.terra_remexida", "props/terra_remexida.png", FurnitureArt.filledPit());
+        sprite("prop.vazio", "props/vazio.png", FurnitureArt.empty());
+        sprite("prop.placa", "props/placa.png", FurnitureArt.signpost());
+        sprite("prop.pedras", "props/pedras.png", FurnitureArt.rocks());
+
+        // casas novas do vilarejo e o Posto
+        sprite("prop.casa_curandeira", "props/casa_curandeira.png", BuildingArt.house(new Spec(5, 4, 2.4, 2.2, true, true, 21,
+                new Opening('S', 2.0, true), new Opening('S', 0.6, false), new Opening('E', 1.6, false))));
+        sprite("prop.casa_media", "props/casa_media.png", BuildingArt.house(new Spec(6, 5, 2.6, 2.4, true, true, 22,
+                new Opening('S', 2.5, true), new Opening('S', 0.8, false), new Opening('S', 4.4, false),
+                new Opening('E', 2.0, false))));
+        sprite("prop.casa_estreita", "props/casa_estreita.png", BuildingArt.house(new Spec(4, 6, 2.5, 2.3, false, false, 23,
+                new Opening('S', 1.5, true), new Opening('E', 1.2, false), new Opening('E', 3.8, false))));
+        sprite("prop.celeiro", "props/celeiro.png", BuildingArt.house(new Spec(8, 6, 3.0, 3.0, true, false, 24,
+                new Opening('S', 3.0, true), new Opening('S', 4.2, true), new Opening('E', 3.0, false))));
+        sprite("prop.casa_posto", "props/casa_posto.png", BuildingArt.house(new Spec(10, 6, 3.0, 2.8, true, true, 25,
+                new Opening('S', 4.5, true), new Opening('S', 1.2, false), new Opening('S', 2.8, false),
+                new Opening('S', 7.0, false), new Opening('S', 8.6, false), new Opening('E', 1.6, false),
+                new Opening('E', 4.2, false))));
+
+        // o elenco do Capítulo I (D-067): o mesmo boneco, com roupa e cores de cada um
+        look("personagem.avel", "avel", 0xB8896A, 0x8E8A82, 0x6B4A2E, 0x3E3A32, 0x2A201A, false, 0.30, 1.0);
+        look("personagem.estranho", "estranho", 0xB07F5E, 0x3A3634, 0x2A2428, 0x2E2A26, 0x1E1A18, false, 0.55, 1.0);
+        look("personagem.registrador", "registrador", 0xD0A283, 0x2A2320, 0x3B4048, 0x2A2A2E, 0x1E1A18, false, 0.40, 1.0);
+        look("personagem.agrimensora", "agrimensora", 0xC99A76, 0x2A2320, 0x5A3F26, 0x3E3A32, 0x2A201A, false, 0.36, 1.0);
+        look("personagem.bento", "bento", 0xA06C50, 0x5A3F26, 0x5A6438, 0x4A4038, 0x2E2420, false, 0.18, 1.0);
+        look("personagem.gil", "gil", 0xC08A68, 0x3D2A1C, 0x9C7A45, 0x524C46, 0x2E2420, false, 0.16, 1.0);
+        look("personagem.pipo", "pipo", 0xD8A884, 0xB8975A, 0x868C52, 0x5A3F26, 0x3D2A1C, false, 0.20, 0.66);
+        look("personagem.lauro", "lauro", 0xC08A68, 0x3D2A1C, 0x8A4E2E, 0x4A4038, 0x2E2420, false, 0.22, 1.0);
+        look("personagem.ciro", "ciro", 0xA06C50, 0x524C46, 0x565C66, 0x3A3634, 0x2E2420, true, 0.20, 1.0);
+        look("personagem.anselmo", "anselmo", 0xC4967A, 0xEEE6D2, 0x8C7E66, 0x524C46, 0x2E2420, false, 0.50, 0.96);
+        look("personagem.lina", "lina", 0xD8A884, 0x8A4E2E, 0xB9A888, 0x5A3F26, 0x2E2420, false, 0.46, 0.97);
+        look("personagem.tobias", "tobias", 0xA06C50, 0x2A2320, 0x7C5A40, 0x3E3A32, 0x2A201A, false, 0.18, 1.06);
+        look("personagem.vessa", "vessa", 0xB07F5E, 0x2A2320, 0x4A3526, 0x3A3430, 0x241C18, false, 0.30, 1.0);
+        look("personagem.firmino", "firmino", 0xC4967A, 0x8E8A82, 0x2A2428, 0x2A2A2E, 0x1E1A18, true, 0.46, 0.98);
+    }
+
+    private void look(String id, String file, int skin, int hair, int tunic, int pants, int boots, boolean hood,
+            double skirt, double scale) throws IOException {
+        character(id, "personagens/" + file + ".png", new CharacterArt.Look(new Color(skin), new Color(hair),
+                new Color(tunic), new Color(pants), new Color(boots), hood, skirt, scale));
     }
 
     private interface TilePainter { BufferedImage paint(int variant); }

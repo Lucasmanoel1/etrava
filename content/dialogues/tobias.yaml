@@ -1,0 +1,26 @@
+# Tobias, carregador do Posto.
+id: tobias
+start:
+  - {goto: oi}
+nodes:
+  oi:
+    text: "Cuidado aí, que eu não enxergo atrás do saco."
+    choices:
+      - {text: "Muito serviço?", goto: servico}
+      - text: "Vessa achou rastros na curva."
+        when: {knows: {who: player, fact: rastros_na_curva}}
+        goto: rastros
+      - {text: "O que dizem na estrada?", goto: novidades}
+      - {text: "Desculpa."}
+  servico:
+    text: "Sempre tem. Sal não anda sozinho."
+  rastros:
+    text: "Ela acha tudo. Eu só acho o saco."
+  novidades:
+    gossip: nada
+    text: "Quem passa diz:"
+    choices:
+      - {text: "E mais?", goto: novidades}
+      - {text: "Hm."}
+  nada:
+    text: "Hoje ninguém passou que dissesse alguma coisa."

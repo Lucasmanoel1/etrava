@@ -1,6 +1,8 @@
-# Segunda fonte para o rumor da árvore — na versão exagerada.
+# Celi, a vizinha do pomar. Segunda fonte para o rumor da árvore (na versão exagerada) e dona
+# do problema das maçãs que somem (H1).
 id: aldea
 start:
+  - {when: {arc: {id: h1_frutas, stage: [celi_descobre, contado]}}, goto: toco}
   - {goto: oi}
 nodes:
   oi:
@@ -13,12 +15,21 @@ nodes:
       - text: "Alguma novidade?"
         when: {not: {knows: {who: npc, fact: arvore_voltou}}}
         goto: sem_novidade
-      - text: "Precisa de ajuda na colheita?"
+      - text: "Somem maçãs do seu pomar?"
+        when: {arc: {id: h1_frutas, stage: sumindo}}
+        goto: macas
+      - text: "Sei quem leva as suas maçãs."
+        when: {all: [{knows: {who: player, fact: cachorro_escondido}}, {arc: {id: h1_frutas, stage: sumindo}}]}
+        relevant: true
+        channels: [npc, ambiente]
+        effects: [{setFlag: contou_celi_pipo}]
+        goto: quem
+      - text: "Precisa de ajuda no pomar?"
         when: {job: colheita}
         goto: colheita
       - {text: "Bom dia para você também."}
   colheita:
-    text: "Três horas de costas curvadas. Seis moedas e um tanto do que sair da terra."
+    text: "Três horas de escada e cesto. Seis moedas e duas maçãs, que é o que sobra depois do ladrão."
     choices:
       - text: "Vamos."
         effects: [{startJob: colheita}]
@@ -35,3 +46,15 @@ nodes:
       - {text: "Hm."}
   nao_vi:
     text: "Eu não vi. Mas quem me contou também não viu, então deve ser verdade."
+  macas:
+    text: "Toda tarde, cinco, seis. Eu conto. Não deixa pegada, não deixa caroço. Se fosse bicho, deixava caroço."
+    effects: [{learn: {who: player, fact: frutas_somem, certainty: claim}}]
+  quem:
+    text: "Quem?"
+    choices:
+      - {text: "O Pipo. Para um cachorro manco, atrás do feno.", goto: pipo}
+  pipo:
+    text: "Um cachorro. Eu armando arapuca para ladrão, e era um cachorro. Vou lá. Não, deixa. Vou lá."
+  toco:
+    text: "O nome dele é Toco. Come mais do que eu e dorme na minha porta. Pelo menos agora sei para onde vão as maçãs."
+    effects: [{learn: {who: player, fact: cachorro_da_celi, certainty: claim}}]

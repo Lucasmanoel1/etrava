@@ -1,13 +1,16 @@
-# NPC provisório do M2: serve para exercitar agendas. Nome e papel definitivos vêm no M7.
+# Doran, o ferreiro; amigo de Avel. No A1 é quem propõe cortar a árvore.
 id: ferreiro
-name: Ferreiro
+name: Doran, o ferreiro
 layer: B
 sprite: personagem.ferreiro
 dialogue: ferreiro
 faction: pedra_mansa
+about: "O ferreiro. Amigo de Avel há vinte anos; não pergunta o que não quer ouvir."
+relations: [{npc: avel, kind: amizade}]
 schedule:
-  - {from: "21:30", to: "05:30", do: dormir,    at: vila_ref/oficina_porta, hidden: true}
-  - {from: "05:30", to: "12:00", do: trabalhar, at: vila_ref/oficina_fora}
-  - {from: "12:00", to: "13:00", do: comer,     at: vila_ref/praca_banco}
-  - {from: "13:00", to: "18:30", do: trabalhar, at: vila_ref/oficina_fora}
-  - {from: "18:30", to: "21:30", do: taverna,   at: vila_ref/taverna_porta, hidden: true}
+  - {from: "18:30", to: "23:00", do: festejar, at: vila/praca_norte, when: {flag: festa}}
+  - {from: "21:30", to: "05:30", do: dormir, at: vila/casa_doran, hidden: true}
+  - {from: "05:30", to: "12:00", do: trabalhar, at: vila/forja}
+  - {from: "12:00", to: "13:00", do: comer, at: vila/praca_banco}
+  - {from: "13:00", to: "18:30", do: trabalhar, at: vila/forja}
+  - {from: "18:30", to: "21:30", do: beber, at: taverna/lareira}

@@ -23,7 +23,12 @@ final class CharacterArt {
     static final int IDLE_FRAMES = 4, WALK_FRAMES = 8;
     static final int DIRECTIONS = 8, COLUMNS = IDLE_FRAMES + WALK_FRAMES;
 
-    record Look(Color skin, Color hair, Color tunic, Color pants, Color boots, boolean hood, double skirt) {}
+    /** Aparência; {@code scale} &lt; 1 faz gente menor (criança). */
+    record Look(Color skin, Color hair, Color tunic, Color pants, Color boots, boolean hood, double skirt, double scale) {
+        Look(Color skin, Color hair, Color tunic, Color pants, Color boots, boolean hood, double skirt) {
+            this(skin, hair, tunic, pants, boots, hood, skirt, 1.0);
+        }
+    }
 
     private record Part(double x0, double y0, double z0, double x1, double y1, double z1, double width, Color color,
             double depth) {}
@@ -85,6 +90,11 @@ final class CharacterArt {
         add(parts, cos, sin, -0.035, 0, headZ + 0.03, -0.034, 0, headZ + 0.045, look.hood() ? 20 : 18, cover);
         if (look.hood()) add(parts, cos, sin, -0.02, 0, shoulderZ - 0.02, -0.05, 0, headZ - 0.03, 22, cover);
 
+        if (look.scale() != 1.0) { // criança: o mesmo boneco, menor (a cabeça encolhe menos)
+            double k = look.scale();
+            parts.replaceAll(p -> new Part(p.x0() * k, p.y0() * k, p.z0() * k, p.x1() * k, p.y1() * k, p.z1() * k,
+                    p.width() * (p.width() > 15 ? Math.sqrt(k) : k), p.color(), p.depth()));
+        }
         paint(g, ox, oy, parts);
     }
 
