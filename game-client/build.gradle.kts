@@ -73,3 +73,42 @@ tasks.register<Zip>("distWin") {
     archiveFileName.set("Etrava-${project.version}-win.zip")
     destinationDirectory.set(layout.buildDirectory.dir("package"))
 }
+
+// ---- AT-16: o jogo roda sem 10 assets, com placeholders e avisos no log ----
+// gradlew at16 [-Psemente=N]: copia content/ e assets/, apaga 10 arquivos de asset ao acaso,
+// deixa o jogador automático jogar 60 s com a janela oculta e confere a saída e o log.
+tasks.register<JavaExec>("at16") {
+    group = "verification"
+    description = "AT-16: roda o jogo sem 10 assets sorteados; falha se cair ou se o log não avisar."
+    val home = layout.buildDirectory.dir("at16/home").get().asFile
+    val user = layout.buildDirectory.dir("at16/user").get().asFile
+    val seed = (findProperty("semente") as String?)?.toLong() ?: 16L
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set(mainClassName)
+    workingDir = rootDir
+    jvmArgs("-Detrava.home=${home.absolutePath}", "-Detrava.userdir=${user.absolutePath}",
+        "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
+    args("--hidden", "--bot=60", "--vel=3", "--seed=$seed")
+    doFirst {
+        home.deleteRecursively()
+        user.deleteRecursively()
+        rootProject.file("content").copyRecursively(File(home, "content"))
+        rootProject.file("assets").copyRecursively(File(home, "assets"))
+        File(user, "opcoes.json").apply { parentFile.mkdirs(); writeText("{\"volumeGeral\":0.0}") }
+        val assetFiles: List<File> = File(home, "assets").walkTopDown()
+            .filter { it.isFile && !it.path.contains("manifest") && it.extension != "txt" && it.extension != "yaml" }
+            .sortedBy { it.path }.toList()
+        val removed: List<File> = assetFiles.shuffled(kotlin.random.Random(seed)).take(10)
+        for (f in removed) {
+            println("AT-16: removido " + f.relativeTo(home))
+            f.delete()
+        }
+    }
+    doLast {
+        val log = File(user, "logs/etrava.log").readText()
+        val warnings = log.lines().count { it.contains("WARN") && (it.contains("placeholder") || it.contains("silêncio") || it.contains("fonte embutida")) }
+        println("AT-16: jogo rodou e saiu normalmente; $warnings aviso(s) de asset ausente no log")
+        check(log.contains("BOT terminou")) { "o jogo não chegou ao fim da sessão automática" }
+        check(warnings > 0) { "nenhum aviso de asset ausente no log" }
+    }
+}

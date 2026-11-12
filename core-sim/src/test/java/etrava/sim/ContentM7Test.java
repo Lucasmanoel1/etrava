@@ -103,4 +103,19 @@ class ContentM7Test {
             assertTrue(tragic <= STORIES.size() / 2, "semente " + seed + ": " + tragic + " tragédias");
         }
     }
+
+    /** RF-145: no ritmo contemplativo o capítulo dura o dobro, e as histórias também terminam sozinhas dentro dele. */
+    @Test
+    void ritmoContemplativo_oCapituloEsperaAsHistorias() {
+        for (long seed = 1; seed <= 4; seed++) {
+            Simulation sim = Simulation.newGame(content, seed, "vila", Simulation.PACE_CONTEMPLATIVE);
+            long day = Math.round(sim.view().clock().ticksPerDay());
+            sim.fastForward(31 * day);
+            assertFalse(sim.view().flag(Simulation.CHAPTER_ENDED), "o capítulo acabou no dia 31 com as histórias pela metade");
+            sim.fastForward(30 * day);
+            assertTrue(sim.view().flag(Simulation.CHAPTER_ENDED));
+            for (String arc : STORIES)
+                assertNotNull(sim.arcOutcome(arc), "semente " + seed + ": " + arc + " não terminou no contemplativo");
+        }
+    }
 }

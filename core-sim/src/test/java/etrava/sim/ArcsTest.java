@@ -230,7 +230,7 @@ class ArcsTest {
         heard.applyNow(List.of(new Effect.SetFlag("estudioso_na_regiao", true),
                 new Effect.Learn("viajante", "nalia_ouve_vozes", null, "rumor")));
         assertEquals("away", heard.view().npcStatus("estudioso"));
-        heard.fastForward(days(heard, 12));
+        heard.fastForward(days(heard, 17));
         assertEquals("estabilizada", stage(heard, A1));
         assertEquals("ambiguo", heard.arcOutcome(A1));
         assertEquals("viva", heard.view().propState("arvore_nalia"));
@@ -477,7 +477,7 @@ class ArcsTest {
         ArcDef a1 = content.arcs().get(A1);
         assertTrue(a1.major());
         assertEquals("Nalia e a árvore", a1.displayName());
-        assertEquals(7 * 24, a1.stage("impasse").timeout().hours());
+        assertEquals(11 * 24, a1.stage("impasse").timeout().hours());
         long endings = a1.stages().values().stream().filter(ArcDef.Stage::terminal).count();
         assertEquals(5, endings);
         assertEquals("arcs/a1_nalia.yaml", content.arcFile(A1));

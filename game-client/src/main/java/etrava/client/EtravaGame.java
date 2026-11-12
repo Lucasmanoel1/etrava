@@ -751,8 +751,10 @@ public final class EtravaGame extends ApplicationAdapter {
 
     private String saveGame(String name) {
         try {
+            long t0 = System.nanoTime();
             sim.save(savePath(name), LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     Math.round(playedSeconds));
+            LOG.info("Save '{}' gravado em {} ms", name, (System.nanoTime() - t0) / 1_000_000); // RNF-022
             return "Jogo salvo: " + name;
         } catch (SaveGame.SaveException e) {
             LOG.warn("Falha ao salvar '{}'", name, e);
@@ -764,7 +766,9 @@ public final class EtravaGame extends ApplicationAdapter {
     private String loadGame(String name) {
         try {
             SaveGame.Meta meta = SaveGame.readMeta(savePath(name));
+            long t0 = System.nanoTime();
             startGame(Simulation.load(content, savePath(name)));
+            LOG.info("Save '{}' carregado em {} ms", name, (System.nanoTime() - t0) / 1_000_000); // RNF-021
             playedSeconds = meta != null ? meta.playedSeconds() : 0;
             return "Jogo carregado: " + name + " (" + sim.view().clock().format() + ")";
         } catch (SaveGame.SaveException e) {

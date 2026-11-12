@@ -387,7 +387,10 @@ public final class Simulation {
     /** No fim do último dia do capítulo, monta o epílogo e avisa a apresentação (RF-163, PRD 8.6). */
     private boolean endChapterIfDue() {
         EpilogueDef def = content.epilogue();
-        if (def == null || world.flag(CHAPTER_ENDED) || world.clock.day() <= def.endDay()) return false;
+        // no ritmo contemplativo os arcos levam o dobro; o capítulo espera por eles na mesma proporção (RF-145)
+        if (def == null) return false;
+        long lastDay = Math.round(def.endDay() * Math.max(1.0, world.pace));
+        if ( world.flag(CHAPTER_ENDED) || world.clock.day() <= lastDay) return false;
         world.flags.put(CHAPTER_ENDED, true);
         world.epilogue.addAll(story.composeEpilogue());
         chronicle("capitulo", "1", "Fim do Capítulo I");
