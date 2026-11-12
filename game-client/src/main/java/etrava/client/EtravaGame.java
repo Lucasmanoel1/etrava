@@ -24,6 +24,7 @@ import etrava.client.render.IsoProjection;
 import etrava.client.render.SceneRenderer;
 import etrava.client.render.SceneRenderer.ActorDraw;
 import etrava.client.ui.GameUi;
+import etrava.client.ui.MenuUi;
 import etrava.client.ui.Texts;
 import etrava.sim.api.ActorView;
 import etrava.sim.api.DialogueView;
@@ -86,6 +87,15 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Posições do tick anterior, por personagem, para interpolar o desenho. */
     private final Map<String, double[]> previous = new HashMap<>();
     private GameUi ui;
+    private MenuUi menu;
+    private final InputMultiplexer gameInput = new InputMultiplexer(), menuInput = new InputMultiplexer();
+    private final Map<String, Texture> thumbs = new HashMap<>();
+    private Pixmap thumbPending;
+    private Settings settings;
+    private etrava.client.audio.AudioPlayer audio;
+    /** Metros andados desde o último passo (som de passos por superfície, RF-402). */
+    private double stepMeters;
+    private double lastPlayerX = Double.NaN, lastPlayerY = Double.NaN;
     private Texts texts;
     private Texture whitePx;
     private final GlyphLayout layout = new GlyphLayout();
@@ -95,6 +105,8 @@ public final class EtravaGame extends ApplicationAdapter {
     private String hoverNpc;
     /** Contêiner sob o cursor (quando não há NPC), ou null. */
     private String hoverContainer;
+    /** Porta ou passagem sob o cursor (saída de área, D-064). */
+    private etrava.sim.content.ContentDb.Exit hoverExit;
     /** Inimigo sob o cursor, ou null. */
     private String hoverEnemy;
     /** O botão está apertado sobre um inimigo: continua atacando até soltar (RF-220). */
@@ -124,21 +136,12 @@ public final class EtravaGame extends ApplicationAdapter {
             ContentValidator.Report report = ContentValidator.validate(options.contentDir(), options.assetsDir());
             for (String p : report.errors()) LOG.warn("Validador: {}", p);
         }
-        long seed = options.seed() != null ? options.seed() : System.nanoTime();
-        String areaId = options.area() != null ? options.area() : DEFAULT_AREA;
-        if (areaId != null && content.area(areaId) == null && !content.areas().isEmpty()) {
-            String fallback = content.areas().keySet().iterator().next();
-            LOG.warn("Área '{}' não existe; abrindo '{}'", areaId, fallback);
-            areaId = fallback;
-        }
-        sim = Simulation.newGame(content, seed, areaId);
-        LOG.info("Novo jogo: semente={}, área={}", seed, areaId);
-
         assets = new Assets(options.assetsDir());
+        settings = Settings.load();
+        audio = new etrava.client.audio.AudioPlayer(options.assetsDir(), assets.manifest(), settings);
         dayNight = DayNight.load(options.assetsDir());
         camera = new IsoCameraRig();
         camera.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        rebuildScene();
 
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
@@ -159,23 +162,227 @@ public final class EtravaGame extends ApplicationAdapter {
             if (!sim.view().dead()) ui.closeDeath();
         });
 
-        InputMultiplexer input = new InputMultiplexer();
-        input.addProcessor(new GlobalKeys());
+        menu = new MenuUi(font, texts, settings, new MenuActions());
+        menuInput.addProcessor(new MenuKeys());
+        menuInput.addProcessor(menu.stage());
+        gameInput.addProcessor(new GlobalKeys());
+        gameInput.addProcessor(menu.stage());
         if (options.dev()) {
             console = new DebugConsole(font, this::runConsoleCommand);
-            input.addProcessor(console.stage());
-            for (String cmd : options.commands()) console.run(cmd);
+            gameInput.addProcessor(console.stage());
         }
-        input.addProcessor(ui.stage());
-        input.addProcessor(new GameInput());
-        Gdx.input.setInputProcessor(input);
+        gameInput.addProcessor(ui.stage());
+        gameInput.addProcessor(new GameInput());
+        applySettings();
+
+        // linha de comando de desenvolvimento (área, semente, comandos, captura): direto ao jogo
+        boolean direct = !options.menu() && (options.area() != null || options.seed() != null || !options.commands().isEmpty()
+                || !options.timedCommands().isEmpty() || options.screenshot() != null);
+        if (direct) {
+            long seed = options.seed() != null ? options.seed() : System.nanoTime();
+            String areaId = options.area() != null ? options.area() : DEFAULT_AREA;
+            if (areaId != null && content.area(areaId) == null && !content.areas().isEmpty()) {
+                String fallback = content.areas().keySet().iterator().next();
+                LOG.warn("Área '{}' não existe; abrindo '{}'", areaId, fallback);
+                areaId = fallback;
+            }
+            startGame(Simulation.newGame(content, seed, areaId));
+            LOG.info("Novo jogo: semente={}, área={}", seed, areaId);
+            if (console != null) for (String cmd : options.commands()) console.run(cmd);
+        } else {
+            menu.showMain(!saveSlots(false).isEmpty());
+            Gdx.input.setInputProcessor(menuInput);
+        }
+    }
+
+    /** Põe uma simulação em jogo (novo jogo ou carregado) e fecha os menus. */
+    private void startGame(Simulation s) {
+        sim = s;
+        rebuildScene();
+        lastDirX = lastDirY = 0;
+        paused = false;
+        attacking = false;
+        balloons.clear();
+        floaters.clear();
+        ui.closeWindows();
+        ui.closeNotebook();
+        ui.closeDeath();
+        menu.close();
+        Gdx.input.setInputProcessor(gameInput);
+    }
+
+    /** Vale as opções na hora (RF-383). */
+    private void applySettings() {
+        Gdx.graphics.setVSync(settings.vsync);
+        Gdx.graphics.setForegroundFPS(settings.limiteFps);
+        if (settings.telaCheia && !Gdx.graphics.isFullscreen()) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        else if (!settings.telaCheia && Gdx.graphics.isFullscreen()) Gdx.graphics.setWindowedMode(1280, 720);
+        font.getData().setScale(settings.tamanhoTexto);
+        if (scene != null) {
+            scene.postEnabled = settings.posProcessamento;
+            scene.lightingEnabled = settings.luzDinamica;
+        }
+    }
+
+    // ---------------------------------------------------------------- menus
+
+    /** Lista de saves para o menu: os três manuais, o rápido e os automáticos. */
+    private List<MenuUi.Slot> saveSlots(boolean saving) {
+        List<MenuUi.Slot> out = new ArrayList<>();
+        for (String name : MenuUi.slotNames(saving)) {
+            SaveGame.Meta meta = SaveGame.readMeta(savePath(name));
+            if (meta == null && !saving) continue;
+            String title = texts.get("slot." + name.replaceAll("_\\d", ""), name.replaceAll("\\D", ""));
+            String detail;
+            if (meta == null) {
+                detail = texts.get("slot.livre");
+            } else {
+                var area = content.areaEntry(meta.areaId());
+                String when = meta.savedAt().length() >= 16 ? meta.savedAt().substring(0, 16).replace('T', ' ') : meta.savedAt();
+                detail = texts.get("slot.detalhe", meta.day(), meta.time(), area != null ? area.displayName() : meta.areaId(), when);
+            }
+            out.add(new MenuUi.Slot(name, title, detail, thumbnail(name)));
+        }
+        return out;
+    }
+
+    private Texture thumbnail(String name) {
+        Texture old = thumbs.remove(name);
+        if (old != null) old.dispose();
+        Path file = UserDirs.saves().resolve(name + ".png");
+        if (!java.nio.file.Files.exists(file)) return null;
+        try {
+            Texture t = new Texture(new FileHandle(file.toFile()));
+            thumbs.put(name, t);
+            return t;
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Guarda o quadro de agora, pequeno, para virar a miniatura do próximo save. */
+    private void captureThumb() {
+        if (thumbPending != null) thumbPending.dispose();
+        int w = Gdx.graphics.getBackBufferWidth(), h = Gdx.graphics.getBackBufferHeight();
+        Pixmap full = Pixmap.createFromFrameBuffer(0, 0, w, h);
+        thumbPending = new Pixmap(192, 108, Pixmap.Format.RGBA8888);
+        thumbPending.setFilter(Pixmap.Filter.BiLinear);
+        thumbPending.drawPixmap(full, 0, 0, w, h, 0, 0, 192, 108);
+        full.dispose();
+    }
+
+    private void writeThumb(String name) {
+        if (thumbPending == null) return;
+        try {
+            ByteBuffer pixels = thumbPending.getPixels();
+            for (int i = 3; i < 192 * 108 * 4; i += 4) pixels.put(i, (byte) 0xFF);
+            PixmapIO.writePNG(new FileHandle(UserDirs.saves().resolve(name + ".png").toFile()), thumbPending,
+                    Deflater.DEFAULT_COMPRESSION, true);
+        } catch (RuntimeException e) {
+            LOG.warn("Miniatura do save não gravada: {}", e.getMessage());
+        }
+    }
+
+    private void openPause() {
+        captureThumb();
+        menu.showPause();
+    }
+
+    private final class MenuActions implements MenuUi.Actions {
+        @Override public void newGame(String name, boolean contemplative) {
+            Simulation s = Simulation.newGame(content, System.nanoTime(), null,
+                    contemplative ? Simulation.PACE_CONTEMPLATIVE : Simulation.PACE_NORMAL);
+            s.stateWorld().playerName = name == null ? "" : name;
+            startGame(s);
+            LOG.info("Novo jogo: semente={}, nome='{}', ritmo={}", s.view().seed(), name, contemplative ? "contemplativo" : "normal");
+        }
+
+        @Override public void load(String slot) {
+            String name = slot;
+            if (name == null) { // "continuar": o save mais recente
+                long best = -1;
+                for (String n : MenuUi.slotNames(false)) {
+                    java.io.File f = savePath(n).toFile();
+                    if (f.exists() && f.lastModified() > best) {
+                        best = f.lastModified();
+                        name = n;
+                    }
+                }
+                if (name == null) return;
+            }
+            String result = loadGame(name);
+            showNotice(result);
+        }
+
+        @Override public void save(String slot) {
+            String result = saveGame(slot);
+            writeThumb(slot);
+            showNotice(result);
+            menu.close();
+        }
+
+        @Override public void resume() { menu.close(); }
+
+        @Override public void toMainMenu() {
+            menu.showMain(!saveSlots(false).isEmpty());
+            Gdx.input.setInputProcessor(menuInput);
+        }
+
+        @Override public void quit() { Gdx.app.exit(); }
+        @Override public void settingsChanged() { applySettings(); }
+        @Override public List<MenuUi.Slot> slots(boolean forSaving) { return saveSlots(forSaving); }
+        @Override public String originName() { return content.origin().name(); }
+        @Override public String originDescription() {
+            return content.origin().description() != null ? content.origin().description() : "";
+        }
+        @Override public boolean canSave() {
+            return sim != null && sim.view().dialogue() == null && sim.view().trade() == null && !sim.view().dead()
+                    && !sim.combat().inCombat();
+        }
+    }
+
+    /** Teclas na tela do menu principal: Esc volta um nível. */
+    private final class MenuKeys extends InputAdapter {
+        @Override
+        public boolean keyDown(int keycode) {
+            if (keycode == Input.Keys.ESCAPE) {
+                menu.escape();
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /** Fundo do menu principal: a ilustração da vila ao entardecer, cobrindo a tela. */
+    private void renderMenuScreen(float dt) {
+        ScreenUtils.clear(0.05f, 0.04f, 0.04f, 1f);
+        Texture bg = assets.texture("ilustracao.menu");
+        int sw = Gdx.graphics.getWidth(), sh = Gdx.graphics.getHeight();
+        batch.getProjectionMatrix().setToOrtho2D(0, 0, sw, sh);
+        batch.begin();
+        if (bg != null) {
+            float scale = Math.max(sw / (float) bg.getWidth(), sh / (float) bg.getHeight());
+            float w = bg.getWidth() * scale, h = bg.getHeight() * scale;
+            batch.draw(bg, (sw - w) / 2, (sh - h) / 2, w, h);
+        }
+        batch.end();
+        audio.music("musica.menu");
+        audio.ambience(null, false);
+        audio.update(dt);
+        menu.render(dt);
+        frame++;
+        if (options.screenshot() != null && frame == options.screenshotFrames()) {
+            saveScreenshot(options.screenshot());
+            Gdx.app.exit();
+        }
     }
 
     @Override
     public void resize(int width, int height) {
         if (width == 0 || height == 0) return;
         camera.resize(width, height);
-        scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
+        if (scene != null) scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
+        menu.resize(width, height);
         batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
         if (console != null) console.resize(width, height);
         ui.resize(width, height);
@@ -184,9 +391,13 @@ public final class EtravaGame extends ApplicationAdapter {
     @Override
     public void render() {
         float dt = Math.min(Gdx.graphics.getDeltaTime(), MAX_FRAME_TIME);
+        if (sim == null || (menu.isOpen() && !menu.inGame())) {
+            renderMenuScreen(dt);
+            return;
+        }
         WorldView v = sim.view();
 
-        if (paused || ui.epilogueOpen() || ui.inventoryOpen() || ui.characterOpen()) {
+        if (paused || menu.isOpen() || ui.epilogueOpen() || ui.inventoryOpen() || ui.characterOpen() || ui.mapOpen()) {
             // mundo parado (pausa, epílogo, mochila, ficha): só os comandos de mochila valem, sem gastar tempo
             List<SimEvent> events = sim.stepPaused();
             if (!events.isEmpty()) handleEvents(events);
@@ -214,16 +425,20 @@ public final class EtravaGame extends ApplicationAdapter {
                 + (v.clock().tick() % 25) / 25.0 / 60.0; // fração do minuto, para a luz mudar sem degraus
         float animTime = (v.clock().tick() + alpha) / 30f;
         scene.darkArea = sim.combat().darkArea();
+        var areaEntry = content.areaEntry(v.areaId());
+        scene.interior = areaEntry != null && areaEntry.interior();
         scene.playerLight = sim.combat().lightRadius();
         scene.playerLamp = sim.combat().equipped("luz") > 0;
         scene.render(camera, draws, hour, animTime, v.hasDestination(), v.destinationX(), v.destinationY());
 
         if (showCollision) drawCollisionOverlay();
+        updateAudio(v, hour, dt);
         updateHover(v);
         drawBalloons(v, dt);
         drawCombatOverlay(v, dt);
         if (showHud) drawHud(v);
         ui.render(v, sim.tradeView(), sim.economy(), dt);
+        menu.render(dt);
         if (console != null) console.render(dt);
 
         frame++;
@@ -244,6 +459,8 @@ public final class EtravaGame extends ApplicationAdapter {
         if (scene != null) scene.dispose();
         scene = new SceneRenderer(sim.area(), content.props(), assets, dayNight);
         scene.propState = key -> sim.view().propState(key);
+        scene.postEnabled = settings.posProcessamento;
+        scene.lightingEnabled = settings.luzDinamica;
         scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         WorldView v = sim.view();
         camera.snapTo(v.playerX(), v.playerY());
@@ -257,7 +474,23 @@ public final class EtravaGame extends ApplicationAdapter {
             switch (e) {
                 case SimEvent.AreaChanged a -> {
                     rebuildScene();
+                    audio.sfx("sfx.porta", 0.7f, 1f);
                     autosave();
+                }
+                case SimEvent.PlaceDiscovered p -> showNotice(texts.get("lugar.novo", p.place()));
+                case SimEvent.PropChanged p -> {
+                    if ("arvore_nalia".equals(p.key()) && "viva".equals(p.state())) audio.sfx("sfx.fenomeno.arvore");
+                }
+                case SimEvent.ItemUsed u -> {
+                    var item = content.items().get(u.itemId());
+                    if (item != null && item.document()) {
+                        audio.ui("sfx.ui.pagina");
+                        ui.showDocument(item.displayName(), item.text() != null ? item.text() : item.description());
+                    } else if (item != null && item.food() > 0) {
+                        audio.sfx("sfx.comer");
+                    } else {
+                        audio.sfx("sfx.item");
+                    }
                 }
                 case SimEvent.TimeSkipped t -> {
                     previous.clear(); // todo mundo mudou de lugar: nada de deslizar pela tela
@@ -267,14 +500,18 @@ public final class EtravaGame extends ApplicationAdapter {
                 }
                 case SimEvent.AmbientLine l -> {
                     balloons.removeIf(b -> b[0].equals(l.npcId()));
-                    balloons.add(new Object[] {l.npcId(), l.text(), 2.2f + l.text().length() * 0.045f});
+                    balloons.add(new Object[] {l.npcId(), l.text(), (2.2f + l.text().length() * 0.045f) * settings.velocidadeTexto});
                 }
-                case SimEvent.FactLearned f -> showNotice(texts.get("caderno.atualizado"));
+                case SimEvent.FactLearned f -> {
+                    showNotice(texts.get("caderno.atualizado"));
+                    audio.ui("sfx.ui.anotado");
+                }
                 case SimEvent.JobFinished j -> {
                     var job = content.jobs().get(j.jobId());
                     String hours = String.format(Locale.ROOT, "%.1f", j.hours()).replace('.', ',');
                     showNotice(texts.get(j.interrupted() ? "trabalho.interrompido" : "trabalho.feito",
                             job != null ? job.displayName() : j.jobId(), hours, ui.coins(j.pay())));
+                    if (j.pay() > 0) audio.sfx("sfx.moedas");
                     if (j.heard() != null) {
                         var giver = content.npcs().get(j.giver());
                         balloons.add(new Object[] {"jogador", texts.get("trabalho.ouviu",
@@ -290,8 +527,15 @@ public final class EtravaGame extends ApplicationAdapter {
                     floaters.add(new Object[] {who, h.damage() <= 0 ? texts.get("combate.errou")
                             : String.valueOf(Math.max(1, Math.round(h.damage()))), 1.1f, Combat.PLAYER.equals(who) ? 0 : 1});
                     if (h.damage() > 0) flashes.put(who, 0.25f);
+                    if (h.damage() <= 0) audio.sfx("sfx.combate.golpe");
+                    else audio.sfx(Combat.PLAYER.equals(who) ? "sfx.combate.dano" : "sfx.combate.acerto",
+                            h.heavy() ? 1f : 0.8f, h.heavy() ? 0.8f : 1f);
                 }
-                case SimEvent.EnemiesAppeared a -> showNotice(texts.get("combate.apareceram"));
+                case SimEvent.EnemiesAppeared a -> {
+                    showNotice(texts.get("combate.apareceram"));
+                    if (a.encounterId().startsWith("lobos")) audio.sfx("sfx.combate.uivo");
+                    if (a.encounterId().startsWith("vulto")) audio.sfx("sfx.fenomeno.eco");
+                }
                 case SimEvent.EnemyChanged c -> {
                     if (c.line() != null) {
                         balloons.removeIf(b -> b[0].equals(c.enemyId()));
@@ -300,11 +544,15 @@ public final class EtravaGame extends ApplicationAdapter {
                     if ("desistiu".equals(c.what()) || "fugiu".equals(c.what())) showNotice(texts.get("combate." + c.what()));
                     if ("rendeu".equals(c.what())) showNotice(texts.get("combate.rendeu"));
                 }
-                case SimEvent.Looted l -> showNotice(texts.get("combate.pegou", itemNames(l.items()), ui.coins(l.money())));
+                case SimEvent.Looted l -> {
+                    showNotice(texts.get("combate.pegou", itemNames(l.items()), ui.coins(l.money())));
+                    audio.sfx("sfx.moedas");
+                }
                 case SimEvent.Refused r -> showNotice(texts.get(r.reason()));
                 case SimEvent.PlayerSurrendered s -> showNotice(texts.get("combate.rendicao", ui.coins(s.moneyLost())));
                 case SimEvent.PlayerDefeated d -> {
                     attacking = false;
+                    audio.sfx("sfx.derrota");
                     previous.clear();
                     capturePrevious(sim.view());
                     List<String> lines = new ArrayList<>();
@@ -338,6 +586,43 @@ public final class EtravaGame extends ApplicationAdapter {
                 default -> { /* nada a fazer na apresentação */ }
             }
         }
+    }
+
+    /**
+     * Som de fundo e passos (RF-400–402). Música: combate &gt; festa &gt; a da área (à noite, lá fora,
+     * a da noite). Ambiente: o da área, na versão de dia ou de noite.
+     */
+    private void updateAudio(WorldView v, double hour, float dt) {
+        var entry = content.areaEntry(v.areaId());
+        boolean night = hour >= 20 || hour < 5;
+        String music;
+        if (v.dead()) music = null;
+        else if (sim.combat().inCombat()) music = "musica.combate";
+        else if (v.flag("festa") && "vila".equals(v.areaId())) music = "musica.taverna";
+        else if (entry != null && entry.music() != null)
+            music = !entry.interior() && night && "musica.vila".equals(entry.music()) ? "musica.noite" : entry.music();
+        else music = "musica.vila";
+        audio.music(music);
+        audio.ambience(entry == null ? null : entry.ambience(), night);
+        audio.update(dt);
+        // passos: um a cada pouco mais de um metro, pelo chão em que se pisa
+        double x = v.playerX(), y = v.playerY();
+        if (!Double.isNaN(lastPlayerX) && v.playerMoving()) {
+            double d = Math.hypot(x - lastPlayerX, y - lastPlayerY);
+            if (d < 2) stepMeters += d; // um salto (troca de área, teleporte) não conta
+            if (stepMeters > 1.15) {
+                stepMeters = 0;
+                String t = sim.area().terrainAt((int) Math.floor(x), (int) Math.floor(y));
+                String id = switch (t) {
+                    case "pedra", "lajota" -> "sfx.passo.pedra";
+                    case "tabuas" -> "sfx.passo.madeira";
+                    default -> "sfx.passo.terra";
+                };
+                audio.sfx(id, 0.35f, 1f);
+            }
+        }
+        lastPlayerX = x;
+        lastPlayerY = y;
     }
 
     private void capturePrevious(WorldView v) {
@@ -399,9 +684,7 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Carrega um save. Se der errado, o jogo atual continua como estava (RF-365). */
     private String loadGame(String name) {
         try {
-            sim = Simulation.load(content, savePath(name));
-            rebuildScene();
-            lastDirX = lastDirY = 0;
+            startGame(Simulation.load(content, savePath(name)));
             return "Jogo carregado: " + name + " (" + sim.view().clock().format() + ")";
         } catch (SaveGame.SaveException e) {
             LOG.warn("Falha ao carregar '{}'", name, e);
@@ -533,6 +816,7 @@ public final class EtravaGame extends ApplicationAdapter {
         hoverNpc = null;
         hoverContainer = null;
         hoverEnemy = null;
+        hoverExit = null;
         if (v.dead() || ui.epilogueOpen()) return;
         if (v.dialogue() != null || v.trade() != null || ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen()
                 || (console != null && console.isOpen())) return;
@@ -564,6 +848,13 @@ public final class EtravaGame extends ApplicationAdapter {
             double[] p = sim.economy().containerPoint(c);
             if (p != null && Math.hypot(p[0] - worldPoint[0], p[1] - worldPoint[1]) <= 0.9) hoverContainer = c.id();
         }
+        if (hoverContainer != null) return;
+        // portas: o ponto fica no chão, diante da porta; vale apontar para a porta desenhada, logo acima
+        for (var exit : sim.openExits()) {
+            var p = sim.area().spots().get(exit.spot());
+            float fx = IsoProjection.sx(p.x(), p.y()), fy = IsoProjection.sy(p.x(), p.y(), 0);
+            if (px[0] > fx - 34 && px[0] < fx + 34 && px[1] > fy - 14 && px[1] < fy + 120) hoverExit = exit;
+        }
     }
 
     private void drawBalloons(WorldView v, float dt) {
@@ -581,6 +872,17 @@ public final class EtravaGame extends ApplicationAdapter {
         if (hoverNpc != null && drawOf(hoverNpc) != null && balloons.stream().noneMatch(b -> b[0].equals(hoverNpc))) {
             var def = content.npcs().get(hoverNpc);
             drawLabel(drawOf(hoverNpc), def != null ? def.displayName() : hoverNpc, 0.55f);
+        }
+        if (hoverExit != null) {
+            var p = sim.area().spots().get(hoverExit.spot());
+            var to = content.areaEntry(hoverExit.to());
+            var entry = content.areaEntry(sim.view().areaId());
+            ActorDraw spot = new ActorDraw();
+            spot.x = p.x();
+            spot.y = p.y();
+            String where = to != null ? to.displayName() : hoverExit.to();
+            boolean leaving = entry != null && entry.interior() || to != null && !to.interior() && !"estrutura".equals(hoverExit.to());
+            drawLabel(spot, texts.get(leaving ? "porta.ir" : "porta.entrar", where), 0.55f);
         }
         if (hoverContainer != null) {
             var c = content.containers().get(hoverContainer);
@@ -615,6 +917,7 @@ public final class EtravaGame extends ApplicationAdapter {
 
     /** Opção do diálogo: primeiro as escolhas do NPC, depois "perguntar sobre" os fatos marcados. */
     private void chooseDialogue(int index) {
+        audio.ui("sfx.ui.clique");
         DialogueView d = sim.view().dialogue();
         if (d == null || index < 0) return;
         if (d.choices().isEmpty()) {
@@ -687,18 +990,21 @@ public final class EtravaGame extends ApplicationAdapter {
                     return true;
                 }
                 case Input.Keys.ESCAPE -> {
-                    if (console != null && console.isOpen()) console.toggle();
+                    if (menu.isOpen()) menu.escape();
+                    else if (console != null && console.isOpen()) console.toggle();
                     else if (ui.deathOpen()) return true; // só sai carregando um jogo
                     else if (ui.epilogueOpen()) ui.closeEpilogue();
                     else if (sim.view().dialogue() != null) sim.submit(new Command.LeaveDialogue());
                     else if (sim.view().trade() != null) sim.submit(new Command.CloseTrade());
                     else if (ui.closeWindows()) return true;
                     else if (ui.notebookOpen()) ui.closeNotebook();
-                    else Gdx.app.exit();
+                    else openPause();
                     return true;
                 }
                 case Input.Keys.F5 -> {
+                    captureThumb();
                     showNotice(saveGame("rapido"));
+                    writeThumb("rapido");
                     return true;
                 }
                 case Input.Keys.F9 -> {
@@ -746,7 +1052,16 @@ public final class EtravaGame extends ApplicationAdapter {
                 ui.toggleCharacter();
                 return true;
             }
-            if (ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen()) return true;
+            if (keycode == Input.Keys.M) {
+                ui.closeNotebook();
+                ui.toggleMap();
+                return true;
+            }
+            if (ui.notebookOpen() && (keycode == Input.Keys.LEFT || keycode == Input.Keys.RIGHT)) {
+                ui.notebookTab(keycode == Input.Keys.LEFT ? -1 : 1);
+                return true;
+            }
+            if (ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen() || ui.mapOpen()) return true;
             if (keycode == Input.Keys.SPACE) {
                 paused = !paused;
                 return true;
@@ -786,7 +1101,10 @@ public final class EtravaGame extends ApplicationAdapter {
                 boolean ctrl = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT);
                 sim.submit(ctrl ? new Command.Strike(hoverNpc) : new Command.Talk(hoverNpc));
             } else if (hoverContainer != null) sim.submit(new Command.OpenContainer(hoverContainer));
-            else moveToScreenPoint(screenX, screenY);
+            else if (hoverExit != null) { // anda até a porta; chegando, entra
+                var p = sim.area().spots().get(hoverExit.spot());
+                sim.submit(new Command.MoveTo(p.x(), p.y()));
+            } else moveToScreenPoint(screenX, screenY);
             return true;
         }
 
@@ -857,6 +1175,7 @@ public final class EtravaGame extends ApplicationAdapter {
                 return "";
             case "caderno":
                 ui.toggleNotebook();
+                if (p.length > 1) ui.notebookTab((int) num(p, 1));
                 return "";
             case "arcos": {
                 StringBuilder sb = new StringBuilder();
@@ -893,6 +1212,10 @@ public final class EtravaGame extends ApplicationAdapter {
                     return "atos: " + String.join(", ", content.deeds().keySet());
                 sim.applyNow(List.of(new Effect.Deed(p[1])));
                 return v.chronicle().get(v.chronicle().size() - 1).text();
+            case "mapa": {
+                ui.toggleMap();
+                return "";
+            }
             case "epilogo": {
                 List<String> lines = v.epilogue().isEmpty() ? sim.previewEpilogue() : v.epilogue();
                 if (lines.isEmpty()) return "sem epílogo no conteúdo";
@@ -1112,13 +1435,17 @@ public final class EtravaGame extends ApplicationAdapter {
 
     @Override
     public void dispose() {
-        scene.dispose();
+        if (scene != null) scene.dispose();
         ui.dispose();
         whitePx.dispose();
         assets.dispose();
         shapes.dispose();
         batch.dispose();
         font.dispose();
+        if (audio != null) audio.dispose();
+        if (menu != null) menu.dispose();
+        for (Texture t : thumbs.values()) t.dispose();
+        if (thumbPending != null) thumbPending.dispose();
         if (console != null) console.dispose();
     }
 }

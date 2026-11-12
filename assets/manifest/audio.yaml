@@ -1,0 +1,214 @@
+# GERADO por `gradlew generateAudio` — não edite à mão.
+# Áudio provisório feito por síntese (WAV, mono, 22 kHz). Para trocar pelo definitivo,
+# repita o ID noutro arquivo de manifesto desta pasta, apontando para o novo arquivo.
+
+- id: musica.vila
+  type: music
+  file: audio/musica/vila.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: musica.noite
+  type: music
+  file: audio/musica/noite.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: musica.casa
+  type: music
+  file: audio/musica/casa.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: musica.taverna
+  type: music
+  file: audio/musica/taverna.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: musica.estrada
+  type: music
+  file: audio/musica/estrada.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: musica.ruina
+  type: music
+  file: audio/musica/ruina.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: musica.combate
+  type: music
+  file: audio/musica/combate.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: musica.menu
+  type: music
+  file: audio/musica/menu.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: amb.vila.dia
+  type: music
+  file: audio/ambiente/vila_dia.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: amb.vila.noite
+  type: music
+  file: audio/ambiente/vila_noite.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: amb.estrada.dia
+  type: music
+  file: audio/ambiente/estrada_dia.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: amb.estrada.noite
+  type: music
+  file: audio/ambiente/estrada_noite.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: amb.interior
+  type: music
+  file: audio/ambiente/interior.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: amb.taverna
+  type: music
+  file: audio/ambiente/taverna.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: amb.ruina
+  type: music
+  file: audio/ambiente/ruina.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.passo.terra
+  type: sound
+  files: [audio/efeitos/passo_terra_1.wav, audio/efeitos/passo_terra_2.wav, audio/efeitos/passo_terra_3.wav]
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.passo.pedra
+  type: sound
+  files: [audio/efeitos/passo_pedra_1.wav, audio/efeitos/passo_pedra_2.wav, audio/efeitos/passo_pedra_3.wav]
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.passo.madeira
+  type: sound
+  files: [audio/efeitos/passo_madeira_1.wav, audio/efeitos/passo_madeira_2.wav, audio/efeitos/passo_madeira_3.wav]
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.ui.clique
+  type: sound
+  file: audio/efeitos/ui_clique.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.ui.pagina
+  type: sound
+  file: audio/efeitos/ui_pagina.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.ui.anotado
+  type: sound
+  file: audio/efeitos/ui_anotado.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.porta
+  type: sound
+  file: audio/efeitos/porta.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.moedas
+  type: sound
+  file: audio/efeitos/moedas.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.comer
+  type: sound
+  file: audio/efeitos/comer.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.item
+  type: sound
+  file: audio/efeitos/item.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.trabalho
+  type: sound
+  file: audio/efeitos/trabalho.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.combate.golpe
+  type: sound
+  file: audio/efeitos/golpe.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.combate.esquiva
+  type: sound
+  file: audio/efeitos/esquiva.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.combate.acerto
+  type: sound
+  file: audio/efeitos/acerto.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.combate.dano
+  type: sound
+  file: audio/efeitos/dano.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.combate.lobo
+  type: sound
+  file: audio/efeitos/lobo.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.combate.uivo
+  type: sound
+  file: audio/efeitos/uivo.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.fenomeno.arvore
+  type: sound
+  file: audio/efeitos/arvore.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.fenomeno.eco
+  type: sound
+  file: audio/efeitos/eco.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+
+- id: sfx.derrota
+  type: sound
+  file: audio/efeitos/derrota.wav
+  source: "Gerado por código (tools: GenerateAudio) — áudio provisório"
+  license: proprio
+

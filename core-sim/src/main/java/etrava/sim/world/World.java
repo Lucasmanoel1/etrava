@@ -50,6 +50,8 @@ public final class World implements WorldView {
     public final Map<String, List<MemoryEntry>> memories = new TreeMap<>();
     /** Multiplicador dos prazos dos arcos: 1 = Normal, 2 = Contemplativo (RF-145). */
     public double pace = 1.0;
+    /** Nome que o jogador deu ao personagem no novo jogo; vazio = "o aprendiz". */
+    public String playerName = "";
     /** Texto do epílogo do capítulo, depois de montado; vazio enquanto o capítulo corre. */
     public final List<String> epilogue = new ArrayList<>();
 

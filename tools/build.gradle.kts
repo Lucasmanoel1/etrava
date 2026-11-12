@@ -44,6 +44,16 @@ tasks.register<JavaExec>("generateRegion") {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
+tasks.register<JavaExec>("generateAudio") {
+    group = "assets"
+    description = "Gera o áudio provisório (música, ambiente e efeitos) em assets/audio e o manifesto. Sobrescreve."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.audio.GenerateAudio")
+    args(rootProject.file("assets").absolutePath)
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Xmx1g")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
 tasks.register<JavaExec>("licenses") {
     group = "assets"
     description = "Gera ASSETS_LICENSES.md a partir dos manifestos de assets."
@@ -71,6 +81,16 @@ tasks.register<JavaExec>("simulate") {
     mainClass.set("etrava.tools.Simulate")
     workingDir = rootDir
     jvmArgs("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
+tasks.register<JavaExec>("importIllustrations") {
+    group = "assets"
+    description = "Converte as ilustrações brutas de arte-bruta/ilustracoes (menu, mapa, epílogo) para a paleta do jogo."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.ImportIllustrations")
+    args(rootProject.file("arte-bruta/ilustracoes").absolutePath, rootProject.file("assets").absolutePath)
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 

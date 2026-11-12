@@ -473,7 +473,7 @@ class ArcsTest {
     @Test
     void conteudoDosArcosCarregaEPassaNoValidador() {
         assertEquals(List.of(), ContentValidator.validate(content));
-        assertEquals(15, content.arcs().size());
+        assertEquals(16, content.arcs().size());
         ArcDef a1 = content.arcs().get(A1);
         assertTrue(a1.major());
         assertEquals("Nalia e a árvore", a1.displayName());

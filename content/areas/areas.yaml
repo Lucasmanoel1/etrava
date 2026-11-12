@@ -16,7 +16,7 @@
   name: Pedra-Mansa
   place: Pedra-Mansa
   map: vila.tmj
-  mapPos: [0.38, 0.52]
+  mapPos: [0.23, 0.43]
   music: musica.vila
   ambience: amb.vila
   exits:
@@ -34,7 +34,7 @@
   name: A oficina de Avel
   place: Pedra-Mansa
   map: oficina.tmj
-  mapPos: [0.33, 0.47]
+  mapPos: [0.26, 0.28]
   interior: true
   music: musica.casa
   ambience: amb.interior
@@ -45,7 +45,7 @@
   name: A taverna
   place: Pedra-Mansa
   map: taverna.tmj
-  mapPos: [0.42, 0.47]
+  mapPos: [0.34, 0.40]
   interior: true
   music: musica.taverna
   ambience: amb.taverna
@@ -56,7 +56,7 @@
   name: O moinho
   place: Pedra-Mansa
   map: moinho.tmj
-  mapPos: [0.43, 0.58]
+  mapPos: [0.21, 0.74]
   interior: true
   music: musica.casa
   ambience: amb.interior
@@ -67,7 +67,7 @@
   name: A casa da curandeira
   place: Pedra-Mansa
   map: curandeira.tmj
-  mapPos: [0.30, 0.57]
+  mapPos: [0.12, 0.42]
   interior: true
   music: musica.casa
   ambience: amb.interior
@@ -78,7 +78,7 @@
   name: A estrada e o Posto da Encruzilhada
   place: Posto da Encruzilhada
   map: estrada.tmj
-  mapPos: [0.72, 0.50]
+  mapPos: [0.78, 0.30]
   music: musica.estrada
   ambience: amb.estrada
   exits:
@@ -91,7 +91,7 @@
   name: A estrutura enterrada
   place: O buraco no campo
   map: estrutura.tmj
-  mapPos: [0.45, 0.66]
+  mapPos: [0.36, 0.70]
   dark: true
   lethal: true
   music: musica.ruina

@@ -91,3 +91,22 @@
     nunca:
       terminal: true
       outcome: neutro
+
+# O eco (D-063): quem desce à estrutura ouve, lá no fundo, uma voz chamando um nome que não é o seu.
+- id: a3_eco
+  name: O eco lá embaixo
+  start: espera
+  stages:
+    espera:
+      transitions:
+        - {when: {here: estrutura}, to: ouviu}
+      timeout: {after: {days: 28}, to: nunca}
+    ouviu:
+      terminal: true
+      outcome: neutro
+      chronicle: o aprendiz desceu à estrutura e ouviu, longe, uma voz chamando um nome
+      onEnter:
+        - {learn: {who: player, fact: eco_no_buraco, certainty: witnessed}}
+    nunca:
+      terminal: true
+      outcome: neutro

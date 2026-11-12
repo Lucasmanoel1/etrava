@@ -64,6 +64,9 @@ public final class GameUi implements Disposable {
     private final Table inventoryRoot = new Table();
     private final Table characterRoot = new Table();
     private final Table tradeRoot = new Table();
+    private final Table mapRoot = new Table();
+    private boolean mapOpen;
+    private String mapShown = "";
     private boolean inventoryOpen, characterOpen;
     /** O que estava na tela da última vez, para só remontar quando algo mudar. */
     private String inventoryShown = "", characterShown = "", tradeShown = "";
@@ -75,7 +78,8 @@ public final class GameUi implements Disposable {
     private Object dialogueShown;
     private int dialogueLines = -1;
     private boolean notebookOpen;
-    private boolean notebookSeenTab;
+    /** Aba do caderno: 0 ouvi dizer, 1 vi e li, 2 pessoas, 3 lugares, 4 documentos (PRD 10.2). */
+    private int notebookTab;
     private int notebookEntries = -1, notebookMarks = -1;
     /** Fatos oferecidos como "perguntar sobre" na conversa aberta, na ordem das opções. */
     private final List<String> askFacts = new ArrayList<>();
@@ -117,6 +121,10 @@ public final class GameUi implements Disposable {
         stage.addActor(inventoryRoot);
         stage.addActor(characterRoot);
         stage.addActor(tradeRoot);
+        mapRoot.setFillParent(true);
+        mapRoot.center();
+        mapRoot.setVisible(false);
+        stage.addActor(mapRoot);
         stage.addActor(epilogueRoot);
     }
 
@@ -128,6 +136,14 @@ public final class GameUi implements Disposable {
     public void onCommand(Consumer<Command> handler) { this.onCommand = handler; }
     public boolean inventoryOpen() { return inventoryOpen; }
     public boolean characterOpen() { return characterOpen; }
+    public boolean mapOpen() { return mapOpen; }
+
+    /** Mapa ilustrado (M, RF-385): os lugares por onde já se passou e onde se está. Nenhum objetivo. */
+    public void toggleMap() {
+        mapOpen = !mapOpen;
+        inventoryOpen = characterOpen = false;
+        mapShown = "";
+    }
 
     /** Mochila (I) e ficha (C) param o relógio enquanto abertas, como o caderno não para. */
     public void toggleInventory() {
@@ -144,8 +160,8 @@ public final class GameUi implements Disposable {
 
     /** Fecha mochila e ficha; devolve true se alguma estava aberta. */
     public boolean closeWindows() {
-        boolean was = inventoryOpen || characterOpen;
-        inventoryOpen = characterOpen = false;
+        boolean was = inventoryOpen || characterOpen || mapOpen;
+        inventoryOpen = characterOpen = mapOpen = false;
         return was;
     }
     public List<String> askFacts() { return askFacts; }
@@ -181,9 +197,16 @@ public final class GameUi implements Disposable {
         closeEpilogue();
     }
 
+    /** Um documento aberto para ler (RF-124): carta, registro, bilhete. */
+    public void showDocument(String title, String text) {
+        showPage(title, List.of(text), texts.get("documento.dica"), null, 600, 380);
+    }
+
     /** Tela do fim do capítulo (RF-163): os trechos do epílogo, um por parágrafo. O jogo continua depois. */
     public void showEpilogue(List<String> lines) {
-        showPage(texts.get("epilogo.titulo"), lines, texts.get("epilogo.dica"), null, 760, 560);
+        // painéis ilustrados entre os parágrafos (PRD 10.2): a vila no começo, a árvore no meio
+        showPage(texts.get("epilogo.titulo"), lines, texts.get("epilogo.dica"), null, 760, 600,
+                List.of("ilustracao.epilogo_vila", "ilustracao.epilogo_arvore"));
     }
 
     /** Derrota não letal (RF-340): o que se perdeu e onde se acordou. */
@@ -244,6 +267,11 @@ public final class GameUi implements Disposable {
     }
 
     private void showPage(String title, List<String> lines, String hint, Table extra, float width, float height) {
+        showPage(title, lines, hint, extra, width, height, List.of());
+    }
+
+    private void showPage(String title, List<String> lines, String hint, Table extra, float width, float height,
+            List<String> art) {
         epilogueRoot.clearChildren();
         Table page = new Table();
         page.setBackground(paper);
@@ -252,8 +280,15 @@ public final class GameUi implements Disposable {
         Table body = new Table();
         body.top().left();
         body.defaults().left().growX();
-        for (String line : lines) {
-            Label paragraph = new Label(line, ink);
+        float artW = Math.min(stage.getWidth() - 60, width) - 70;
+        for (int i = 0; i < lines.size(); i++) {
+            int panel = art.isEmpty() ? -1 : i == 0 ? 0 : i == lines.size() / 2 ? 1 : -1;
+            if (panel >= 0 && panel < art.size()) {
+                Texture tex = assets.texture(art.get(panel));
+                if (tex != null) body.add(new com.badlogic.gdx.scenes.scene2d.ui.Image(tex)).size(artW, artW * 9f / 16f)
+                        .padBottom(14).row();
+            }
+            Label paragraph = new Label(lines.get(i), ink);
             paragraph.setWrap(true);
             body.add(paragraph).padBottom(12).row();
         }
@@ -318,6 +353,15 @@ public final class GameUi implements Disposable {
             }
         }
         characterRoot.setVisible(showCharacter);
+        boolean showMap = mapOpen && trade == null && !epilogueOpen;
+        if (showMap) {
+            String sig = view.areaId() + "|" + stage.getWidth() + "x" + stage.getHeight();
+            if (!sig.equals(mapShown)) {
+                buildMap(view);
+                mapShown = sig;
+            }
+        }
+        mapRoot.setVisible(showMap);
         DialogueView d = view.dialogue();
         if (d == null) {
             dialogueRoot.setVisible(false);
@@ -609,6 +653,51 @@ public final class GameUi implements Disposable {
         return col;
     }
 
+    // ---------------------------------------------------------------- mapa
+
+    private void buildMap(WorldView view) {
+        mapRoot.clearChildren();
+        Table page = new Table();
+        page.setBackground(paper);
+        page.pad(14).top();
+        page.add(new Label(texts.get("mapa.titulo"), rust)).left().padBottom(8).row();
+        float w = Math.min(stage.getWidth() - 80, (stage.getHeight() - 130) * 16f / 9f), h = w * 9f / 16f;
+        com.badlogic.gdx.scenes.scene2d.Group map = new com.badlogic.gdx.scenes.scene2d.Group();
+        map.setSize(w, h);
+        Texture art = assets.texture("ilustracao.mapa");
+        if (art != null) {
+            com.badlogic.gdx.scenes.scene2d.ui.Image img = new com.badlogic.gdx.scenes.scene2d.ui.Image(art);
+            img.setSize(w, h);
+            map.addActor(img);
+        }
+        for (var e : content.areaEntries().values()) {
+            if (e.mapPos() == null || e.mapPos().size() < 2 || !view.flag("visitou." + e.id())) continue;
+            float x = (float) (e.mapPos().get(0) * w), y = (float) ((1 - e.mapPos().get(1)) * h);
+            boolean here = e.id().equals(view.areaId());
+            com.badlogic.gdx.scenes.scene2d.ui.Image dot = new com.badlogic.gdx.scenes.scene2d.ui.Image(here ? edge : base(RUST));
+            float size = here ? 12 : 8;
+            dot.setBounds(x - size / 2, y - size / 2, size, size);
+            map.addActor(dot);
+            Label.LabelStyle st = new Label.LabelStyle(font, here ? INK : RUST);
+            st.background = paperDark;
+            Label name = new Label(" " + (here ? texts.get("mapa.voce", e.displayName()) : e.displayName()) + " ", st);
+            name.pack();
+            name.setPosition(Math.min(w - name.getWidth(), Math.max(0, x - name.getWidth() / 2)), y + 8);
+            map.addActor(name);
+        }
+        Table frame = new Table();
+        frame.setBackground(edge);
+        frame.pad(2);
+        frame.add(map).size(w, h);
+        page.add(frame).row();
+        page.add(new Label(texts.get("mapa.dica"), inkSoft)).right().padTop(6);
+        mapRoot.add(page);
+    }
+
+    private Drawable base(Color c) {
+        return new TextureRegionDrawable(white).tint(c);
+    }
+
     // ---------------------------------------------------------------- caderno
 
     private void buildNotebook(WorldView view) {
@@ -619,17 +708,18 @@ public final class GameUi implements Disposable {
         page.add(new Label(texts.get("caderno.titulo"), rust)).left().padBottom(8).row();
 
         Table tabs = new Table();
-        tabs.add(tab(texts.get("caderno.aba.ouvi"), !notebookSeenTab, false)).padRight(8);
-        tabs.add(tab(texts.get("caderno.aba.vi"), notebookSeenTab, true));
+        String[] names = {"ouvi", "vi", "pessoas", "lugares", "documentos"};
+        for (int i = 0; i < names.length; i++)
+            tabs.add(tab(texts.get("caderno.aba." + names[i]), notebookTab == i, i)).padRight(8);
         page.add(tabs).left().padBottom(10).row();
 
         Table list = new Table();
         list.top().left();
         list.defaults().left().growX();
-        int shown = 0;
-        for (KnowledgeEntry k : view.knowledge()) {
+        int shown = notebookTab >= 2 ? notebookExtra(view, list) : 0;
+        for (KnowledgeEntry k : notebookTab >= 2 ? List.<KnowledgeEntry>of() : view.knowledge()) {
             boolean seen = !k.certainty().equals("rumor") && !k.certainty().equals("claim");
-            if (seen != notebookSeenTab) continue;
+            if (seen != (notebookTab == 1)) continue;
             FactDef fact = content.facts().get(k.fact());
             if (fact == null) continue;
             boolean marked = view.markedFacts().contains(k.fact());
@@ -664,18 +754,91 @@ public final class GameUi implements Disposable {
         stage.setScrollFocus(scroll);
     }
 
-    private Label tab(String text, boolean active, boolean seenTab) {
+    private Label tab(String text, boolean active, int index) {
         Label.LabelStyle style = new Label.LabelStyle(font, active ? INK : INK_SOFT);
         style.background = active ? paperDark : null;
         Label label = new Label(" " + text + " ", style);
         label.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                notebookSeenTab = seenTab;
+                notebookTab = index;
                 notebookEntries = -1;
             }
         });
         return label;
+    }
+
+    /** Muda de aba com as setas (para quem joga pelo teclado). */
+    public void notebookTab(int delta) {
+        notebookTab = Math.floorMod(notebookTab + delta, 5);
+        notebookEntries = -1;
+    }
+
+    /**
+     * Abas Pessoas, Lugares e Documentos: o que o personagem sabe de quem conheceu, por onde
+     * passou e o que tem para ler. Nada de objetivo: só o que é (RF-121).
+     */
+    private int notebookExtra(WorldView view, Table list) {
+        int shown = 0;
+        switch (notebookTab) {
+            case 2 -> {
+                for (NpcDef npc : content.npcs().values()) {
+                    if (!view.flag("conheceu." + npc.id())) continue;
+                    String status = switch (String.valueOf(view.npcStatus(npc.id()))) {
+                        case "departed" -> texts.get("pessoas.partiu");
+                        case "dead" -> texts.get("pessoas.morreu");
+                        default -> "";
+                    };
+                    int op = view.opinion(npc.id());
+                    String mood = texts.get(op >= 40 ? "pessoas.gosta" : op >= 10 ? "pessoas.simpatia"
+                            : op > -10 ? "pessoas.neutro" : op > -40 ? "pessoas.desconfia" : "pessoas.detesta");
+                    Label head = new Label(npc.displayName() + (status.isEmpty() ? "" : " · " + status), rust);
+                    Label body = new Label((npc.about() != null ? npc.about() + " " : "") + mood, ink);
+                    body.setWrap(true);
+                    list.add(head).row();
+                    list.add(body).padBottom(10).row();
+                    shown++;
+                }
+            }
+            case 3 -> {
+                Map<String, List<String>> byPlace = new java.util.LinkedHashMap<>();
+                for (var e : content.areaEntries().values()) {
+                    if (!view.flag("visitou." + e.id())) continue;
+                    String place = e.place() != null ? e.place() : e.displayName();
+                    byPlace.computeIfAbsent(place, k -> new ArrayList<>()).add(e.displayName());
+                }
+                for (Map.Entry<String, List<String>> e : byPlace.entrySet()) {
+                    list.add(new Label(e.getKey(), rust)).row();
+                    Label body = new Label(String.join(" · ", e.getValue()), ink);
+                    body.setWrap(true);
+                    list.add(body).padBottom(10).row();
+                    shown++;
+                }
+            }
+            default -> {
+                for (Map.Entry<String, Integer> e : view.inventory().entrySet()) {
+                    var item = content.items().get(e.getKey());
+                    if (item == null || !item.document()) continue;
+                    Label head = new Label(item.displayName(), rust);
+                    Label body = new Label(item.description() + "  [" + texts.get("documento.ler") + "]", ink);
+                    body.setWrap(true);
+                    Table entry = new Table();
+                    entry.defaults().left().growX();
+                    entry.add(head).row();
+                    entry.add(body).padBottom(10).row();
+                    entry.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+                    entry.addListener(new ClickListener() {
+                        @Override
+                        public void clicked(InputEvent event, float x, float y) {
+                            onCommand.accept(new Command.UseItem(item.id()));
+                        }
+                    });
+                    list.add(entry).row();
+                    shown++;
+                }
+            }
+        }
+        return shown;
     }
 
     /** "Fulano disse:", "Ouvi de passagem:"… — de onde veio a anotação (RF-104). */

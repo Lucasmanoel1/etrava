@@ -233,7 +233,8 @@ public final class SaveGame {
         ObjectNode meta = root.putObject("meta");
         meta.put("seed", w.seed).put("rngState", w.rng.state()).put("tick", w.clock.tick())
                 .put("ticksPerDay", w.clock.ticksPerDay()).put("area", w.areaId).put("nextSeq", w.nextSeq)
-                .put("pace", w.pace);
+                .put("pace", w.pace)
+                .put("playerName", w.playerName);
 
         ObjectNode flags = root.putObject("flags");
         w.flags.forEach(flags::put);
@@ -380,6 +381,7 @@ public final class SaveGame {
         w.areaId = meta.path("area").asText();
         w.nextSeq = meta.path("nextSeq").asLong();
         w.pace = meta.path("pace").asDouble(1.0);
+        w.playerName = meta.path("playerName").asText("");
 
         root.path("flags").properties().forEach(e -> w.flags.put(e.getKey(), e.getValue().asBoolean()));
         root.path("vars").properties().forEach(e -> w.vars.put(e.getKey(), e.getValue().asDouble()));

@@ -1,0 +1,21 @@
+# Gerado por `gradlew importIllustrations`. Não edite à mão.
+- id: ilustracao.epilogo_arvore
+  type: illustration
+  file: ilustracoes/epilogo_arvore.png
+  source: "Gerado por IA (Dreamina, Seedream 5.0 Pro) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: ilustracao.epilogo_vila
+  type: illustration
+  file: ilustracoes/epilogo_vila.png
+  source: "Gerado por IA (Dreamina, Seedream 5.0 Pro) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: ilustracao.mapa
+  type: illustration
+  file: ilustracoes/mapa.png
+  source: "Gerado por IA (Dreamina, Seedream 5.0 Pro) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"
+- id: ilustracao.menu
+  type: illustration
+  file: ilustracoes/menu.png
+  source: "Gerado por IA (Dreamina, Seedream 5.0 Pro) e convertido para a paleta do jogo"
+  license: "Dreamina — conferir termos de uso comercial antes do release"

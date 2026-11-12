@@ -56,6 +56,8 @@ public final class Assets implements Disposable {
         LOG.info("Manifesto de assets: {} entradas", manifest.entries().size());
     }
 
+    public AssetManifest manifest() { return manifest; }
+
     public Sprite sprite(String id) {
         return sprites.computeIfAbsent(id, key -> {
             AssetManifest.Entry e = manifest.get(key);
@@ -113,6 +115,13 @@ public final class Assets implements Disposable {
         AssetManifest.Entry e = manifest.get(id);
         Texture tex = e == null ? missing(id, "ID fora do manifesto") : load(id, e.file());
         return tex != null ? tex : checker();
+    }
+
+    /** Textura inteira de uma ilustração ou outra imagem do manifesto; null se faltar (o chamador decide o que pôr). */
+    public Texture texture(String id) {
+        AssetManifest.Entry e = manifest.get(id);
+        if (e == null) return missing(id, "ID fora do manifesto");
+        return load(id, e.file());
     }
 
     private Texture load(String id, String file) {

@@ -84,6 +84,10 @@ public final class SceneRenderer implements Disposable {
     /** O personagem leva uma lamparina: a luz dele é quente. */
     public boolean playerLamp;
     private static final float[] DARK_AMBIENT = {0.03f, 0.03f, 0.04f};
+    /** Dentro de casa (D-068): penumbra quente, a mesma a qualquer hora; lareira e lampião sempre acesos. */
+    public boolean interior;
+    private static final float[] INTERIOR_AMBIENT = {0.50f, 0.42f, 0.34f};
+    private static final float INTERIOR_NIGHT = 0.7f;
 
     public SceneRenderer(AreaDef area, Map<String, PropDef> props, Assets assets, DayNight dayNight) {
         this.assets = assets;
@@ -174,7 +178,7 @@ public final class SceneRenderer implements Disposable {
             boolean hasDestination, double destX, double destY) {
         if (sceneFbo == null) resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         DayNight.Key light = dayNight.at(hour);
-        float night = lightingEnabled ? (darkArea ? 1f : (float) light.night()) : 0f;
+        float night = lightingEnabled ? (darkArea ? 1f : interior ? INTERIOR_NIGHT : (float) light.night()) : 0f;
         float[] bounds = camera.visibleBounds();
         ActorDraw player = actors.isEmpty() ? null : actors.get(0);
 
@@ -201,13 +205,14 @@ public final class SceneRenderer implements Disposable {
         if (lightingEnabled) {
             lightFbo.begin();
             if (darkArea) ScreenUtils.clear(DARK_AMBIENT[0], DARK_AMBIENT[1], DARK_AMBIENT[2], 1f);
+            else if (interior) ScreenUtils.clear(INTERIOR_AMBIENT[0], INTERIOR_AMBIENT[1], INTERIOR_AMBIENT[2], 1f);
             else ScreenUtils.clear((float) light.ambient()[0], (float) light.ambient()[1], (float) light.ambient()[2], 1f);
             if (night > 0.01f) {
                 batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
                 batch.begin();
                 for (Lamp l : lamps) drawLight(l.x(), l.y(), l.z(), l.radius(), l.r(), l.g(), l.b(), night, bounds);
                 // o raio de luz do personagem (RF-008): um resto de claridade, ou a lamparina na mão
-                if (player != null) {
+                if (player != null && (!interior || playerLamp)) {
                     float radius = Double.isInfinite(playerLight) ? 3.2f : (float) playerLight;
                     if (playerLamp) drawLight(player.x, player.y, 1.0, radius, 1.0f, 0.74f, 0.42f, night, bounds);
                     else drawLight(player.x, player.y, 1.0, radius, 0.55f, 0.58f, 0.70f, night * 0.6f, bounds);

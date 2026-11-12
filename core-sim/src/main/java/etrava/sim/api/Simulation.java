@@ -601,6 +601,20 @@ public final class Simulation {
         }
     }
 
+    /**
+     * Saídas da área carregada que levam a algum lugar agora (a condição passa), com o ponto do
+     * mapa de cada uma — para a apresentação mostrar portas e passagens sob o cursor.
+     */
+    public List<ContentDb.Exit> openExits() {
+        ContentDb.AreaEntry entry = content.areaEntry(area.id());
+        if (entry == null) return List.of();
+        List<ContentDb.Exit> open = new ArrayList<>();
+        for (ContentDb.Exit exit : entry.exitList()) {
+            if (area.spots().containsKey(exit.spot()) && story.test(exit.condition(), null)) open.add(exit);
+        }
+        return open;
+    }
+
     /** O jogador ia agredir alguém: chegando perto, agride. */
     private void approachStrike(List<SimEvent> events) {
         if (world.pendingStrike == null) return;
