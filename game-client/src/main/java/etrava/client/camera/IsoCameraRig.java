@@ -69,6 +69,12 @@ public final class IsoCameraRig implements CameraRig {
         setPixelScale(pixelScale + (amount > 0 ? -1 : 1));
     }
 
+    /** Escala atual: quantos pixels da tela cada pixel de arte ocupa. */
+    @Override
+    public int pixelScale() {
+        return pixelScale;
+    }
+
     /** Quantos pixels da tela cada pixel de arte ocupa (1 = mais longe, 4 = mais perto). */
     public void setPixelScale(int scale) {
         pixelScale = MathUtils.clamp(scale, MIN_PIXEL_SCALE, MAX_PIXEL_SCALE);

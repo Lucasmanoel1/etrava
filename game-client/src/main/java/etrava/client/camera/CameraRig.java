@@ -18,6 +18,9 @@ public interface CameraRig {
     /** Positivo afasta, negativo aproxima; respeita a faixa permitida. */
     void zoomBy(float amount);
 
+    /** Nível de zoom atual (para testes e para o painel de depuração). */
+    int pixelScale();
+
     Matrix4 combined();
 
     /** Converte um ponto da tela no ponto do chão sob ele. {@code out} recebe (x, y) de mundo. */

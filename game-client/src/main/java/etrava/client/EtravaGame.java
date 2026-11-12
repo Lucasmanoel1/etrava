@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -1235,9 +1236,17 @@ public final class EtravaGame extends ApplicationAdapter {
 
         @Override
         public boolean scrolled(float amountX, float amountY) {
-            camera.zoomBy(amountY);
+            // touchpad manda pedacinhos de passo: acumula até um passo inteiro (D-088)
+            wheel += amountY;
+            float step = Math.abs(amountY) >= 1f ? amountY : wheel; // roda comum: um entalhe, um passo
+            if (Math.abs(step) >= 1f) {
+                camera.zoomBy(Math.signum(step));
+                wheel = 0;
+            }
             return true;
         }
+
+        private float wheel;
     }
 
     // ---------------------------------------------------------------- console
@@ -1569,13 +1578,18 @@ public final class EtravaGame extends ApplicationAdapter {
         private final MenuActions actions = new MenuActions();
         private float wait = 1f, elapsed;
         private int count;
+        /** VT-01: quantas vezes a roda foi conferida depois de fechar um painel, e quantas não deu zoom. */
+        private int zoomChecks, zoomFails;
+        private boolean closedSomething;
 
         void update(float dt) {
             elapsed += dt;
             if (elapsed >= options.bot()) {
                 Runtime rt = Runtime.getRuntime();
                 String result = String.format(Locale.ROOT, "BOT terminou: %d ações em %.0f s, %s, heap %d MB", count, elapsed,
-                        sim != null ? crashContext : "no menu", (rt.totalMemory() - rt.freeMemory()) >> 20);
+                        sim != null ? crashContext : "no menu", (rt.totalMemory() - rt.freeMemory()) >> 20)
+                        + (options.panels() ? String.format(Locale.ROOT, "; VT-01 zoom: %d verificações, %d falhas", zoomChecks,
+                                zoomFails) : "");
                 LOG.info(result);
                 System.out.println(result);
                 Gdx.app.exit();
@@ -1583,15 +1597,71 @@ public final class EtravaGame extends ApplicationAdapter {
             }
             wait -= dt;
             if (wait > 0) return;
-            wait = 0.25f + rnd.nextFloat() * 1.4f;
+            wait = options.panels() ? 0.06f : 0.25f + rnd.nextFloat() * 1.4f;
             count++;
             if (count % 400 == 0) LOG.info("Bot: {} ações, {} s, {}", count, Math.round(elapsed), crashContext);
             act();
         }
 
+        /**
+         * Modo painéis (VT-01): abre um painel, rola com ele aberto, fecha com Esc — tudo pelo
+         * processador de entrada de verdade, o mesmo do teclado e do mouse — e, com a tela
+         * livre, confere que a roda muda o zoom.
+         */
+        private void panels() {
+            WorldView v = sim.view();
+            InputProcessor input = Gdx.input.getInputProcessor();
+            boolean open = menu.isOpen() || (console != null && console.isOpen()) || ui.epilogueOpen() || v.dialogue() != null
+                    || v.trade() != null || ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen() || ui.mapOpen();
+            if (open) {
+                if (rnd.nextInt(3) > 0) input.scrolled(0, rnd.nextBoolean() ? 1 : -1); // rola com o painel aberto
+                else {
+                    input.keyDown(Input.Keys.ESCAPE);
+                    input.keyUp(Input.Keys.ESCAPE);
+                    closedSomething = true;
+                }
+                return;
+            }
+            if (closedSomething) {
+                closedSomething = false;
+                int before = camera.pixelScale();
+                float dir = before >= IsoCameraRig.MAX_PIXEL_SCALE ? 1 : before <= IsoCameraRig.MIN_PIXEL_SCALE ? -1
+                        : rnd.nextBoolean() ? 1 : -1;
+                input.scrolled(0, dir);
+                zoomChecks++;
+                if (camera.pixelScale() == before) {
+                    zoomFails++;
+                    LOG.warn("VT-01: a roda não mudou o zoom (escala {}, {})", before, crashContext);
+                }
+                return;
+            }
+            switch (rnd.nextInt(console != null ? 9 : 8)) {
+                case 0 -> ui.toggleNotebook();
+                case 1 -> ui.toggleInventory();
+                case 2 -> ui.toggleCharacter();
+                case 3 -> ui.toggleMap();
+                case 4 -> openPause();
+                case 5 -> {
+                    if (!v.actors().isEmpty()) sim.submit(new Command.Talk(v.actors().get(rnd.nextInt(v.actors().size())).id()));
+                }
+                case 6 -> {
+                    List<String> near = new ArrayList<>();
+                    for (var c : content.containers().values()) if (sim.economy().containerPoint(c) != null) near.add(c.id());
+                    if (!near.isEmpty()) sim.submit(new Command.OpenContainer(near.get(rnd.nextInt(near.size()))));
+                    else sim.submit(new Command.MoveTo(v.playerX() + rnd.nextInt(21) - 10, v.playerY() + rnd.nextInt(21) - 10));
+                }
+                case 7 -> sim.submit(new Command.MoveTo(v.playerX() + rnd.nextInt(21) - 10, v.playerY() + rnd.nextInt(21) - 10));
+                default -> console.toggle();
+            }
+        }
+
         private void act() {
             if (sim == null || (menu.isOpen() && !menu.inGame())) {
                 actions.newGame("Bot", rnd.nextBoolean());
+                return;
+            }
+            if (options.panels() && !ui.deathOpen()) {
+                panels();
                 return;
             }
             WorldView v = sim.view();

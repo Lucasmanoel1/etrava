@@ -20,7 +20,7 @@ import java.util.function.Function;
 public final class DebugConsole implements Disposable {
     private static final int MAX_LINES = 14;
 
-    private final Stage stage = new Stage(new ScreenViewport());
+    private final Stage stage = new etrava.client.ui.UiStage(new ScreenViewport());
     private final Texture white;
     private final Table table = new Table();
     private final Label output;

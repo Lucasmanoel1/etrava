@@ -51,7 +51,7 @@ public final class GameUi implements Disposable {
     /** Lado do ícone de item na tela, em pixels. */
     private static final float ICON = 40;
 
-    private final Stage stage = new Stage(new ScreenViewport());
+    private final Stage stage = new UiStage(new ScreenViewport());
     private final Texture white;
     private final BitmapFont font;
     private final Assets assets;
@@ -306,7 +306,6 @@ public final class GameUi implements Disposable {
         epilogueRoot.add(border).size(Math.min(stage.getWidth() - 60, width), Math.min(stage.getHeight() - 60, height));
         epilogueRoot.setVisible(true);
         epilogueOpen = true;
-        stage.setScrollFocus(scroll);
     }
 
     public void resize(int width, int height) {
@@ -596,7 +595,6 @@ public final class GameUi implements Disposable {
         cols.add(slots).width(250).top();
         page.add(cols).grow().row();
         page.add(new Label(texts.get("mochila.dica"), inkSoft)).right().padTop(8);
-        stage.setScrollFocus(scroll);
     }
 
     /** Ficha do personagem (PRD 10.2): habilidades com valor e descrição. Sem nível, sem pontos (RF-181). */
@@ -771,7 +769,6 @@ public final class GameUi implements Disposable {
         border.pad(3);
         border.add(page).grow();
         notebookRoot.add(border).size(Math.min(stage.getWidth() - 60, 720), Math.min(stage.getHeight() - 60, 500));
-        stage.setScrollFocus(scroll);
     }
 
     private Label tab(String text, boolean active, int index) {

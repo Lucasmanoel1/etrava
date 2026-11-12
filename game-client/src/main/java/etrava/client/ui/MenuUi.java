@@ -48,7 +48,7 @@ public final class MenuUi implements Disposable {
         boolean canSave();
     }
 
-    private final Stage stage = new Stage(new ScreenViewport());
+    private final Stage stage = new UiStage(new ScreenViewport());
     private final Texture white;
     private final BitmapFont font;
     private final Texts texts;
@@ -221,7 +221,6 @@ public final class MenuUi implements Disposable {
         col.add(scroll).width(520).height(Math.min(420, stage.getHeight() - 200)).row();
         col.add(button(texts.get("menu.voltar"), onBack)).left().padTop(10);
         center(sheet(col, 560));
-        stage.setScrollFocus(scroll);
         back = onBack;
     }
 

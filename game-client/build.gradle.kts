@@ -112,3 +112,40 @@ tasks.register<JavaExec>("at16") {
         check(warnings > 0) { "nenhum aviso de asset ausente no log" }
     }
 }
+
+// ---- VT-01 (Fase V): o zoom nunca trava depois de abrir e fechar painéis ----
+// gradlew vt01 [-Psemente=N] [-Psegundos=S]: o jogador automático abre, rola e fecha painéis
+// (caderno, mochila, ficha, mapa, conversa, comércio/contêiner, pausa, console) e, a cada
+// fechamento, gira a roda pelo processador de entrada real e confere que a escala mudou.
+tasks.register<JavaExec>("vt01") {
+    group = "verification"
+    description = "VT-01: zoom responde depois de cada painel fechado (jogador automático, janela oculta)."
+    val user = layout.buildDirectory.dir("vt01/user").get().asFile
+    val seed = (findProperty("semente") as String?)?.toLong() ?: 1L
+    val seconds = (findProperty("segundos") as String?)?.toInt() ?: 150
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set(mainClassName)
+    workingDir = rootDir
+    jvmArgs("-Detrava.home=${rootDir.absolutePath}", "-Detrava.userdir=${user.absolutePath}",
+        "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
+    args("--hidden", "--debug", "--paineis", "--bot=$seconds", "--seed=$seed")
+    doFirst {
+        user.deleteRecursively()
+        File(user, "opcoes.json").apply { parentFile.mkdirs(); writeText("{\"volumeGeral\":0.0}") }
+    }
+    doLast {
+        val log = File(user, "logs/etrava.log").readText()
+        val m = Regex("""VT-01 zoom: (\d+) verificações, (\d+) falhas""").find(log)
+            ?: throw GradleException("o jogo não chegou ao fim da sessão automática")
+        val (checks, fails) = m.destructured
+        println("VT-01: $checks verificações de zoom depois de fechar um painel, $fails falha(s)")
+        check(checks.toInt() >= 200) { "poucas verificações ($checks); a sessão foi curta demais" }
+        check(fails.toInt() == 0) { "o zoom não respondeu $fails vez(es) — ver WARN VT-01 no log" }
+    }
+}
+
+// Testes do cliente sem janela: backend headless do libGDX (V0).
+dependencies {
+    testImplementation("com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion")
+    testRuntimeOnly("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop")
+}
