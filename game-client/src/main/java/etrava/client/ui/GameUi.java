@@ -48,6 +48,8 @@ public final class GameUi implements Disposable {
     private static final Color RUST = new Color(0x6E2C22FF), EDGE = new Color(0x2E2018FF);
     /** Quantos fatos marcados viram opção de "perguntar sobre" numa conversa. */
     public static final int MAX_ASK = 3;
+    /** Lado do ícone de item na tela, em pixels. */
+    private static final float ICON = 40;
 
     private final Stage stage = new Stage(new ScreenViewport());
     private final Texture white;
@@ -483,6 +485,12 @@ public final class GameUi implements Disposable {
         return page;
     }
 
+    /** Ícone do item (RF-200): 20 px de arte, ampliados sem borrar; item sem ícone mostra o placeholder. */
+    private Image icon(String itemId) {
+        ItemDef def = content.items().get(itemId);
+        return new Image(assets.sprite(def != null ? def.iconId() : "icone." + itemId).region());
+    }
+
     private Label clickable(String text, Command command) {
         Label label = new Label(text, ink);
         label.setWrap(true);
@@ -546,14 +554,22 @@ public final class GameUi implements Disposable {
                 any = true;
                 Command action = item.usable() ? new Command.UseItem(item.id())
                         : item.slot() != null ? new Command.Equip(item.id()) : null;
-                String verb = item.usable() ? texts.get(item.food() > 0 ? "mochila.comer" : "mochila.usar")
+                String verb = item.usable() ? texts.get(item.food() > 0 ? "mochila.comer" : item.document() ? "mochila.ler" : "mochila.usar")
                         : item.slot() != null ? texts.get("mochila.vestir") : "";
                 String line = item.displayName() + (e.getValue() > 1 ? " x" + e.getValue() : "") + "  ·  "
                         + kg(item.weight() * e.getValue()) + " kg" + (verb.isEmpty() ? "" : "   [" + verb + "]");
-                list.add(clickable(line, action)).row();
                 Label desc = new Label(item.description() == null ? "" : item.description(), inkSoft);
                 desc.setWrap(true);
-                list.add(desc).padLeft(12).padBottom(3).row();
+                Table text = new Table();
+                text.left();
+                text.defaults().left().growX();
+                text.add(clickable(line, action)).row();
+                text.add(desc).row();
+                Table row = new Table();
+                row.left();
+                row.add(icon(item.id())).size(ICON).padRight(10).top();
+                row.add(text).growX();
+                list.add(row).padBottom(6).row();
             }
         }
         if (!any) list.add(new Label(texts.get("mochila.vazia"), inkSoft)).row();
@@ -644,7 +660,11 @@ public final class GameUi implements Disposable {
                 default -> new Command.TakeItem(o.item());
             };
             String line = o.name() + " x" + o.qty() + price + (cmd == null ? "" : "   [" + texts.get(verbKey) + "]");
-            list.add(clickable(line, cmd)).padBottom(2).row();
+            Table row = new Table();
+            row.left();
+            row.add(icon(o.item())).size(ICON * 0.8f).padRight(8);
+            row.add(clickable(line, cmd)).growX();
+            list.add(row).padBottom(3).row();
         }
         if (offers.isEmpty()) list.add(new Label(texts.get("comercio.nada"), inkSoft)).row();
         ScrollPane scroll = new ScrollPane(list, new ScrollPane.ScrollPaneStyle());

@@ -61,6 +61,8 @@ public final class Combat {
     public static final double RESOLVE_RANGE = 4, SURRENDER_RANGE = 9, STRIKE_RANGE = 2.2;
     /** Fugitivos e quem vai embora somem depois disto, ou quando ficam longe. */
     public static final double FLEE_TIME = 6, GONE_DISTANCE = 16;
+    /** Distância mínima entre dois inimigos, em metros. */
+    public static final double ENEMY_SPACING = 0.75;
     /** Raio de luz (m): no escuro de uma ruína, numa noite aberta, e o que cada ponto de "luz" do equipamento soma. */
     public static final double DARK_LIGHT = 1.5, NIGHT_LIGHT = 4.5, LIGHT_PER_POINT = 0.75;
     public static final int NIGHT_FROM = 20, NIGHT_TO = 5;
@@ -663,6 +665,7 @@ public final class Combat {
                 }
             }
         }
+        separate();
         // o fôlego volta depois de um respiro; faminto, volta pela metade (D-046)
         if (now - world.exertTick > ticks(REGEN_DELAY)) {
             double regen = STAMINA_REGEN * DT * (economy.starving() ? 0.5 : 1);
@@ -688,6 +691,33 @@ public final class Combat {
         economy.train(Economy.VIGOR, 0.1);
         events.add(new SimEvent.Hit(e.id, PLAYER, dmg, false));
         return world.health <= 0;
+    }
+
+    /** Dois inimigos não ocupam o mesmo lugar: quem encosta é afastado, sem entrar em parede. */
+    private void separate() {
+        List<EnemyState> all = world.enemies;
+        for (int i = 0; i < all.size(); i++) {
+            for (int j = i + 1; j < all.size(); j++) {
+                EnemyState a = all.get(i), b = all.get(j);
+                double dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+                if (d >= ENEMY_SPACING) continue;
+                if (d < 1e-6) { // exatamente no mesmo ponto: um lado fixo, para continuar determinístico
+                    dx = 1;
+                    dy = 0;
+                    d = 1;
+                }
+                double push = Math.min(ENEMY_SPACING - d, 0.06) / 2;
+                nudge(a, -dx / d * push, -dy / d * push);
+                nudge(b, dx / d * push, dy / d * push);
+            }
+        }
+    }
+
+    private void nudge(EnemyState e, double dx, double dy) {
+        if (!nav.get().isBlockedAt(e.x + dx, e.y + dy)) {
+            e.x += dx;
+            e.y += dy;
+        }
     }
 
     private void repath(EnemyState e, double tx, double ty) {

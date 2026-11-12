@@ -8,7 +8,13 @@ import java.nio.file.Path;
 public final class UserDirs {
     private UserDirs() {}
 
+    /**
+     * Com a variável de ambiente {@code ETRAVA_USERDIR} (ou {@code -Detrava.userdir}), tudo vai para essa pasta:
+     * é como os testes automáticos rodam sem tocar nos saves e nas opções de quem joga.
+     */
     public static Path base() {
+        String override = System.getProperty("etrava.userdir", System.getenv("ETRAVA_USERDIR"));
+        if (override != null && !override.isBlank()) return Path.of(override);
         String appData = System.getenv("APPDATA");
         return appData != null && !appData.isBlank()
                 ? Path.of(appData, "Etrava")

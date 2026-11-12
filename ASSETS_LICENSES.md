@@ -98,6 +98,49 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `personagem.tobias` | spritesheet | personagens/tobias.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.vessa` | spritesheet | personagens/vessa.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.firmino` | spritesheet | personagens/firmino.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.pao` | icon | icones/pao.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.sopa` | icon | icones/sopa.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.queijo` | icon | icones/queijo.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.maca` | icon | icones/maca.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.biscoito` | icon | icones/biscoito.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.carne_salgada` | icon | icones/carne_salgada.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.legumes` | icon | icones/legumes.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.cerveja` | icon | icones/cerveja.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.cha_ervas` | icon | icones/cha_ervas.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.unguento_sal` | icon | icones/unguento_sal.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.sal_medicinal` | icon | icones/sal_medicinal.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.farinha` | icon | icones/farinha.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.ferro` | icon | icones/ferro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.pregos` | icon | icones/pregos.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.lenha` | icon | icones/lenha.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.couro` | icon | icones/couro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.corda` | icon | icones/corda.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.ervas` | icon | icones/ervas.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.oleo` | icon | icones/oleo.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.martelo` | icon | icones/martelo.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.faca` | icon | icones/faca.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.machadinha` | icon | icones/machadinha.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.cajado` | icon | icones/cajado.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.lanca_curta` | icon | icones/lanca_curta.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.lamparina` | icon | icones/lamparina.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.camisa_linho` | icon | icones/camisa_linho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.gibao_couro` | icon | icones/gibao_couro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.avental_couro` | icon | icones/avental_couro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.chapeu_feltro` | icon | icones/chapeu_feltro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.capuz_la` | icon | icones/capuz_la.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.bolsa_cinto` | icon | icones/bolsa_cinto.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.pele_lobo` | icon | icones/pele_lobo.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.lasca_fibra` | icon | icones/lasca_fibra.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.placa_simbolos` | icon | icones/placa_simbolos.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.papeis_avel` | icon | icones/papeis_avel.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.carta_iria` | icon | icones/carta_iria.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.esboco_simbolos` | icon | icones/esboco_simbolos.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.bilhete_avel` | icon | icones/bilhete_avel.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.edital_caldris` | icon | icones/edital_caldris.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.tracado_agrimensora` | icon | icones/tracado_agrimensora.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.lista_oren` | icon | icones/lista_oren.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.canto_carta` | icon | icones/canto_carta.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `icone.livro_enterros` | icon | icones/livro_enterros.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `musica.vila` | music | audio/musica/vila.wav | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
 | `musica.noite` | music | audio/musica/noite.wav | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
 | `musica.casa` | music | audio/musica/casa.wav | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
@@ -133,6 +176,8 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `sfx.fenomeno.arvore` | sound | audio/efeitos/arvore.wav | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
 | `sfx.fenomeno.eco` | sound | audio/efeitos/eco.wav | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
 | `sfx.derrota` | sound | audio/efeitos/derrota.wav | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
+| `fonte.texto` | font | fontes/Alegreya.ttf | Alegreya — The Alegreya Project Authors (github.com/huertatipografica/Alegreya), via Google Fonts | SIL Open Font License 1.1 (uso comercial permitido; ver fontes/OFL.txt) | ok |
+| `fonte.titulo` | font | fontes/AlegreyaSC-Bold.ttf | Alegreya SC — The Alegreya Project Authors (github.com/huertatipografica/Alegreya), via Google Fonts | SIL Open Font License 1.1 (uso comercial permitido; ver fontes/OFL.txt) | ok |
 | `ilustracao.epilogo_arvore` | illustration | ilustracoes/epilogo_arvore.png | Gerado por IA (Dreamina, Seedream 5.0 Pro) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
 | `ilustracao.epilogo_vila` | illustration | ilustracoes/epilogo_vila.png | Gerado por IA (Dreamina, Seedream 5.0 Pro) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |
 | `ilustracao.mapa` | illustration | ilustracoes/mapa.png | Gerado por IA (Dreamina, Seedream 5.0 Pro) e convertido para a paleta do jogo | Dreamina — conferir termos de uso comercial antes do release | ok |

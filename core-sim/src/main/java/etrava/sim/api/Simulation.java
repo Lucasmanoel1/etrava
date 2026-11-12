@@ -169,6 +169,11 @@ public final class Simulation {
 
     /** Grava o jogo. {@code savedAt} é a data real, informada pela apresentação. */
     public void save(Path file, String savedAt) throws SaveGame.SaveException {
+        save(file, savedAt, 0);
+    }
+
+    /** {@code playedSeconds}: tempo real de jogo até aqui; fica só no cabeçalho do save, fora do estado (RNF-013). */
+    public void save(Path file, String savedAt, long playedSeconds) throws SaveGame.SaveException {
         if (world.dialogue != null)
             throw new SaveGame.SaveException("Não dá para salvar no meio de uma conversa.");
         if (world.trade != null)
@@ -177,7 +182,7 @@ public final class Simulation {
             throw new SaveGame.SaveException("O personagem morreu. Carregue um jogo salvo.");
         if (combat.inCombat())
             throw new SaveGame.SaveException("Não dá para salvar no meio de uma luta.");
-        SaveGame.write(file, world, savedAt);
+        SaveGame.write(file, world, savedAt, playedSeconds);
     }
 
     /** Impressão digital do estado inteiro, para comparar duas simulações. */

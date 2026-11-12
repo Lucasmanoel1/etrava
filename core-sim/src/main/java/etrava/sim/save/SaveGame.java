@@ -61,7 +61,9 @@ public final class SaveGame {
     }
 
     /** Resumo de um save, para listar sem carregar tudo. */
-    public record Meta(int schemaVersion, int day, String time, String areaId, long tick, String savedAt) {}
+    /** {@code playedSeconds}: tempo real de jogo, contado pela apresentação (0 em saves antigos). */
+    public record Meta(int schemaVersion, int day, String time, String areaId, long tick, String savedAt,
+            long playedSeconds) {}
 
     public record Loaded(Meta meta, World world) {}
 
@@ -110,6 +112,10 @@ public final class SaveGame {
     // ---------------------------------------------------------------- gravar
 
     public static void write(Path file, World world, String savedAt) throws SaveException {
+        write(file, world, savedAt, 0);
+    }
+
+    public static void write(Path file, World world, String savedAt, long playedSeconds) throws SaveException {
         ObjectNode meta = JSON.createObjectNode();
         meta.put("schemaVersion", SCHEMA_VERSION);
         meta.put("day", world.clock.day());
@@ -117,6 +123,7 @@ public final class SaveGame {
         meta.put("areaId", world.areaId);
         meta.put("tick", world.clock.tick());
         meta.put("savedAt", savedAt == null ? "" : savedAt);
+        meta.put("playedSeconds", Math.max(0, playedSeconds));
 
         Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
         try {
@@ -196,7 +203,8 @@ public final class SaveGame {
 
     private static Meta meta(JsonNode n) {
         return new Meta(n.path("schemaVersion").asInt(), n.path("day").asInt(), n.path("time").asText(),
-                n.path("areaId").asText(), n.path("tick").asLong(), n.path("savedAt").asText());
+                n.path("areaId").asText(), n.path("tick").asLong(), n.path("savedAt").asText(),
+                n.path("playedSeconds").asLong(0));
     }
 
     private static JsonNode entry(Path file, String name) throws IOException {

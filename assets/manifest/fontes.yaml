@@ -1,0 +1,12 @@
+# Fontes da interface (D-077). Alegreya, de Juan Pablo del Peral (Huerta Tipográfica), SIL Open Font License 1.1.
+# O texto da licença está em assets/fontes/OFL.txt e segue junto com o jogo.
+- id: fonte.texto
+  type: font
+  file: fontes/Alegreya.ttf
+  source: "Alegreya — The Alegreya Project Authors (github.com/huertatipografica/Alegreya), via Google Fonts"
+  license: "SIL Open Font License 1.1 (uso comercial permitido; ver fontes/OFL.txt)"
+- id: fonte.titulo
+  type: font
+  file: fontes/AlegreyaSC-Bold.ttf
+  source: "Alegreya SC — The Alegreya Project Authors (github.com/huertatipografica/Alegreya), via Google Fonts"
+  license: "SIL Open Font License 1.1 (uso comercial permitido; ver fontes/OFL.txt)"

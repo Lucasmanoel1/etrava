@@ -72,7 +72,19 @@ public final class EtravaGame extends ApplicationAdapter {
     private CameraRig camera;
     private ShapeRenderer shapes;
     private SpriteBatch batch;
-    private BitmapFont font;
+    private etrava.client.ui.Fonts fonts;
+    /** Texto das telas de papel; {@code hudFont} é o mesmo tamanho, com sombra, para o que fica solto sobre o cenário. */
+    private BitmapFont font, hudFont, titleFont, consoleFont;
+    private float fontScale;
+    /** As opções pediram outro tamanho de texto: as telas são refeitas no começo do próximo quadro. */
+    private boolean uiDirty;
+    /** Tempo real de jogo desta partida, em segundos (vai no cabeçalho do save). */
+    private double playedSeconds;
+    /** Quem está no meio de um golpe → segundos que faltam da animação. */
+    private final Map<String, Float> strikes = new HashMap<>();
+    private static final float STRIKE_TIME = 0.32f;
+    private Bot bot;
+    private Bench bench;
     private DebugConsole console;
 
     private float accumulator;
@@ -145,35 +157,21 @@ public final class EtravaGame extends ApplicationAdapter {
 
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
-        font = new BitmapFont();
+        fonts = new etrava.client.ui.Fonts(options.assetsDir(), assets.manifest());
+        titleFont = fonts.title();
+        consoleFont = fonts.overlay(1f);
         Pixmap white = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         white.setColor(1, 1, 1, 1);
         white.fill();
         whitePx = new Texture(white);
         white.dispose();
         texts = new Texts(options.contentDir());
-        ui = new GameUi(font, assets, content, texts);
-        ui.onChoice(this::chooseDialogue);
-        ui.onToggleMark(f -> sim.submit(new Command.MarkFact(f, !sim.view().markedFacts().contains(f))));
-        ui.onCommand(c -> sim.submit(c));
-        ui.onLoad(name -> {
-            String result = loadGame(name);
-            showNotice(result);
-            if (!sim.view().dead()) ui.closeDeath();
-        });
-
-        menu = new MenuUi(font, texts, settings, new MenuActions());
-        menuInput.addProcessor(new MenuKeys());
-        menuInput.addProcessor(menu.stage());
-        gameInput.addProcessor(new GlobalKeys());
-        gameInput.addProcessor(menu.stage());
-        if (options.dev()) {
-            console = new DebugConsole(font, this::runConsoleCommand);
-            gameInput.addProcessor(console.stage());
-        }
-        gameInput.addProcessor(ui.stage());
-        gameInput.addProcessor(new GameInput());
+        if (options.dev()) console = new DebugConsole(consoleFont, this::runConsoleCommand);
+        buildUi();
         applySettings();
+        timeScale = options.speed();
+        if (options.bench() > 0) bench = new Bench();
+        if (options.bot() > 0) bot = new Bot();
 
         // linha de comando de desenvolvimento (área, semente, comandos, captura): direto ao jogo
         boolean direct = !options.menu() && (options.area() != null || options.seed() != null || !options.commands().isEmpty()
@@ -195,9 +193,60 @@ public final class EtravaGame extends ApplicationAdapter {
         }
     }
 
+    /**
+     * Cria (ou recria) as fontes e as telas no tamanho de texto das opções (RNF-040). A fonte é
+     * gerada no tamanho exato, e as telas guardam a fonte com que nasceram: por isso tudo é refeito.
+     * Se um menu estava aberto (é de lá que o tamanho muda), ele volta aberto nas opções.
+     */
+    private void buildUi() {
+        boolean reopen = menu != null && menu.isOpen(), inGame = menu != null && menu.inGame();
+        if (ui != null) ui.dispose();
+        if (menu != null) menu.dispose();
+        if (font != null) font.dispose();
+        if (hudFont != null) hudFont.dispose();
+        fontScale = settings.tamanhoTexto;
+        font = fonts.text(fontScale);
+        hudFont = fonts.overlay(fontScale);
+
+        ui = new GameUi(font, assets, content, texts);
+        ui.onChoice(this::chooseDialogue);
+        ui.onToggleMark(f -> sim.submit(new Command.MarkFact(f, !sim.view().markedFacts().contains(f))));
+        ui.onCommand(c -> sim.submit(c));
+        ui.onLoad(name -> {
+            String result = loadGame(name);
+            showNotice(result);
+            if (!sim.view().dead()) ui.closeDeath();
+        });
+        menu = new MenuUi(font, hudFont, titleFont, texts, settings, new MenuActions());
+
+        menuInput.clear();
+        menuInput.addProcessor(new MenuKeys());
+        menuInput.addProcessor(menu.stage());
+        gameInput.clear();
+        gameInput.addProcessor(new GlobalKeys());
+        gameInput.addProcessor(menu.stage());
+        if (console != null) gameInput.addProcessor(console.stage());
+        gameInput.addProcessor(ui.stage());
+        gameInput.addProcessor(new GameInput());
+        ui.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        menu.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        uiDirty = false;
+
+        if (reopen && inGame) {
+            menu.showPause();
+            menu.showOptions(menu::showPause);
+        } else if (reopen) {
+            boolean canContinue = !saveSlots(false).isEmpty();
+            menu.showMain(canContinue);
+            menu.showOptions(() -> menu.showMain(canContinue));
+        }
+    }
+
     /** Põe uma simulação em jogo (novo jogo ou carregado) e fecha os menus. */
     private void startGame(Simulation s) {
         sim = s;
+        playedSeconds = 0;
+        strikes.clear();
         rebuildScene();
         lastDirX = lastDirY = 0;
         paused = false;
@@ -217,7 +266,11 @@ public final class EtravaGame extends ApplicationAdapter {
         Gdx.graphics.setForegroundFPS(settings.limiteFps);
         if (settings.telaCheia && !Gdx.graphics.isFullscreen()) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
         else if (!settings.telaCheia && Gdx.graphics.isFullscreen()) Gdx.graphics.setWindowedMode(1280, 720);
-        font.getData().setScale(settings.tamanhoTexto);
+        if (settings.tamanhoTexto != fontScale) uiDirty = true; // refeito fora do clique que pediu a mudança
+        if (bench != null) { // medindo: sem nada que segure os quadros
+            Gdx.graphics.setVSync(false);
+            Gdx.graphics.setForegroundFPS(0);
+        }
         if (scene != null) {
             scene.postEnabled = settings.posProcessamento;
             scene.lightingEnabled = settings.luzDinamica;
@@ -240,6 +293,8 @@ public final class EtravaGame extends ApplicationAdapter {
                 var area = content.areaEntry(meta.areaId());
                 String when = meta.savedAt().length() >= 16 ? meta.savedAt().substring(0, 16).replace('T', ' ') : meta.savedAt();
                 detail = texts.get("slot.detalhe", meta.day(), meta.time(), area != null ? area.displayName() : meta.areaId(), when);
+                if (meta.playedSeconds() >= 60) detail += " · " + texts.get("slot.tempo",
+                        meta.playedSeconds() / 3600, String.format("%02d", meta.playedSeconds() / 60 % 60));
             }
             out.add(new MenuUi.Slot(name, title, detail, thumbnail(name)));
         }
@@ -391,11 +446,14 @@ public final class EtravaGame extends ApplicationAdapter {
     @Override
     public void render() {
         float dt = Math.min(Gdx.graphics.getDeltaTime(), MAX_FRAME_TIME);
+        if (uiDirty) buildUi();
+        if (bot != null) bot.update(dt);
         if (sim == null || (menu.isOpen() && !menu.inGame())) {
             renderMenuScreen(dt);
             return;
         }
         WorldView v = sim.view();
+        if (!menu.isOpen()) playedSeconds += dt;
 
         if (paused || menu.isOpen() || ui.epilogueOpen() || ui.inventoryOpen() || ui.characterOpen() || ui.mapOpen()) {
             // mundo parado (pausa, epílogo, mochila, ficha): só os comandos de mochila valem, sem gastar tempo
@@ -440,6 +498,7 @@ public final class EtravaGame extends ApplicationAdapter {
         ui.render(v, sim.tradeView(), sim.economy(), dt);
         menu.render(dt);
         if (console != null) console.render(dt);
+        if (bench != null) bench.frame();
 
         frame++;
         if (console != null) {
@@ -457,7 +516,9 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Monta o cenário da área atual (novo jogo, troca de área, jogo carregado). */
     private void rebuildScene() {
         if (scene != null) scene.dispose();
-        scene = new SceneRenderer(sim.area(), content.props(), assets, dayNight);
+        var here = content.areaEntry(sim.view().areaId());
+        scene = new SceneRenderer(sim.area(), content.props(), assets, dayNight,
+                here == null || !here.interior() && !here.dark());
         scene.propState = key -> sim.view().propState(key);
         scene.postEnabled = settings.posProcessamento;
         scene.lightingEnabled = settings.luzDinamica;
@@ -527,6 +588,7 @@ public final class EtravaGame extends ApplicationAdapter {
                     floaters.add(new Object[] {who, h.damage() <= 0 ? texts.get("combate.errou")
                             : String.valueOf(Math.max(1, Math.round(h.damage()))), 1.1f, Combat.PLAYER.equals(who) ? 0 : 1});
                     if (h.damage() > 0) flashes.put(who, 0.25f);
+                    strikes.put(h.attacker(), STRIKE_TIME);
                     if (h.damage() <= 0) audio.sfx("sfx.combate.golpe");
                     else audio.sfx(Combat.PLAYER.equals(who) ? "sfx.combate.dano" : "sfx.combate.acerto",
                             h.heavy() ? 1f : 0.8f, h.heavy() ? 0.8f : 1f);
@@ -657,6 +719,22 @@ public final class EtravaGame extends ApplicationAdapter {
         d.facing = a.facing();
         d.moving = a.moving();
         d.flash = Math.min(1f, flashes.getOrDefault(a.id(), 0f) * 4f);
+        // golpe (D-078): o inimigo ergue o braço enquanto anuncia (primeira metade) e desce quando o golpe sai;
+        // o do jogador é imediato, então a animação inteira passa depois do golpe
+        Float strike = strikes.get(a.id());
+        d.attack = -1f;
+        if (a instanceof EnemyState e) {
+            if (EnemyState.WINDUP.equals(e.state)) {
+                var def = content.enemies().get(e.type);
+                double total = Math.max(1, (def != null ? def.windupOr() : 0.45) / Simulation.DT);
+                double left = e.hitTick - sim.view().clock().tick() - alpha;
+                d.attack = (float) Math.max(0, Math.min(0.499, 0.5 * (1 - left / total)));
+            } else if (strike != null) {
+                d.attack = 0.5f + 0.499f * (1f - strike / STRIKE_TIME);
+            }
+        } else if (strike != null) {
+            d.attack = 0.25f + 0.749f * (1f - strike / STRIKE_TIME);
+        }
     }
 
     // ---------------------------------------------------------------- salvar e carregar
@@ -673,7 +751,8 @@ public final class EtravaGame extends ApplicationAdapter {
 
     private String saveGame(String name) {
         try {
-            sim.save(savePath(name), LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            sim.save(savePath(name), LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                    Math.round(playedSeconds));
             return "Jogo salvo: " + name;
         } catch (SaveGame.SaveException e) {
             LOG.warn("Falha ao salvar '{}'", name, e);
@@ -684,7 +763,9 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Carrega um save. Se der errado, o jogo atual continua como estava (RF-365). */
     private String loadGame(String name) {
         try {
+            SaveGame.Meta meta = SaveGame.readMeta(savePath(name));
             startGame(Simulation.load(content, savePath(name)));
+            playedSeconds = meta != null ? meta.playedSeconds() : 0;
             return "Jogo carregado: " + name + " (" + sim.view().clock().format() + ")";
         } catch (SaveGame.SaveException e) {
             LOG.warn("Falha ao carregar '{}'", name, e);
@@ -704,21 +785,21 @@ public final class EtravaGame extends ApplicationAdapter {
 
     private void drawHud(WorldView v) {
         batch.begin();
-        float top = Gdx.graphics.getHeight() - 12;
-        font.setColor(0.93f, 0.89f, 0.78f, 1f);
+        float top = Gdx.graphics.getHeight() - 10, line = hudFont.getLineHeight();
+        hudFont.setColor(0.93f, 0.89f, 0.78f, 1f);
         String life = texts.get("hud.dinheiro", ui.coins(v.money()))
                 + (v.hunger() >= etrava.sim.economy.Economy.HUNGRY ? "   " + texts.get(v.hunger()
                         >= etrava.sim.economy.Economy.STARVING ? "fome.faminto" : "fome.com_fome") : "")
                 + (sim.economy().overloaded() ? "   " + texts.get("hud.carga") : "");
-        font.draw(batch, v.clock().format() + "   " + life + (paused ? "   [PAUSADO]" : ""), 14, top);
+        hudFont.draw(batch, v.clock().format() + "   " + life + (paused ? "   [PAUSADO]" : ""), 14, top);
         if (noticeTime > 0) {
             noticeTime -= Gdx.graphics.getDeltaTime();
-            font.draw(batch, notice, 14, top - (options.dev() ? 40 : 20));
+            hudFont.draw(batch, notice, 14, top - (options.dev() ? 2 : 1) * line);
         }
         if (options.dev()) {
-            font.setColor(0.7f, 0.7f, 0.7f, 1f);
-            font.draw(batch, String.format(Locale.ROOT, "FPS %d   pos (%.1f, %.1f)   semente %d   vel x%.1f   F1 console",
-                    Gdx.graphics.getFramesPerSecond(), v.playerX(), v.playerY(), v.seed(), timeScale), 14, top - 20);
+            hudFont.setColor(0.7f, 0.7f, 0.7f, 1f);
+            hudFont.draw(batch, String.format(Locale.ROOT, "FPS %d   pos (%.1f, %.1f)   semente %d   vel x%.1f   F1 console",
+                    Gdx.graphics.getFramesPerSecond(), v.playerX(), v.playerY(), v.seed(), timeScale), 14, top - line);
         }
         batch.end();
     }
@@ -741,18 +822,24 @@ public final class EtravaGame extends ApplicationAdapter {
     private void drawCombatOverlay(WorldView v, float dt) {
         flashes.replaceAll((k, t) -> t - dt);
         flashes.values().removeIf(t -> t <= 0);
+        strikes.replaceAll((k, t) -> t - dt);
+        strikes.values().removeIf(t -> t <= 0);
         batch.begin();
         // barras do jogador, no canto de baixo
-        if (showHud) {
+        if (showHud && v.dialogue() == null && v.trade() == null) { // a conversa e o comércio ocupam o pé da tela
             float x = 16, y = 18, w = 180, h = 9;
-            bar(x, y + 16, w, h, (float) (v.health() / sim.combat().maxHealth()), 0.62f, 0.16f, 0.12f);
+            bar(x, y + 22, w, h, (float) (v.health() / sim.combat().maxHealth()), 0.62f, 0.16f, 0.12f);
             bar(x, y, w, h, (float) (v.stamina() / sim.combat().maxStamina()), 0.72f, 0.62f, 0.30f);
-            font.setColor(0.93f, 0.89f, 0.78f, 1f);
-            font.draw(batch, texts.get("hud.vida", Math.round(v.health()), Math.round(sim.combat().maxHealth())), x + w + 8, y + 16 + h + 2);
-            font.draw(batch, texts.get("hud.folego"), x + w + 8, y + h + 2);
-            String q = cooldownText(Combat.HEAVY), e = cooldownText(Combat.PUSH);
-            font.setColor(0.75f, 0.72f, 0.64f, 1f);
-            font.draw(batch, texts.get("hud.habilidades", q, e), x, y + 52);
+            hudFont.setColor(0.93f, 0.89f, 0.78f, 1f);
+            float up = (hudFont.getCapHeight() - h) / 2;
+            hudFont.draw(batch, texts.get("hud.vida", Math.round(v.health()), Math.round(sim.combat().maxHealth())),
+                    x + w + 8, y + 22 + h + up);
+            hudFont.draw(batch, texts.get("hud.folego"), x + w + 8, y + h + up);
+            if (!v.enemies().isEmpty()) { // as teclas de luta só aparecem quando há com quem lutar
+                String q = cooldownText(Combat.HEAVY), e = cooldownText(Combat.PUSH);
+                hudFont.setColor(0.75f, 0.72f, 0.64f, 1f);
+                hudFont.draw(batch, texts.get("hud.habilidades", q, e), x, y + 40 + hudFont.getLineHeight());
+            }
         }
         // inimigos: vida, e o aviso do golpe
         double light = sim.combat().lightRadius();
@@ -769,9 +856,9 @@ public final class EtravaGame extends ApplicationAdapter {
                     windup ? 0.78f : meek ? 0.5f : 0.16f, windup ? 0.3f : meek ? 0.45f : 0.12f);
             if (e.id.equals(hoverEnemy)) {
                 String label = def.displayName() + (EnemyState.SURRENDERED.equals(e.state) ? " " + texts.get("combate.rendido_rotulo") : "");
-                layout.setText(font, label);
-                font.setColor(0.95f, 0.91f, 0.80f, 1f);
-                font.draw(batch, label, px[0] - layout.width / 2, px[1] + 22);
+                layout.setText(hudFont, label);
+                hudFont.setColor(0.95f, 0.91f, 0.80f, 1f);
+                hudFont.draw(batch, label, px[0] - layout.width / 2, px[1] + 22);
             }
         }
         // números de dano
@@ -786,12 +873,12 @@ public final class EtravaGame extends ApplicationAdapter {
             if (d == null) continue;
             float rise = (1.1f - (float) f[2]) * 30;
             camera.worldPxToScreen(IsoProjection.sx(d.x, d.y), IsoProjection.sy(d.x, d.y, 0) + 92, px);
-            if ((int) f[3] == 0) font.setColor(0.95f, 0.45f, 0.38f, Math.min(1f, (float) f[2] * 2));
-            else font.setColor(0.98f, 0.92f, 0.75f, Math.min(1f, (float) f[2] * 2));
-            layout.setText(font, (String) f[1]);
-            font.draw(batch, (String) f[1], px[0] - layout.width / 2, px[1] + rise);
+            if ((int) f[3] == 0) hudFont.setColor(0.95f, 0.45f, 0.38f, Math.min(1f, (float) f[2] * 2));
+            else hudFont.setColor(0.98f, 0.92f, 0.75f, Math.min(1f, (float) f[2] * 2));
+            layout.setText(hudFont, (String) f[1]);
+            hudFont.draw(batch, (String) f[1], px[0] - layout.width / 2, px[1] + rise);
         }
-        font.setColor(1f, 1f, 1f, 1f);
+        hudFont.setColor(1f, 1f, 1f, 1f);
         batch.end();
     }
 
@@ -905,14 +992,14 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Texto numa plaquinha escura acima da cabeça de um personagem. */
     private void drawLabel(ActorDraw who, String text, float backgroundAlpha) {
         camera.worldPxToScreen(IsoProjection.sx(who.x, who.y), IsoProjection.sy(who.x, who.y, 0) + 122, px);
-        layout.setText(font, text, new com.badlogic.gdx.graphics.Color(0.95f, 0.91f, 0.80f, 1f), 280,
+        layout.setText(hudFont, text, new com.badlogic.gdx.graphics.Color(0.95f, 0.91f, 0.80f, 1f), 280,
                 com.badlogic.gdx.utils.Align.center, true);
         float w = Math.min(280, layout.width) + 14, h = layout.height + 12;
         float x = Math.round(px[0] - w / 2), y = Math.round(px[1]);
         batch.setColor(0.08f, 0.06f, 0.07f, backgroundAlpha);
         batch.draw(whitePx, x, y, w, h);
         batch.setColor(1, 1, 1, 1);
-        font.draw(batch, layout, px[0] - 140, y + h - 6);
+        hudFont.draw(batch, layout, px[0] - 140, y + h - 6);
     }
 
     /** Opção do diálogo: primeiro as escolhas do NPC, depois "perguntar sobre" os fatos marcados. */
@@ -1416,6 +1503,195 @@ public final class EtravaGame extends ApplicationAdapter {
         }
     }
 
+    // ---------------------------------------------------------------- medição e teste de resistência
+
+    /**
+     * Medição de desempenho (AT-17, {@code --bench=SEGUNDOS}): sem V-Sync nem limite, descarta os
+     * três primeiros segundos, mede os seguintes e grava no log a média, o 1% pior e a memória.
+     */
+    private final class Bench {
+        private static final float WARMUP = 3f;
+        private final float[] times = new float[1 << 20];
+        private int count;
+        private float elapsed;
+
+        void frame() {
+            float raw = Gdx.graphics.getDeltaTime();
+            elapsed += raw;
+            if (elapsed < WARMUP) return;
+            if (count < times.length) times[count++] = raw;
+            if (elapsed < WARMUP + options.bench()) return;
+            float[] sorted = java.util.Arrays.copyOf(times, count);
+            java.util.Arrays.sort(sorted);
+            double sum = 0;
+            for (float t : sorted) sum += t;
+            int worst = Math.max(1, count / 100);
+            double low = 0;
+            for (int i = count - worst; i < count; i++) low += sorted[i];
+            Runtime rt = Runtime.getRuntime();
+            String result = String.format(Locale.ROOT,
+                    "BENCH área=%s %s NPCs=%d inimigos=%d %dx%d luz=%s pós=%s | média %.0f FPS | 1%% pior %.0f FPS | "
+                            + "pior quadro %.1f ms | heap %d MB | %s",
+                    sim.view().areaId(), sim.view().clock().format(), sim.view().actors().size(),
+                    sim.view().enemies().size(), Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight(),
+                    scene.lightingEnabled, scene.postEnabled, count / sum, worst / low, sorted[count - 1] * 1000,
+                    (rt.totalMemory() - rt.freeMemory()) >> 20, Gdx.gl.glGetString(GL20.GL_RENDERER));
+            LOG.info(result);
+            System.out.println(result);
+            Gdx.app.exit();
+        }
+    }
+
+    /**
+     * Jogador automático ({@code --bot=SEGUNDOS}): a cada instante faz alguma coisa ao acaso — anda,
+     * conversa e escolhe falas, abre telas, compra, trabalha, dorme, luta, troca de área, salva e
+     * carrega. Não testa se o jogo é bom; testa se ele aguenta horas de uso sem cair nem travar.
+     */
+    private final class Bot {
+        private final java.util.Random rnd = new java.util.Random(options.seed() != null ? options.seed() : 7);
+        private final MenuActions actions = new MenuActions();
+        private float wait = 1f, elapsed;
+        private int count;
+
+        void update(float dt) {
+            elapsed += dt;
+            if (elapsed >= options.bot()) {
+                Runtime rt = Runtime.getRuntime();
+                String result = String.format(Locale.ROOT, "BOT terminou: %d ações em %.0f s, %s, heap %d MB", count, elapsed,
+                        sim != null ? crashContext : "no menu", (rt.totalMemory() - rt.freeMemory()) >> 20);
+                LOG.info(result);
+                System.out.println(result);
+                Gdx.app.exit();
+                return;
+            }
+            wait -= dt;
+            if (wait > 0) return;
+            wait = 0.25f + rnd.nextFloat() * 1.4f;
+            count++;
+            if (count % 400 == 0) LOG.info("Bot: {} ações, {} s, {}", count, Math.round(elapsed), crashContext);
+            act();
+        }
+
+        private void act() {
+            if (sim == null || (menu.isOpen() && !menu.inGame())) {
+                actions.newGame("Bot", rnd.nextBoolean());
+                return;
+            }
+            WorldView v = sim.view();
+            if (menu.isOpen()) {
+                if (rnd.nextInt(4) == 0 && actions.canSave()) actions.save("jogo_3");
+                else menu.escape();
+                return;
+            }
+            if (ui.deathOpen()) { // morreu: volta ao último save; sem save, começa outra vida
+                String latest = null;
+                long best = -1;
+                for (String n : MenuUi.slotNames(false)) {
+                    java.io.File f = savePath(n).toFile();
+                    if (f.exists() && f.lastModified() > best) {
+                        best = f.lastModified();
+                        latest = n;
+                    }
+                }
+                if (latest != null) loadGame(latest);
+                if (sim.view().dead()) actions.newGame("Bot", false);
+                ui.closeDeath();
+                return;
+            }
+            if (ui.epilogueOpen()) {
+                ui.closeEpilogue();
+                return;
+            }
+            if (v.dialogue() != null) {
+                DialogueView d = v.dialogue();
+                if (rnd.nextInt(12) == 0) sim.submit(new Command.LeaveDialogue());
+                else chooseDialogue(d.choices().isEmpty() ? 0 : rnd.nextInt(d.choices().size() + ui.askFacts().size()));
+                return;
+            }
+            if (v.trade() != null) {
+                var t = sim.tradeView();
+                int r = rnd.nextInt(10);
+                if (t == null || r < 3) sim.submit(new Command.CloseTrade());
+                else if (r < 7 && !t.offers().isEmpty()) {
+                    String item = t.offers().get(rnd.nextInt(t.offers().size())).item();
+                    sim.submit(t.container() ? new Command.TakeItem(item) : new Command.Buy(item));
+                } else if (!t.container() && !t.wants().isEmpty()) {
+                    sim.submit(new Command.Sell(t.wants().get(rnd.nextInt(t.wants().size())).item()));
+                }
+                return;
+            }
+            if (ui.notebookOpen() || ui.inventoryOpen() || ui.characterOpen() || ui.mapOpen()) {
+                int r = rnd.nextInt(10);
+                if (ui.notebookOpen() && r < 5) ui.notebookTab(rnd.nextBoolean() ? 1 : -1);
+                else if (ui.inventoryOpen() && r < 5 && !v.inventory().isEmpty()) {
+                    List<String> items = new ArrayList<>(v.inventory().keySet());
+                    String item = items.get(rnd.nextInt(items.size()));
+                    sim.submit(rnd.nextBoolean() ? new Command.UseItem(item) : new Command.Equip(item));
+                } else {
+                    ui.closeWindows();
+                    ui.closeNotebook();
+                }
+                return;
+            }
+            paused = false;
+            int r = rnd.nextInt(100);
+            if (!v.enemies().isEmpty() && r < 45) { // há inimigos: metade do tempo, luta
+                EnemyState e = v.enemies().get(rnd.nextInt(v.enemies().size()));
+                switch (rnd.nextInt(6)) {
+                    case 0 -> sim.submit(new Command.Ability(Combat.HEAVY));
+                    case 1 -> sim.submit(new Command.Ability(Combat.PUSH));
+                    case 2 -> sim.submit(new Command.Dodge(rnd.nextInt(3) - 1, rnd.nextInt(3) - 1));
+                    case 3 -> sim.submit(new Command.Surrender());
+                    case 4 -> sim.submit(new Command.ReleaseAttack());
+                    default -> sim.submit(new Command.Attack(e.id, true));
+                }
+            } else if (r < 32) {
+                sim.submit(new Command.MoveTo(v.playerX() + rnd.nextInt(31) - 15, v.playerY() + rnd.nextInt(31) - 15));
+            } else if (r < 47 && !v.actors().isEmpty()) {
+                String npc = v.actors().get(rnd.nextInt(v.actors().size())).id();
+                sim.submit(rnd.nextInt(40) == 0 ? new Command.Strike(npc) : new Command.Talk(npc));
+            } else if (r < 57 && !sim.openExits().isEmpty()) {
+                var exit = sim.openExits().get(rnd.nextInt(sim.openExits().size()));
+                var spot = sim.area().spots().get(exit.spot());
+                sim.submit(new Command.MoveTo(spot.x(), spot.y()));
+            } else if (r < 62) {
+                List<String> near = new ArrayList<>();
+                for (var c : content.containers().values()) if (sim.economy().containerPoint(c) != null) near.add(c.id());
+                if (!near.isEmpty()) sim.submit(new Command.OpenContainer(near.get(rnd.nextInt(near.size()))));
+            } else if (r < 68) {
+                switch (rnd.nextInt(4)) {
+                    case 0 -> ui.toggleNotebook();
+                    case 1 -> ui.toggleInventory();
+                    case 2 -> ui.toggleCharacter();
+                    default -> ui.toggleMap();
+                }
+            } else if (r < 72) {
+                sim.submit(new Command.Wait(1 + rnd.nextInt(3)));
+            } else if (r < 74) {
+                sim.submit(new Command.Sleep());
+            } else if (r < 79 && !content.jobs().isEmpty()) {
+                List<String> jobs = new ArrayList<>(content.jobs().keySet());
+                sim.submit(new Command.Work(jobs.get(rnd.nextInt(jobs.size()))));
+            } else if (r < 83 && !content.merchants().isEmpty()) {
+                List<String> shops = new ArrayList<>(content.merchants().keySet());
+                sim.submit(new Command.OpenTrade(shops.get(rnd.nextInt(shops.size()))));
+            } else if (r < 85) {
+                captureThumb();
+                saveGame("rapido");
+                writeThumb("rapido");
+            } else if (r < 86) {
+                loadGame("rapido");
+            } else if (r < 88) {
+                openPause();
+            } else if (r < 91) { // atalho de desenvolvimento: exercita a troca de área e o carregamento de cenário
+                List<String> areas = new ArrayList<>(content.areas().keySet());
+                sim.submit(new Command.EnterArea(areas.get(rnd.nextInt(areas.size())), null));
+            } else if (r < 93) {
+                camera.zoomBy(rnd.nextBoolean() ? 1 : -1);
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- captura
 
     private void saveScreenshot(Path file) {
@@ -1442,6 +1718,9 @@ public final class EtravaGame extends ApplicationAdapter {
         shapes.dispose();
         batch.dispose();
         font.dispose();
+        hudFont.dispose();
+        titleFont.dispose();
+        consoleFont.dispose();
         if (audio != null) audio.dispose();
         if (menu != null) menu.dispose();
         for (Texture t : thumbs.values()) t.dispose();

@@ -383,6 +383,35 @@ class CombatTest {
     }
 
     @Test
+    void inimigosNaoFicamUmDentroDoOutro() {
+        Simulation sim = Simulation.newGame(content, 21, ROAD);
+        encounter(sim, "saqueadores_posto");
+        assertTrue(sim.view().enemies().size() >= 3);
+        besides(sim, first(sim), 6);
+        for (int i = 0; i < 30 * 12; i++) {
+            sim.stateWorld().health = sim.combat().maxHealth(); // só interessa onde eles param
+            sim.step();
+        }
+        List<EnemyState> es = sim.view().enemies();
+        for (int i = 0; i < es.size(); i++)
+            for (int j = i + 1; j < es.size(); j++) {
+                double d = Math.hypot(es.get(i).x - es.get(j).x, es.get(i).y - es.get(j).y);
+                assertTrue(d > Combat.ENEMY_SPACING * 0.6, "inimigos sobrepostos: " + d + " m");
+            }
+    }
+
+    @Test
+    void tempoJogadoFicaNoCabecalhoDoSave_eNaoMudaOEstado(@TempDir Path dir) throws Exception {
+        Simulation sim = Simulation.newGame(content, 8, "vila");
+        Path a = dir.resolve("a.etrava"), b = dir.resolve("b.etrava");
+        sim.save(a, "x", 3725);
+        sim.save(b, "x");
+        assertEquals(3725, SaveGame.readMeta(a).playedSeconds());
+        assertEquals(0, SaveGame.readMeta(b).playedSeconds());
+        assertEquals(Simulation.load(content, a).stateHash(), Simulation.load(content, b).stateHash());
+    }
+
+    @Test
     void saveDaVersao4CarregaComVidaCheia(@TempDir Path dir) throws Exception {
         Simulation sim = Simulation.newGame(content, 8, "vila");
         Path file = dir.resolve("v5.etrava");

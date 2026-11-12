@@ -49,15 +49,18 @@ public final class SceneRenderer implements Disposable {
         public boolean moving;
         /** Acabou de levar um golpe (0 a 1): o sprite pisca avermelhado. */
         public float flash;
+        /** Golpe em andamento, de 0 (começa a erguer o braço) a 1 (terminou); negativo = não está golpeando. */
+        public float attack = -1f;
     }
 
-    private record TileDraw(int tx, int ty, TextureRegion region, int priority) {}
+    /** {@code shade}: 1 dentro do mapa; cai até 0 na faixa de fora, que some na penumbra. */
+    private record TileDraw(int tx, int ty, TextureRegion region, int priority, float shade) {}
 
     private record Lamp(double x, double y, double z, float radius, float r, float g, float b) {}
 
     /** @param stateKey chave do prop com variantes (null = sempre o mesmo sprite); {@code def} é a definição dele */
     private record Static(Assets.Sprite sprite, double x, double y, double x0, double y0, double x1, double y1,
-            double key, String stateKey, PropDef def) {}
+            double key, String stateKey, PropDef def, float shade) {}
 
     private final Assets assets;
     private final DayNight dayNight;
@@ -89,17 +92,34 @@ public final class SceneRenderer implements Disposable {
     private static final float[] INTERIOR_AMBIENT = {0.50f, 0.42f, 0.34f};
     private static final float INTERIOR_NIGHT = 0.7f;
 
-    public SceneRenderer(AreaDef area, Map<String, PropDef> props, Assets assets, DayNight dayNight) {
+    /** Largura, em tiles, da faixa desenhada além da borda do mapa nas áreas ao ar livre (D-079). */
+    private static final int MARGIN = 14;
+
+    /**
+     * @param outdoor área ao ar livre: o chão continua além da borda do mapa, escurecendo, com mato cada vez
+     *                mais fechado — o mundo segue, só não se anda até lá. Interiores e ruínas acabam onde acabam.
+     */
+    public SceneRenderer(AreaDef area, Map<String, PropDef> props, Assets assets, DayNight dayNight, boolean outdoor) {
         this.assets = assets;
         this.dayNight = dayNight;
 
-        for (int ty = 0; ty < area.height(); ty++) {
-            for (int tx = 0; tx < area.width(); tx++) {
-                String terrain = area.terrainAt(tx, ty);
+        int margin = outdoor ? MARGIN : 0;
+        for (int ty = -margin; ty < area.height() + margin; ty++) {
+            for (int tx = -margin; tx < area.width() + margin; tx++) {
+                int cx = Math.max(0, Math.min(area.width() - 1, tx)), cy = Math.max(0, Math.min(area.height() - 1, ty));
+                String terrain = area.terrainAt(cx, cy); // fora do mapa, repete a borda: a estrada segue adiante
                 if (AreaDef.NO_TERRAIN.equals(terrain)) continue;
+                int out = Math.max(Math.max(-tx, tx - (area.width() - 1)), Math.max(-ty, ty - (area.height() - 1)));
+                float shade = out <= 0 ? 1f : (float) Math.pow(Math.max(0f, 1f - out / (float) MARGIN), 1.6);
                 Assets.Tiles t = assets.tiles(terrain);
-                int variant = Math.floorMod(tx * 73856093 ^ ty * 19349663, t.variants().length);
-                tiles.add(new TileDraw(tx, ty, t.variants()[variant], t.priority()));
+                int hash = tx * 73856093 ^ ty * 19349663;
+                tiles.add(new TileDraw(tx, ty, t.variants()[Math.floorMod(hash, t.variants().length)], t.priority(), shade));
+                // mato na faixa de fora: mais fechado quanto mais longe, e nunca em cima da estrada
+                if (out > 1 && "grama".equals(terrain) && Math.floorMod(hash >> 4, 100) < 2 + out * 2) {
+                    Assets.Sprite tree = assets.sprite(Math.floorMod(hash >> 11, 2) == 0 ? "prop.arvore" : "prop.arvore_b");
+                    double x = tx + 0.5, y = ty + 0.5;
+                    statics.add(new Static(tree, x, y, x - 0.3, y - 0.3, x + 0.3, y + 0.3, x + y, null, null, shade));
+                }
             }
         }
         // terrenos de prioridade maior são desenhados depois e avançam sobre os vizinhos
@@ -112,7 +132,7 @@ public final class SceneRenderer implements Disposable {
             Assets.Sprite sprite = assets.sprite(def == null ? "prop." + p.propId()
                     : variants ? def.spriteFor(def.initialState()) : def.spriteId());
             statics.add(new Static(sprite, p.x(), p.y(), p.x() - hw, p.y() - hd, p.x() + hw, p.y() + hd, p.x() + p.y(),
-                    variants ? p.key() : null, def));
+                    variants ? p.key() : null, def, 1f));
             if (def == null) continue;
             for (PropDef.Light l : def.lightList()) {
                 double[] o = l.offset(), c = l.color();
@@ -281,8 +301,10 @@ public final class SceneRenderer implements Disposable {
             float cx = sx(t.tx() + 0.5, t.ty() + 0.5), cy = sy(t.tx() + 0.5, t.ty() + 0.5, 0);
             float w = t.region().getRegionWidth() * ART, h = t.region().getRegionHeight() * ART;
             if (cx + w / 2 < b[0] || cx - w / 2 > b[2] || cy + h / 2 < b[1] || cy - h / 2 > b[3]) continue;
+            batch.setColor(t.shade(), t.shade(), t.shade(), 1f);
             batch.draw(t.region(), cx - w / 2, cy - h / 2, w, h);
         }
+        batch.setColor(1f, 1f, 1f, 1f);
     }
 
     private void drawLight(double x, double y, double z, float radius, float r, float g, float b, float intensity,
@@ -352,7 +374,7 @@ public final class SceneRenderer implements Disposable {
                     batch.draw(sp.emissive(), left, bottom, w, h);
                 }
             } else {
-                batch.setColor(1f, 1f, 1f, alpha);
+                batch.setColor(s.shade(), s.shade(), s.shade(), alpha);
                 batch.draw(region, left, bottom, w, h);
             }
         }
@@ -363,8 +385,11 @@ public final class SceneRenderer implements Disposable {
         Assets.Sheet sheet = assets.sheet(a.sprite);
         int dirs = sheet.directions();
         int dir = Math.floorMod((int) Math.round(a.facing / (Math.PI * 2 / dirs)), dirs);
-        var anim = sheet.anim(a.moving ? "walk" : "idle");
-        int frame = anim.start() + (int) (animTime * anim.fps()) % Math.max(1, anim.frames());
+        boolean striking = a.attack >= 0 && sheet.animations().containsKey("attack");
+        var anim = sheet.anim(striking ? "attack" : a.moving ? "walk" : "idle");
+        int frame = striking
+                ? anim.start() + Math.min(anim.frames() - 1, (int) (a.attack * anim.frames()))
+                : anim.start() + (int) (animTime * anim.fps()) % Math.max(1, anim.frames());
         float x = snap(sx(a.x, a.y) - sheet.anchorX() * ART);
         float y = snap(sy(a.x, a.y, 0) - (sheet.frameH() - sheet.anchorY()) * ART);
         batch.draw(sheet.texture(), x, y, sheet.frameW() * ART, sheet.frameH() * ART,

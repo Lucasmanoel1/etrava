@@ -9,6 +9,8 @@ dependencies {
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion")
     runtimeOnly("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop")
+    implementation("com.badlogicgames.gdx:gdx-freetype:$gdxVersion")
+    runtimeOnly("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop")
     implementation("org.slf4j:slf4j-api:2.0.20")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.23.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.5.38")

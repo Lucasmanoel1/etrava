@@ -55,12 +55,17 @@ public final class MenuUi implements Disposable {
     private final Settings settings;
     private final Actions actions;
     private final Drawable paper, paperDark, edge;
-    private final Label.LabelStyle ink, inkSoft, rust, title;
+    private final Label.LabelStyle ink, inkSoft, rust, title, subtitle;
     private final Table root = new Table();
     private boolean open, inGame;
     private Runnable back = () -> { };
 
-    public MenuUi(BitmapFont font, Texts texts, Settings settings, Actions actions) {
+    /**
+     * @param overlayFont texto claro sobre a ilustração do menu (com sombra)
+     * @param titleFont   o nome do jogo
+     */
+    public MenuUi(BitmapFont font, BitmapFont overlayFont, BitmapFont titleFont, Texts texts, Settings settings,
+            Actions actions) {
         this.font = font;
         this.texts = texts;
         this.settings = settings;
@@ -77,7 +82,8 @@ public final class MenuUi implements Disposable {
         ink = new Label.LabelStyle(font, INK);
         inkSoft = new Label.LabelStyle(font, INK_SOFT);
         rust = new Label.LabelStyle(font, RUST);
-        title = new Label.LabelStyle(font, new Color(0xEEE6D2FF));
+        title = new Label.LabelStyle(titleFont, new Color(0xEEE6D2FF));
+        subtitle = new Label.LabelStyle(overlayFont, new Color(0xEEE6D2FF));
         root.setFillParent(true);
         stage.addActor(root);
     }
@@ -110,12 +116,11 @@ public final class MenuUi implements Disposable {
         inGame = false;
         Table col = column();
         Label name = new Label("ETRAVA", title);
-        name.setFontScale(3f);
         root.clearChildren();
         root.left().bottom().pad(60);
         Table box = new Table();
         box.add(name).left().padBottom(4).row();
-        box.add(new Label(texts.get("menu.subtitulo"), title)).left().padBottom(28).row();
+        box.add(new Label(texts.get("menu.subtitulo"), subtitle)).left().padBottom(28).row();
         if (canContinue) col.add(button(texts.get("menu.continuar"), () -> actions.load(null))).row();
         col.add(button(texts.get("menu.novo"), this::showNewGame)).row();
         col.add(button(texts.get("menu.carregar"), () -> showSlots(false, () -> showMain(canContinue)))).row();

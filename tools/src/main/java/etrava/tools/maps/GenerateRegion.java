@@ -294,7 +294,7 @@ public final class GenerateRegion {
         m.spawn("vila", 3.0, 22.0);
         // bosque ralo dos dois lados da estrada
         trees(m, rnd, 260, 1, 1, 50, 43, "arvore", "arvore_b", "arvore", "arvore_b", "arvore_morta");
-        trees(m, rnd, 40, 50, 30, 71, 43, "arvore", "arvore_b");
+        trees(m, rnd, 30, 50, 34, 71, 43, "arvore", "arvore_b"); // longe das bancas: de frente, a copa as tapava
         trees(m, rnd, 30, 50, 1, 71, 9, "arvore", "arvore_b");
         return m;
     }

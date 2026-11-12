@@ -115,6 +115,7 @@ public final class GenerateArt {
         sprite("prop.buraco_terra", "props/buraco_terra.png", RuinArt.pit());
 
         m7();
+        icons();
 
         Path file = assets.resolve("manifest/provisorio.yaml");
         Files.createDirectories(file.getParent());
@@ -197,6 +198,18 @@ public final class GenerateArt {
         look("personagem.firmino", "firmino", 0xC4967A, 0x8E8A82, 0x2A2428, 0x2A2A2E, 0x1E1A18, true, 0.46, 0.98);
     }
 
+    /** M8: um ícone por item (RF-200), 20×20 px de arte. */
+    private void icons() throws IOException {
+        for (var e : ItemIcons.all().entrySet()) {
+            String file = "icones/" + e.getKey() + ".png";
+            write(file, PixelArt.pixelize(ItemIcons.draw(e.getValue()), true));
+            manifest.append("- id: icone.").append(e.getKey()).append('\n')
+                    .append("  type: icon\n")
+                    .append("  file: ").append(file).append('\n');
+            credits();
+        }
+    }
+
     private void look(String id, String file, int skin, int hair, int tunic, int pants, int boots, boolean hood,
             double skirt, double scale) throws IOException {
         character(id, "personagens/" + file + ".png", new CharacterArt.Look(new Color(skin), new Color(hair),
@@ -236,29 +249,31 @@ public final class GenerateArt {
 
     private void character(String id, String file, CharacterArt.Look look) throws IOException {
         write(file, PixelArt.pixelize(CharacterArt.sheet(look), true));
-        appendSheet(id, file);
+        appendSheet(id, file, CharacterArt.FRAME_W, CharacterArt.ANCHOR_X);
         credits();
     }
 
     private void quadruped(String id, String file, Color fur, Color belly) throws IOException {
         write(file, PixelArt.pixelize(CharacterArt.quadrupedSheet(fur, belly), true));
-        appendSheet(id, file);
+        appendSheet(id, file, CharacterArt.QUAD_FRAME_W, CharacterArt.QUAD_ANCHOR_X);
         credits();
     }
 
-    private void appendSheet(String id, String file) {
+    private void appendSheet(String id, String file, int frameW, int anchorX) {
         manifest.append("- id: ").append(id).append('\n')
                 .append("  type: spritesheet\n")
                 .append("  file: ").append(file).append('\n')
-                .append("  frame: [").append(CharacterArt.FRAME_W / PixelArt.SCALE).append(", ")
+                .append("  frame: [").append(frameW / PixelArt.SCALE).append(", ")
                 .append(CharacterArt.FRAME_H / PixelArt.SCALE).append("]\n")
-                .append("  anchor: [").append(CharacterArt.ANCHOR_X / PixelArt.SCALE).append(", ")
+                .append("  anchor: [").append(anchorX / PixelArt.SCALE).append(", ")
                 .append(CharacterArt.ANCHOR_Y / PixelArt.SCALE).append("]\n")
                 .append("  directions: ").append(CharacterArt.DIRECTIONS).append('\n')
                 .append("  animations:\n")
                 .append("    idle: {start: 0, frames: ").append(CharacterArt.IDLE_FRAMES).append(", fps: 3}\n")
                 .append("    walk: {start: ").append(CharacterArt.IDLE_FRAMES).append(", frames: ")
-                .append(CharacterArt.WALK_FRAMES).append(", fps: 11}\n");
+                .append(CharacterArt.WALK_FRAMES).append(", fps: 11}\n")
+                .append("    attack: {start: ").append(CharacterArt.IDLE_FRAMES + CharacterArt.WALK_FRAMES)
+                .append(", frames: ").append(CharacterArt.ATTACK_FRAMES).append(", fps: 12}\n");
     }
 
     private void credits() {

@@ -9,11 +9,14 @@ import java.util.List;
  * Propriedades: {@code -Detrava.home} (pasta com content/ e assets/), {@code -Detrava.dev=true}.
  * Argumentos: {@code --seed=N}, {@code --area=ID}, {@code --cmd="comando de console"} (repetível),
  * {@code --cmdat=QUADRO:comando} (roda o comando de console naquele quadro; repetível),
- * {@code --menu} (abre no menu mesmo com outras opções), {@code --screenshot=arquivo.png} e {@code --frames=N} (captura a tela após N quadros e sai).
+ * {@code --menu} (abre no menu mesmo com outras opções), {@code --screenshot=arquivo.png} e {@code --frames=N} (captura a tela após N quadros e sai),
+ * {@code --bench=SEGUNDOS} (mede o desempenho sem limite de quadros, grava o resultado no log e sai; AT-17),
+ * {@code --bot=SEGUNDOS} (um jogador automático aperta de tudo por esse tempo e sai; teste de resistência),
+ * {@code --vel=FATOR} (velocidade do tempo de jogo desde o início).
  */
 public record LaunchOptions(
         boolean dev, Path home, Long seed, String area, List<String> commands, List<String> timedCommands,
-        Path screenshot, int screenshotFrames, boolean menu) {
+        Path screenshot, int screenshotFrames, boolean menu, int bench, int bot, float speed) {
 
     public static LaunchOptions parse(String[] args) {
         boolean dev = Boolean.getBoolean("etrava.dev");
@@ -25,6 +28,8 @@ public record LaunchOptions(
         Path screenshot = null;
         int frames = 90;
         boolean menu = false;
+        int bench = 0, bot = 0;
+        float speed = 1f;
         for (String arg : args) {
             if (arg.startsWith("--seed=")) seed = Long.parseLong(value(arg));
             else if (arg.startsWith("--area=")) area = value(arg);
@@ -33,8 +38,12 @@ public record LaunchOptions(
             else if (arg.startsWith("--screenshot=")) screenshot = Path.of(value(arg)).toAbsolutePath();
             else if (arg.startsWith("--frames=")) frames = Integer.parseInt(value(arg));
             else if (arg.equals("--menu")) menu = true;
+            else if (arg.startsWith("--bench=")) bench = Integer.parseInt(value(arg));
+            else if (arg.startsWith("--bot=")) bot = Integer.parseInt(value(arg));
+            else if (arg.startsWith("--vel=")) speed = Float.parseFloat(value(arg));
         }
-        return new LaunchOptions(dev, home, seed, area, List.copyOf(commands), List.copyOf(timed), screenshot, frames, menu);
+        return new LaunchOptions(dev, home, seed, area, List.copyOf(commands), List.copyOf(timed), screenshot, frames, menu, bench,
+                bot, speed);
     }
 
     private static String value(String arg) {

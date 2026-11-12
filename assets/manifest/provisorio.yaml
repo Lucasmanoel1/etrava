@@ -130,6 +130,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -142,6 +143,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -154,6 +156,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -166,6 +169,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -178,6 +182,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -190,6 +195,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -202,6 +208,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -214,6 +221,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -226,6 +234,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -238,6 +247,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -250,6 +260,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -262,18 +273,20 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
 - id: personagem.lobo
   type: spritesheet
   file: personagens/lobo.png
-  frame: [24, 32]
-  anchor: [12, 28]
+  frame: [44, 32]
+  anchor: [22, 28]
   directions: 8
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -658,6 +671,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -670,6 +684,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -682,6 +697,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -694,6 +710,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -706,6 +723,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -718,6 +736,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -730,6 +749,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -742,6 +762,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -754,6 +775,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -766,6 +788,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -778,6 +801,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -790,6 +814,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -802,6 +827,7 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
@@ -814,6 +840,265 @@
   animations:
     idle: {start: 0, frames: 4, fps: 3}
     walk: {start: 4, frames: 8, fps: 11}
+    attack: {start: 12, frames: 4, fps: 12}
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.pao
+  type: icon
+  file: icones/pao.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.sopa
+  type: icon
+  file: icones/sopa.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.queijo
+  type: icon
+  file: icones/queijo.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.maca
+  type: icon
+  file: icones/maca.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.biscoito
+  type: icon
+  file: icones/biscoito.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.carne_salgada
+  type: icon
+  file: icones/carne_salgada.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.legumes
+  type: icon
+  file: icones/legumes.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.cerveja
+  type: icon
+  file: icones/cerveja.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.cha_ervas
+  type: icon
+  file: icones/cha_ervas.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.unguento_sal
+  type: icon
+  file: icones/unguento_sal.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.sal_medicinal
+  type: icon
+  file: icones/sal_medicinal.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.farinha
+  type: icon
+  file: icones/farinha.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.ferro
+  type: icon
+  file: icones/ferro.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.pregos
+  type: icon
+  file: icones/pregos.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.lenha
+  type: icon
+  file: icones/lenha.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.couro
+  type: icon
+  file: icones/couro.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.corda
+  type: icon
+  file: icones/corda.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.ervas
+  type: icon
+  file: icones/ervas.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.oleo
+  type: icon
+  file: icones/oleo.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.martelo
+  type: icon
+  file: icones/martelo.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.faca
+  type: icon
+  file: icones/faca.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.machadinha
+  type: icon
+  file: icones/machadinha.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.cajado
+  type: icon
+  file: icones/cajado.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.lanca_curta
+  type: icon
+  file: icones/lanca_curta.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.lamparina
+  type: icon
+  file: icones/lamparina.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.camisa_linho
+  type: icon
+  file: icones/camisa_linho.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.gibao_couro
+  type: icon
+  file: icones/gibao_couro.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.avental_couro
+  type: icon
+  file: icones/avental_couro.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.chapeu_feltro
+  type: icon
+  file: icones/chapeu_feltro.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.capuz_la
+  type: icon
+  file: icones/capuz_la.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.bolsa_cinto
+  type: icon
+  file: icones/bolsa_cinto.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.pele_lobo
+  type: icon
+  file: icones/pele_lobo.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.lasca_fibra
+  type: icon
+  file: icones/lasca_fibra.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.placa_simbolos
+  type: icon
+  file: icones/placa_simbolos.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.papeis_avel
+  type: icon
+  file: icones/papeis_avel.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.carta_iria
+  type: icon
+  file: icones/carta_iria.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.esboco_simbolos
+  type: icon
+  file: icones/esboco_simbolos.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.bilhete_avel
+  type: icon
+  file: icones/bilhete_avel.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.edital_caldris
+  type: icon
+  file: icones/edital_caldris.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.tracado_agrimensora
+  type: icon
+  file: icones/tracado_agrimensora.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.lista_oren
+  type: icon
+  file: icones/lista_oren.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.canto_carta
+  type: icon
+  file: icones/canto_carta.png
+  source: "Gerado por código (tools: GenerateArt) — arte provisória"
+  license: proprio
+
+- id: icone.livro_enterros
+  type: icon
+  file: icones/livro_enterros.png
   source: "Gerado por código (tools: GenerateArt) — arte provisória"
   license: proprio
 
