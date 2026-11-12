@@ -84,10 +84,18 @@ Cada asset é um ID no manifesto (`assets/manifest/*.yaml`). Para substituir uma
 - À noite, janelas e lamparinas acendem: mancha de luz âmbar somada à cena, mais o brilho próprio da vidraça ou da chama.
 - No console: `luz off` e `pos-fx off` desligam cada efeito, para comparar.
 
-## 7. Interface
+## 7. Ilustrações (menu, mapa, epílogo)
+
+Geradas na Dreamina com o modelo mais forte (Seedream 5.0 Pro, 60 créditos), em 16:9, pelo script `tools/dreamina/ilustracoes_m7.sh`. Originais em `arte-bruta/ilustracoes/`; `gradlew importIllustrations` corta a marca do canto, reduz para 640×360 na paleta e escreve `assets/ilustracoes/` e o manifesto. O cliente amplia sem suavizar: ficam em pixel art como o resto. Trecho fixo de estilo: o do script (pixel art 16-bit, paleta terrosa, dark fantasy rural, sem texto, sem gente em primeiro plano). O mapa ilustrado precisa bater com `mapPos` das áreas: depois de trocar a imagem, conferir as posições.
+
+## 8. Som
+
+Provisório, por síntese (`gradlew generateAudio`, D-071): WAV mono 22 kHz em `assets/audio/` e `assets/manifest/audio.yaml`. Direção: instrumentos acústicos e poucos (alaúde dedilhado, flauta de madeira, bordão de arco, sinos, tambor de mão), modos menores e dóricos, muito ar e reverb; nada de sintetizador moderno nem orquestra épica. Ambientes: vento, pássaros e grilos lá fora; lareira e murmúrio dentro. IDs: `musica.*`, `amb.<area>[.dia|.noite]`, `sfx.*`. Trocar um som = salvar outro arquivo e repetir o ID num manifesto que não seja o gerado.
+
+## 9. Interface
 
 Papel e tinta (PRD 10.1): fundo `#D8CCB0`, tinta `#241C18`, destaques em ferrugem `#6E2C22`, borda de madeira escura. Sem brilho, sem neon, sem marcadores de objetivo.
 
-## 8. Referências internas
+## 10. Referências internas
 
-Capturas com a arte atual: `docs/capturas/pixel/` (`dia`, `noite`, `dialogo`, `caderno`). As de `docs/capturas/m1/` são do estilo pintado anterior, mantidas só como histórico.
+Capturas com a arte atual: `docs/capturas/m7/` (vilarejo de dia e de noite, taverna, Posto, estrutura) e `docs/capturas/pixel/` (`dia`, `noite`, `dialogo`, `caderno`, do M3). As de `docs/capturas/m1/` são do estilo pintado anterior, mantidas só como histórico.

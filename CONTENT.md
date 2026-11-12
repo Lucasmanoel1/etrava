@@ -46,7 +46,7 @@ schedule:                      # precisa cobrir o dia inteiro
   - {from: "05:00", to: "11:00", do: trabalhar, at: vila_ref/moinho_porta}
 ```
 
-`at` é `área/ponto` (pontos são os objetos da camada `spots` do mapa). `hidden: true` = dentro de uma construção: o NPC vai até a porta e some. O retrato é o asset `retrato.<id>`.
+`at` é `área/ponto` (pontos são os objetos da camada `spots` do mapa). `hidden: true` = dentro de uma construção sem interior jogável: o NPC vai até a porta e some. Para as casas com interior (oficina, taverna, moinho, curandeira), use os pontos da área de dentro (`taverna/balcao`): o NPC atravessa a porta a pé. O retrato é o asset `retrato.<id>`. `about:` é a linha que aparece na aba Pessoas do caderno depois que o jogador conversa com ele.
 
 Campos opcionais:
 
@@ -84,6 +84,18 @@ nodes:
 ```
 
 Campos de uma escolha: `text`, `when`, `tag` (rótulo entre colchetes, ex.: `Lábia`), `effects`, `goto`, `relevant` + `channels`.
+
+**Nó de desvio** — vai para outro nó conforme a sorte ou o mundo (os `effects` do nó acontecem antes):
+
+```yaml
+  rodada:
+    effects: [{take: {money: 2}}]
+    branch:
+      - {when: {chance: 0.38}, goto: ganhou}
+      - {goto: perdeu}            # sem `when`: sempre
+```
+
+Com `text`, o nó só é mostrado se nenhum desvio valer.
 
 **Nó de novidades** — o NPC conta o fato mais recente que ele sabe e o jogador não (é assim que as notícias de fora chegam):
 
@@ -291,6 +303,16 @@ Abater um inimigo soma 1 na variável `abatidos.<id>`. **Nenhum desfecho de arco
 
 Um ataque durante o sono ou a espera interrompe o descanso (RF-323). Para forçar um encontro (H4 no M7, por exemplo): efeito `{encounter: lobos_estrada}` — só funciona com o jogador na área do encontro.
 
+## Documentos — itens que se leem
+
+```yaml
+- id: carta_iria
+  name: Carta curta
+  category: documento
+  text: "A., não volte por mim. ..."     # aparece numa folha ao usar; o papel fica na mochila
+  use: [{learn: {who: player, fact: carta_assinada_iria, certainty: read}}]
+```
+
 ## Áreas — `content/areas/areas.yaml`
 
 ```yaml
@@ -305,10 +327,12 @@ Um ataque durante o sono ou a espera interrompe o descanso (RF-323). Para força
 
 O ponto de chegada (`spawn`) precisa ficar a mais de 1 m do ponto de saída da outra área, senão o jogador volta na hora.
 
+Outros campos: `name` e `place` (o lugar nomeado: entrar a primeira vez anota no caderno, RF-007), `mapPos: [x, y]` (de 0 a 1, onde o lugar fica no mapa ilustrado), `interior: true` (luz de dentro de casa), `music` e `ambience` (IDs de asset; o ambiente procura `.dia`/`.noite` primeiro). Uma saída pode ter `when` (só leva enquanto a condição valer). Os mapas saem de `gradlew generateRegion` (`tools/.../GenerateRegion.java`) e podem ser editados no Tiled depois; vários props podem dividir a mesma `key` (uma fileira de estacas muda junto).
+
 ## Habilidades e origem
 
 - `content/skills.yaml`: as seis habilidades, com nome, descrição e a `curve` do ganho decrescente.
-- `content/origins/pedra_mansa.yaml`: dinheiro, itens, equipamento e habilidades com que o personagem começa.
+- `content/origins/pedra_mansa.yaml`: dinheiro, itens, equipamento, habilidades, `start` (área/ponto onde se acorda), `knows` (o que já sabe), `opinions` (somadas às dos NPCs), `flags` e a `description` que aparece no novo jogo.
 - Uma escolha de diálogo com condição `skill` mostra o rótulo (`tag: Lábia`) e treina a habilidade quando escolhida.
 - NPC ganha `faction: pedra_mansa` para contar na reputação da comunidade.
 
@@ -331,6 +355,7 @@ O ponto de chegada (`spawn`) precisa ficar a mais de 1 m do ponto de saída da o
 | habilidade | `{skill: {name: labia, min: 30}}` |
 | reputação | `{reputation: {faction: pedra_mansa, min: -25}}` |
 | trabalho disponível agora | `{job: oficina}` |
+| o jogador está na área | `{here: estrada}` |
 | combinar | `{all: [...]}` · `{any: [...]}` · `{not: {...}}` |
 
 ## Efeitos (`effects`)

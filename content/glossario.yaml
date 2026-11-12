@@ -5,9 +5,39 @@ lugares:
   - {nome: Etrava, tipo: mundo, fonte: lore}
   - {nome: Pedra-Mansa, tipo: vilarejo, fonte: lore}
   - {nome: Posto da Encruzilhada, tipo: entreposto na estrada, fonte: PRD}
+  - {nome: Mir, tipo: cidade evacuada há 24 anos ("o acidente"), fonte: lore}
+  - {nome: Caldris, tipo: república (a comitiva, a ferrovia), fonte: lore}
+  - {nome: Orra, tipo: potência (o sacerdote que sumiu), fonte: lore}
+  - {nome: Cantões do Sal, tipo: potência (o Posto, Ibbo, Vessa), fonte: lore}
+  - {nome: Vau-Seco, tipo: posto de passagem no registro de Avel, fonte: M7 (provisório)}
 
 pessoas:
   - {nome: Nalia, tipo: filha do moleiro, fonte: lore}
+  - {nome: Avel, tipo: o "tio", dono da oficina, fonte: lore}
+  - {nome: Iria, tipo: um nome numa carta (V1), fonte: lore}
+  - {nome: Taren, tipo: um nome na lista de Oren, fonte: lore}
+  - {nome: Torek, tipo: o homem que cobra pela estrada (só em rumores), fonte: lore}
   - {nome: Berta, tipo: a mulher do incêndio (só em rumores; o nome não é dito no jogo), fonte: lore}
-# Os demais NPCs (ferreiro, taberneira, moleiro, aldeã, viajante, curandeira) são provisórios e
-# ainda não têm nome próprio: aparecem só pelo ofício.
+  # M7 — provisórios (D-067)
+  - {nome: Tomé, tipo: o moleiro, pai de Nalia, fonte: M7}
+  - {nome: Odila, tipo: a curandeira, fonte: M7}
+  - {nome: Doran, tipo: o ferreiro, amigo de Avel, fonte: M7}
+  - {nome: Marta, tipo: a taberneira, fonte: M7}
+  - {nome: Lina, tipo: filha de Marta, fonte: M7}
+  - {nome: Celi, tipo: dona do pomar (H1), fonte: M7}
+  - {nome: Pipo, tipo: filho de Bento (H1), fonte: M7}
+  - {nome: Toco, tipo: o cachorro manco (H1), fonte: M7}
+  - {nome: Bento, tipo: lavrador (A3, H2); família Rusk, fonte: M7}
+  - {nome: Gil, tipo: lavrador (H2); família Tarso, fonte: M7}
+  - {nome: Lauro, tipo: apostador (H3), fonte: M7}
+  - {nome: Ciro, tipo: apostador (H3), fonte: M7}
+  - {nome: Anselmo, tipo: o velho (H5), fonte: M7}
+  - {nome: Firmino, tipo: o coveiro (H2, H5), fonte: M7}
+  - {nome: Rosália, tipo: uma cova no cemitério, fonte: M7}
+  - {nome: Oren, tipo: o homem de fora que procura alguém de Mir (A2, Q-08), fonte: M7}
+  - {nome: Aurel Dask, tipo: mestre-registrador de Caldris (A2), fonte: M7}
+  - {nome: Sena Brask, tipo: agrimensora de Caldris (A2, H2), fonte: M7}
+  - {nome: Ibbo Saran, tipo: comerciante do Posto (H4), fonte: M7}
+  - {nome: Tobias, tipo: carregador do Posto, fonte: M7}
+  - {nome: Vessa, tipo: guarda do Posto (H4), fonte: M7}
+  - {nome: Halden, tipo: o homem de livros (A1), fonte: M7}

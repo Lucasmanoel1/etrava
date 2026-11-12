@@ -390,3 +390,56 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-11
 - **Decisão:** o M6 acrescenta o bloco `combat` (vida, fôlego, inimigos, recargas, encontros, morte). `SCHEMA_VERSION` = 5. Saves da versão 4 **são migrados**: entram com vida e fôlego cheios e ninguém por perto. Versões anteriores à 4 continuam recusadas.
 - **Motivo:** RF-363 pede migração ou recusa; aqui a migração é trivial e preserva os saves de quem testou o M5.
+
+## D-067 — Elenco do Capítulo I e mapa da região (M7)
+- **Data:** 2026-11-12
+- **Decisão:** 22 NPCs nomeados (8 de camada A: Avel, Nalia, Tomé, Odila, Oren, Aurel Dask, Sena Brask, Ibbo) e 2 figurantes. Doran, o ferreiro, continua separado de Avel: Avel tem a oficina de ferramentas e mecanismos (lore), Doran tem a forja e é quem propõe cortar a árvore no A1. Região gerada por código (`gradlew generateRegion`): Pedra-Mansa com 15 construções, cemitério, pomar, lavouras com divisa; a estrada com o Posto da Encruzilhada numa área só; 4 interiores. Nomes novos no glossário, todos provisórios.
+- **Motivo:** PRD 6.3, 9.1 e 13.2. Gerar os mapas por código mantém tudo editável no Tiled e reproduzível.
+- **Alternativa descartada:** fundir Doran em Avel — perderia o terceiro morador do A1 e um amigo de Avel que conta o que sabe.
+
+## D-068 — Interiores em corte, com luz própria
+- **Data:** 2026-11-12
+- **Decisão:** cada interior é uma área à parte (D-023), vista em corte: só as paredes de fundo (norte e oeste) são desenhadas, como props de 1 m. `interior: true` em `areas.yaml` dá penumbra quente fixa e lareira acesa a qualquer hora. Porta da casa → ponto de saída; NPCs entram e saem pelas mesmas portas.
+- **Motivo:** RF-006 (telhado oculto ao entrar) resolvido pela troca de área; corte é o padrão dos isométricos clássicos e não esconde o jogador.
+
+## D-069 — Q-08: quem é o homem de fora (proposta, a aprovar)
+- **Data:** 2026-11-12
+- **Decisão provisória:** Oren, que trabalhou perto de Mir e perdeu um filho de quatro anos na evacuação. Disseram que o menino morreu na estrada; ele não acredita e procura "o técnico que saiu na noite do acidente com umas crianças". Carrega uma lista de nomes (um "A." riscado). Nada confirma V2: Mir é "o acidente", o técnico é suspeita, e o próprio protagonista não é o filho dele (a mancha atrás da orelha fica sem resposta).
+- **Motivo:** PRD 8.5 (A2) e 8.3 (L2: Avel levou "algumas crianças"). Dá ao estranho um motivo humano, sem vilania, e abre gancho para as outras crianças de Mir (Q-01).
+- **Pendente:** aprovação do diretor (alto impacto narrativo).
+
+## D-070 — Save na versão 6, com migração da 5
+- **Data:** 2026-11-12
+- **Decisão:** as áreas mudaram de nome (`vila_ref` → `vila`, `area_teste` → `estrada`). A migração 5→6 troca os nomes em todo o estado; ao carregar, quem estiver dentro de uma parede (mapa novo) volta ao ponto de chegada. O mundo guarda também o nome do personagem.
+- **Motivo:** RF-363; não jogar fora os saves de quem testou o M6.
+
+## D-071 — Áudio provisório por síntese, em WAV
+- **Data:** 2026-11-12
+- **Decisão:** `gradlew generateAudio` gera música (8 faixas: vila, noite, casa, taverna, estrada, ruína, combate, menu), ambientes por área × período e 26 efeitos por síntese própria (cordas dedilhadas, sinos, flauta, tambor, ruídos filtrados, reverb), em WAV mono 22 kHz (38 MB). O cliente toca por ID do manifesto, com 5 canais e transições.
+- **Motivo:** a Dreamina desta conta só faz voz (TTS), não música; não há ffmpeg nem codificador OGG maduro em Java no projeto. Síntese própria não tem problema de licença e é reproduzível.
+- **Alternativa descartada:** música CC0 baixada da internet — licença a conferir item por item; fica como opção para o M8 (troca-se o arquivo mantendo o ID). PRD RF-422 pede OGG: a conversão é só trocar os arquivos.
+
+## D-072 — Portas: clique só entra se o destino era a porta
+- **Data:** 2026-11-12
+- **Decisão:** seguindo um caminho de clique, a saída só leva para outra área se o destino do clique estava na porta; andando pelo teclado, encostar basta. Portas e passagens aparecem sob o cursor ("Entrar: A taverna"). Saídas podem ter condição (o buraco do campo só existe depois que a terra cede).
+- **Motivo:** caminhos que passavam rente a uma porta faziam o jogador entrar sem querer.
+
+## D-073 — A2: desfechos e limites (proposta, a aprovar)
+- **Data:** 2026-11-12
+- **Decisão:** desfechos `confessa` (leve: Avel conta que trabalhou em Mir e saiu de lá com a criança, e diz o nome Iria; exige opinião ≥ 40, papéis lidos e a pergunta na fase da comitiva ou da carta), `encontrado` (o homem de fora acha Avel; padrão sorteado), `partiu` (Avel vai embora e deixa um bilhete; padrão sorteado; a oficina passa ao aprendiz) e `averiguacao` (trágico: só se o jogador contar ao registrador de onde Avel veio — ato `delatou`). Papéis no baú de Avel (registro com nome raspado, carta assinada por Iria, desenho com as marcas em grupos de nove).
+- **Motivo:** PRD 8.5 e o limite de revelação: Avel nunca diz "não sou seu tio" (L3 fica como suspeita); Iria é um nome.
+
+## D-074 — A3: a vala, o buraco e quem o tapa
+- **Data:** 2026-11-12
+- **Decisão:** a terra cede no campo de Bento na segunda vala aberta (trabalho `vala_campo`) ou por volta do dia 7. Avel vai olhar e diz que não reconhece as marcas ("rápido demais"). Desfechos, nenhum trágico: `tapado` (padrão), `registrado` (se a comitiva estiver no vilarejo) e `mostrado` (leve: o jogador desceu e mostrou o que achou a alguém). O eco da estrutura vira fato para quem desce.
+- **Motivo:** PRD 8.5 (A3): surge durante um trabalho, Avel reconhece e evita explicar, não explica nada.
+
+## D-075 — Menus, opções e saves com miniatura
+- **Data:** 2026-11-12
+- **Decisão:** o jogo abre no menu principal (ilustração da vila); `--area`, `--seed`, `--cmd` ou `--screenshot` pulam o menu (desenvolvimento). Novo jogo: origem (só a I), nome, ritmo. Três slots manuais, o rápido e três automáticos, cada um com miniatura. Opções gravadas em `%APPDATA%\Etrava\opcoes.json`. Esc no jogo abre a pausa (antes fechava o jogo).
+- **Motivo:** PRD 10.2 e RF-383. "Tempo jogado" no slot ainda não existe (fica para o M8).
+
+## D-076 — Documentos não se gastam; contêineres com condição
+- **Data:** 2026-11-12
+- **Decisão:** item de categoria `documento` (ou com `text`) abre uma folha para ler e continua na mochila; o caderno ganhou a aba Documentos. Contêineres podem ter `when` (as cinzas da lareira só têm o canto da carta depois que ela chega) e `restockDays: 0` (nunca repõe).
+- **Motivo:** RF-124; documentos precisavam ser relidos e aparecer na hora certa.
