@@ -3,6 +3,39 @@
 Última atualização: 2026-11-12
 
 ## Estado atual
+- **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
+- **Marco atual:** **V0 — Correções e ferramentas** (não iniciado).
+- **Status:** **PARADO depois do planejamento** (parada obrigatória depois da especificação, antes de código). Esperando o diretor aprovar o plano ou pedir ajustes.
+- MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
+
+## Fase V — visão rápida
+| Marco | Nome | Situação |
+|---|---|---|
+| V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | próximo |
+| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | — |
+| V2 | Gente (25 humanos, animações de vida comum) | — |
+| V3 | Criaturas e combate | — |
+| V4 | Natureza e terreno | — |
+| V5 | Arquitetura e exteriores | — |
+| V6 | Interiores, objetos e itens | — |
+| V7 | Interfaces | — |
+| V8 | Acabamento e entrega — **portão final** | — |
+
+**Feito nesta sessão (planejamento):** `docs/visual/PLANO.md`, `docs/visual/SPEC-visual.md`, `docs/visual/V0.md` … `V8.md`; decisões D-084 a D-087; `CLAUDE.md` com as regras da Fase V; `SPEC.md` §7.3 aponta para o D-085.
+
+**Achados do levantamento** (para o V0 confirmar):
+- Zoom: `GameUi` e `MenuUi` escondem painéis com `setVisible(false)` depois de dar `setScrollFocus` a um `ScrollPane`; o foco fica no painel invisível e o `Stage` (antes do `GameInput` no multiplexador) consome a roda. Hipótese principal, ainda não reproduzida.
+- Blender 5.3 instalado em `C:\Program Files\Blender Foundation\Blender 5.3`; o add-on MCP do Blender Lab está escutando na porta 9876, mas esta sessão do Claude Code não tem as ferramentas dele. O pipeline usa `blender.exe -b` e não depende do MCP.
+- A simulação já expõe `ActorView.activity()`: animação pela agenda sai sem mexer no núcleo.
+
+**Próximo passo:** com o plano aprovado, começar o V0 pela tarefa 1 de `docs/visual/V0.md` (reproduzir o zoom travado).
+
+**Decisões que pedem aprovação agora:** D-086 (densidade dobrada — a confirmação final é no portão V1) e o plano como um todo (ordem dos marcos, testes VT, orçamentos, ordem de corte).
+
+---
+
+# Fechamento do M8 (histórico)
+
 - **Marco em fechamento:** M8 — Polimento e release do MVP.
 - **Status:** **PARADO no fim do M8.** Tudo o que dá para fazer sem uma pessoa jogando está feito e testado; o que falta para a "definição de pronto" do PRD 16 depende do diretor (lista em "O que só você pode fechar").
 - Marcos concluídos: M0 a M7. M8: trabalho de máquina concluído; aprovação humana pendente.

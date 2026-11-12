@@ -9,8 +9,10 @@ Você está implementando **ETRAVA**, um RPG dark fantasy isométrico em Java.
 - `docs/SPEC.md` — especificação técnica (você cria no início).
 - `PROGRESS.md` — estado atual do trabalho. **Leia primeiro em toda sessão.**
 - `DECISIONS.md` — registro de decisões (data, decisão, motivo, alternativa descartada).
+- `docs/visual/` — **Fase V (revisão visual, marcos V0–V8):** `PLANO.md` (escopo, marcos, testes VT, riscos), `SPEC-visual.md` (pipeline Blender, pixelizador, cliente, interface) e um documento por marco (`V0.md` … `V8.md`). Na Fase V, leia o documento do marco atual antes de agir.
+- `STYLE.md` — guia visual (vira v3 no V1).
 
-Hierarquia em conflito: instruções do usuário > PRD > Ponto Seguro > lore.
+Hierarquia em conflito: instruções do usuário > PRD > Ponto Seguro > lore. Na Fase V: instruções do usuário > `docs/visual/PLANO.md` > PRD > `STYLE.md`.
 
 ## Ciclo de trabalho (toda sessão)
 1. Leia `PROGRESS.md` e identifique o marco atual e a próxima tarefa.
@@ -25,8 +27,14 @@ Quando o usuário disser apenas "continue", siga este ciclo a partir do `PROGRES
 
 ## Paradas obrigatórias
 - Depois de escrever `docs/SPEC.md`, antes de escrever código.
-- Fim de cada marco (M0…M8).
-- **M1 (portão visual):** não produza assets em massa sem aprovação visual explícita do usuário.
+- Fim de cada marco (M0…M8 e V0…V8).
+- **M1 e V1 (portões visuais):** não produza assets em massa sem aprovação visual explícita do usuário.
+- Na Fase V, nada de marco é "pronto" só porque compila ou gerou arquivos: rode o jogo, gere as capturas (`gradlew captures`), olhe as imagens, corrija o que achar.
+
+## Regras da Fase V (arte)
+- Arte nova sai do Blender por script (`tools/blender/`) e do pixelizador; nada de editar PNG à mão nem pelo MCP do Blender sem que vire script.
+- A Dreamina faz referência e textura, nunca sprite final. Teto de créditos por pedido; gasto relatado na parada.
+- Mesmo ID de asset, mesmas pegadas e colisões dos mapas; o `core-sim` não muda por causa de arte.
 - Antes de qualquer decisão irreversível ou de alto impacto narrativo/visual.
 
 ## Regras técnicas

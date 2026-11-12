@@ -482,3 +482,26 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-12
 - **Decisão:** (a) tempo de jogo real contado pelo cliente e gravado só no cabeçalho do save (`playedSeconds`), fora do estado — a simulação continua sem relógio de parede (RNF-013); saves antigos mostram zero. (b) Inimigos se afastam quando encostam (0,75 m), sem entrar em parede. (c) Ícones de item de 20 px de arte, por código, na mochila, no comércio e nos contêineres. (d) As teclas de luta só aparecem no HUD com inimigo na área; as barras somem na conversa e no comércio. (e) Documento na mochila diz "[ler]". (f) Os testes do Gradle declaram `content/` como entrada: antes, mudar um dado não fazia os testes rodarem de novo.
 - **Motivo:** pendências listadas no fim do M5–M7.
+
+## D-084 — Fase V: revisão visual, com marcos V0–V8
+- **Data:** 2026-11-12
+- **Decisão:** a pedido do diretor, abre-se a Fase V (revisão visual do jogo inteiro, sem mudar a identidade): V0 correções e ferramentas, V1 pipeline e portão visual, V2 gente, V3 criaturas e combate, V4 natureza e terreno, V5 arquitetura e exteriores, V6 interiores, objetos e itens, V7 interfaces, V8 acabamento. Plano, especificação e um documento por marco em `docs/visual/`. Mesmas paradas do MVP: fim de cada marco e portão visual no V1 antes de produção em massa. A simulação, o conteúdo e os IDs de asset não mudam.
+- **Motivo:** pedido do diretor de 12/11 ("isso tudo de uma vez não; planeja os passos e escreva os documentos para cada etapa").
+- **Observação:** as pendências humanas do M8 (som, sessão de 3 h, AT-15/17/18, termos da Dreamina) continuam abertas e não bloqueiam a Fase V. O AT-15 passa a ser coberto pelo VT-14.
+
+## D-085 — Blender 5.3 como ferramenta principal de arte, fora do build
+- **Data:** 2026-11-12
+- **Decisão:** a arte passa a ser produzida no Blender 5.3 em linha de comando (`blender -b --factory-startup -P tools/blender/entrada.py`), com modelos, animações e câmera descritos em scripts Python e fichas YAML versionados em `tools/blender/`. Um pixelizador próprio (Java, em `tools`) transforma os passes do render em pixel art na paleta. Os PNG e JSON gerados ficam no repositório. Compilar e rodar o jogo continua sem Blender (RNF-006, como o Python do D-080). O MCP do Blender serve só para exploração interativa; nunca é fonte de verdade. Revoga a frase "Sem Blender (RNF-006)" da `SPEC.md` §7.3.
+- **Motivo:** o gerador por código (D-025) chegou ao limite (bonecos de cilindro, árvores de elipses, telhado de uma face). Pré-renderizar 3D é o caminho previsto desde o D-019 e garante consistência entre direções e quadros; o diretor liberou o Blender explicitamente.
+- **Alternativa descartada:** continuar desenhando por código em Java (teto baixo de qualidade); sprites direto da IA (não mantém a mesma pessoa em 8 direções); filtro de pixel sobre render (cara de 3D reduzido — por isso o pixelizador por material e rampa).
+
+## D-086 — Densidade de pixel dobrada (proposta, a confirmar no portão V1)
+- **Data:** 2026-11-12
+- **Decisão provisória:** um pixel de arte passa a valer 2×2 pixels de mundo (era 4×4): tile de 64×32 px de arte, 28 px por metro de altura, gente adulta com ~48 px, quadro de 64×80. As medidas de mundo não mudam (mapas, colisões, cliques, luzes no mesmo lugar). Zoom inteiro de 1 a 4; a 1280×720 a escala 1 mostra a mesma área que a escala 2 de hoje. Durante a transição, a arte antiga é desenhada ampliada 2×.
+- **Motivo:** com 24 px de altura não há rosto, roupa nem arma legíveis; 48 px é o nível dos isométricos de referência e ainda é pixel art (72 px já começaria a parecer render reduzido e multiplicaria memória e quadros).
+- **Pendente:** aprovação do diretor no portão V1 (VT-13).
+
+## D-087 — Papel da Dreamina na Fase V
+- **Data:** 2026-11-12
+- **Decisão:** a Dreamina gera referências (pranchas de personagem, espécies, arquitetura), texturas de material e materiais de interface. Nunca o sprite final. Toda textura passa por um funil (repetível, reduzida, dessaturada) e entra no render só como variação de valor; a cor final sai da rampa da paleta. Teto de créditos por pedido; gasto relatado em cada parada; aviso antes de lote acima de 500 créditos. Estimativa da fase: ~3.500.
+- **Motivo:** STYLE §4 ("nada pode ter cara de feito por IA") e o limite já conhecido: a IA não mantém ângulo nem identidade entre imagens.
