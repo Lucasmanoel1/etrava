@@ -100,7 +100,7 @@ public final class AudioPlayer implements Disposable {
             return list;
         }
         for (String file : files(e)) {
-            Path p = root.resolve(file);
+            Path p = existing(file);
             if (!Files.exists(p)) {
                 warn(id, "arquivo ausente: " + file);
                 continue;
@@ -123,7 +123,7 @@ public final class AudioPlayer implements Disposable {
             warn(id, "ID fora do manifesto");
         } else {
             List<String> files = files(e);
-            Path p = files.isEmpty() ? null : root.resolve(files.get(0));
+            Path p = files.isEmpty() ? null : existing(files.get(0));
             if (p == null || !Files.exists(p)) {
                 warn(id, "arquivo ausente");
             } else {
@@ -137,6 +137,16 @@ public final class AudioPlayer implements Disposable {
         }
         streams.put(id, m);
         return m;
+    }
+
+    /** O arquivo do manifesto; se for um .ogg que ainda não foi convertido, vale o .wav de mesmo nome (D-080). */
+    private Path existing(String file) {
+        Path p = root.resolve(file);
+        if (!Files.exists(p) && file.endsWith(".ogg")) {
+            Path wav = root.resolve(file.substring(0, file.length() - 4) + ".wav");
+            if (Files.exists(wav)) return wav;
+        }
+        return p;
     }
 
     private static List<String> files(AssetManifest.Entry e) {

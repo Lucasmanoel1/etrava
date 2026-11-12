@@ -54,6 +54,15 @@ tasks.register<JavaExec>("generateAudio") {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
+// Converte os WAV recém-gerados em OGG Vorbis (RF-422). Pede Python com o módulo soundfile.
+tasks.register<Exec>("encodeAudio") {
+    group = "assets"
+    description = "Converte assets/audio de WAV para OGG (python + soundfile). Roda depois de generateAudio."
+    workingDir = rootDir
+    commandLine(System.getenv("ETRAVA_PYTHON") ?: "python", "tools/scripts/wav2ogg.py", "assets/audio")
+}
+tasks.named("generateAudio") { finalizedBy("encodeAudio") }
+
 tasks.register<JavaExec>("licenses") {
     group = "assets"
     description = "Gera ASSETS_LICENSES.md a partir dos manifestos de assets."

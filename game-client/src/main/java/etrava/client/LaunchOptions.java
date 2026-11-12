@@ -12,11 +12,13 @@ import java.util.List;
  * {@code --menu} (abre no menu mesmo com outras opções), {@code --screenshot=arquivo.png} e {@code --frames=N} (captura a tela após N quadros e sai),
  * {@code --bench=SEGUNDOS} (mede o desempenho sem limite de quadros, grava o resultado no log e sai; AT-17),
  * {@code --bot=SEGUNDOS} (um jogador automático aperta de tudo por esse tempo e sai; teste de resistência),
- * {@code --vel=FATOR} (velocidade do tempo de jogo desde o início).
+ * {@code --vel=FATOR} (velocidade do tempo de jogo desde o início),
+ * {@code --hidden} (janela invisível: para testes automáticos longos sem ocupar a tela).
  */
 public record LaunchOptions(
         boolean dev, Path home, Long seed, String area, List<String> commands, List<String> timedCommands,
-        Path screenshot, int screenshotFrames, boolean menu, int bench, int bot, float speed) {
+        Path screenshot, int screenshotFrames, boolean menu, int bench, int bot, float speed,
+        boolean hidden) {
 
     public static LaunchOptions parse(String[] args) {
         boolean dev = Boolean.getBoolean("etrava.dev");
@@ -30,6 +32,7 @@ public record LaunchOptions(
         boolean menu = false;
         int bench = 0, bot = 0;
         float speed = 1f;
+        boolean hidden = false;
         for (String arg : args) {
             if (arg.startsWith("--seed=")) seed = Long.parseLong(value(arg));
             else if (arg.startsWith("--area=")) area = value(arg);
@@ -41,9 +44,10 @@ public record LaunchOptions(
             else if (arg.startsWith("--bench=")) bench = Integer.parseInt(value(arg));
             else if (arg.startsWith("--bot=")) bot = Integer.parseInt(value(arg));
             else if (arg.startsWith("--vel=")) speed = Float.parseFloat(value(arg));
+            else if (arg.equals("--hidden")) hidden = true;
         }
         return new LaunchOptions(dev, home, seed, area, List.copyOf(commands), List.copyOf(timed), screenshot, frames, menu, bench,
-                bot, speed);
+                bot, speed, hidden);
     }
 
     private static String value(String arg) {

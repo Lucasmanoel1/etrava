@@ -168,9 +168,9 @@ public final class EtravaGame extends ApplicationAdapter {
         texts = new Texts(options.contentDir());
         if (options.dev()) console = new DebugConsole(consoleFont, this::runConsoleCommand);
         buildUi();
+        if (options.bench() > 0) bench = new Bench();
         applySettings();
         timeScale = options.speed();
-        if (options.bench() > 0) bench = new Bench();
         if (options.bot() > 0) bot = new Bot();
 
         // linha de comando de desenvolvimento (área, semente, comandos, captura): direto ao jogo

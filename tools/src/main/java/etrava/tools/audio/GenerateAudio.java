@@ -607,17 +607,17 @@ public final class GenerateAudio {
 
     private void music(String id, String name, float[] data) throws IOException {
         write("audio/musica/" + name + ".wav", data);
-        entry(id, "music", "audio/musica/" + name + ".wav", null);
+        entry(id, "music", "audio/musica/" + name + ".ogg", null);
     }
 
     private void ambience(String id, String name, float[] data) throws IOException {
         write("audio/ambiente/" + name + ".wav", data);
-        entry(id, "music", "audio/ambiente/" + name + ".wav", null);
+        entry(id, "music", "audio/ambiente/" + name + ".ogg", null);
     }
 
     private void sfx(String id, String name, float[] data) throws IOException {
         write("audio/efeitos/" + name + ".wav", data);
-        entry(id, "sound", "audio/efeitos/" + name + ".wav", null);
+        entry(id, "sound", "audio/efeitos/" + name + ".ogg", null);
     }
 
     private void sfxSet(String id, String name, Maker maker) throws IOException {
@@ -625,7 +625,7 @@ public final class GenerateAudio {
         for (int v = 1; v <= 3; v++) {
             String file = "audio/efeitos/" + name + "_" + v + ".wav";
             write(file, maker.make(new Random(name.hashCode() + v)));
-            files.add(file);
+            files.add(file.replace(".wav", ".ogg"));
         }
         entry(id, "sound", null, files);
     }

@@ -29,6 +29,7 @@ public final class Lwjgl3Launcher {
         config.setWindowedMode(1280, 720);
         config.useVsync(true);
         config.setForegroundFPS(60);
+        if (options.hidden()) config.setInitialVisible(false);
 
         try {
             new Lwjgl3Application(new EtravaGame(options), config);
