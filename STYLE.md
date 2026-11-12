@@ -90,11 +90,11 @@ Geradas na Dreamina com o modelo mais forte (Seedream 5.0 Pro, 60 créditos), em
 
 ## 8. Som
 
-Provisório, por síntese (`gradlew generateAudio`, D-071): WAV mono 22 kHz em `assets/audio/` e `assets/manifest/audio.yaml`. Direção: instrumentos acústicos e poucos (alaúde dedilhado, flauta de madeira, bordão de arco, sinos, tambor de mão), modos menores e dóricos, muito ar e reverb; nada de sintetizador moderno nem orquestra épica. Ambientes: vento, pássaros e grilos lá fora; lareira e murmúrio dentro. IDs: `musica.*`, `amb.<area>[.dia|.noite]`, `sfx.*`. Trocar um som = salvar outro arquivo e repetir o ID num manifesto que não seja o gerado.
+Provisório, por síntese (`gradlew generateAudio`, D-071), convertido para OGG Vorbis mono 22 kHz (D-080) em `assets/audio/` e `assets/manifest/audio.yaml`. Direção: instrumentos acústicos e poucos (alaúde dedilhado, flauta de madeira, bordão de arco, sinos, tambor de mão), modos menores e dóricos, muito ar e reverb; nada de sintetizador moderno nem orquestra épica. Ambientes: vento, pássaros e grilos lá fora; lareira e murmúrio dentro. IDs: `musica.*`, `amb.<area>[.dia|.noite]`, `sfx.*`. Trocar um som = salvar outro arquivo e repetir o ID num manifesto que não seja o gerado.
 
 ## 9. Interface
 
-Papel e tinta (PRD 10.1): fundo `#D8CCB0`, tinta `#241C18`, destaques em ferrugem `#6E2C22`, borda de madeira escura. Sem brilho, sem neon, sem marcadores de objetivo.
+Papel e tinta (PRD 10.1): fundo `#D8CCB0`, tinta `#241C18`, destaques em ferrugem `#6E2C22`, borda de madeira escura. Fonte: Alegreya (texto, 19 px no tamanho normal) e Alegreya SC Bold (título), geradas no tamanho exato (D-077). Ícones de item: 20×20 px de arte, na paleta, mostrados a 2× (`ItemIcons`). Sem brilho, sem neon, sem marcadores de objetivo.
 
 ## 10. Referências internas
 

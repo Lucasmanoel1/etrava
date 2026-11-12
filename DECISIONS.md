@@ -443,3 +443,42 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-12
 - **Decisão:** item de categoria `documento` (ou com `text`) abre uma folha para ler e continua na mochila; o caderno ganhou a aba Documentos. Contêineres podem ter `when` (as cinzas da lareira só têm o canto da carta depois que ela chega) e `restockDays: 0` (nunca repõe).
 - **Motivo:** RF-124; documentos precisavam ser relidos e aparecer na hora certa.
+
+## D-077 — Fonte própria: Alegreya, gerada no tamanho exato
+- **Data:** 2026-11-12
+- **Decisão:** a interface usa a Alegreya (texto) e a Alegreya SC Bold (nome do jogo), SIL Open Font License 1.1, em `assets/fontes/` e no manifesto (`fonte.texto`, `fonte.titulo`). O `gdx-freetype` gera a fonte em 19 px × o tamanho de texto das opções; ao mudar o tamanho, as telas são refeitas com a fonte nova. Texto solto sobre o cenário (relógio, avisos, balões) leva uma sombra de 1 px. Se o arquivo faltar, entra a fonte embutida do libGDX (RF-421).
+- **Motivo:** a fonte embutida esticada borrava no texto grande (RNF-040) e tinha cara de protótipo; uma serifada de livro combina com "papel e tinta" (PRD 10.1) e lê bem em português.
+- **Alternativa descartada:** fonte em pixel — combina com o cenário, mas cansa em texto corrido e acentua mal em 16 px; fonte única em tamanho máximo, reduzida — fica mole no tamanho normal.
+
+## D-078 — Golpes animados e lobo redesenhado
+- **Data:** 2026-11-12
+- **Decisão:** as folhas de personagem ganham a animação `attack` (4 quadros: recua, ergue, desce, termina). O inimigo usa os dois primeiros enquanto anuncia o golpe (dá para ler e esquivar) e os dois últimos quando ele sai; o do jogador passa inteiro depois do clique. O lobo tem um bote no lugar, quadro mais largo (44 px de arte; de lado ele vazava para o quadro vizinho), cabeça baixa, orelhas, focinho claro e olhos âmbar. Sem arma desenhada na mão.
+- **Motivo:** pendência do M6 (combate sem animação; lobo de frente era uma mancha). A animação é só apresentação: o núcleo não mudou.
+
+## D-079 — Além da borda do mapa: chão que escurece e mato
+- **Data:** 2026-11-12
+- **Decisão:** nas áreas abertas o cliente desenha 14 tiles além da borda, repetindo o terreno da borda (a estrada segue), escurecendo até sumir, com árvores cada vez mais juntas. Não se anda ali. Interiores e a estrutura enterrada continuam acabando onde acabam.
+- **Motivo:** perto da borda (o Posto fica a 8 m dela) a câmera mostrava o vazio preto. É desenho, não mapa: nada muda em `content/areas`.
+- **Alternativa descartada:** prender a câmera dentro do mapa — em isométrico a área visível é um losango, e o jogador deixaria de ficar no centro justamente no Posto.
+
+## D-080 — Áudio em OGG Vorbis
+- **Data:** 2026-11-12
+- **Decisão:** `gradlew generateAudio` continua sintetizando em WAV e, em seguida, `encodeAudio` chama `tools/scripts/wav2ogg.py` (Python + módulo `soundfile`), que grava OGG mono 22 kHz e apaga os WAV: 37 MB → 5 MB. O manifesto aponta para `.ogg`; se o `.ogg` faltar e houver o `.wav` de mesmo nome, o cliente toca o WAV. O repositório guarda os OGG — Python só é preciso para regenerar o som.
+- **Motivo:** RF-422 pede OGG; o ZIP do jogo fica em 51 MB. Não há codificador Vorbis consolidado em Java puro.
+- **Ressalva:** é a única ferramenta fora do Gradle no projeto (RNF-006). Não entra em compilar, testar nem rodar.
+
+## D-081 — Ritmo do capítulo: prazos redistribuídos; o contemplativo estica o capítulo
+- **Data:** 2026-11-12
+- **Decisão:** medido em 20 sementes sem o jogador, tudo fechava até o dia 18–22 e os dias 22–30 ficavam vazios, com seis desfechos entre os dias 9 e 12. Prazos novos (só dados): comitiva chega no dia ~8–9 (antes 7), a terra cede no dia ~10–12 (antes 8), a briga da taverna fecha no dia ~18 (13), o ataque ao Posto no dia ~19 (11), A3 no dia ~19 (14), A2 no dia ~21 (16), A1 no dia ~23 (18); as notícias de fora se espalham até o dia ~27. Sal, pomar, ferrovia e festa ficam onde estavam, para o começo não esvaziar. No ritmo Contemplativo o capítulo passa a durar 60 dias: antes acabava no dia 30 com metade dos arcos em aberto (defeito).
+- **Motivo:** R4/R5 do PRD (mundo independente que vira tédio; jogador que perde tudo e acha o jogo vazio). Agora o último acontecimento cai entre os dias 24 e 29.
+- **A conferir pelo diretor:** se o meio do capítulo (dias 13–17) não ficou parado demais para quem não investiga.
+
+## D-082 — Medição, jogador automático e pasta de usuário isolada
+- **Data:** 2026-11-12
+- **Decisão:** `--bench=S` mede o desempenho sem V-Sync e grava o resultado no log (AT-17); `--bot=S` põe um jogador automático a fazer de tudo por S segundos (resistência); `--hidden` esconde a janela; `--vel=N` acelera o tempo de jogo. A variável `ETRAVA_USERDIR` (ou `-Detrava.userdir`) manda saves, opções e logs para outra pasta — é como os testes rodam sem tocar nos saves de quem joga. `gradlew at16` automatiza o AT-16. `ChaosTest` faz o equivalente sem janela, no núcleo.
+- **Motivo:** PRD 16 (definição de pronto) e R6. O jogador automático não substitui a sessão humana de 3 h: ele acha queda e travamento, não acha jogo chato.
+
+## D-083 — Miúdos do polimento
+- **Data:** 2026-11-12
+- **Decisão:** (a) tempo de jogo real contado pelo cliente e gravado só no cabeçalho do save (`playedSeconds`), fora do estado — a simulação continua sem relógio de parede (RNF-013); saves antigos mostram zero. (b) Inimigos se afastam quando encostam (0,75 m), sem entrar em parede. (c) Ícones de item de 20 px de arte, por código, na mochila, no comércio e nos contêineres. (d) As teclas de luta só aparecem no HUD com inimigo na área; as barras somem na conversa e no comércio. (e) Documento na mochila diz "[ler]". (f) Os testes do Gradle declaram `content/` como entrada: antes, mudar um dado não fazia os testes rodarem de novo.
+- **Motivo:** pendências listadas no fim do M5–M7.
