@@ -5,3 +5,4 @@ out/
 *.iml
 *.log
 arte-bruta/
+__pycache__/

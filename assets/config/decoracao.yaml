@@ -1,0 +1,20 @@
+# Camada de decoração do chão (SPEC-visual §7.2). Pura apresentação: não bloqueia, não é
+# clicável, não entra no save, e sai igual toda vez (semente = área + tile).
+#
+# Por área e por terreno, uma lista de elementos:
+#   sprite     ID do manifesto (variantes escolhidas pela posição)
+#   densidade  elementos por tile, em média (pode passar de 1)
+#   manchas    0 = espalhado por igual; 1 = só em manchas (ruído largo)
+#   plano      true = decalque deitado no chão (desenhado logo depois do chão, sem ordenação)
+#   folga      distância mínima, em metros, de objetos do mapa (casas, árvores, bancos)
+# V1: só a vila (a fatia). As outras áreas entram no V4.
+areas:
+  vila:
+    grama:
+      - {sprite: deco.tufo, densidade: 1.1, manchas: 0.35, folga: 0.35}
+      - {sprite: deco.tufo_seco, densidade: 0.18, manchas: 0.7, folga: 0.35}
+      - {sprite: deco.flor, densidade: 0.16, manchas: 0.85, folga: 0.5}
+      - {sprite: deco.pedrinhas, densidade: 0.05, plano: true, folga: 0.2}
+    terra:
+      - {sprite: deco.pedrinhas, densidade: 0.16, manchas: 0.4, plano: true, folga: 0.2}
+      - {sprite: deco.tufo_seco, densidade: 0.05, manchas: 0.9, folga: 0.35}

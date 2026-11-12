@@ -1,0 +1,21 @@
+# Decoração do chão da fatia do V1 (assets/config/decoracao.yaml diz onde e quanto).
+# Tufos de grama com laço de vento, flores dessaturadas e pedrinhas.
+tipo: decoracao
+id: chao_vila
+quadro: [40, 36]
+ancora: [20, 28]
+manifesto:
+  - {id: deco.tufo, folhas: [tufo_1, tufo_2, tufo_3]}
+  - {id: deco.tufo_seco, folhas: [tufo_seco_1]}
+  - {id: deco.flor, folhas: [flor_violeta, flor_amarela, flor_branca]}
+  - {id: deco.pedrinhas, folhas: [pedrinhas_1, pedrinhas_2]}
+elementos:
+  - {nome: tufo_1, forma: tufo, semente: 1, quadros: 4, fps: 3}
+  - {nome: tufo_2, forma: tufo, semente: 2, quadros: 4, fps: 3, folhas: 10}
+  - {nome: tufo_3, forma: tufo, semente: 3, quadros: 4, fps: 3, folhas: 18}
+  - {nome: tufo_seco_1, forma: tufo, semente: 4, quadros: 4, fps: 3, rampa: grama_seca}
+  - {nome: flor_violeta, forma: flores, semente: 5, rampa: flor_violeta}
+  - {nome: flor_amarela, forma: flores, semente: 6, rampa: flor_amarela}
+  - {nome: flor_branca, forma: flores, semente: 7, rampa: flor_branca}
+  - {nome: pedrinhas_1, forma: pedrinhas, semente: 8}
+  - {nome: pedrinhas_2, forma: pedrinhas, semente: 9}

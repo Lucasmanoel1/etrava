@@ -1,0 +1,17 @@
+# Capturas do portão visual do V1 (gradlew captures -Proteiro=v1 -Psaida=docs/capturas/v1).
+# A fatia: o canto da praça e da oficina da vila. Zoom 1 da Fase V mostra a mesma área que o
+# zoom 2 do M8 (D-086), então vila_dia/entardecer/noite comparam direto com docs/capturas/v0.
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 60}
+
+cenas:
+  # as mesmas cenas do V0 (antes × depois)
+  - {nome: vila_dia, area: vila, cmds: ["tp 30 33", "hora 10", "zoom 1"], medir: true}
+  - {nome: vila_entardecer, area: vila, cmds: ["tp 30 33", "hora 18.5", "zoom 1"], medir: true}
+  - {nome: vila_noite, area: vila, cmds: ["tp 30 33", "hora 21", "zoom 1"], medir: true}
+  # a fatia: oficina, praça, árvores
+  - {nome: oficina_dia, area: vila, cmds: ["tp 25 29", "hora 10", "zoom 1"], medir: true}
+  - {nome: oficina_dia_perto, area: vila, cmds: ["tp 24 29", "hora 10", "zoom 2"], medir: true}
+  - {nome: oficina_entardecer, area: vila, cmds: ["tp 25 29", "hora 18.5", "zoom 1"], medir: true}
+  - {nome: oficina_noite, area: vila, cmds: ["tp 25 29", "hora 21.5", "zoom 1"], medir: true}
+  - {nome: oficina_noite_perto, area: vila, cmds: ["tp 24 29", "hora 21.5", "zoom 2"], medir: true}
+  - {nome: praca_perto, area: vila, cmds: ["tp 30 33", "hora 10", "zoom 3"], medir: true}

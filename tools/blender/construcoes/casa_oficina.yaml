@@ -1,0 +1,23 @@
+# A casa da oficina de Avel (V1). Pegada 7 × 5 m como em content/props.yaml (casa_oficina);
+# porta no meio da face sul, sobre o ponto oficina_porta do mapa (VT-07). Paredes de 2,7 m
+# (base de pedra de 0,9 m + enxaimel com reboco), telhado de colmo de duas águas com a
+# cumeeira ao longo de x, chaminé de pedra a oeste.
+tipo: casa
+id: casa_oficina
+manifesto: {id: prop.casa_oficina}
+quadro: [600, 400]
+ancora: [232, 286]
+largura: 7.0
+profundidade: 5.0
+parede: 2.7
+pedra: 0.55
+telhado: 2.3
+beiral: 0.36
+espessura_colmo: 0.38
+chamine: {x: -2.0, y: 0.0, acima: 0.9}
+aberturas:
+  - {face: S, pos: 3.5, porta: true}
+  - {face: S, pos: 1.2}
+  - {face: S, pos: 5.6}
+  - {face: E, pos: 2.1}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

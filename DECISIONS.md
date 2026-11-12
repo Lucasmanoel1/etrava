@@ -500,6 +500,7 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Decisão provisória:** um pixel de arte passa a valer 2×2 pixels de mundo (era 4×4): tile de 64×32 px de arte, 28 px por metro de altura, gente adulta com ~48 px, quadro de 64×80. As medidas de mundo não mudam (mapas, colisões, cliques, luzes no mesmo lugar). Zoom inteiro de 1 a 4; a 1280×720 a escala 1 mostra a mesma área que a escala 2 de hoje. Durante a transição, a arte antiga é desenhada ampliada 2×.
 - **Motivo:** com 24 px de altura não há rosto, roupa nem arma legíveis; 48 px é o nível dos isométricos de referência e ainda é pixel art (72 px já começaria a parecer render reduzido e multiplicaria memória e quadros).
 - **Pendente:** aprovação do diretor no portão V1 (VT-13).
+- **V1 (2026-11-12):** implementada. `ART_SCALE = 2`; cada entrada do manifesto diz quantos px de mundo vale o seu pixel (`scale`; sem o campo, 4 — a arte do M8 aparece ampliada 2×). Câmera: escala 1 a 720p e 2 a 1080p ou mais. Gente nova: ~48 px de altura (quadro recortado de 52×62). Continua pendente do portão.
 
 ## D-087 — Papel da Dreamina na Fase V
 - **Data:** 2026-11-12
@@ -523,3 +524,43 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Decisão:** (a) **luz de presença**: um passe de máscara (silhuetas dos personagens, com o que está na frente deles em preto) entra no buffer de luz por `max(luz, ambiente × actor)`, teto 0,88. `actor` por hora em `daynight.yaml`: 1 de dia, 1,2 às 18h30, 1,3 às 6h, 1,6 às 19h30, 1,5 à noite; 1,25 nos interiores; nada na área escura (lá enxergar é a lamparina, RF-008). O reforço tem a cor do céu: à noite é azulado, e a noite continua noite. (b) O jogador passa a vestir linho claro (`#B9A888`) — o item inicial dele já é a "Camisa de linho". (c) **Critério do VT-03 revisto:** a razão de luminâncias médias reprovava o jogador de camisa clara e contorno escuro (claro e escuro se anulam na média) e aprovava a figura toda escura no chão escuro. Novo critério: pelo menos 60 % dos pixels do jogador diferem da média do chão em volta por 0,12 ou mais. Antes: mínimo 0,42 e 50 falhas; depois: mínimo 0,66, 0 falhas.
 - **Alternativa descartada:** clarear a noite inteira (perde a atmosfera que funciona); contorno claro em volta do personagem (efeito de interface, não de luz); o critério antigo do PLANO (media o que não se vê).
 - **A conferir pelo diretor:** se a camisa clara à noite ficou "acesa" demais (`actor` noturno é um número só em `daynight.yaml`).
+
+## D-091 — Corpo humano: kit próprio (provisório até o spike do MPFB2)
+- **Data:** 2026-11-12
+- **Decisão:** o corpo de gente sai de um kit próprio em `tools/blender/kit_humano/`: esqueleto padrão de vazios com nomes fixos (`raiz`, `quadril`, `tronco`, `cabeca`, `braco_e`… `pe_d`) e peças rígidas arredondadas (tubos e esferas subdivididos), roupa por peça, cada peça com a sua rampa. Proporção estilizada: cabeça ~1/6 da altura, pernas um pouco curtas, membros grossos.
+- **Motivo:** a 48 px de altura, com a correção vertical da câmera (28/39), o que lê é silhueta e massa; peças rígidas não têm surpresa de peso e qualquer ciclo serve em qualquer corpo. O resultado passou no VT-03 e lê rosto, roupa e ofício (folhas em `docs/capturas/v1/`).
+- **Spike do MPFB2 não feito:** a instalação da extensão (download de extensions.blender.org, numa pasta isolada) foi bloqueada pela permissão do ambiente desta sessão. Se o diretor liberar, o spike roda no começo do V2, com o mesmo pixelizador e a mesma pose, e esta decisão é revista.
+- **Alternativa descartada (por ora):** malha única com pesos (skin modifier ou MPFB2): mais orgânica, mas a 48 px a diferença some e o custo de pesos e roupas é alto.
+
+## D-092 — Onde mora a arte nova
+- **Data:** 2026-11-12
+- **Decisão:** PNG e JSON gerados em `assets/arte/<personagens|natureza|construcoes|chao|decoracao>/`, manifesto gerado em `assets/manifest/arte.yaml` (prioridade sobre `provisorio.yaml`, mesmo ID — RF-423). Campos novos no manifesto: `scale`, `variants`, `meta`, `role`, `frames`, `fps` e `stride` nas animações.
+- **Motivo:** `gradlew generateArt` reescreve os arquivos de `assets/personagens`, `assets/props`… — se a arte nova morasse lá, uma regeneração da arte provisória a apagaria. Pastas separadas também deixam claro o que já foi refeito (VT-06 no V8).
+
+## D-093 — Passes por troca de material, sol calibrado e sombra no sprite
+- **Data:** 2026-11-12
+- **Decisão:** cada quadro é renderizado duas vezes no Cycles (CPU, semente fixa, filtro de 0,01 px — sem antisserrilhado), trocando os nós de todos os materiais: passe "a" só de emissão (índice, profundidade, emissivo) e passe "b" (luz direta com sombra no vermelho, oclusão no verde, detalhe da textura no azul). Sem compositor nem AOV. O sol foi calibrado (energia 1/0,3654) para o passe de luz valer exatamente N·L. Direção do sol: horizontal (-0,55, -0,85), elevação 58° — face sudoeste clara, sudeste na sombra, sombra projetada à direita, como no M8. Objetos parados (árvores, casas) fotografam junto um chão que só recebe sombra; a sombra vira preto translúcido no próprio sprite.
+- **Motivo:** a API de compositor e de saída de arquivo mudou no Blender 5; a troca de material usa só o básico e é determinística. Índice misturado numa aresta (amostra caindo exatamente sobre ela) conta como vazio no voto.
+- **Tempo:** personagem de 192 quadros ≈ 50–90 s; árvore com 2 variantes × 8 quadros ≈ 4 min; casa ≈ 15 s; tudo em paralelo (6 processos). A fatia inteira do zero: ~7 min.
+
+## D-094 — Chão: textura de mundo e máscara de sangria
+- **Data:** 2026-11-12
+- **Decisão:** cada terreno novo é uma textura de 512×256 px de arte, periódica, renderizada de um plano com a textura do material (escala que divide o período de 8 m) e desenhada **alinhada ao mundo** por um shader; cada tile a mostra através de uma máscara (losango + sangria irregular em blocos de 2 px, 8 variantes). O terreno de prioridade maior é desenhado depois e cobre o vizinho; um anel de 1 px mais escuro marca a divisa. Duas passadas por terreno (anel, depois miolo) para o anel não aparecer entre tiles do mesmo terreno.
+- **Motivo:** dá a borda irregular sem os 16 casos por par de terrenos da SPEC §7.2 (que multiplicam arte e código) e acaba com a costura entre tiles.
+- **Alternativa descartada:** 16 máscaras por par de terrenos (mais arte, mesmo resultado visual); tiles com variação por tile (costura visível).
+
+## D-095 — Andar pela distância
+- **Data:** 2026-11-12
+- **Decisão:** nas folhas novas, o quadro de `andar` e `correr` sai da distância percorrida dividida pela passada (`stride`) e não do relógio; acima de 2,4 m/s o personagem corre. O jogador anda a 3,5 m/s (`Simulation.WALK_SPEED`), então usa `correr`; os NPCs passeiam a 1,5 m/s e usam `andar`. `parado` segue o relógio.
+- **Motivo:** o pé de apoio fica parado no chão em qualquer velocidade (VT-15), inclusive com carga demais (60 %).
+
+## D-096 — Âncora no canto do pixel
+- **Data:** 2026-11-12
+- **Decisão:** a origem do objeto cai no canto superior esquerdo do pixel da âncora, não no centro (a SPEC dizia centro).
+- **Motivo:** é o ponto que o cliente já usa (`left = sx − anchorX × px`); com o centro, tudo sairia meio pixel deslocado. Conferido pelo teste do cubo (`gradlew blenderTeste`: 64×60 px exatos).
+
+## D-097 — Zoom fracionário fica para depois do portão
+- **Data:** 2026-11-12
+- **Decisão:** a tarefa 8 do V1 (buffer na escala de arte + sharp-bilinear, passos 1,5 e 2,5) não foi feita. O zoom continua inteiro (1 a 4).
+- **Motivo:** é opcional e depende da resposta do diretor à pergunta 3 do portão ("zoom inteiro ou com passos intermediários?"). Se ele quiser, entra no começo do V2.
+

@@ -1,0 +1,12 @@
+# Carvalho (V1): copa larga em tufos, tronco grosso e torto. Duas alturas; o cliente escolhe a
+# variante pelo hash da posição (SPEC-visual §7.1). Substitui prop.arvore (o mapa não muda).
+tipo: arvore
+id: carvalho
+especie: carvalho
+manifesto: {id: prop.arvore}
+quadro: [400, 320]
+ancora: [150, 290]
+vento: {quadros: 8, fps: 5}
+variantes:
+  - {nome: carvalho_m, altura: 5.6, copa: 3.2, semente: 11}
+  - {nome: carvalho_g, altura: 6.5, copa: 3.8, semente: 23}

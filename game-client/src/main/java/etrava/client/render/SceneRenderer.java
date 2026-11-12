@@ -39,7 +39,8 @@ import org.slf4j.LoggerFactory;
 public final class SceneRenderer implements Disposable {
     private static final Logger LOG = LoggerFactory.getLogger(SceneRenderer.class);
     private static final float OCCLUDED_ALPHA = 0.42f;
-    private static final int ART = IsoProjection.ART_SCALE;
+    /** Chão por máscara (Fase V); null se o shader não compilou (cai no desenho antigo). */
+    private GroundMasks ground;
 
     /** Um personagem a desenhar, já com a posição interpolada. */
     public static final class ActorDraw {
@@ -51,21 +52,47 @@ public final class SceneRenderer implements Disposable {
         public float flash;
         /** Golpe em andamento, de 0 (começa a erguer o braço) a 1 (terminou); negativo = não está golpeando. */
         public float attack = -1f;
+        /** Metros andados desde que apareceu (o quadro do andar sai daqui: o pé não desliza). */
+        public double travel;
+        /** Velocidade suavizada, em m/s (andar ou correr). */
+        public double speed;
     }
 
+    /** Acima disto (m/s) o personagem corre, se a folha tiver a animação. */
+    private static final double RUN_SPEED = 2.4;
+
     /** {@code shade}: 1 dentro do mapa; cai até 0 na faixa de fora, que some na penumbra. */
-    private record TileDraw(int tx, int ty, TextureRegion region, int priority, float shade) {}
+    private record TileDraw(int tx, int ty, TextureRegion region, int priority, float shade, int px, Texture world) {}
 
     private record Lamp(double x, double y, double z, float radius, float r, float g, float b) {}
 
     /** @param stateKey chave do prop com variantes (null = sempre o mesmo sprite); {@code def} é a definição dele */
     private record Static(Assets.Sprite sprite, double x, double y, double x0, double y0, double x1, double y1,
-            double key, String stateKey, PropDef def, float shade) {}
+            double key, String stateKey, PropDef def, float shade, float phase) {}
+
+    /** Variante do sprite pela posição (SPEC-visual §7.1): o mapa não muda, a vila fica variada. */
+    private Assets.Sprite pick(String id, double x, double y) {
+        Assets.Sprite[] v = assets.variants(id);
+        return v[Math.floorMod(posHash(x, y), v.length)];
+    }
+
+    private static int posHash(double x, double y) {
+        int h = (int) Math.floor(x * 8) * 73856093 ^ (int) Math.floor(y * 8) * 19349663;
+        h ^= h >>> 13;
+        h *= 0x5bd1e995;
+        return h ^ (h >>> 15);
+    }
+
+    private static float phaseOf(double x, double y) {
+        return Math.floorMod(posHash(x, y) >>> 3, 1000) / 1000f;
+    }
 
     private final Assets assets;
     private final DayNight dayNight;
     private final List<TileDraw> tiles = new ArrayList<>();
     private final List<Static> statics = new ArrayList<>();
+    /** Decalques deitados no chão (pedrinhas): desenhados logo depois do chão, sem ordenação. */
+    private final List<Static> flats = new ArrayList<>();
     private final List<Lamp> lamps = new ArrayList<>();
     private final SpriteBatch batch = new SpriteBatch();
     private final Matrix4 screenMatrix = new Matrix4();
@@ -127,12 +154,14 @@ public final class SceneRenderer implements Disposable {
                 float shade = out <= 0 ? 1f : (float) Math.pow(Math.max(0f, 1f - out / (float) MARGIN), 1.6);
                 Assets.Tiles t = assets.tiles(terrain);
                 int hash = tx * 73856093 ^ ty * 19349663;
-                tiles.add(new TileDraw(tx, ty, t.variants()[Math.floorMod(hash, t.variants().length)], t.priority(), shade));
+                tiles.add(new TileDraw(tx, ty, t.variants()[Math.floorMod(hash, t.variants().length)], t.priority(), shade,
+                        t.px(), t.world()));
                 // mato na faixa de fora: mais fechado quanto mais longe, e nunca em cima da estrada
                 if (out > 1 && "grama".equals(terrain) && Math.floorMod(hash >> 4, 100) < 2 + out * 2) {
-                    Assets.Sprite tree = assets.sprite(Math.floorMod(hash >> 11, 2) == 0 ? "prop.arvore" : "prop.arvore_b");
                     double x = tx + 0.5, y = ty + 0.5;
-                    statics.add(new Static(tree, x, y, x - 0.3, y - 0.3, x + 0.3, y + 0.3, x + y, null, null, shade));
+                    Assets.Sprite tree = pick(Math.floorMod(hash >> 11, 2) == 0 ? "prop.arvore" : "prop.arvore_b", x, y);
+                    statics.add(new Static(tree, x, y, x - 0.3, y - 0.3, x + 0.3, y + 0.3, x + y, null, null, shade,
+                            phaseOf(x, y)));
                 }
             }
         }
@@ -143,10 +172,10 @@ public final class SceneRenderer implements Disposable {
             PropDef def = props.get(p.propId());
             double hw = def != null ? def.width() / 2 : 0.3, hd = def != null ? def.depth() / 2 : 0.3;
             boolean variants = def != null && p.key() != null && !def.stateMap().isEmpty();
-            Assets.Sprite sprite = assets.sprite(def == null ? "prop." + p.propId()
-                    : variants ? def.spriteFor(def.initialState()) : def.spriteId());
+            Assets.Sprite sprite = pick(def == null ? "prop." + p.propId()
+                    : variants ? def.spriteFor(def.initialState()) : def.spriteId(), p.x(), p.y());
             statics.add(new Static(sprite, p.x(), p.y(), p.x() - hw, p.y() - hd, p.x() + hw, p.y() + hd, p.x() + p.y(),
-                    variants ? p.key() : null, def, 1f));
+                    variants ? p.key() : null, def, 1f, phaseOf(p.x(), p.y())));
             if (def == null) continue;
             for (PropDef.Light l : def.lightList()) {
                 double[] o = l.offset(), c = l.color();
@@ -154,9 +183,22 @@ public final class SceneRenderer implements Disposable {
                         (float) c[0], (float) c[1], (float) c[2]));
             }
         }
+        // decoração do chão (Fase V): tufos e flores entram na ordenação; pedrinhas ficam deitadas
+        if (outdoor) {
+            List<Decoration.Box> obstacles = new ArrayList<>();
+            for (Static st : statics) if (st.def() != null) obstacles.add(new Decoration.Box(st.x0(), st.y0(), st.x1(), st.y1()));
+            for (Decoration.Piece d : Decoration.place(assets.root(), area.id(), area, obstacles)) {
+                Assets.Sprite sp = pick(d.sprite(), d.x(), d.y());
+                Static st = new Static(sp, d.x(), d.y(), d.x() - 0.05, d.y() - 0.05, d.x() + 0.05, d.y() + 0.05,
+                        d.x() + d.y(), null, null, 1f, phaseOf(d.x(), d.y()));
+                if (d.flat()) flats.add(st);
+                else statics.add(st);
+            }
+        }
         statics.sort(Comparator.comparingDouble(Static::key));
         for (int i = 0; i <= statics.size(); i++) buckets.add(new ArrayList<>());
 
+        ground = GroundMasks.create();
         lightTexture = radial(256, false);
         shadowTexture = radial(64, true);
         ShaderProgram.pedantic = false;
@@ -233,6 +275,7 @@ public final class SceneRenderer implements Disposable {
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         batch.begin();
         drawGround(bounds);
+        drawFlats(bounds, animTime);
         if (hasDestination) {
             batch.setColor(0f, 0f, 0f, 0.45f);
             batch.draw(shadowTexture, sx(destX, destY) - 16, sy(destX, destY, 0) - 8, 32, 16);
@@ -381,14 +424,59 @@ public final class SceneRenderer implements Disposable {
     }
 
     private void drawGround(float[] b) {
-        for (TileDraw t : tiles) {
-            float cx = sx(t.tx() + 0.5, t.ty() + 0.5), cy = sy(t.tx() + 0.5, t.ty() + 0.5, 0);
-            float w = t.region().getRegionWidth() * ART, h = t.region().getRegionHeight() * ART;
-            if (cx + w / 2 < b[0] || cx - w / 2 > b[2] || cy + h / 2 < b[1] || cy - h / 2 > b[3]) continue;
-            batch.setColor(t.shade(), t.shade(), t.shade(), 1f);
-            batch.draw(t.region(), cx - w / 2, cy - h / 2, w, h);
+        // os tiles estão em ordem de prioridade; cada grupo de terreno novo (textura de mundo) sai em
+        // duas passadas — com o anel da borda e depois só o miolo (GroundMasks)
+        int i = 0;
+        while (i < tiles.size()) {
+            TileDraw first = tiles.get(i);
+            int j = i;
+            while (j < tiles.size() && tiles.get(j).priority() == first.priority() && tiles.get(j).world() == first.world()) j++;
+            if (first.world() != null && ground != null) {
+                batch.setShader(ground.shader());
+                batch.flush();
+                first.world().bind(1);
+                Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
+                ground.shader().setUniformi("u_terrain", 1);
+                ground.shader().setUniformf("u_size", first.world().getWidth(), first.world().getHeight());
+                for (int pass = 0; pass < 2; pass++) {
+                    for (int k = i; k < j; k++) {
+                        TileDraw t = tiles.get(k);
+                        float cx = sx(t.tx() + 0.5, t.ty() + 0.5), cy = sy(t.tx() + 0.5, t.ty() + 0.5, 0);
+                        TextureRegion m = ground.mask(t.tx(), t.ty(), pass == 0);
+                        float w = m.getRegionWidth() * 2f, h = m.getRegionHeight() * 2f;
+                        if (cx + w / 2 < b[0] || cx - w / 2 > b[2] || cy + h / 2 < b[1] || cy - h / 2 > b[3]) continue;
+                        batch.setColor(t.shade(), t.shade(), t.shade(), 1f);
+                        batch.draw(m, cx - w / 2, cy - h / 2, w, h);
+                    }
+                }
+                batch.flush();
+                batch.setShader(null);
+            } else {
+                for (int k = i; k < j; k++) {
+                    TileDraw t = tiles.get(k);
+                    float cx = sx(t.tx() + 0.5, t.ty() + 0.5), cy = sy(t.tx() + 0.5, t.ty() + 0.5, 0);
+                    float w = t.region().getRegionWidth() * t.px(), h = t.region().getRegionHeight() * t.px();
+                    if (cx + w / 2 < b[0] || cx - w / 2 > b[2] || cy + h / 2 < b[1] || cy - h / 2 > b[3]) continue;
+                    batch.setColor(t.shade(), t.shade(), t.shade(), 1f);
+                    batch.draw(t.region(), cx - w / 2, cy - h / 2, w, h);
+                }
+            }
+            i = j;
         }
         batch.setColor(1f, 1f, 1f, 1f);
+    }
+
+    private void drawFlats(float[] b, float animTime) {
+        for (Static s : flats) {
+            Assets.Sprite sp = s.sprite();
+            TextureRegion region = sp.frames()[sp.frameAt(animTime, s.phase())];
+            int px = sp.px();
+            float w = region.getRegionWidth() * px, h = region.getRegionHeight() * px;
+            float left = snap(sx(s.x(), s.y()) - sp.anchorX() * px);
+            float bottom = snap(sy(s.x(), s.y(), 0) - (h - sp.anchorY() * px));
+            if (left + w < b[0] || left > b[2] || bottom + h < b[1] || bottom > b[3]) continue;
+            batch.draw(region, left, bottom, w, h);
+        }
     }
 
     private void drawLight(double x, double y, double z, float radius, float r, float g, float b, float intensity,
@@ -441,15 +529,17 @@ public final class SceneRenderer implements Disposable {
                 String state = propState.apply(s.stateKey());
                 if (state != null) sp = assets.sprite(s.def().spriteFor(state));
             }
-            TextureRegion region = sp.region();
-            float w = sp.region().getRegionWidth() * ART, h = sp.region().getRegionHeight() * ART;
-            float left = snap(sx(s.x(), s.y()) - sp.anchorX() * ART);
-            float bottom = snap(sy(s.x(), s.y(), 0) - (h - sp.anchorY() * ART));
+            int f = sp.frameAt(animTime, s.phase());
+            TextureRegion region = sp.frames()[f];
+            int px = sp.px();
+            float w = region.getRegionWidth() * px, h = region.getRegionHeight() * px;
+            float left = snap(sx(s.x(), s.y()) - sp.anchorX() * px);
+            float bottom = snap(sy(s.x(), s.y(), 0) - (h - sp.anchorY() * px));
             if (left + w < b[0] || left > b[2] || bottom + h < b[1] || bottom > b[3]) continue;
             float alpha = 1f;
             if (playerDrawn && player != null) { // objeto na frente do jogador e cobrindo-o (RF-023)
-                float px = sx(player.x, player.y), py = sy(player.x, player.y, 0.9);
-                if (px > left + w * 0.12f && px < left + w * 0.88f && py > bottom + 8 && py < bottom + h * 0.92f) {
+                float ppx = sx(player.x, player.y), ppy = sy(player.x, player.y, 0.9);
+                if (ppx > left + w * 0.12f && ppx < left + w * 0.88f && ppy > bottom + 8 && ppy < bottom + h * 0.92f) {
                     alpha = OCCLUDED_ALPHA;
                 }
             }
@@ -459,9 +549,9 @@ public final class SceneRenderer implements Disposable {
             } else if (glow) {
                 batch.setColor(0f, 0f, 0f, alpha);
                 batch.draw(region, left, bottom, w, h);
-                if (sp.emissive() != null) {
+                if (sp.glow() != null) {
                     batch.setColor(1f, 1f, 1f, alpha);
-                    batch.draw(sp.emissive(), left, bottom, w, h);
+                    batch.draw(sp.glow()[f], left, bottom, w, h);
                 }
             } else {
                 batch.setColor(s.shade(), s.shade(), s.shade(), alpha);
@@ -475,14 +565,28 @@ public final class SceneRenderer implements Disposable {
         Assets.Sheet sheet = assets.sheet(a.sprite);
         int dirs = sheet.directions();
         int dir = Math.floorMod((int) Math.round(a.facing / (Math.PI * 2 / dirs)), dirs);
-        boolean striking = a.attack >= 0 && sheet.animations().containsKey("attack");
-        var anim = sheet.anim(striking ? "attack" : a.moving ? "walk" : "idle");
-        int frame = striking
-                ? anim.start() + Math.min(anim.frames() - 1, (int) (a.attack * anim.frames()))
-                : anim.start() + (int) (animTime * anim.fps()) % Math.max(1, anim.frames());
-        float x = snap(sx(a.x, a.y) - sheet.anchorX() * ART);
-        float y = snap(sy(a.x, a.y, 0) - (sheet.frameH() - sheet.anchorY()) * ART);
-        batch.draw(sheet.texture(), x, y, sheet.frameW() * ART, sheet.frameH() * ART,
+        int frame;
+        if (sheet.has("parado")) { // folha da Fase V: nomes em português, passo pela distância
+            String name = a.attack >= 0 && sheet.has("golpe") ? "golpe"
+                    : !a.moving ? "parado"
+                    : a.speed > RUN_SPEED && sheet.has("correr") ? "correr" : "andar";
+            var anim = sheet.anim(name);
+            int n = Math.max(1, anim.frames());
+            if (name.equals("golpe")) frame = anim.start() + Math.min(n - 1, (int) (a.attack * n));
+            else if (anim.stride() != null && anim.stride() > 0)
+                frame = anim.start() + Math.floorMod((int) Math.floor(a.travel / anim.stride() * n), n);
+            else frame = anim.start() + Math.floorMod((int) (animTime * anim.fps()), n);
+        } else {
+            boolean striking = a.attack >= 0 && sheet.animations().containsKey("attack");
+            var anim = sheet.anim(striking ? "attack" : a.moving ? "walk" : "idle");
+            frame = striking
+                    ? anim.start() + Math.min(anim.frames() - 1, (int) (a.attack * anim.frames()))
+                    : anim.start() + (int) (animTime * anim.fps()) % Math.max(1, anim.frames());
+        }
+        int px = sheet.px();
+        float x = snap(sx(a.x, a.y) - sheet.anchorX() * px);
+        float y = snap(sy(a.x, a.y, 0) - (sheet.frameH() - sheet.anchorY()) * px);
+        batch.draw(sheet.texture(), x, y, sheet.frameW() * px, sheet.frameH() * px,
                 frame * sheet.frameW(), dir * sheet.frameH(), sheet.frameW(), sheet.frameH(), false, false);
     }
 
@@ -492,6 +596,7 @@ public final class SceneRenderer implements Disposable {
         lightTexture.dispose();
         shadowTexture.dispose();
         if (postShader != null) postShader.dispose();
+        if (ground != null) ground.dispose();
         if (silhouetteShader != null) silhouetteShader.dispose();
         if (maskFbo != null) maskFbo.dispose();
         if (playerMask != null) playerMask.dispose();

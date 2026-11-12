@@ -1,0 +1,181 @@
+# GERADO por `gradlew renderArt` / `gradlew pixelize` — não edite à mão.
+# Arte da Fase V: Blender (tools/blender) + pixelizador, densidade dobrada (D-086):
+# 1 px de arte = 2×2 px de mundo (scale: 2). Tem prioridade sobre provisorio.yaml.
+
+- id: "deco.flor"
+  type: "sprite"
+  file: "arte/decoracao/flor_violeta.png"
+  variants:
+  - "arte/decoracao/flor_violeta.png"
+  - "arte/decoracao/flor_amarela.png"
+  - "arte/decoracao/flor_branca.png"
+  anchor:
+  - 6.0
+  - 17.0
+  meta: "arte/decoracao/flor_violeta.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.pedrinhas"
+  type: "sprite"
+  file: "arte/decoracao/pedrinhas_1.png"
+  variants:
+  - "arte/decoracao/pedrinhas_1.png"
+  - "arte/decoracao/pedrinhas_2.png"
+  anchor:
+  - 6.0
+  - 17.0
+  meta: "arte/decoracao/pedrinhas_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.tufo"
+  type: "sprite"
+  file: "arte/decoracao/tufo_1.png"
+  variants:
+  - "arte/decoracao/tufo_1.png"
+  - "arte/decoracao/tufo_2.png"
+  - "arte/decoracao/tufo_3.png"
+  anchor:
+  - 6.0
+  - 17.0
+  frames: 4
+  fps: 3.0
+  meta: "arte/decoracao/tufo_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.tufo_seco"
+  type: "sprite"
+  file: "arte/decoracao/tufo_seco_1.png"
+  anchor:
+  - 6.0
+  - 17.0
+  frames: 4
+  fps: 3.0
+  meta: "arte/decoracao/tufo_seco_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz.png"
+  meta: "arte/personagens/aprendiz.json"
+  frame:
+  - 52
+  - 62
+  anchor:
+  - 26.0
+  - 57.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.3
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.0
+      stride: 2.4
+  role: "jogador"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.avel"
+  type: "spritesheet"
+  file: "arte/personagens/avel.png"
+  meta: "arte/personagens/avel.json"
+  frame:
+  - 50
+  - 64
+  anchor:
+  - 25.0
+  - 59.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 1.2
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.0
+      stride: 2.2
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/avel.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.arvore"
+  type: "sprite"
+  file: "arte/natureza/carvalho_m.png"
+  variants:
+  - "arte/natureza/carvalho_m.png"
+  - "arte/natureza/carvalho_g.png"
+  anchor:
+  - 111.0
+  - 206.0
+  frames: 8
+  fps: 5.0
+  meta: "arte/natureza/carvalho_m.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/carvalho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.arvore_b"
+  type: "sprite"
+  file: "arte/natureza/betula_m.png"
+  variants:
+  - "arte/natureza/betula_m.png"
+  - "arte/natureza/betula_g.png"
+  anchor:
+  - 70.0
+  - 223.0
+  frames: 8
+  fps: 5.0
+  meta: "arte/natureza/betula_m.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/betula.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_oficina"
+  type: "sprite"
+  file: "arte/construcoes/casa_oficina.png"
+  anchor:
+  - 213.0
+  - 215.0
+  emissive: "arte/construcoes/casa_oficina_brilho.png"
+  meta: "arte/construcoes/casa_oficina.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.grama"
+  type: "tile"
+  file: "arte/chao/grama.png"
+  priority: 3
+  scale: 2
+  source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.lajota"
+  type: "tile"
+  file: "arte/chao/lajota.png"
+  priority: 4
+  scale: 2
+  source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.terra"
+  type: "tile"
+  file: "arte/chao/terra.png"
+  priority: 2
+  scale: 2
+  source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
+  license: "proprio"

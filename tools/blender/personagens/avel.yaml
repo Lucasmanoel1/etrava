@@ -1,0 +1,27 @@
+# Avel, o tio: ferramenteiro, quase sessenta, um pouco curvado (retrato: arte-bruta/retratos/avel.png).
+# Gorro de lã cor de ferrugem, óculos redondos na testa, barba grisalha curta, camisa oliva com
+# mangas arregaçadas, avental de couro pesado com alças, calça escura, botas.
+tipo: personagem
+id: avel
+manifesto: {id: personagem.avel, papel: comum}
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+animacoes:
+  - {nome: parado, quadros: 8, fps: 5}
+  - {nome: andar, quadros: 8, fps: 8, passada: 1.2}
+  - {nome: correr, quadros: 8, fps: 12, passada: 2.2}
+corpo: {altura: 1.72, corpo: medio, postura: curvada}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_oliva, barra: 0.16}
+  - {peca: manga_baixo, rampa: la_crua}
+  - {peca: cabelo, rampa: cabelo_grisalho, estilo: sob_gorro}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.18}
+  - {peca: gorro, rampa: ferrugem, tons: [0, 3]}
+  - {peca: barba, rampa: cabelo_grisalho}
+  - {peca: oculos}
+  - {peca: avental, rampa: couro}
+pixelizador:
+  decalques: {oculos: "A39A8A"}

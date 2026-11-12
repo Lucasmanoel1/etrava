@@ -24,7 +24,7 @@ public final class IsoCameraRig implements CameraRig {
     private final float[] bounds = new float[4];
     /** Posição "verdadeira" da câmera; a usada no desenho é esta, arredondada. */
     private float x, y;
-    private int pixelScale = 2;
+    private int pixelScale = 1;
     private boolean scaleChosen;
 
     @Override
@@ -56,7 +56,7 @@ public final class IsoCameraRig implements CameraRig {
         // dimensões pares, para o centro da tela cair entre dois pixels e não no meio de um
         camera.setToOrtho(false, width - width % 2, height - height % 2);
         if (!scaleChosen) { // primeira vez: escolhe o zoom pelo tamanho da janela
-            pixelScale = height >= 1000 ? 3 : 2;
+            pixelScale = height >= 1000 ? 2 : 1; // D-086: escala 1 com arte dobrada = a escala 2 do M8
             scaleChosen = true;
         }
         apply();

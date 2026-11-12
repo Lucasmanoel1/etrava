@@ -24,26 +24,45 @@ import org.slf4j.LoggerFactory;
 public final class Assets implements Disposable {
     private static final Logger LOG = LoggerFactory.getLogger(Assets.class);
 
-    /** Sprite com ponto de apoio no chão, em pixels de arte; {@code emissive} (opcional) acende à noite. */
-    public record Sprite(TextureRegion region, float anchorX, float anchorY, TextureRegion emissive) {}
+    /**
+     * Sprite com ponto de apoio no chão, em pixels de arte; {@code glow} (opcional) acende à noite.
+     * {@code px}: pixels de mundo por pixel de arte (4 na arte do M8, 2 na da Fase V, D-086).
+     * Com mais de um quadro, é um laço (vento, fogo) a {@code fps}.
+     */
+    public record Sprite(TextureRegion[] frames, TextureRegion[] glow, float anchorX, float anchorY, int px, float fps) {
+        public TextureRegion region() { return frames[0]; }
 
-    /** Variações de um tipo de terreno. */
-    public record Tiles(TextureRegion[] variants, int priority) {}
+        public TextureRegion emissive() { return glow == null ? null : glow[0]; }
+
+        /** Quadro do laço no instante {@code t} (segundos), com a fase própria do objeto (0 a 1). */
+        public int frameAt(float t, float phase) {
+            if (frames.length <= 1) return 0;
+            return Math.floorMod((int) Math.floor(t * fps + phase * frames.length), frames.length);
+        }
+    }
+
+    /**
+     * Variações de um tipo de terreno. {@code world} (arte da Fase V): uma textura repetível alinhada
+     * ao mundo, desenhada por máscara em vez de losangos (SPEC-visual §7.2).
+     */
+    public record Tiles(TextureRegion[] variants, int priority, int px, Texture world) {}
 
     /** Folha de sprites de personagem: linhas = direções, colunas = quadros. */
     public record Sheet(Texture texture, int frameW, int frameH, float anchorX, float anchorY, int directions,
-            Map<String, AssetManifest.Anim> animations) {
+            Map<String, AssetManifest.Anim> animations, int px) {
 
         public AssetManifest.Anim anim(String name) {
             AssetManifest.Anim a = animations.get(name);
             return a != null ? a : new AssetManifest.Anim(0, 1, 1);
         }
+
+        public boolean has(String name) { return animations.containsKey(name); }
     }
 
     private final Path root;
     private final AssetManifest manifest;
     private final Map<String, Texture> textures = new HashMap<>();
-    private final Map<String, Sprite> sprites = new HashMap<>();
+    private final Map<String, Sprite[]> variants = new HashMap<>();
     private final Map<String, Tiles> tiles = new HashMap<>();
     private final Map<String, Sheet> sheets = new HashMap<>();
     private final Set<String> warned = new HashSet<>();
@@ -58,19 +77,50 @@ public final class Assets implements Disposable {
 
     public AssetManifest manifest() { return manifest; }
 
+    /** Pasta assets/ (configurações de apresentação: decoração, luz). */
+    public Path root() { return root; }
+
     public Sprite sprite(String id) {
-        return sprites.computeIfAbsent(id, key -> {
+        return variants(id)[0];
+    }
+
+    /** Todas as variantes de um sprite (ao menos uma); o cliente escolhe pela posição. */
+    public Sprite[] variants(String id) {
+        return variants.computeIfAbsent(id, key -> {
             AssetManifest.Entry e = manifest.get(key);
-            Texture tex = e == null ? missing(key, "ID fora do manifesto") : load(key, e.file());
-            if (e == null || tex == null) {
-                TextureRegion r = new TextureRegion(checker(), 0, 0, 12, 18);
-                return new Sprite(r, 6, 18, null);
+            if (e == null) {
+                missing(key, "ID fora do manifesto");
+                return new Sprite[] {placeholderSprite()};
             }
-            float ax = e.anchor() != null ? (float) e.anchor()[0] : tex.getWidth() / 2f;
-            float ay = e.anchor() != null ? (float) e.anchor()[1] : tex.getHeight();
-            Texture glow = e.emissive() != null ? load(key, e.emissive()) : null;
-            return new Sprite(new TextureRegion(tex), ax, ay, glow != null ? new TextureRegion(glow) : null);
+            java.util.List<String> files = e.variants() != null && !e.variants().isEmpty() ? e.variants()
+                    : java.util.Collections.singletonList(e.file());
+            java.util.List<Sprite> list = new java.util.ArrayList<>();
+            for (int i = 0; i < files.size(); i++) {
+                String file = files.get(i);
+                Texture tex = load(key, file);
+                if (tex == null) continue;
+                String glowFile = e.emissive() == null ? null : i == 0 ? e.emissive() : file.replace(".png", "_brilho.png");
+                Texture glow = glowFile != null && Files.exists(root.resolve(glowFile)) ? load(key, glowFile) : null;
+                int n = e.frames() != null && e.frames() > 1 ? e.frames() : 1;
+                int fw = tex.getWidth() / n;
+                TextureRegion[] fr = new TextureRegion[n];
+                TextureRegion[] gl = glow != null ? new TextureRegion[n] : null;
+                for (int f = 0; f < n; f++) {
+                    fr[f] = new TextureRegion(tex, f * fw, 0, fw, tex.getHeight());
+                    if (gl != null) gl[f] = new TextureRegion(glow, f * fw, 0, fw, glow.getHeight());
+                }
+                float ax = e.anchor() != null ? (float) e.anchor()[0] : fw / 2f;
+                float ay = e.anchor() != null ? (float) e.anchor()[1] : tex.getHeight();
+                list.add(new Sprite(fr, gl, ax, ay, e.scaleOr(), e.fps() != null ? e.fps().floatValue() : 6f));
+            }
+            if (list.isEmpty()) list.add(placeholderSprite());
+            return list.toArray(new Sprite[0]);
         });
+    }
+
+    private Sprite placeholderSprite() {
+        TextureRegion r = new TextureRegion(checker(), 0, 0, 12, 18);
+        return new Sprite(new TextureRegion[] {r}, null, 6, 18, 4, 1f);
     }
 
     public Tiles tiles(String terrain) {
@@ -90,7 +140,14 @@ public final class Assets implements Disposable {
             }
             if (list.isEmpty()) list.add(new TextureRegion(placeholderTile(key)));
             int priority = e != null && e.priority() != null ? e.priority() : 0;
-            return new Tiles(list.toArray(new TextureRegion[0]), priority);
+            int px = e != null ? e.scaleOr() : 4;
+            Texture world = null;
+            if (e != null && px == 2 && e.files() == null && list.get(0).getTexture() != null) {
+                // textura de mundo (Fase V): repete alinhada ao mundo, sem losango
+                world = list.get(0).getTexture();
+                world.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+            }
+            return new Tiles(list.toArray(new TextureRegion[0]), priority, px, world);
         });
     }
 
@@ -100,13 +157,13 @@ public final class Assets implements Disposable {
             Texture tex = e == null ? missing(key, "ID fora do manifesto") : load(key, e.file());
             if (e == null || tex == null || e.frame() == null) {
                 Texture t = placeholderCharacter();
-                return new Sheet(t, t.getWidth(), t.getHeight(), t.getWidth() / 2f, t.getHeight() - 1, 1, Map.of());
+                return new Sheet(t, t.getWidth(), t.getHeight(), t.getWidth() / 2f, t.getHeight() - 1, 1, Map.of(), 4);
             }
             float ax = e.anchor() != null ? (float) e.anchor()[0] : e.frame()[0] / 2f;
             float ay = e.anchor() != null ? (float) e.anchor()[1] : e.frame()[1];
             return new Sheet(tex, e.frame()[0], e.frame()[1], ax, ay,
                     e.directions() != null ? e.directions() : 1,
-                    e.animations() != null ? e.animations() : Map.of());
+                    e.animations() != null ? e.animations() : Map.of(), e.scaleOr());
         });
     }
 

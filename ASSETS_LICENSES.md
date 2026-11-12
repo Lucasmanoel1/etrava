@@ -4,11 +4,11 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 
 | ID | Tipo | Arquivo(s) | Origem | Licença | Situação |
 |---|---|---|---|---|---|
-| `tile.grama` | tile | tiles/grama_1.png<br>tiles/grama_2.png<br>tiles/grama_3.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
-| `tile.terra` | tile | tiles/terra_1.png<br>tiles/terra_2.png<br>tiles/terra_3.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `tile.grama` | tile | arte/chao/grama.png | Blender (tools/blender/chao/terrenos.yaml) + pixelizador | proprio | ok |
+| `tile.terra` | tile | arte/chao/terra.png | Blender (tools/blender/chao/terrenos.yaml) + pixelizador | proprio | ok |
 | `tile.pedra` | tile | tiles/pedra_1.png<br>tiles/pedra_2.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
-| `prop.arvore` | sprite | props/arvore.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
-| `prop.arvore_b` | sprite | props/arvore_b.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.arvore` | sprite | arte/natureza/carvalho_m.png<br>arte/natureza/carvalho_g.png<br>arte/natureza/carvalho_m.json | Blender (tools/blender/natureza/carvalho.yaml) + pixelizador | proprio | ok |
+| `prop.arvore_b` | sprite | arte/natureza/betula_m.png<br>arte/natureza/betula_g.png<br>arte/natureza/betula_m.json | Blender (tools/blender/natureza/betula.yaml) + pixelizador | proprio | ok |
 | `prop.arvore_morta` | sprite | props/arvore_morta.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.toco` | sprite | props/toco.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.barril` | sprite | props/barril.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
@@ -16,11 +16,11 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `prop.poco` | sprite | props/poco.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.lampiao` | sprite | props/lampiao.png<br>props/lampiao_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.feno` | sprite | props/feno.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
-| `prop.casa_oficina` | sprite | props/casa_oficina.png<br>props/casa_oficina_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `prop.casa_oficina` | sprite | arte/construcoes/casa_oficina.png<br>arte/construcoes/casa_oficina_brilho.png<br>arte/construcoes/casa_oficina.json | Blender (tools/blender/construcoes/casa_oficina.yaml) + pixelizador | proprio | ok |
 | `prop.casa_taverna` | sprite | props/casa_taverna.png<br>props/casa_taverna_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.casa_pequena` | sprite | props/casa_pequena.png<br>props/casa_pequena_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.casa_moinho` | sprite | props/casa_moinho.png<br>props/casa_moinho_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
-| `personagem.aprendiz` | spritesheet | personagens/aprendiz.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.aprendiz` | spritesheet | arte/personagens/aprendiz.png<br>arte/personagens/aprendiz.json | Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador | proprio | ok |
 | `personagem.aldea` | spritesheet | personagens/aldea.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.ferreiro` | spritesheet | personagens/ferreiro.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.taberneira` | spritesheet | personagens/taberneira.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
@@ -39,7 +39,7 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `prop.luz_buraco` | sprite | props/luz_buraco.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.buraco_terra` | sprite | props/buraco_terra.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `tile.tabuas` | tile | tiles/tabuas_1.png<br>tiles/tabuas_2.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
-| `tile.lajota` | tile | tiles/lajota_1.png<br>tiles/lajota_2.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `tile.lajota` | tile | arte/chao/lajota.png | Blender (tools/blender/chao/terrenos.yaml) + pixelizador | proprio | ok |
 | `tile.plantio` | tile | tiles/plantio_1.png<br>tiles/plantio_2.png<br>tiles/plantio_3.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.parede_x_lisa` | sprite | props/interior/parede_x_lisa.png<br>props/interior/parede_x_lisa_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.parede_y_lisa` | sprite | props/interior/parede_y_lisa.png<br>props/interior/parede_y_lisa_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
@@ -84,7 +84,7 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `prop.casa_estreita` | sprite | props/casa_estreita.png<br>props/casa_estreita_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.celeiro` | sprite | props/celeiro.png<br>props/celeiro_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `prop.casa_posto` | sprite | props/casa_posto.png<br>props/casa_posto_brilho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
-| `personagem.avel` | spritesheet | personagens/avel.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `personagem.avel` | spritesheet | arte/personagens/avel.png<br>arte/personagens/avel.json | Blender (tools/blender/personagens/avel.yaml) + pixelizador | proprio | ok |
 | `personagem.estranho` | spritesheet | personagens/estranho.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.registrador` | spritesheet | personagens/registrador.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `personagem.agrimensora` | spritesheet | personagens/agrimensora.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
@@ -141,6 +141,10 @@ Gerado por `gradlew licenses` a partir de `assets/manifest/*.yaml`. Não edite �
 | `icone.lista_oren` | icon | icones/lista_oren.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `icone.canto_carta` | icon | icones/canto_carta.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
 | `icone.livro_enterros` | icon | icones/livro_enterros.png | Gerado por código (tools: GenerateArt) — arte provisória | proprio | ok |
+| `deco.flor` | sprite | arte/decoracao/flor_violeta.png<br>arte/decoracao/flor_amarela.png<br>arte/decoracao/flor_branca.png<br>arte/decoracao/flor_violeta.json | Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador | proprio | ok |
+| `deco.pedrinhas` | sprite | arte/decoracao/pedrinhas_1.png<br>arte/decoracao/pedrinhas_2.png<br>arte/decoracao/pedrinhas_1.json | Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador | proprio | ok |
+| `deco.tufo` | sprite | arte/decoracao/tufo_1.png<br>arte/decoracao/tufo_2.png<br>arte/decoracao/tufo_3.png<br>arte/decoracao/tufo_1.json | Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador | proprio | ok |
+| `deco.tufo_seco` | sprite | arte/decoracao/tufo_seco_1.png<br>arte/decoracao/tufo_seco_1.json | Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador | proprio | ok |
 | `musica.vila` | music | audio/musica/vila.ogg | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
 | `musica.noite` | music | audio/musica/noite.ogg | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |
 | `musica.casa` | music | audio/musica/casa.ogg | Gerado por código (tools: GenerateAudio) — áudio provisório | proprio | ok |

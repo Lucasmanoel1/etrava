@@ -4,15 +4,15 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V0 — Correções e ferramentas: CONCLUÍDO.** Próximo: V1 (pipeline Blender e portão visual).
-- **Status:** **PARADO no fim do V0** (parada obrigatória de marco). Esperando o diretor ver o resultado e mandar continuar.
+- **Marco atual:** **V1 — Pipeline e portão visual: trabalho feito, esperando o portão (VT-13).**
+- **Status:** **PARADO no portão visual do V1** (parada obrigatória). Nada de V2 nem de produção em massa sem a aprovação do diretor.
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
 | Marco | Nome | Situação |
 |---|---|---|
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
-| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | próximo |
+| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **feito; esperando aprovação** |
 | V2 | Gente (25 humanos, animações de vida comum) | — |
 | V3 | Criaturas e combate | — |
 | V4 | Natureza e terreno | — |
@@ -21,37 +21,53 @@
 | V7 | Interfaces | — |
 | V8 | Acabamento e entrega — **portão final** | — |
 
-## Feito no V0
-- **Zoom que travava (D-088).** Causa confirmada: o `ScrollPane` do libGDX consome toda roda que recebe, mesmo invisível; mochila, caderno e epílogo davam o foco de rolagem à sua lista e, ao fechar, só se escondiam. Agora a roda vai para a lista **sob o cursor** (`UiStage`, em todas as telas); sem lista sob o cursor, vai para a câmera. Touchpad acumula até um passo. Provas: `UiStageTest` reproduz o defeito com o `Stage` comum; `gradlew vt01` (jogador automático em modo `--paineis`, abre/rola/fecha todos os painéis pelo processador de entrada real): 406 verificações, 0 falhas — com o código antigo falha no primeiro minuto.
-- **Modo de depuração (D-089).** FPS, posição, semente, velocidade e zoom só com F3, e só no modo de depuração (`gradlew run`, `--debug` ou `ETRAVA_DEBUG=1`). Console F1 só nele. No release, F1/F3 mudos.
-- **Rolagem em todas as listas.** Barra visível em comércio, contêiner, mochila, caderno, ficha, epílogo e saves; opções da conversa numa lista com altura máxima (antes a caixa crescia para fora da tela); setas, PgUp/PgDn, Home, End. `GameUiScrollTest` monta as telas reais (conteúdo, assets e fonte do jogo, sem janela).
-- **Personagens visíveis (D-090).** Luz de presença (o personagem nunca recebe menos que o céu da hora reforçado, azulado à noite, respeitando o que está na frente dele) e o jogador de camisa de linho clara (o item inicial dele). `gradlew vt03`: 112 de 112 medidas (vila, Posto, oficina, taverna × 8 horas × 4 zooms); na mesma grade, antes: 50 falhas. O critério do VT-03 foi revisto (a média de luminância enganava).
-- **Ferramentas:** `gradlew captures -Proteiro=NOME` (roteiros em `tools/capturas/`: cenas, grades área × hora × zoom, resolução, tamanho de texto; PNGs, `relatorio.csv`, `contato.png`); testes do cliente sem janela (`Headless`).
-- **Capturas:** `docs/capturas/v0/` — 16 cenas de referência (linha de base para o V1) e `visibilidade_antes_depois_1/2.png`.
-- **Testes:** `gradlew build` com **145 testes** (129 do MVP + 16 do cliente), validador sem erros; `at16`, `vt01`, `vt03` passam.
+## Feito no V1
+- **Pipeline de ponta a ponta** (`tools/blender/`, `tools/.../art/pixel/`): YAML do objeto → Blender 5.3 em segundo plano (6 processos, cache por hash) → passes PNG 16 bits → pixelizador → folha PNG + JSON em `assets/arte/` → `assets/manifest/arte.yaml` (gerado). Tarefas: `renderArt`, `pixelize`, `sheets`, `importTextures`, `blenderTeste`. Teste do cubo: 1 m cai exatamente num losango, 64×60 px.
+- **Pixelizador:** voto por material, valor por luz × oclusão + textura, rampas da paleta em faixas, linhas internas por salto de profundidade, limpeza, contorno seletivo, decalques (olhos, óculos), brilho noturno, montagem com recorte comum. 7 testes unitários com passes sintéticos (mesmo passe = mesmos bytes, nada fora da paleta, contorno fechado, voto sem mistura, sombra, brilho).
+- **Paleta v3** (`tools/art/paleta.yaml`): as 53 cores do M8 + rampas novas (~70 cores, 47 rampas). Validador: **VT-04** (cada pixel da arte nova na paleta, com arquivo e posição) e parte do **VT-05** (8 direções, animações do papel, âncora).
+- **Densidade dobrada (D-086):** `ART_SCALE = 2`; escala por entrada do manifesto (arte do M8 ampliada 2×, sem quebrar nada); câmera começa na escala 1 (720p) ou 2 (1080p).
+- **A fatia:**
+  - **aprendiz** e **Avel**: kit humano próprio (D-091), `parado`, `andar`, `correr` em 8 direções, 8 quadros cada; pé de apoio plantado por IK; o cliente avança o andar pela distância (D-095). Avel com gorro de lã, óculos na testa, barba grisalha, avental de couro e mangas de baixo; o aprendiz com camisa de linho, cinto, bolsa a tiracolo.
+  - **carvalho** e **bétula**, duas alturas cada, laço de vento de 8 quadros com fase por posição, sombra projetada (substituem `prop.arvore` e `prop.arvore_b` no mapa inteiro, inclusive na mata além da borda).
+  - **casa da oficina**: pegada 7×5 do mapa, base de pedra, enxaimel com reboco, colmo com fiadas, beiral, cumeeira amarrada, chaminé, porta, três janelas que acendem à noite.
+  - **chão** (grama, terra, lajota) em textura de mundo com transição por máscara irregular (D-094) e **decoração** (tufos com vento, flores, pedrinhas) por `assets/config/decoracao.yaml`.
+- **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
+- **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
+- **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
 
-## Como ver o V0 (IntelliJ: Gradle → ETRAVA → Tasks)
+## Portão visual (VT-13) — o que olhar
+- `docs/capturas/v1/`: `antes_depois_*.png` (V0 × V1 na mesma cena), `vila_dia/entardecer/noite`, `oficina_*` (zoom 1 e 2, dia, entardecer, noite), `praca_perto` (zoom 3), `contato.png`.
+- Folhas e GIFs: `docs/capturas/v1/folhas/` (`aprendiz_*.gif`, `avel_*.gif`, folhas de contato).
+- **Perguntas ao diretor:**
+  1. A densidade dobrada (gente com ~48 px) é o nível de detalhe certo?
+  2. O jeito de sombrear e contornar (rampas, contorno seletivo) é o ETRAVA?
+  3. Zoom inteiro ou com passos intermediários (D-097)?
+  4. As duas árvores e o telhado resolvem o que incomodava?
+- Decisões que pedem aprovação: **D-086** (densidade), **D-091** (corpo: kit próprio; o spike do MPFB2 ficou pendente — ver abaixo), **D-094** (chão por máscara), **D-093** (sombra projetada à direita, dentro do sprite).
+
+## Como ver o V1 (IntelliJ: Gradle → ETRAVA → Tasks)
 | Comando | Faz |
 |---|---|
-| `gradlew run` | jogo no modo de depuração, mas **sem** o painel técnico: F3 mostra, F1 abre o console |
-| `gradlew vt01` | 150 s de painéis abrindo e fechando; confere o zoom depois de cada um |
-| `gradlew vt03` | 112 medidas de visibilidade; relatório em `game-client/build/capturas/visibilidade/relatorio.csv` |
-| `gradlew captures -Proteiro=v0` | refaz as capturas de referência (em `game-client/build/capturas/v0`) |
-
-Roteiro à mão: `docs/TESTES_MANUAIS.md`, seção "Fase V — V0". No console, `presenca off` mostra como era a luz.
-
-## Decisões que pedem aprovação (V0)
-- **D-090:** o jogador agora veste linho claro, e os personagens recebem a luz de presença. Olhe `docs/capturas/v0/visibilidade_antes_depois_*.png` e a vila à noite: se a camisa ficou "acesa" demais, o reforço noturno é um número em `assets/config/daynight.yaml` (`actor`).
-- Ainda abertas do planejamento: D-086 (densidade dobrada — confirma-se no portão V1).
+| `gradlew run` | o jogo; a fatia está no canto da oficina (F1 → `tp 25 29`, `hora 21` para a noite) |
+| `gradlew captures -Proteiro=v1` | refaz as capturas do portão (em `game-client/build/capturas/v1`) |
+| `gradlew sheets` | folhas de contato e GIFs em `build/revisao` |
+| `gradlew renderArt` | refaz a arte que mudou (precisa do Blender 5.3; `-Pso=avel` limita, `-Pforce` refaz tudo) |
+| `gradlew blenderTeste` | o teste do cubo |
 
 ## Problemas conhecidos (Fase V)
-- A interface não acompanha a resolução: em 1920×1080 os painéis ficam pequenos no meio da tela (VT-09, V7).
-- As barras de rolagem são retângulos lisos (o tema novo vem no V7).
+- **Spike do MPFB2 não feito:** a instalação da extensão foi bloqueada pela permissão do ambiente desta sessão (D-091). Para fazer: liberar a instalação (pasta isolada `build/blender-ext`) e mandar continuar.
+- Na praça, os dois carvalhos novos (copa mais cheia que a antiga) escondem o poço no zoom 1. Opções: copa menor nessas duas posições, ou o poço também ficar translúcido como o jogador. Decido com o portão.
+- Arte nova e antiga lado a lado: a nova tem mais detalhe e sombra projetada; as casas antigas continuam com o telhado de face única até o V5.
+- Avel só aparece de dia dentro da oficina (interior ainda antigo); no portão, vê-se nas folhas e nos GIFs.
+- A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-V1, tarefa 1 de `docs/visual/V1.md`: esqueleto do pipeline Blender (`tools/blender/`), com o teste do cubo de 1 m caindo exatamente num tile. **Só depois de o diretor mandar continuar.**
+Depois da aprovação do portão: V2, tarefa 1 de `docs/visual/V2.md` (kit humano modular e silhuetas por papel). Se o portão reprovar algo, iterar no V1.
 
 ---
+
+## Feito no V0 (resumo)
+Zoom que travava (D-088), modo de depuração (D-089), rolagem em todas as listas, personagens visíveis (D-090), `gradlew captures`. Capturas em `docs/capturas/v0/`.
 
 # Fechamento do M8 (histórico)
 

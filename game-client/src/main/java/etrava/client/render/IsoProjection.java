@@ -10,8 +10,8 @@ public final class IsoProjection {
     public static final float HALF_H = 32f;
     /** Pixels por metro de altura. */
     public static final float Z_PX = 56f;
-    /** Um pixel de arte ocupa 4×4 pixels de mundo (D-033): o tile tem 32×16 px de arte. */
-    public static final int ART_SCALE = 4;
+    /** Um pixel de arte ocupa 2×2 pixels de mundo (D-086; era 4×4, D-033): o tile tem 64×32 px de arte. A arte antiga ainda em uso é desenhada com 4 px de mundo por pixel (cada pixel dela vira 2×2). */
+    public static final int ART_SCALE = 2;
 
     /** Alinha uma coordenada de mundo à grade de pixels de arte, para o pixel art não tremer. */
     public static float snap(float worldPx) {

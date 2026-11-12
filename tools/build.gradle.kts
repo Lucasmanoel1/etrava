@@ -1,6 +1,7 @@
 // Ferramentas de desenvolvimento em linha de comando.
 dependencies {
     implementation(project(":core-sim"))
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.23.0")
     runtimeOnly("org.slf4j:slf4j-simple:2.0.20")
 }
 
@@ -109,6 +110,66 @@ tasks.register<JavaExec>("importPortraits") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("etrava.tools.art.ImportPortraits")
     args(rootProject.file("arte-bruta/retratos").absolutePath, rootProject.file("assets").absolutePath)
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
+// ---- Fase V: pipeline de arte (SPEC-visual §2.3). O Blender fica fora do build do jogo.
+fun artArgs(modo: String): List<String> {
+    val a = mutableListOf(rootDir.absolutePath, modo)
+    (project.findProperty("so") as String?)?.let { a.add("--so=$it") }
+    if (project.hasProperty("force")) a.add("--force")
+    return a
+}
+
+tasks.register<JavaExec>("renderArt") {
+    group = "assets"
+    description = "Renderiza no Blender o que mudou (cache por hash) e pixeliza. -Pso=avel,carvalho limita; -Pforce refaz."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.pixel.RenderArt")
+    args(artArgs("render"))
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx2g")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
+tasks.register<JavaExec>("pixelize") {
+    group = "assets"
+    description = "Só o pixelizador, sobre os passes já renderizados em build/render (itera no visual sem o Blender)."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.pixel.RenderArt")
+    args(artArgs("pixelize"))
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx2g")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
+tasks.register<JavaExec>("sheets") {
+    group = "assets"
+    description = "Folhas de contato e GIFs da arte nova em build/revisao (SPEC-visual §9.2)."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.pixel.Revisao")
+    args(rootDir.absolutePath)
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
+tasks.register<Exec>("blenderTeste") {
+    group = "verification"
+    description = "Teste do pipeline: o cubo de 1 m renderizado cai exatamente no losango de um tile (precisa do Blender)."
+    workingDir = rootDir
+    val exe = System.getenv("BLENDER") ?: "C:/Program Files/Blender Foundation/Blender 5.3/blender.exe"
+    doFirst {
+        file("build/render").mkdirs()
+        file("build/render/_teste_cubo.json").writeText("{\"tipo\":\"cubo\",\"id\":\"cubo\",\"saida\":\"build/render/_teste_cubo\"}")
+    }
+    commandLine(exe, "-b", "--factory-startup", "-noaudio", "-P", "tools/blender/entrada.py", "--", "build/render/_teste_cubo.json")
+}
+
+tasks.register<JavaExec>("importTextures") {
+    group = "assets"
+    description = "Funil de textura: arte-bruta/texturas (Dreamina) → tools/blender/texturas (luminância repetível)."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.pixel.ImportTextures")
+    args(rootProject.file("arte-bruta/texturas").absolutePath, rootProject.file("tools/blender/texturas").absolutePath)
     jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }

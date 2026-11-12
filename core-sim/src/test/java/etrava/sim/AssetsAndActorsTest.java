@@ -38,16 +38,21 @@ class AssetsAndActorsTest {
         assertEquals("sprite", house.type());
         assertEquals(2, house.anchor().length);
         assertNotNull(house.emissive(), "a casa tem camada de brilho para a noite");
-        assertEquals(2, house.allFiles().size());
+        assertTrue(house.allFiles().size() >= 2);
 
+        // arte da Fase V (V1): arte.yaml substitui a provisória com o mesmo ID e densidade dobrada
         AssetManifest.Entry grass = manifest.get("tile.grama");
-        assertEquals(3, grass.files().size());
+        assertNotNull(grass.file() != null ? grass.file() : grass.files());
         assertTrue(grass.priority() > manifest.get("tile.pedra").priority(), "grama avança sobre a pedra");
+        assertEquals(4, manifest.get("tile.pedra").scaleOr(), "arte antiga: 4 px de mundo por pixel");
 
         AssetManifest.Entry hero = manifest.get("personagem.aprendiz");
         assertEquals(8, hero.directions());
-        assertEquals(8, hero.animations().get("walk").frames());
-        assertTrue(hero.animations().get("idle").fps() > 0);
+        assertEquals(2, hero.scaleOr(), "arte nova: 2 px de mundo por pixel (D-086)");
+        assertEquals(8, hero.animations().get("andar").frames());
+        assertTrue(hero.animations().get("andar").stride() > 0, "o andar avança pela distância");
+        assertTrue(hero.animations().get("parado").fps() > 0);
+        assertNotNull(manifest.get("prop.arvore").variants(), "o carvalho tem variantes de tamanho");
         assertFalse(manifest.has("nao.existe"));
         assertNull(manifest.get("nao.existe"));
     }

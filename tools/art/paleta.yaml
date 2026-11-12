@@ -1,0 +1,73 @@
+# Paleta v3 do ETRAVA (SPEC-visual §5.3, STYLE.md v3).
+#
+# Toda a arte (sprites, tiles, objetos, ícones) usa só estas cores (VT-04). A paleta do M8
+# (53 cores) está inteira aqui; a v3 acrescenta rampas: pele mais longa, cabelos, verdes da
+# bétula, flores dessaturadas, latão e água turva. Nenhuma cor nova é mais saturada que a
+# ferrugem mais viva (C47A48).
+#
+# Rampa = tons do mais escuro ao mais claro. O pixelizador escolhe o tom pela luz do pixel;
+# o mais escuro é reservado ao contorno e às dobras. Uma cor pode estar em várias rampas.
+# `soltas` são cores da paleta que não estão em rampa nenhuma (sombra, sangue).
+
+rampas:
+  # --- neutros
+  quase_preto:      ["14101A", "1E1A22", "2A2428"]
+  pedra:            ["2A2428", "3A3634", "524C46", "6B645A", "857D70", "A39A8A"]
+  pedra_clara:      ["3A3634", "524C46", "6B645A", "857D70", "A39A8A", "C4BBA8"]
+  ardosia:          ["1E1A22", "2A2428", "3B4048", "565C66", "7A808A"]
+  ferro:            ["14101A", "2A2428", "3B4048", "565C66", "7A808A"]
+  latao:            ["2E2018", "5A4A26", "8A7036", "B89A4E", "D8BC70"]
+  # --- terra, palha, madeira
+  terra:            ["2E2018", "3D2A1C", "5A3F26", "7A5632", "8E6A44"]
+  terra_seca:       ["3D2A1C", "5A3F26", "7A5632", "9C7A45", "B8975A"]
+  colmo:            ["2E2018", "4A3526", "6E5230", "8E6E3E", "AE8E52", "CBAE6C"]
+  palha:            ["5A3F26", "7A5632", "9C7A45", "B8975A", "D4B878", "E8D8A0"]
+  madeira:          ["1E1A22", "2E2018", "4A3526", "624632", "7C5A40"]
+  madeira_clara:    ["2E2018", "4A3526", "624632", "7C5A40", "9C7A45"]
+  madeira_escura:   ["14101A", "1E1A22", "2E2018", "4A3526", "5A4232"]
+  couro:            ["1E1A22", "2E2018", "4A3526", "6A4A30", "8A6440"]
+  # --- reboco e tecidos claros
+  reboco:           ["524C46", "6B645A", "8C7E66", "B9A888", "D8CCB0"]
+  linho:            ["4A4438", "6B645A", "8C7E66", "B9A888", "D8CCB0", "EEE6D2"]
+  la_crua:          ["3A3634", "5E5648", "857D70", "A39A8A", "C4BBA8"]
+  # --- tecidos de cor
+  tecido_marrom:    ["1E1A22", "2E2018", "3D2A1C", "5A3F26", "7A5632"]
+  tecido_oliva:     ["1E1A22", "1E2A1C", "2E3C24", "44502E", "5A6438"]
+  tecido_azul:      ["14101A", "1C2238", "2A3350", "3E4A6E", "5A6890"]
+  tecido_vermelho:  ["1E1A22", "4A1E1A", "6E2C22", "8A3E2A", "A85F38"]
+  tecido_cinza:     ["14101A", "2A2428", "3A3634", "524C46", "6B645A"]
+  ferrugem:         ["4A1E1A", "6E2C22", "8A4E2E", "A85F38", "C47A48"]
+  # --- pele (7 tons; cada rampa usa 5 seguidos)
+  pele_clara:       ["5C3A2C", "7A4E3A", "A06C50", "C08A68", "D8A884", "ECC8A4"]
+  pele_media:       ["4A2E24", "5C3A2C", "7A4E3A", "A06C50", "C08A68", "D8A884"]
+  pele_escura:      ["2E1E1A", "4A2E24", "5C3A2C", "7A4E3A", "A06C50"]
+  # --- cabelos
+  cabelo_preto:     ["14101A", "1E1A22", "2A2428", "3A3634"]
+  cabelo_castanho:  ["1E1A22", "2E2018", "3D2A1C", "5A3F26", "7A5632"]
+  cabelo_ruivo:     ["2E2018", "4A1E1A", "6E2C22", "8A4E2E", "A85F38"]
+  cabelo_grisalho:  ["3A3634", "524C46", "857D70", "A39A8A", "C4BBA8"]
+  cabelo_loiro:     ["3D2A1C", "5A3F26", "7A5632", "9C7A45", "B8975A", "D4B878"]
+  # --- vegetação
+  folha_carvalho:   ["141A16", "1E2A1C", "2E3C24", "44502E", "5A6438", "6B7045"]
+  folha_betula:     ["1E2A1C", "2E3C24", "4A5430", "6A7440", "8A9250", "A6A862"]
+  folha_conifera:   ["10161A", "182420", "22322C", "34463A", "4A5C48"]
+  grama:            ["1E2A1C", "2E3C24", "44502E", "5A6438", "6B7045", "868C52"]
+  grama_seca:       ["44502E", "5A6438", "6B7045", "868C52", "A4A866"]
+  casca_carvalho:   ["14101A", "2E2018", "3A3634", "4A3526", "524C46", "6B645A"]
+  casca_betula:     ["2A2428", "524C46", "857D70", "A39A8A", "C4BBA8", "D8CCB0"]
+  # --- flores (dessaturadas)
+  flor_violeta:     ["3E3048", "5E4A6A", "82709A"]
+  flor_amarela:     ["8A7036", "B89A4E", "D8BC70"]
+  flor_azul:        ["3E4A6E", "5A6890", "7E8EAE"]
+  flor_rosa:        ["7A4E50", "A87478", "C89A9A"]
+  flor_branca:      ["857D70", "C4BBA8", "EEE6D2"]
+  # --- água, vidro, fogo
+  agua:             ["1C2A2E", "2E4448", "4A6466", "6E8684"]
+  vidro:            ["14101A", "1C2238", "2A3350", "3E4A6E"]
+  fogo:             ["C86428", "F09A3C", "FFC864", "FFE9A8"]
+  # --- noite (azuis de tecido e céu)
+  noite:            ["1C2238", "2A3350", "3E4A6E", "5A6890"]
+  # --- olhos e boca (decalques)
+  olho:             ["14101A", "1E1A22"]
+
+soltas: ["9C2A2A", "D4B878", "E8D8A0", "A4A866", "ECC8A4", "EEE6D2", "FFE9A8"]

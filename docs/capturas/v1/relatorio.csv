@@ -1,0 +1,10 @@
+cena;area;relogio;zoom;tamanho;jogador;entorno;destaque;ok
+vila_dia;vila;Dia 1, 10:02;1;1280x720;0.363;0.433;0.89;ok
+vila_entardecer;vila;Dia 1, 18:32;1;1280x720;0.293;0.356;0.86;ok
+vila_noite;vila;Dia 1, 21:02;1;1280x720;0.255;0.325;0.88;ok
+oficina_dia;vila;Dia 1, 10:02;1;1280x720;0.365;0.337;0.85;ok
+oficina_dia_perto;vila;Dia 1, 10:01;2;1280x720;0.363;0.322;0.82;ok
+oficina_entardecer;vila;Dia 1, 18:32;1;1280x720;0.370;0.342;0.83;ok
+oficina_noite;vila;Dia 1, 21:32;1;1280x720;0.377;0.347;0.81;ok
+oficina_noite_perto;vila;Dia 1, 21:31;2;1280x720;0.375;0.331;0.83;ok
+praca_perto;vila;Dia 1, 10:01;3;1280x720;0.363;0.433;0.89;ok

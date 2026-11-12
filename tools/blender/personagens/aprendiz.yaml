@@ -1,0 +1,23 @@
+# O jogador: aprendiz de ferramenteiro, uns 17 anos (retrato: arte-bruta/retratos/aprendiz.png).
+# Camisa de linho clara (o item inicial dele, D-090), calça de lã escura, botas, cinto e bolsa.
+tipo: personagem
+id: aprendiz
+manifesto: {id: personagem.aprendiz, papel: jogador}
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+animacoes:
+  - {nome: parado, quadros: 8, fps: 5}
+  - {nome: andar, quadros: 8, fps: 10, passada: 1.3}
+  - {nome: correr, quadros: 8, fps: 12, passada: 2.4}
+corpo: {altura: 1.68, corpo: magro}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: linho, manga: arregacada, luz_min: 0.55, barra: 0.13}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: madeira_escura, altura: 0.17}
+  - {peca: cabelo, rampa: cabelo_castanho, estilo: baguncado}
+  - {peca: cinto, rampa: madeira_escura}
+  - {peca: bolsa, rampa: couro}
+# o jogador lê mais claro que o chão em toda hora (VT-03, D-090): valores mais altos
+pixelizador: {ambiente: 0.48, difusa: 0.52}

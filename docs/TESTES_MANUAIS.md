@@ -103,3 +103,11 @@ Automáticos: `gradlew vt01` (zoom depois de fechar painéis), `gradlew vt03` (v
    No `Etrava.exe` (release), F1 e F3 não fazem nada; com `Etrava.exe --debug`, fazem.
 6. [ ] Vila às 6h, 19h30 e meia-noite (console: `hora 6`, `hora 19.5`, `hora 0`), zoom 1 e 4: o jogador e os
    NPCs se leem sem esforço; a noite continua com cara de noite. `presenca off` mostra como era.
+
+## Fase V — V1 (portão visual, VT-13)
+1. `gradlew run` → Novo jogo. Saia da oficina: o aprendiz novo (camisa de linho, bolsa a tiracolo). Ande e corra (clique longe): o pé de apoio não escorrega; parado, ele respira (1 px).
+2. F1 → `tp 25 29`: a casa da oficina nova (enxaimel, colmo com fiadas, chaminé). Repare nas árvores: carvalhos e bétulas em dois tamanhos, balançando cada um no seu tempo, com sombra no chão.
+3. Olhe a divisa entre grama, terra e lajota: borda irregular, sem degrau de tile; tufos, flores e pedrinhas espalhados.
+4. `hora 21`: as três janelas da casa nova acendem; o aprendiz continua legível no escuro.
+5. Roda do mouse: zoom 1 a 4. Em 2 e 3, procure pixel sujo, contorno quebrado, cor fora do tom da vila.
+6. Compare com `docs/capturas/v1/antes_depois_*.png` e as folhas/GIFs em `docs/capturas/v1/folhas/`.

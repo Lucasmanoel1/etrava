@@ -135,6 +135,8 @@ public final class EtravaGame extends ApplicationAdapter {
     private float noticeTime;
     private int autosaveCount;
     private final List<ActorDraw> draws = new ArrayList<>();
+    /** Por personagem: última posição desenhada, metros andados e velocidade suavizada. */
+    private final java.util.Map<String, double[]> motion = new java.util.HashMap<>();
     /** Plaquinhas de texto já desenhadas neste quadro: {x, y, largura, altura}. */
     private final List<float[]> labelRects = new ArrayList<>();
 
@@ -773,6 +775,17 @@ public final class EtravaGame extends ApplicationAdapter {
         d.y = py + (a.y() - py) * alpha;
         d.facing = a.facing();
         d.moving = a.moving();
+        // distância andada e velocidade (arte da Fase V: o quadro do andar sai da distância)
+        double[] m = motion.computeIfAbsent(a.id(), id -> new double[] {d.x, d.y, 0, 0});
+        double step = Math.hypot(d.x - m[0], d.y - m[1]);
+        float dt = Math.max(1e-4f, Gdx.graphics.getDeltaTime());
+        if (step > 2.0) step = 0; // teleporte, troca de área
+        m[2] += step;
+        m[3] += (step / dt - m[3]) * Math.min(1.0, dt * 6.0);
+        m[0] = d.x;
+        m[1] = d.y;
+        d.travel = m[2];
+        d.speed = d.moving ? m[3] : 0;
         d.flash = Math.min(1f, flashes.getOrDefault(a.id(), 0f) * 4f);
         // golpe (D-078): o inimigo ergue o braço enquanto anuncia (primeira metade) e desce quando o golpe sai;
         // o do jogador é imediato, então a animação inteira passa depois do golpe

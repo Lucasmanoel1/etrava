@@ -23,8 +23,16 @@ public final class AssetManifest {
     public static final String GENERATED_FILE = "provisorio.yaml";
     private static final ObjectMapper YAML = new ObjectMapper(new YAMLFactory());
 
-    /** Trecho de animação numa folha de sprites: coluna inicial, nº de quadros e velocidade. */
-    public record Anim(int start, int frames, double fps) {}
+    /**
+     * Trecho de animação numa folha de sprites: coluna inicial, nº de quadros e velocidade.
+     * {@code stride} (opcional, arte da Fase V): metros andados num ciclo — o cliente avança o
+     * quadro pela distância percorrida, e o pé de apoio não desliza.
+     */
+    public record Anim(int start, int frames, double fps, Double stride) {
+        public Anim(int start, int frames, double fps) {
+            this(start, frames, fps, null);
+        }
+    }
 
     /**
      * @param type       sprite | spritesheet | tile | portrait | icon | illustration | sound | music | font
@@ -33,16 +41,37 @@ public final class AssetManifest {
      * @param emissive   imagem opcional, do mesmo tamanho, que acende à noite
      * @param frame      largura e altura de um quadro, em folhas de sprites
      * @param priority   em tiles: terrenos de prioridade maior avançam sobre os vizinhos
+     * @param scale      px de mundo por px de arte: 4 na arte do M8 (padrão), 2 na arte da Fase V (D-086)
+     * @param variants   variantes de um sprite (o cliente escolhe pela posição); a primeira é {@code file}
+     * @param meta       JSON gerado pelo pixelizador (quadros, âncora, pontos por quadro)
+     * @param role       papel do personagem (SPEC-visual §6.2): jogador, comum, saqueador…
+     * @param frames     sprite animado em laço (vento, fogo): quadros lado a lado na imagem
+     * @param fps        velocidade desse laço
      */
     public record Entry(String id, String type, String file, List<String> files, double[] anchor, String emissive,
             int[] frame, Integer directions, Map<String, Anim> animations, Integer priority,
-            String source, String license) {
+            String source, String license, Integer scale, List<String> variants, String meta, String role,
+            Integer frames, Double fps) {
+
+        public Entry(String id, String type, String file, List<String> files, double[] anchor, String emissive,
+                int[] frame, Integer directions, Map<String, Anim> animations, Integer priority,
+                String source, String license) {
+            this(id, type, file, files, anchor, emissive, frame, directions, animations, priority, source, license,
+                    null, null, null, null, null, null);
+        }
+
+        /** Px de mundo por px de arte desta entrada. */
+        public int scaleOr() {
+            return scale != null && scale > 0 ? scale : 4;
+        }
 
         public List<String> allFiles() {
             List<String> all = new ArrayList<>();
             if (file != null) all.add(file);
             if (files != null) all.addAll(files);
+            if (variants != null) for (String v : variants) if (!all.contains(v)) all.add(v);
             if (emissive != null) all.add(emissive);
+            if (meta != null) all.add(meta);
             return all;
         }
     }

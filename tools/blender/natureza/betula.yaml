@@ -1,0 +1,11 @@
+# Bétula (V1): tronco branco com marcas pretas, copa leve e pendente. Substitui prop.arvore_b.
+tipo: arvore
+id: betula
+especie: betula
+manifesto: {id: prop.arvore_b}
+quadro: [340, 330]
+ancora: [120, 300]
+vento: {quadros: 8, fps: 5}
+variantes:
+  - {nome: betula_m, altura: 6.0, copa: 2.3, semente: 5}
+  - {nome: betula_g, altura: 7.0, copa: 2.7, semente: 17}
