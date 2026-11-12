@@ -131,6 +131,8 @@ public final class EtravaGame extends ApplicationAdapter {
     private float noticeTime;
     private int autosaveCount;
     private final List<ActorDraw> draws = new ArrayList<>();
+    /** Plaquinhas de texto já desenhadas neste quadro: {x, y, largura, altura}. */
+    private final List<float[]> labelRects = new ArrayList<>();
 
     public EtravaGame(LaunchOptions options) {
         this.options = options;
@@ -832,17 +834,18 @@ public final class EtravaGame extends ApplicationAdapter {
         // barras do jogador, no canto de baixo
         if (showHud && v.dialogue() == null && v.trade() == null) { // a conversa e o comércio ocupam o pé da tela
             float x = 16, y = 18, w = 180, h = 9;
-            bar(x, y + 22, w, h, (float) (v.health() / sim.combat().maxHealth()), 0.62f, 0.16f, 0.12f);
+            float gap = Math.max(22, hudFont.getLineHeight() - 2); // com texto maior, as barras se afastam
+            bar(x, y + gap, w, h, (float) (v.health() / sim.combat().maxHealth()), 0.62f, 0.16f, 0.12f);
             bar(x, y, w, h, (float) (v.stamina() / sim.combat().maxStamina()), 0.72f, 0.62f, 0.30f);
             hudFont.setColor(0.93f, 0.89f, 0.78f, 1f);
             float up = (hudFont.getCapHeight() - h) / 2;
             hudFont.draw(batch, texts.get("hud.vida", Math.round(v.health()), Math.round(sim.combat().maxHealth())),
-                    x + w + 8, y + 22 + h + up);
+                    x + w + 8, y + gap + h + up);
             hudFont.draw(batch, texts.get("hud.folego"), x + w + 8, y + h + up);
             if (!v.enemies().isEmpty()) { // as teclas de luta só aparecem quando há com quem lutar
                 String q = cooldownText(Combat.HEAVY), e = cooldownText(Combat.PUSH);
                 hudFont.setColor(0.75f, 0.72f, 0.64f, 1f);
-                hudFont.draw(batch, texts.get("hud.habilidades", q, e), x, y + 40 + hudFont.getLineHeight());
+                hudFont.draw(batch, texts.get("hud.habilidades", q, e), x, y + gap + 18 + hudFont.getLineHeight());
             }
         }
         // inimigos: vida, e o aviso do golpe
@@ -949,6 +952,7 @@ public final class EtravaGame extends ApplicationAdapter {
     }
 
     private void drawBalloons(WorldView v, float dt) {
+        labelRects.clear();
         batch.begin();
         for (int i = balloons.size() - 1; i >= 0; i--) {
             Object[] b = balloons.get(i);
@@ -1000,6 +1004,15 @@ public final class EtravaGame extends ApplicationAdapter {
                 com.badlogic.gdx.utils.Align.center, true);
         float w = Math.min(280, layout.width) + 14, h = layout.height + 12;
         float x = Math.round(px[0] - w / 2), y = Math.round(px[1]);
+        // duas plaquinhas não ficam uma em cima da outra: a de quem veio depois sobe
+        for (int i = 0; i < labelRects.size(); i++) {
+            float[] r = labelRects.get(i);
+            if (x < r[0] + r[2] && x + w > r[0] && y < r[1] + r[3] && y + h > r[1]) {
+                y = r[1] + r[3] + 3;
+                i = -1;
+            }
+        }
+        labelRects.add(new float[] {x, y, w, h});
         batch.setColor(0.08f, 0.06f, 0.07f, backgroundAlpha);
         batch.draw(whitePx, x, y, w, h);
         batch.setColor(1, 1, 1, 1);

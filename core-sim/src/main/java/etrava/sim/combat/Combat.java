@@ -594,6 +594,7 @@ public final class Combat {
     public EnemyState enemiesTick(List<SimEvent> events) {
         long now = world.clock.tick();
         EnemyState winner = null;
+        boolean spoke = false;
         for (Iterator<EnemyState> it = world.enemies.iterator(); it.hasNext(); ) {
             EnemyState e = it.next();
             EnemyDef d = def(e);
@@ -630,8 +631,9 @@ public final class Combat {
                 case EnemyState.IDLE -> {
                     if (dist(e) <= d.aggroOr() && world.health > 0) {
                         e.state = EnemyState.CHASE;
-                        String line = d.line("ataque");
+                        String line = spoke ? null : d.line("ataque"); // num bando, só o primeiro fala
                         if (line != null) events.add(new SimEvent.EnemyChanged(e.id, "ataca", line));
+                        spoke |= line != null;
                     }
                 }
                 case EnemyState.WINDUP -> {
