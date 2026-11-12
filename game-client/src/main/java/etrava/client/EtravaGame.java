@@ -72,6 +72,8 @@ public final class EtravaGame extends ApplicationAdapter {
     private DayNight dayNight;
     private CameraRig camera;
     private etrava.client.debug.DebugMode debug;
+    /** Roteiro de capturas em andamento ({@code --roteiro}), ou null. */
+    private etrava.client.debug.CaptureScript capture;
     private ShapeRenderer shapes;
     private SpriteBatch batch;
     private etrava.client.ui.Fonts fonts;
@@ -177,6 +179,9 @@ public final class EtravaGame extends ApplicationAdapter {
         applySettings();
         timeScale = options.speed();
         if (options.bot() > 0) bot = new Bot();
+        if (options.script() != null) {
+            capture = etrava.client.debug.CaptureScript.load(options.script(), options.scriptOut(), new CaptureHost());
+        }
 
         // linha de comando de desenvolvimento (área, semente, comandos, captura): direto ao jogo
         boolean direct = !options.menu() && (options.area() != null || options.seed() != null || !options.commands().isEmpty()
@@ -435,6 +440,7 @@ public final class EtravaGame extends ApplicationAdapter {
             saveScreenshot(options.screenshot());
             Gdx.app.exit();
         }
+        if (capture != null) capture.afterFrame();
     }
 
     @Override
@@ -516,6 +522,50 @@ public final class EtravaGame extends ApplicationAdapter {
             saveScreenshot(options.screenshot());
             Gdx.app.exit();
         }
+        if (capture != null) capture.afterFrame();
+    }
+
+    /** O que o roteiro de capturas pode fazer no jogo (V0). */
+    private final class CaptureHost implements etrava.client.debug.CaptureScript.Host {
+        @Override public void newGame(long seed, String area) {
+            startGame(Simulation.newGame(content, seed, area));
+        }
+
+        @Override public String console(String command) {
+            String out = runConsoleCommand(command);
+            if (out != null && !out.isBlank()) LOG.info("roteiro> {} → {}", command, out.replace('\n', ' '));
+            return out;
+        }
+
+        @Override public void windowSize(int w, int h) {
+            if (Gdx.graphics.getWidth() != w || Gdx.graphics.getHeight() != h) Gdx.graphics.setWindowedMode(w, h);
+        }
+
+        @Override public void textScale(float scale) {
+            if (settings.tamanhoTexto != scale) {
+                settings.tamanhoTexto = scale;
+                uiDirty = true;
+            }
+        }
+
+        @Override public void requestPlayerMask() {
+            if (scene != null) scene.capturePlayerMask = true;
+        }
+
+        @Override public Pixmap playerMask() {
+            if (scene == null) return null;
+            Pixmap m = scene.playerMask;
+            scene.playerMask = null;
+            return m;
+        }
+
+        @Override public Pixmap grabScreen() {
+            return Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
+        }
+
+        @Override public int pixelScale() { return camera.pixelScale(); }
+        @Override public String clock() { return sim == null ? "menu" : sim.view().clock().format(); }
+        @Override public void exit() { Gdx.app.exit(); }
     }
 
     /** Monta o cenário da área atual (novo jogo, troca de área, jogo carregado). */
@@ -1484,6 +1534,9 @@ public final class EtravaGame extends ApplicationAdapter {
             case "luz":
                 scene.lightingEnabled = onOff(p);
                 return "luz " + (scene.lightingEnabled ? "ligada" : "desligada");
+            case "presenca":
+                if (scene != null) scene.presenceEnabled = p.length < 2 || !p[1].equals("off");
+                return "luz de presença " + (scene != null && scene.presenceEnabled ? "ligada" : "desligada");
             case "pos-fx":
                 scene.postEnabled = onOff(p);
                 return "pós-processamento " + (scene.postEnabled ? "ligado" : "desligado");

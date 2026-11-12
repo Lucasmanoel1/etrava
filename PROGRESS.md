@@ -4,15 +4,15 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V0 — Correções e ferramentas** (não iniciado).
-- **Status:** **PARADO depois do planejamento** (parada obrigatória depois da especificação, antes de código). Esperando o diretor aprovar o plano ou pedir ajustes.
+- **Marco atual:** **V0 — Correções e ferramentas: CONCLUÍDO.** Próximo: V1 (pipeline Blender e portão visual).
+- **Status:** **PARADO no fim do V0** (parada obrigatória de marco). Esperando o diretor ver o resultado e mandar continuar.
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
 | Marco | Nome | Situação |
 |---|---|---|
-| V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | próximo |
-| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | — |
+| V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
+| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | próximo |
 | V2 | Gente (25 humanos, animações de vida comum) | — |
 | V3 | Criaturas e combate | — |
 | V4 | Natureza e terreno | — |
@@ -21,16 +21,35 @@
 | V7 | Interfaces | — |
 | V8 | Acabamento e entrega — **portão final** | — |
 
-**Feito nesta sessão (planejamento):** `docs/visual/PLANO.md`, `docs/visual/SPEC-visual.md`, `docs/visual/V0.md` … `V8.md`; decisões D-084 a D-087; `CLAUDE.md` com as regras da Fase V; `SPEC.md` §7.3 aponta para o D-085.
+## Feito no V0
+- **Zoom que travava (D-088).** Causa confirmada: o `ScrollPane` do libGDX consome toda roda que recebe, mesmo invisível; mochila, caderno e epílogo davam o foco de rolagem à sua lista e, ao fechar, só se escondiam. Agora a roda vai para a lista **sob o cursor** (`UiStage`, em todas as telas); sem lista sob o cursor, vai para a câmera. Touchpad acumula até um passo. Provas: `UiStageTest` reproduz o defeito com o `Stage` comum; `gradlew vt01` (jogador automático em modo `--paineis`, abre/rola/fecha todos os painéis pelo processador de entrada real): 406 verificações, 0 falhas — com o código antigo falha no primeiro minuto.
+- **Modo de depuração (D-089).** FPS, posição, semente, velocidade e zoom só com F3, e só no modo de depuração (`gradlew run`, `--debug` ou `ETRAVA_DEBUG=1`). Console F1 só nele. No release, F1/F3 mudos.
+- **Rolagem em todas as listas.** Barra visível em comércio, contêiner, mochila, caderno, ficha, epílogo e saves; opções da conversa numa lista com altura máxima (antes a caixa crescia para fora da tela); setas, PgUp/PgDn, Home, End. `GameUiScrollTest` monta as telas reais (conteúdo, assets e fonte do jogo, sem janela).
+- **Personagens visíveis (D-090).** Luz de presença (o personagem nunca recebe menos que o céu da hora reforçado, azulado à noite, respeitando o que está na frente dele) e o jogador de camisa de linho clara (o item inicial dele). `gradlew vt03`: 112 de 112 medidas (vila, Posto, oficina, taverna × 8 horas × 4 zooms); na mesma grade, antes: 50 falhas. O critério do VT-03 foi revisto (a média de luminância enganava).
+- **Ferramentas:** `gradlew captures -Proteiro=NOME` (roteiros em `tools/capturas/`: cenas, grades área × hora × zoom, resolução, tamanho de texto; PNGs, `relatorio.csv`, `contato.png`); testes do cliente sem janela (`Headless`).
+- **Capturas:** `docs/capturas/v0/` — 16 cenas de referência (linha de base para o V1) e `visibilidade_antes_depois_1/2.png`.
+- **Testes:** `gradlew build` com **145 testes** (129 do MVP + 16 do cliente), validador sem erros; `at16`, `vt01`, `vt03` passam.
 
-**Achados do levantamento** (para o V0 confirmar):
-- Zoom: `GameUi` e `MenuUi` escondem painéis com `setVisible(false)` depois de dar `setScrollFocus` a um `ScrollPane`; o foco fica no painel invisível e o `Stage` (antes do `GameInput` no multiplexador) consome a roda. Hipótese principal, ainda não reproduzida.
-- Blender 5.3 instalado em `C:\Program Files\Blender Foundation\Blender 5.3`; o add-on MCP do Blender Lab está escutando na porta 9876, mas esta sessão do Claude Code não tem as ferramentas dele. O pipeline usa `blender.exe -b` e não depende do MCP.
-- A simulação já expõe `ActorView.activity()`: animação pela agenda sai sem mexer no núcleo.
+## Como ver o V0 (IntelliJ: Gradle → ETRAVA → Tasks)
+| Comando | Faz |
+|---|---|
+| `gradlew run` | jogo no modo de depuração, mas **sem** o painel técnico: F3 mostra, F1 abre o console |
+| `gradlew vt01` | 150 s de painéis abrindo e fechando; confere o zoom depois de cada um |
+| `gradlew vt03` | 112 medidas de visibilidade; relatório em `game-client/build/capturas/visibilidade/relatorio.csv` |
+| `gradlew captures -Proteiro=v0` | refaz as capturas de referência (em `game-client/build/capturas/v0`) |
 
-**Próximo passo:** com o plano aprovado, começar o V0 pela tarefa 1 de `docs/visual/V0.md` (reproduzir o zoom travado).
+Roteiro à mão: `docs/TESTES_MANUAIS.md`, seção "Fase V — V0". No console, `presenca off` mostra como era a luz.
 
-**Decisões que pedem aprovação agora:** D-086 (densidade dobrada — a confirmação final é no portão V1) e o plano como um todo (ordem dos marcos, testes VT, orçamentos, ordem de corte).
+## Decisões que pedem aprovação (V0)
+- **D-090:** o jogador agora veste linho claro, e os personagens recebem a luz de presença. Olhe `docs/capturas/v0/visibilidade_antes_depois_*.png` e a vila à noite: se a camisa ficou "acesa" demais, o reforço noturno é um número em `assets/config/daynight.yaml` (`actor`).
+- Ainda abertas do planejamento: D-086 (densidade dobrada — confirma-se no portão V1).
+
+## Problemas conhecidos (Fase V)
+- A interface não acompanha a resolução: em 1920×1080 os painéis ficam pequenos no meio da tela (VT-09, V7).
+- As barras de rolagem são retângulos lisos (o tema novo vem no V7).
+
+## Próximo passo
+V1, tarefa 1 de `docs/visual/V1.md`: esqueleto do pipeline Blender (`tools/blender/`), com o teste do cubo de 1 m caindo exatamente num tile. **Só depois de o diretor mandar continuar.**
 
 ---
 

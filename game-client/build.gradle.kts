@@ -144,6 +144,43 @@ tasks.register<JavaExec>("vt01") {
     }
 }
 
+// ---- Capturas (Fase V, SPEC-visual §9.1) ----
+// gradlew captures -Proteiro=v0 [-Psaida=docs/capturas/v0]: roda tools/capturas/<roteiro>.yaml com a
+// janela oculta e grava as PNGs, relatorio.csv e contato.png (padrão: build/capturas/<roteiro>).
+fun captureTask(name: String, script: String, outDir: File, check: Boolean) = tasks.register<JavaExec>(name) {
+    group = "verification"
+    val user = layout.buildDirectory.dir("capturas-user/$name").get().asFile
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set(mainClassName)
+    workingDir = rootDir
+    jvmArgs("-Detrava.home=${rootDir.absolutePath}", "-Detrava.userdir=${user.absolutePath}",
+        "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
+    args("--hidden", "--roteiro=" + rootProject.file("tools/capturas/$script.yaml").absolutePath,
+        "--saida=" + outDir.absolutePath)
+    doFirst {
+        user.deleteRecursively()
+        File(user, "opcoes.json").apply { parentFile.mkdirs(); writeText("{\"volumeGeral\":0.0}") }
+    }
+    doLast {
+        val log = File(user, "logs/etrava.log").readText()
+        val m = Regex("""CAPTURAS terminou: (\d+) cenas, (\d+) salvas, visibilidade: (\d+) medidas, (\d+) falhas""").find(log)
+            ?: throw GradleException("o roteiro não chegou ao fim — ver $user/logs/etrava.log")
+        val (scenes, saved, measured, fails) = m.destructured
+        println("Capturas: $scenes cenas, $saved salvas em $outDir; visibilidade: $measured medidas, $fails falha(s)")
+        if (check) {
+            check(measured.toInt() > 0) { "nenhuma medida de visibilidade" }
+            check(fails.toInt() == 0) { "VT-03: $fails medida(s) abaixo do mínimo — ver $outDir/relatorio.csv" }
+        }
+    }
+}
+
+val roteiro = (findProperty("roteiro") as String?) ?: "v0"
+captureTask("captures", roteiro,
+    (findProperty("saida") as String?)?.let { rootProject.file(it) } ?: layout.buildDirectory.dir("capturas/$roteiro").get().asFile,
+    false).configure { description = "Roda um roteiro de capturas (tools/capturas/<roteiro>.yaml)." }
+captureTask("vt03", "visibilidade", layout.buildDirectory.dir("capturas/visibilidade").get().asFile, true)
+    .configure { description = "VT-03: o jogador se destaca do chão em todas as horas, zooms e áreas abertas." }
+
 // Testes do cliente sem janela: backend headless do libGDX (V0).
 dependencies {
     testImplementation("com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion")

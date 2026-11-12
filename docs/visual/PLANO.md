@@ -72,7 +72,7 @@ Cada marco termina **executável**, com `gradlew build` passando, capturas novas
 |---|---|---|
 | VT-01 | A | **Zoom nunca trava.** Jogador automático abre e fecha cada painel (diálogo, comércio, mochila, ficha, caderno, mapa, contêiner, console, pausa) 200 vezes em ordem aleatória, com rolagem dentro e fora deles; depois de cada fechamento a roda muda o zoom. Zero falhas |
 | VT-02 | A | Sem `--debug`, nenhum texto de FPS, posição, semente, velocidade ou console aparece e F1 não abre nada. Com `--debug`, tudo volta (F3 liga e desliga o painel) |
-| VT-03 | A | **Visibilidade:** em cada área aberta, em 8 horas do dia e em todos os níveis de zoom, a luminância média do jogador fica ≥ 1,6× a do chão ao redor *ou* a diferença absoluta ≥ 0,12 (escala 0–1). Na escuridão total vale só dentro do raio de luz |
+| VT-03 | A | **Visibilidade** (`gradlew vt03`): na vila (praça e grama), no Posto, na oficina e na taverna, em 8 horas do dia e nos 4 zooms, pelo menos 60 % dos pixels do jogador diferem da luminância média do chão em volta por 0,12 ou mais (escala 0–1). Fora: a área escura, onde enxergar depende da lamparina. *(Critério revisto no V0, D-090: a média de luminância enganava — claro e escuro se anulam.)* |
 | VT-04 | A | Todo pixel de sprite, tile, prop e ícone está na paleta v3 (o validador aponta arquivo e posição) |
 | VT-05 | A | Cada folha de personagem tem todas as animações e as 8 direções exigidas pelo seu papel (`SPEC-visual.md` §6.2); quadros dentro do tamanho; âncora dentro do quadro |
 | VT-06 | A | Nenhum asset em uso vem do gerador antigo (`source` com "código" ou "provisório"); o validador lista os que restarem |

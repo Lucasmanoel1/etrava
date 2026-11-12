@@ -1,0 +1,31 @@
+# VT-03 — visibilidade do jogador (docs/visual/PLANO.md §5).
+# gradlew vt03: roda esta grade com a janela oculta e falha se alguma medida não passar.
+# Cada linha da grade: um jogo novo por hora; os quatro zooms em seguida, no mesmo jogo.
+# Regra: luminância do jogador ≥ 1,6× a do chão em volta, ou diferença ≥ 0,12.
+# Área escura (estrutura) fica de fora: lá enxergar depende da lamparina (RF-008).
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 40}
+
+grades:
+  - prefixo: vila_praca
+    area: vila
+    cmds: ["tp 30 33"]
+    horas: [0, 5.5, 6.5, 9, 12, 18.5, 19.5, 21]
+    zooms: [1, 2, 3, 4]
+  - prefixo: vila_grama
+    area: vila
+    cmds: ["tp 24 42"]
+    horas: [0, 5.5, 6.5, 9, 12, 18.5, 19.5, 21]
+    zooms: [1, 2, 3, 4]
+  - prefixo: estrada_posto
+    area: estrada
+    cmds: ["tp 57 24"]
+    horas: [0, 5.5, 6.5, 9, 12, 18.5, 19.5, 21]
+    zooms: [1, 2, 3, 4]
+  - prefixo: oficina
+    area: oficina
+    horas: [12, 21]
+    zooms: [1, 2, 3, 4]
+  - prefixo: taverna
+    area: taverna
+    horas: [12, 21]
+    zooms: [1, 2, 3, 4]

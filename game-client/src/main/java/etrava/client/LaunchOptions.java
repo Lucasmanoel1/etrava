@@ -15,12 +15,13 @@ import java.util.List;
  * {@code --vel=FATOR} (velocidade do tempo de jogo desde o início),
  * {@code --hidden} (janela invisível: para testes automáticos longos sem ocupar a tela),
  * {@code --paineis} (com {@code --bot}: abre, rola e fecha painéis sem parar e confere o zoom depois de cada um; VT-01),
- * {@code --debug} (modo de depuração mesmo no pacote de release; o mesmo que {@code ETRAVA_DEBUG=1}).
+ * {@code --debug} (modo de depuração mesmo no pacote de release; o mesmo que {@code ETRAVA_DEBUG=1}),
+ * {@code --roteiro=arquivo.yaml} e {@code --saida=pasta} (roteiro de capturas e medições; ver {@code CaptureScript}).
  */
 public record LaunchOptions(
         boolean dev, Path home, Long seed, String area, List<String> commands, List<String> timedCommands,
         Path screenshot, int screenshotFrames, boolean menu, int bench, int bot, float speed,
-        boolean hidden, boolean panels) {
+        boolean hidden, boolean panels, Path script, Path scriptOut) {
 
     public static LaunchOptions parse(String[] args) {
         boolean dev = Boolean.getBoolean("etrava.dev") || "1".equals(System.getenv("ETRAVA_DEBUG"));
@@ -35,6 +36,7 @@ public record LaunchOptions(
         int bench = 0, bot = 0;
         float speed = 1f;
         boolean hidden = false, panels = false;
+        Path script = null, scriptOut = null;
         for (String arg : args) {
             if (arg.startsWith("--seed=")) seed = Long.parseLong(value(arg));
             else if (arg.startsWith("--area=")) area = value(arg);
@@ -49,9 +51,12 @@ public record LaunchOptions(
             else if (arg.equals("--hidden")) hidden = true;
             else if (arg.equals("--paineis")) panels = true;
             else if (arg.equals("--debug")) dev = true;
+            else if (arg.startsWith("--roteiro=")) script = Path.of(value(arg)).toAbsolutePath();
+            else if (arg.startsWith("--saida=")) scriptOut = Path.of(value(arg)).toAbsolutePath();
         }
         return new LaunchOptions(dev, home, seed, area, List.copyOf(commands), List.copyOf(timed), screenshot, frames, menu, bench,
-                bot, speed, hidden, panels);
+                bot, speed, hidden, panels, script, scriptOut != null ? scriptOut
+                        : script != null ? Path.of("build", "capturas").toAbsolutePath() : null);
     }
 
     private static String value(String arg) {

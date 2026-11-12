@@ -82,7 +82,8 @@ Cada asset é um ID no manifesto (`assets/manifest/*.yaml`). Para substituir uma
 
 - A hora do dia define a cor do céu que multiplica a cena, a saturação, o contraste e a vinheta (`assets/config/daynight.yaml`, editável sem recompilar).
 - À noite, janelas e lamparinas acendem: mancha de luz âmbar somada à cena, mais o brilho próprio da vidraça ou da chama.
-- No console: `luz off` e `pos-fx off` desligam cada efeito, para comparar.
+- **Luz de presença** (D-090): personagens nunca recebem menos luz que o céu da hora reforçado (`actor` em `daynight.yaml`); à noite o reforço é azulado. Personagens precisam se ler sobre o chão em qualquer hora — `gradlew vt03` mede.
+- No console: `luz off`, `pos-fx off` e `presenca off` desligam cada efeito, para comparar.
 
 ## 7. Ilustrações (menu, mapa, epílogo)
 

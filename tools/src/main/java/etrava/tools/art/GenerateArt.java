@@ -67,7 +67,7 @@ public final class GenerateArt {
                 new Opening('S', 2.0, true), new Opening('E', 1.5, false), new Opening('E', 4.2, false))));
 
         character("personagem.aprendiz", "personagens/aprendiz.png", new CharacterArt.Look(
-                new Color(0xC99A76), new Color(0x3B2A1E), new Color(0x7B6A45), new Color(0x4A4038),
+                new Color(0xC99A76), new Color(0x3B2A1E), new Color(0xB9A888), new Color(0x4A4038),
                 new Color(0x2E2420), false, 0.16));
         character("personagem.aldea", "personagens/aldea.png", new CharacterArt.Look(
                 new Color(0xB98A6A), new Color(0x5A3A28), new Color(0x7A3F2C), new Color(0x57503F),

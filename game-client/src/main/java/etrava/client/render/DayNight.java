@@ -14,13 +14,21 @@ import org.slf4j.LoggerFactory;
 public final class DayNight {
     private static final Logger LOG = LoggerFactory.getLogger(DayNight.class);
 
-    /** Uma linha da tabela; também é o resultado da interpolação. */
+    /**
+     * Uma linha da tabela; também é o resultado da interpolação.
+     * {@code actor}: luz de presença (D-090) — os personagens nunca recebem menos luz que
+     * {@code ambiente × actor} (com teto); 0 ou ausente = 1, sem reforço.
+     */
     public record Key(double hour, double[] ambient, double night, double saturation, double contrast,
-            double vignette) {}
+            double vignette, double actor) {
+        public double actorLift() {
+            return actor <= 0 ? 1 : actor;
+        }
+    }
 
     private static final List<Key> FALLBACK = List.of(
-            new Key(0, new double[] {1, 1, 1}, 0, 1, 1, 0.25),
-            new Key(24, new double[] {1, 1, 1}, 0, 1, 1, 0.25));
+            new Key(0, new double[] {1, 1, 1}, 0, 1, 1, 0.25, 1),
+            new Key(24, new double[] {1, 1, 1}, 0, 1, 1, 0.25, 1));
 
     private final List<Key> keys;
 
@@ -62,7 +70,8 @@ public final class DayNight {
         double[] ambient = new double[3];
         for (int i = 0; i < 3; i++) ambient[i] = lerp(a.ambient()[i], b.ambient()[i], t);
         return new Key(hour, ambient, lerp(a.night(), b.night(), t), lerp(a.saturation(), b.saturation(), t),
-                lerp(a.contrast(), b.contrast(), t), lerp(a.vignette(), b.vignette(), t));
+                lerp(a.contrast(), b.contrast(), t), lerp(a.vignette(), b.vignette(), t),
+                lerp(a.actorLift(), b.actorLift(), t));
     }
 
     private static double lerp(double a, double b, double t) {

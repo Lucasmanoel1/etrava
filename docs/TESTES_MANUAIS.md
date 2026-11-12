@@ -88,3 +88,18 @@ Uma pessoa joga 3 horas seguidas no executável de release, do jeito que quiser.
 - [ ] Texto: tamanho "Maior" legível em todas as telas, sem corte.
 - [ ] Ritmo: houve algum trecho de mais de dois dias de jogo sem nada para ver ou ouvir?
 - [ ] Três coisas que mais incomodaram, em ordem.
+
+## Fase V — V0 (zoom, rolagem, depuração, visibilidade)
+Automáticos: `gradlew vt01` (zoom depois de fechar painéis), `gradlew vt03` (visibilidade), `gradlew build`
+(`UiStageTest`, `DebugModeTest`, `GameUiScrollTest`). À mão, pelo IntelliJ (`run`):
+1. [ ] Abra e feche, em sequência, mochila (I), caderno (J), ficha, mapa, uma conversa e o comércio do Posto;
+   depois de cada um, gire a roda fora de qualquer painel: o zoom muda **sempre**.
+2. [ ] Com a mochila aberta, gire a roda em cima da lista: a lista rola e o zoom não muda; com o mouse fora
+   dela, o zoom muda.
+3. [ ] No comércio do Posto, com muitos itens (console F1: `dar pao 1` várias vezes, ou `dar` de vários itens),
+   as duas colunas mostram a barra e rolam pela roda, pela barra e por PgUp/PgDn/Home/End.
+4. [ ] Numa conversa com muitas perguntas marcadas no caderno, as opções rolam e a caixa não sai da tela.
+5. [ ] Sem F3, nada de FPS, posição, semente ou velocidade na tela. F3 mostra; F3 de novo esconde.
+   No `Etrava.exe` (release), F1 e F3 não fazem nada; com `Etrava.exe --debug`, fazem.
+6. [ ] Vila às 6h, 19h30 e meia-noite (console: `hora 6`, `hora 19.5`, `hora 0`), zoom 1 e 4: o jogador e os
+   NPCs se leem sem esforço; a noite continua com cara de noite. `presenca off` mostra como era.

@@ -71,8 +71,22 @@ public final class SceneRenderer implements Disposable {
     private final Matrix4 screenMatrix = new Matrix4();
     private final Texture lightTexture;
     private final Texture shadowTexture;
-    private ShaderProgram postShader;
-    private FrameBuffer sceneFbo, lightFbo, glowFbo;
+    private ShaderProgram postShader, silhouetteShader;
+    private FrameBuffer sceneFbo, lightFbo, glowFbo, maskFbo;
+    /** Modos de {@link #drawSorted}: cena, brilho, máscara de todos os personagens, máscara só do jogador. */
+    private static final int SCENE = 0, GLOW = 1, MASK_ALL = 2, MASK_PLAYER = 3;
+    /** Teto da luz de presença (D-090): o reforço nunca deixa o personagem mais claro que isto. */
+    private static final float PRESENCE_CAP = 0.88f;
+    /** Reforço da luz de presença dentro de casa, sobre a penumbra fixa do interior. */
+    private static final double INTERIOR_PRESENCE = 1.25;
+    /** GL_MAX (0x8008): OpenGL 1.4+/ES 3; a constante não existe no GL20 do libGDX. */
+    private static final int GL_MAX = 0x8008;
+    /** Luz de presença ligada (console: {@code presenca on/off}, para comparar). */
+    public boolean presenceEnabled = true;
+    /** Pedido de medição (VT-03): no próximo quadro, guarda a máscara do jogador em {@link #playerMask}. */
+    public boolean capturePlayerMask;
+    /** Máscara do jogador do último pedido: branco onde ele aparece na tela; linhas de baixo para cima. */
+    public Pixmap playerMask;
     private int width, height;
     private final List<List<ActorDraw>> buckets = new ArrayList<>();
 
@@ -146,6 +160,13 @@ public final class SceneRenderer implements Disposable {
         lightTexture = radial(256, false);
         shadowTexture = radial(64, true);
         ShaderProgram.pedantic = false;
+        silhouetteShader = new ShaderProgram(Gdx.files.classpath("shaders/post.vert"),
+                Gdx.files.classpath("shaders/silhouette.frag"));
+        if (!silhouetteShader.isCompiled()) {
+            LOG.warn("Shader de silhueta não compilou; sem luz de presença: {}", silhouetteShader.getLog());
+            silhouetteShader.dispose();
+            silhouetteShader = null;
+        }
         postShader = new ShaderProgram(Gdx.files.classpath("shaders/post.vert"), Gdx.files.classpath("shaders/post.frag"));
         if (!postShader.isCompiled()) {
             LOG.warn("Shader de pós-processamento não compilou; seguindo sem ele: {}", postShader.getLog());
@@ -180,6 +201,8 @@ public final class SceneRenderer implements Disposable {
         if (sceneFbo != null) sceneFbo.dispose();
         if (lightFbo != null) lightFbo.dispose();
         if (glowFbo != null) glowFbo.dispose();
+        if (maskFbo != null) maskFbo.dispose();
+        maskFbo = new FrameBuffer(Pixmap.Format.RGBA8888, w, h, false);
         glowFbo = new FrameBuffer(Pixmap.Format.RGBA8888, w, h, false);
         glowFbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sceneFbo = new FrameBuffer(Pixmap.Format.RGBA8888, w, h, false);
@@ -217,9 +240,15 @@ public final class SceneRenderer implements Disposable {
         batch.setColor(1f, 1f, 1f, 0.55f);
         for (ActorDraw a : actors) batch.draw(shadowTexture, sx(a.x, a.y) - 26, sy(a.x, a.y, 0) - 13, 52, 26);
         batch.setColor(1f, 1f, 1f, 1f);
-        drawSorted(actors, player, bounds, animTime, false);
+        drawSorted(actors, player, bounds, animTime, SCENE);
         batch.end();
         sceneFbo.end();
+
+        // luz de presença (D-090): onde um personagem aparece (sem o que está na frente dele),
+        // a luz não cai abaixo de um piso — o próprio céu da hora, reforçado. À noite fica azulada.
+        float[] floor = presenceFloor(light);
+        boolean presence = floor != null && silhouetteShader != null;
+        if (presence) renderMask(camera, actors, player, bounds, animTime, MASK_ALL);
 
         // ---- 2. luz
         if (lightingEnabled) {
@@ -239,6 +268,18 @@ public final class SceneRenderer implements Disposable {
                 }
                 batch.end();
             }
+            if (presence) { // máximo entre a luz que já há e o piso, só nos pixels dos personagens
+                Gdx.gl.glBlendEquation(GL_MAX);
+                batch.setProjectionMatrix(screenMatrix);
+                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE);
+                batch.setColor(floor[0], floor[1], floor[2], 1f);
+                batch.begin();
+                drawFlipped(maskFbo.getColorBufferTexture());
+                batch.end();
+                Gdx.gl.glBlendEquation(GL20.GL_FUNC_ADD);
+                batch.setColor(1f, 1f, 1f, 1f);
+                batch.setProjectionMatrix(camera.combined());
+            }
             lightFbo.end();
 
             // brilhos (janelas, lamparinas) num buffer à parte: os sprites comuns entram
@@ -249,7 +290,7 @@ public final class SceneRenderer implements Disposable {
                 batch.setProjectionMatrix(camera.combined());
                 batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
                 batch.begin();
-                drawSorted(actors, player, bounds, animTime, true);
+                drawSorted(actors, player, bounds, animTime, GLOW);
                 batch.end();
                 glowFbo.end();
             }
@@ -290,6 +331,49 @@ public final class SceneRenderer implements Disposable {
         batch.setShader(null);
         batch.enableBlending();
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        if (capturePlayerMask && silhouetteShader != null && player != null) {
+            capturePlayerMask = false;
+            renderMask(camera, actors, player, bounds, animTime, MASK_PLAYER);
+            maskFbo.begin();
+            if (playerMask != null) playerMask.dispose();
+            playerMask = Pixmap.createFromFrameBuffer(0, 0, width, height);
+            maskFbo.end();
+        }
+    }
+
+    /**
+     * Piso de luz dos personagens nesta hora, ou null se não há o que reforçar (dia claro,
+     * luz desligada, área escura — onde enxergar depende da lamparina, RF-008).
+     */
+    private float[] presenceFloor(DayNight.Key light) {
+        if (!presenceEnabled || !lightingEnabled || darkArea) return null;
+        double[] base = interior ? new double[] {INTERIOR_AMBIENT[0], INTERIOR_AMBIENT[1], INTERIOR_AMBIENT[2]}
+                : light.ambient();
+        double k = interior ? INTERIOR_PRESENCE : light.actorLift();
+        if (k <= 1.001) return null;
+        float[] f = new float[3];
+        boolean raises = false;
+        for (int i = 0; i < 3; i++) {
+            f[i] = (float) Math.min(PRESENCE_CAP, base[i] * k);
+            raises |= f[i] > base[i] + 0.01;
+        }
+        return raises ? f : null;
+    }
+
+    /** Silhuetas na máscara: personagens brancos, o que fica na frente deles em preto. */
+    private void renderMask(CameraRig camera, List<ActorDraw> actors, ActorDraw player, float[] bounds, float animTime,
+            int mode) {
+        maskFbo.begin();
+        ScreenUtils.clear(0f, 0f, 0f, 0f);
+        batch.setProjectionMatrix(camera.combined());
+        batch.setShader(silhouetteShader);
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        batch.begin();
+        drawSorted(actors, player, bounds, animTime, mode);
+        batch.end();
+        batch.setShader(null);
+        maskFbo.end();
     }
 
     private void drawFlipped(Texture texture) {
@@ -321,7 +405,8 @@ public final class SceneRenderer implements Disposable {
      * estiver a leste ou ao sul da base dele; é desenhado logo antes do primeiro
      * objeto que o encobre. Com {@code glow}, tudo sai em preto, menos as camadas de brilho.
      */
-    private void drawSorted(List<ActorDraw> actors, ActorDraw player, float[] b, float animTime, boolean glow) {
+    private void drawSorted(List<ActorDraw> actors, ActorDraw player, float[] b, float animTime, int mode) {
+        boolean glow = mode == GLOW, mask = mode == MASK_ALL || mode == MASK_PLAYER;
         for (List<ActorDraw> bucket : buckets) bucket.clear();
         for (ActorDraw a : actors) {
             int index = statics.size();
@@ -340,7 +425,9 @@ public final class SceneRenderer implements Disposable {
             if (!bucket.isEmpty()) {
                 bucket.sort(Comparator.comparingDouble(a -> a.x + a.y));
                 for (ActorDraw a : bucket) {
+                    float lit = mode == MASK_ALL || a == player ? 1f : 0f;
                     if (glow) batch.setColor(0f, 0f, 0f, 1f);
+                    else if (mask) batch.setColor(lit, lit, lit, 1f);
                     else if (a.flash > 0) batch.setColor(1f, 1f - a.flash * 0.55f, 1f - a.flash * 0.6f, 1f);
                     drawActor(a, animTime);
                     if (!glow) batch.setColor(1f, 1f, 1f, 1f);
@@ -366,7 +453,10 @@ public final class SceneRenderer implements Disposable {
                     alpha = OCCLUDED_ALPHA;
                 }
             }
-            if (glow) {
+            if (mask) { // o que está na frente tapa o personagem (translúcido tapa em parte)
+                batch.setColor(0f, 0f, 0f, alpha);
+                batch.draw(region, left, bottom, w, h);
+            } else if (glow) {
                 batch.setColor(0f, 0f, 0f, alpha);
                 batch.draw(region, left, bottom, w, h);
                 if (sp.emissive() != null) {
@@ -402,6 +492,9 @@ public final class SceneRenderer implements Disposable {
         lightTexture.dispose();
         shadowTexture.dispose();
         if (postShader != null) postShader.dispose();
+        if (silhouetteShader != null) silhouetteShader.dispose();
+        if (maskFbo != null) maskFbo.dispose();
+        if (playerMask != null) playerMask.dispose();
         if (sceneFbo != null) sceneFbo.dispose();
         if (lightFbo != null) lightFbo.dispose();
         if (glowFbo != null) glowFbo.dispose();

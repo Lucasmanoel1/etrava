@@ -207,7 +207,7 @@ Emissores de partículas em pixel de arte, na paleta: fumaça de chaminé, fagul
 Paredes do fundo inteiras; paredes da frente cortadas a ~0,4 m com acabamento (viga ou pedra de topo), soleira onde há porta. O piso termina numa borda acabada, sem esfumar. Feixe de luz pelas janelas de dia (aditivo, com poeira). Lareira com fogo em laço e luz que tremula.
 
 ### 7.5 Visibilidade dos personagens (V0)
-Primeiro **medir** (§9.3); depois corrigir a causa. Ferramentas disponíveis, nesta ordem de preferência: (1) corrigir defeito de escala do buffer de luz por zoom, se houver; (2) **luz de presença** — a silhueta de cada ator é desenhada no buffer de luz com um piso de claridade (o personagem nunca fica abaixo de X da sua cor); (3) realce de contorno do lado da luz à noite. Parâmetros em `daynight.yaml`.
+**Feito no V0 (D-090).** Causa: o buffer de luz multiplica o personagem como se fosse chão, e o sprite do jogador tinha valores e matizes iguais aos da grama e da terra. Correção: (1) **luz de presença** — máscara dos personagens (com oclusão) somada ao buffer de luz por `max(luz, ambiente × actor)`, teto 0,88, com `actor` por hora em `daynight.yaml` (1 de dia, 1,2–1,6 ao entardecer e à noite; 1,25 em interiores; nada na área escura); (2) o jogador veste a camisa de linho clara que já é o seu item inicial. O buffer de luz acompanha o zoom corretamente (verificado). Console: `presenca on/off`.
 
 ### 7.6 Modo de depuração (V0)
 - Liga com `--debug` ou `ETRAVA_DEBUG=1`. `gradlew run` liga; o pacote de release não.
@@ -240,7 +240,7 @@ Roteiro em `tools/capturas.yaml`: área, posição, hora, zoom, painel aberto, r
 Por personagem: uma folha com todas as animações × 8 direções em 2× e um GIF por animação (escritor GIF do próprio JDK). Ficam em `build/revisao/`, fora do git.
 
 ### 9.3 Métrica de visibilidade (VT-03)
-As capturas de visibilidade salvam também a máscara do jogador (desenhada num buffer à parte); o teste compara a luminância média dentro da máscara com a de um anel de 12 px de arte em volta.
+As capturas de visibilidade pedem também a máscara do jogador (silhueta branca num buffer à parte, com o que está na frente dele em preto). Na imagem final: L_entorno = luminância média de uma moldura de 12 px de arte em volta da silhueta; **destaque** = fração dos pixels da silhueta com |L − L_entorno| ≥ 0,12. Passa com destaque ≥ 0,60 (D-090). Roteiro: `tools/capturas/visibilidade.yaml`; relatório em `build/capturas/visibilidade/relatorio.csv`.
 
 ### 9.4 Validador (`gradlew validateContent`)
 Passa a checar: paleta (VT-04), animações por papel (VT-05), origem provisória (VT-06), pegada e porta das construções contra o mapa (VT-07), tamanho de atlas por área e soma de memória de textura (VT-10).
