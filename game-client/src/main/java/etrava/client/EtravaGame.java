@@ -71,6 +71,7 @@ public final class EtravaGame extends ApplicationAdapter {
     private SceneRenderer scene;
     private DayNight dayNight;
     private CameraRig camera;
+    private etrava.client.debug.DebugMode debug;
     private ShapeRenderer shapes;
     private SpriteBatch batch;
     private etrava.client.ui.Fonts fonts;
@@ -169,7 +170,8 @@ public final class EtravaGame extends ApplicationAdapter {
         whitePx = new Texture(white);
         white.dispose();
         texts = new Texts(options.contentDir());
-        if (options.dev()) console = new DebugConsole(consoleFont, this::runConsoleCommand);
+        debug = new etrava.client.debug.DebugMode(options.dev());
+        if (debug.enabled()) console = new DebugConsole(consoleFont, this::runConsoleCommand);
         buildUi();
         if (options.bench() > 0) bench = new Bench();
         applySettings();
@@ -801,12 +803,14 @@ public final class EtravaGame extends ApplicationAdapter {
         hudFont.draw(batch, v.clock().format() + "   " + life + (paused ? "   [PAUSADO]" : ""), 14, top);
         if (noticeTime > 0) {
             noticeTime -= Gdx.graphics.getDeltaTime();
-            hudFont.draw(batch, notice, 14, top - (options.dev() ? 2 : 1) * line);
+            hudFont.draw(batch, notice, 14, top - (debug.panelVisible() ? 2 : 1) * line);
         }
-        if (options.dev()) {
+        if (debug.panelVisible()) { // só no modo de depuração, e só com F3 (VT-02)
             hudFont.setColor(0.7f, 0.7f, 0.7f, 1f);
-            hudFont.draw(batch, String.format(Locale.ROOT, "FPS %d   pos (%.1f, %.1f)   semente %d   vel x%.1f   F1 console",
-                    Gdx.graphics.getFramesPerSecond(), v.playerX(), v.playerY(), v.seed(), timeScale), 14, top - line);
+            hudFont.draw(batch, String.format(Locale.ROOT,
+                    "FPS %d   pos (%.1f, %.1f)   semente %d   vel x%.1f   zoom %d   F1 console   F3 esconde",
+                    Gdx.graphics.getFramesPerSecond(), v.playerX(), v.playerY(), v.seed(), timeScale, camera.pixelScale()),
+                    14, top - line);
         }
         batch.end();
     }
@@ -1091,8 +1095,12 @@ public final class EtravaGame extends ApplicationAdapter {
         public boolean keyDown(int keycode) {
             switch (keycode) {
                 case Input.Keys.F1 -> {
-                    if (console != null) console.toggle();
+                    if (console == null) return false; // fora do modo de depuração, F1 não faz nada
+                    console.toggle();
                     return true;
+                }
+                case Input.Keys.F3 -> {
+                    return debug.keyDown(keycode);
                 }
                 case Input.Keys.ESCAPE -> {
                     if (menu.isOpen()) menu.escape();
