@@ -2,12 +2,6 @@ package etrava.client.ui;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -15,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import java.lang.reflect.Proxy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,36 +21,12 @@ class UiStageTest {
 
     @BeforeAll
     static void headless() {
-        HeadlessApplicationConfiguration cfg = new HeadlessApplicationConfiguration();
-        cfg.updatesPerSecond = -1; // sem laço: só precisamos do Gdx.* preenchido
-        new HeadlessApplication(new ApplicationAdapter() {}, cfg);
-        if (Gdx.gl == null) Gdx.gl = Gdx.gl20 = nothing(GL20.class); // o viewport chama glViewport
-        // a câmera converte o y do mouse pela altura da janela: uma tela de 1280×720
-        Gdx.graphics = (Graphics) Proxy.newProxyInstance(Graphics.class.getClassLoader(), new Class<?>[] {Graphics.class},
-                (p, m, a) -> switch (m.getName()) {
-                    case "getWidth", "getBackBufferWidth" -> W;
-                    case "getHeight", "getBackBufferHeight" -> H;
-                    default -> zero(m.getReturnType());
-                });
+        etrava.client.Headless.start();
+        etrava.client.Headless.screen(W, H);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> T nothing(Class<T> type) {
-        return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {type},
-                (p, m, a) -> zero(m.getReturnType()));
-    }
-
-    private static Object zero(Class<?> t) {
-        if (t == boolean.class) return Boolean.FALSE;
-        if (t == float.class) return 0f;
-        if (t == int.class) return 0;
-        if (t == long.class) return 0L;
-        return null;
-    }
-
-    /** Batch que não desenha nada: o teste não chama draw(). */
     private static Batch noBatch() {
-        return nothing(Batch.class);
+        return etrava.client.Headless.batch();
     }
 
     private record Panel(Table root, ScrollPane pane) {}

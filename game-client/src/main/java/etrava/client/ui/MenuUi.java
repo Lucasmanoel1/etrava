@@ -216,8 +216,7 @@ public final class MenuUi implements Disposable {
             });
             list.add(line).growX().padBottom(6).row();
         }
-        ScrollPane scroll = new ScrollPane(list, new ScrollPane.ScrollPaneStyle());
-        scroll.setFadeScrollBars(false);
+        ScrollPane scroll = Scrolls.of(list, white, PAPER_DARK, EDGE);
         col.add(scroll).width(520).height(Math.min(420, stage.getHeight() - 200)).row();
         col.add(button(texts.get("menu.voltar"), onBack)).left().padTop(10);
         center(sheet(col, 560));

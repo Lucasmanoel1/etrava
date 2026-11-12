@@ -46,6 +46,46 @@ public class UiStage extends Stage {
         return super.scrolled(amountX, amountY);
     }
 
+    /**
+     * Setas, Page Up/Down, Home e End rolam a lista sob o cursor ou, se não houver, a primeira
+     * lista visível com o que rolar. Sem lista na tela, a tecla segue adiante (andar com as setas).
+     */
+    @Override
+    public boolean keyDown(int keycode) {
+        if (super.keyDown(keycode)) return true; // campo de texto com foco (console) tem prioridade
+        float line = 40;
+        float delta = switch (keycode) {
+            case com.badlogic.gdx.Input.Keys.UP -> -line;
+            case com.badlogic.gdx.Input.Keys.DOWN -> line;
+            case com.badlogic.gdx.Input.Keys.PAGE_UP -> -Float.MAX_VALUE / 4;
+            case com.badlogic.gdx.Input.Keys.PAGE_DOWN -> Float.MAX_VALUE / 4;
+            case com.badlogic.gdx.Input.Keys.HOME -> Float.NEGATIVE_INFINITY;
+            case com.badlogic.gdx.Input.Keys.END -> Float.POSITIVE_INFINITY;
+            default -> 0;
+        };
+        if (delta == 0) return false;
+        ScrollPane pane = scrollableUnderMouse();
+        if (pane == null) pane = firstScrollable(getRoot());
+        if (pane == null) return false;
+        if (Float.isInfinite(delta)) pane.setScrollY(delta < 0 ? 0 : pane.getMaxY());
+        else if (Math.abs(delta) > line) pane.setScrollY(pane.getScrollY() + Math.signum(delta) * pane.getScrollHeight() * 0.9f);
+        else pane.setScrollY(pane.getScrollY() + delta);
+        return true;
+    }
+
+    /** Primeira lista visível (com todos os pais visíveis) que tem o que rolar, em profundidade. */
+    static ScrollPane firstScrollable(Actor actor) {
+        if (!actor.isVisible()) return null;
+        if (actor instanceof ScrollPane pane && pane.isScrollY()) return pane;
+        if (actor instanceof com.badlogic.gdx.scenes.scene2d.Group g) {
+            for (Actor child : g.getChildren()) {
+                ScrollPane found = firstScrollable(child);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
     /** A lista mais interna sob o cursor que tem o que rolar, ou null. Ator invisível nunca é atingido. */
     ScrollPane scrollableUnderMouse() {
         GridPoint2 m = mouse.get();

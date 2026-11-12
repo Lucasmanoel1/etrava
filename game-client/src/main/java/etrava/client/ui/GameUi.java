@@ -51,7 +51,7 @@ public final class GameUi implements Disposable {
     /** Lado do ícone de item na tela, em pixels. */
     private static final float ICON = 40;
 
-    private final Stage stage = new UiStage(new ScreenViewport());
+    private final Stage stage;
     private final Texture white;
     private final BitmapFont font;
     private final Assets assets;
@@ -87,6 +87,12 @@ public final class GameUi implements Disposable {
     private final List<String> askFacts = new ArrayList<>();
 
     public GameUi(BitmapFont font, Assets assets, ContentDb content, Texts texts) {
+        this(font, assets, content, texts, new UiStage(new ScreenViewport()));
+    }
+
+    /** O teste passa um Stage sem SpriteBatch (não há GL de verdade sem janela). */
+    GameUi(BitmapFont font, Assets assets, ContentDb content, Texts texts, Stage stage) {
+        this.stage = stage;
         this.font = font;
         this.assets = assets;
         this.content = content;
@@ -294,8 +300,7 @@ public final class GameUi implements Disposable {
             paragraph.setWrap(true);
             body.add(paragraph).padBottom(12).row();
         }
-        ScrollPane scroll = new ScrollPane(body, new ScrollPane.ScrollPaneStyle());
-        scroll.setFadeScrollBars(false);
+        ScrollPane scroll = Scrolls.of(body, white, PAPER_DARK, EDGE);
         page.add(scroll).grow().row();
         if (extra != null) page.add(extra).growX().padTop(8).row();
         page.add(new Label(hint, inkSoft)).right().padTop(10);
@@ -325,6 +330,13 @@ public final class GameUi implements Disposable {
      * @param eco   consultas de peso e capacidade; null = sem mochila nem ficha
      */
     public void render(WorldView view, TradeView trade, Economy eco, float dt) {
+        update(view, trade, eco);
+        stage.act(dt);
+        stage.draw();
+    }
+
+    /** Monta ou esconde cada tela conforme o estado; não desenha. */
+    void update(WorldView view, TradeView trade, Economy eco) {
         if (trade == null) {
             tradeRoot.setVisible(false);
             tradeShown = "";
@@ -380,8 +392,6 @@ public final class GameUi implements Disposable {
             notebookMarks = view.markedFacts().size();
         }
         notebookRoot.setVisible(showNotebook);
-        stage.act(dt);
-        stage.draw();
     }
 
     // ---------------------------------------------------------------- diálogo
@@ -391,9 +401,11 @@ public final class GameUi implements Disposable {
         dialogueRoot.setVisible(true);
         float width = Math.min(stage.getWidth() - 32, 980);
 
+        Table box = new Table(); // papel: lista rolável com a conversa e as opções, e a dica embaixo
+        box.setBackground(paper);
+        box.pad(14).top().left();
         Table text = new Table();
-        text.setBackground(paper);
-        text.pad(14).top().left();
+        text.top().left();
         text.defaults().left().growX();
         // as duas últimas falas anteriores, apagadas, para dar contexto
         List<DialogueView.Line> history = d.history();
@@ -427,9 +439,14 @@ public final class GameUi implements Disposable {
                 number++;
             }
         }
+        // muitas opções (perguntas sobre fatos marcados somam-se às da conversa): a caixa não passa
+        // da altura máxima e rola; o retrato e a dica continuam na tela (VT-08)
+        float maxText = Math.max(140, Math.min(stage.getHeight() * 0.62f, stage.getHeight() - 90));
+        ScrollPane scroll = Scrolls.of(text, white, PAPER_DARK, EDGE);
+        box.add(scroll).growX().maxHeight(maxText).row();
         Label hint = new Label(texts.get("dialogo.dica"), inkSoft);
         hint.setAlignment(Align.right);
-        text.add(hint).padTop(8).row();
+        box.add(hint).growX().padTop(8).row();
 
         Image portrait = new Image(new TextureRegionDrawable(new TextureRegion(assets.portrait(d.portrait()))));
         Table frame = new Table();
@@ -440,7 +457,7 @@ public final class GameUi implements Disposable {
         Table border = new Table();
         border.setBackground(edge);
         border.pad(3);
-        border.add(text).grow();
+        border.add(box).grow();
         dialogueRoot.add(frame).bottom().padRight(10);
         dialogueRoot.add(border).width(width - 220).bottom().minHeight(190);
     }
@@ -572,8 +589,7 @@ public final class GameUi implements Disposable {
             }
         }
         if (!any) list.add(new Label(texts.get("mochila.vazia"), inkSoft)).row();
-        ScrollPane scroll = new ScrollPane(list, new ScrollPane.ScrollPaneStyle());
-        scroll.setFadeScrollBars(false);
+        ScrollPane scroll = Scrolls.of(list, white, PAPER_DARK, EDGE);
 
         Table slots = new Table();
         slots.top().left();
@@ -610,7 +626,7 @@ public final class GameUi implements Disposable {
             desc.setWrap(true);
             list.add(desc).padLeft(12).padBottom(8).row();
         }
-        page.add(list).grow().row();
+        page.add(Scrolls.of(list, white, PAPER_DARK, EDGE)).grow().row();
         page.add(new Label(hungerText(view.hunger()), view.hunger() >= Economy.HUNGRY ? rust : inkSoft)).left().row();
         page.add(new Label(texts.get("ficha.dica"), inkSoft)).right().padTop(8);
     }
@@ -665,8 +681,7 @@ public final class GameUi implements Disposable {
             list.add(row).padBottom(3).row();
         }
         if (offers.isEmpty()) list.add(new Label(texts.get("comercio.nada"), inkSoft)).row();
-        ScrollPane scroll = new ScrollPane(list, new ScrollPane.ScrollPaneStyle());
-        scroll.setFadeScrollBars(false);
+        ScrollPane scroll = Scrolls.of(list, white, PAPER_DARK, EDGE);
         col.add(scroll).grow();
         return col;
     }
@@ -759,8 +774,7 @@ public final class GameUi implements Disposable {
             shown++;
         }
         if (shown == 0) list.add(new Label(texts.get("caderno.vazio"), inkSoft)).row();
-        ScrollPane scroll = new ScrollPane(list, new ScrollPane.ScrollPaneStyle());
-        scroll.setFadeScrollBars(false);
+        ScrollPane scroll = Scrolls.of(list, white, PAPER_DARK, EDGE);
         page.add(scroll).grow().row();
         page.add(new Label(texts.get("caderno.dica"), inkSoft)).right().padTop(8);
 
