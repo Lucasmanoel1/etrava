@@ -95,6 +95,11 @@ public final class SceneRenderer implements Disposable {
     private final List<Static> flats = new ArrayList<>();
     private final List<Lamp> lamps = new ArrayList<>();
     private final SpriteBatch batch = new SpriteBatch();
+
+    /** Chamadas de desenho acumuladas desde o início (o benchmark divide pelos quadros). */
+    public int totalRenderCalls() {
+        return batch.totalRenderCalls;
+    }
     private final Matrix4 screenMatrix = new Matrix4();
     private final Texture lightTexture;
     private final Texture shadowTexture;

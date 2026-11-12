@@ -15,3 +15,8 @@ cenas:
   - {nome: oficina_noite, area: vila, cmds: ["tp 25 29", "hora 21.5", "zoom 1"], medir: true}
   - {nome: oficina_noite_perto, area: vila, cmds: ["tp 24 29", "hora 21.5", "zoom 2"], medir: true}
   - {nome: praca_perto, area: vila, cmds: ["tp 30 33", "hora 10", "zoom 3"], medir: true}
+  # iteração do portão (D-098): vista de longe (zoom 0), praça sem as árvores do meio, árvores novas
+  - {nome: vila_longe_dia, area: vila, cmds: ["tp 30 33", "hora 10", "zoom 0"]}
+  - {nome: vila_longe_noite, area: vila, cmds: ["tp 30 33", "hora 21", "zoom 0"]}
+  - {nome: praca_poco, area: vila, cmds: ["tp 34 36", "hora 10", "zoom 1"], medir: true}
+  - {nome: mata_perto, area: vila, cmds: ["tp 12 20", "hora 10", "zoom 2"]}

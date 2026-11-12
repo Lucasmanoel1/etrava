@@ -62,9 +62,15 @@ public final class GenerateRegion {
             if (m.marked.stream().anyMatch(p -> Math.hypot(p[0] - x, p[1] - y) < 2.2)) continue; // longe dos pontos
             if (nearRoad(m, x, y)) continue; // nem colada na rua
             String k = kinds[rnd.nextInt(kinds.length)];
+            // clareiras: sorteia igual (as outras árvores não mudam de lugar), mas não planta
+            if (CLAREIRAS.stream().anyMatch(c -> m == vilaBuilder && Math.hypot(c[0] - x, c[1] - y) < c[2])) continue;
             thing(m, k, x, y);
         }
     }
+
+    /** Praça do poço sem árvore no meio (portão V1: as copas escondiam o poço). x, y, raio em tiles. */
+    private static final java.util.List<double[]> CLAREIRAS = java.util.List.of(new double[] {34.5, 33.5, 6.5});
+    private MapBuilder vilaBuilder;
 
     /** Tem rua, praça ou lavoura a menos de um passo? */
     private static boolean nearRoad(MapBuilder m, double x, double y) {
@@ -88,6 +94,7 @@ public final class GenerateRegion {
 
     private MapBuilder vila() {
         MapBuilder m = new MapBuilder(64, 64, GRAMA);
+        vilaBuilder = m;
         Random rnd = new Random(64);
         m.border();
         // ruas: a estrada atravessa de oeste a leste; uma rua corta de norte a sul; a praça no cruzamento

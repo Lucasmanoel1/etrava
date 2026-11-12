@@ -84,6 +84,7 @@ public final class RenderArt {
                 if (d == null || !d.has("tipo")) continue;
                 String id = d.path("id").asText(p.getFileName().toString().replace(".yaml", ""));
                 if (!so.isEmpty() && !so.contains(id)) continue;
+                if (d.path("spike").asBoolean(false) && !so.contains(id)) continue; // spikes só por nome
                 lista.add(new Objeto(id, p, d));
             }
         }
@@ -164,9 +165,14 @@ public final class RenderArt {
         Path jobFile = renderDir.resolve(o.id() + ".json");
         JSON.writeValue(jobFile.toFile(), job);
         long t0 = System.currentTimeMillis();
-        Process pr = new ProcessBuilder(exe.toString(), "-b", "--factory-startup", "-noaudio",
+        ProcessBuilder pb = new ProcessBuilder(exe.toString(), "-b", "--factory-startup", "-noaudio",
                 "-P", blenderDir.resolve("entrada.py").toString(), "--", jobFile.toString())
-                .redirectErrorStream(true).redirectOutput(pasta.resolve("blender.log").toFile()).start();
+                .redirectErrorStream(true).redirectOutput(pasta.resolve("blender.log").toFile());
+        // spikes com extensão (MPFB2): extensões numa pasta isolada, nunca nas preferências do usuário
+        if (o.desc().path("spike").asBoolean(false)) {
+            pb.environment().put("BLENDER_USER_RESOURCES", raiz.resolve("build/blender-ext").toString());
+        }
+        Process pr = pb.start();
         int code = pr.waitFor();
         if (code != 0 || !Files.exists(pasta.resolve("render.json"))) {
             List<String> log = Files.readAllLines(pasta.resolve("blender.log"));

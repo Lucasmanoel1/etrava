@@ -495,12 +495,13 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Motivo:** o gerador por código (D-025) chegou ao limite (bonecos de cilindro, árvores de elipses, telhado de uma face). Pré-renderizar 3D é o caminho previsto desde o D-019 e garante consistência entre direções e quadros; o diretor liberou o Blender explicitamente.
 - **Alternativa descartada:** continuar desenhando por código em Java (teto baixo de qualidade); sprites direto da IA (não mantém a mesma pessoa em 8 direções); filtro de pixel sobre render (cara de 3D reduzido — por isso o pixelizador por material e rampa).
 
-## D-086 — Densidade de pixel dobrada (proposta, a confirmar no portão V1)
+## D-086 — Densidade de pixel dobrada (aprovada no portão V1)
 - **Data:** 2026-11-12
 - **Decisão provisória:** um pixel de arte passa a valer 2×2 pixels de mundo (era 4×4): tile de 64×32 px de arte, 28 px por metro de altura, gente adulta com ~48 px, quadro de 64×80. As medidas de mundo não mudam (mapas, colisões, cliques, luzes no mesmo lugar). Zoom inteiro de 1 a 4; a 1280×720 a escala 1 mostra a mesma área que a escala 2 de hoje. Durante a transição, a arte antiga é desenhada ampliada 2×.
 - **Motivo:** com 24 px de altura não há rosto, roupa nem arma legíveis; 48 px é o nível dos isométricos de referência e ainda é pixel art (72 px já começaria a parecer render reduzido e multiplicaria memória e quadros).
 - **Pendente:** aprovação do diretor no portão V1 (VT-13).
 - **V1 (2026-11-12):** implementada. `ART_SCALE = 2`; cada entrada do manifesto diz quantos px de mundo vale o seu pixel (`scale`; sem o campo, 4 — a arte do M8 aparece ampliada 2×). Câmera: escala 1 a 720p e 2 a 1080p ou mais. Gente nova: ~48 px de altura (quadro recortado de 52×62). Continua pendente do portão.
+- **Portão V1 (2026-11-12):** aprovada ("com 48 px está bom"). O diretor perguntou por que não mais. Resposta registrada: o mundo tem 128 px de mundo por tile e a arte precisa de um número inteiro de px de mundo por pixel de arte, então os próximos passos possíveis são 4 px (M8, 24 px de gente), 2 px (hoje, ~48 px) e 1 px (~96 px de gente). 96 px custaria 4× a memória e o tempo de render de toda folha, pediria mais quadros por animação para não parecer travado e já é o território do render reduzido (Diablo II), não de pixel art; e cada passo de densidade fecha a vista (a 720p, 96 px mostrariam um quarto da área de hoje no zoom 1), o contrário da vista mais aberta que o diretor pediu na mesma resposta. Fica 2.
 
 ## D-087 — Papel da Dreamina na Fase V
 - **Data:** 2026-11-12
@@ -525,12 +526,13 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Alternativa descartada:** clarear a noite inteira (perde a atmosfera que funciona); contorno claro em volta do personagem (efeito de interface, não de luz); o critério antigo do PLANO (media o que não se vê).
 - **A conferir pelo diretor:** se a camisa clara à noite ficou "acesa" demais (`actor` noturno é um número só em `daynight.yaml`).
 
-## D-091 — Corpo humano: kit próprio (provisório até o spike do MPFB2)
+## D-091 — Corpo humano: kit próprio (confirmado pelo spike do MPFB2)
 - **Data:** 2026-11-12
 - **Decisão:** o corpo de gente sai de um kit próprio em `tools/blender/kit_humano/`: esqueleto padrão de vazios com nomes fixos (`raiz`, `quadril`, `tronco`, `cabeca`, `braco_e`… `pe_d`) e peças rígidas arredondadas (tubos e esferas subdivididos), roupa por peça, cada peça com a sua rampa. Proporção estilizada: cabeça ~1/6 da altura, pernas um pouco curtas, membros grossos.
 - **Motivo:** a 48 px de altura, com a correção vertical da câmera (28/39), o que lê é silhueta e massa; peças rígidas não têm surpresa de peso e qualquer ciclo serve em qualquer corpo. O resultado passou no VT-03 e lê rosto, roupa e ofício (folhas em `docs/capturas/v1/`).
 - **Spike do MPFB2 não feito:** a instalação da extensão (download de extensions.blender.org, numa pasta isolada) foi bloqueada pela permissão do ambiente desta sessão. Se o diretor liberar, o spike roda no começo do V2, com o mesmo pixelizador e a mesma pose, e esta decisão é revista.
 - **Alternativa descartada (por ora):** malha única com pesos (skin modifier ou MPFB2): mais orgânica, mas a 48 px a diferença some e o custo de pesos e roupas é alto.
+- **Spike do MPFB2 (2026-11-12, liberado pelo diretor):** extensão MPFB instalada em `build/blender-ext` (fora das preferências do usuário; `RenderArt` passa `BLENDER_USER_RESOURCES` só para trabalhos com `spike: true`). Tarefa `tarefas/spike_mpfb.py`, YAML `tools/blender/spike/mpfb_teste.yaml` (só roda com `-Pso=mpfb_teste`, não entra no manifesto). Corpo padrão do MPFB, mesma câmera, luz, pixelizador e rampas do aprendiz, roupa pintada por faixa. Resultado em `docs/capturas/v1/spike_mpfb.png`: a proporção realista deixa a cabeça pequena e o rosto some a 48 px; o rig (mais de 160 ossos, rolagens próprias) deforma ombro e braço já na pose parada, então cada ciclo pediria acerto de pesos; roupa de verdade exige pacotes de assets à parte. O kit próprio lê melhor e anima sem surpresa. **Decisão: kit próprio.** O MPFB fica instalado para servir de referência de proporção, se preciso.
 
 ## D-092 — Onde mora a arte nova
 - **Data:** 2026-11-12
@@ -563,4 +565,20 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Data:** 2026-11-12
 - **Decisão:** a tarefa 8 do V1 (buffer na escala de arte + sharp-bilinear, passos 1,5 e 2,5) não foi feita. O zoom continua inteiro (1 a 4).
 - **Motivo:** é opcional e depende da resposta do diretor à pergunta 3 do portão ("zoom inteiro ou com passos intermediários?"). Se ele quiser, entra no começo do V2.
+- **Portão V1:** o diretor aprovou o zoom como está e pediu para afastar mais. Zoom fracionário descartado; entra a vista de longe (D-098).
+
+## D-098 — Árvores refeitas como pixel art e vista de longe (portão V1)
+- **Data:** 2026-11-12
+- **Pedido do diretor:** as árvores do V1 "pareciam forçadas, sem cara de pixel arte, como se renderizassem toda folha"; o zoom afasta pouco; tirar as árvores do meio da praça (escondiam o poço).
+- **Decisão (árvores):** a copa deixa de ser ~40 tufos texturizados com ruído e passa a ser 9 massas grandes, cada uma com a borda recortada em cachos (esferas de 4 a 6 px na tela), **sem textura e sem ruído** na folha — a luz em faixas dá a cada cacho o seu realce, como o pixel artista desenha. Tronco num tubo só que afina (sem as raízes em "pata" e sem subdivisão, que arredondava as pontas), com luz sem a sombra da copa (`sem_sombra` no material: o lado do sol fica claro mesmo debaixo da copa). Galhos nunca furam a copa. Vento: a copa balança junta, cada massa com atraso pequeno, amplitude de 1–2 px (antes cada tufo tinha fase própria e cintilava). Quadro menor (264×214 em vez de 400×320).
+- **Decisão (praça):** o gerador do mapa ganhou clareiras (raio 6,5 tiles em volta do poço): as árvores continuam sorteadas, só não são plantadas ali, então nenhuma outra árvore muda de lugar. Saíram exatamente as duas do meio da praça.
+- **Decisão (zoom):** passo 0 = vista de longe, meio pixel de tela por pixel de arte (o dobro da área do zoom 1). As texturas reduzem com filtro linear (média 2×2) e ampliam sem filtro, então os outros passos não mudam e a vista de longe não pisca.
+- **Alternativa descartada:** zoom fracionário (1,5, 2,5) — o diretor achou o zoom bom; o que faltava era afastar.
+
+## D-099 — Atlas dos sprites do mundo
+- **Data:** 2026-11-12
+- **Causa medida:** cada sprite (árvore, decoração, objeto) era uma textura própria; na ordem de profundidade elas se intercalam e o lote quebra a cada troca: **2.190 chamadas de desenho por quadro** no zoom 1 e 5.566 na vista de longe (`--bench` agora mostra a contagem). Era o "peso" que o diretor sentiu: 223 FPS no zoom 1 (eram 503 no M8) e 90 na vista de longe, na RX 6650 XT; numa GTX 1050 ficaria perto do limite.
+- **Decisão:** no início, `Assets.preloadSprites()` empacota cada quadro de cada sprite do manifesto (`PixmapPacker`, páginas de 2048², 2 px de margem) — hoje 65 sprites numa página só. Folhas de personagem e chão continuam como estão.
+- **Resultado:** 51 chamadas por quadro e **1.106 FPS** no zoom 1; 178 chamadas e 735 FPS na vista de longe. Capturas iguais às de antes (VT-03 112/112).
+
 

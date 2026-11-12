@@ -1,0 +1,10 @@
+# Spike do V1 (D-091): corpo do MPFB2 com a roupa do aprendiz pintada por faixa, parado, 8 direções.
+# Não entra no jogo (sem manifesto). Só roda com --so=mpfb_teste e o MPFB em build/blender-ext.
+tipo: spike_mpfb
+id: mpfb_teste
+spike: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+altura: 1.68
+pixelizador: {ambiente: 0.48, difusa: 0.52}

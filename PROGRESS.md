@@ -4,15 +4,15 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V1 — Pipeline e portão visual: trabalho feito, esperando o portão (VT-13).**
-- **Status:** **PARADO no portão visual do V1** (parada obrigatória). Nada de V2 nem de produção em massa sem a aprovação do diretor.
+- **Marco atual:** **V1 — Pipeline e portão visual: segunda rodada do portão (VT-13).** O diretor aprovou densidade, sombreamento, zoom e telhado; reprovou as árvores. Árvores refeitas, vista de longe, praça limpa, desempenho corrigido, spike do MPFB2 feito.
+- **Status:** **PARADO no portão visual do V1** esperando o diretor olhar as árvores novas. Nada de V2 sem o "pode seguir".
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
 | Marco | Nome | Situação |
 |---|---|---|
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
-| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **feito; esperando aprovação** |
+| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **2ª rodada: esperando o diretor ver as árvores** |
 | V2 | Gente (25 humanos, animações de vida comum) | — |
 | V3 | Criaturas e combate | — |
 | V4 | Natureza e terreno | — |
@@ -35,7 +35,20 @@
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
 
-## Portão visual (VT-13) — o que olhar
+## Portão V1, 2ª rodada (2026-11-12)
+Resposta do diretor à 1ª rodada: 48 px ok (perguntou por que não mais — resposta em D-086); sombreamento e contorno ok; zoom ok, mas afasta pouco; **árvores reprovadas** ("forçadas, sem cara de pixel arte, como se renderizassem toda folha"; parecia mais pesado); telhado da oficina aprovado; liberou o MPFB2; tirar as árvores do meio da praça; o resto, eu decido.
+
+Feito:
+- **Árvores refeitas** (D-098): copa de 9 massas com borda recortada em cachos, folha lisa (sem textura nem ruído), luz em faixas; tronco num tubo só, aceso mesmo sob a copa; vento da copa inteira, 1–2 px. VT-16 das árvores: refeitas do zero, mesmos bytes.
+- **Desempenho** (D-099): o peso era real — 2.190 chamadas de desenho por quadro (cada sprite uma textura). Atlas dos sprites no carregamento: **51 chamadas, 1.106 FPS** no zoom 1 (eram 223); vista de longe 735 FPS (eram 90). `--bench` agora mostra as chamadas por quadro.
+- **Vista de longe** (D-098): zoom 0 (roda para trás depois do 1), o dobro da área; reduz com média, não pisca.
+- **Praça:** as duas árvores do meio saíram (clareira no gerador do mapa; nenhuma outra mudou de lugar).
+- **Spike do MPFB2** (D-091): instalado em `build/blender-ext`; o corpo realista perde o rosto a 48 px e o rig deforma o braço já parado. Fica o kit próprio. Comparação em `docs/capturas/v1/spike_mpfb.png`.
+- Decisões aprovadas no portão: D-086 (densidade), D-093 (sombra), D-094 (chão), D-097 → D-098 (zoom).
+
+O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vila_longe_dia/noite.png`, `praca_poco.png`, e os GIFs `docs/capturas/v1/folhas/carvalho_*`, `betula_*`.
+
+## Portão visual (VT-13), 1ª rodada — o que olhar
 - `docs/capturas/v1/`: `antes_depois_*.png` (V0 × V1 na mesma cena), `vila_dia/entardecer/noite`, `oficina_*` (zoom 1 e 2, dia, entardecer, noite), `praca_perto` (zoom 3), `contato.png`.
 - Folhas e GIFs: `docs/capturas/v1/folhas/` (`aprendiz_*.gif`, `avel_*.gif`, folhas de contato).
 - **Perguntas ao diretor:**
@@ -48,21 +61,21 @@
 ## Como ver o V1 (IntelliJ: Gradle → ETRAVA → Tasks)
 | Comando | Faz |
 |---|---|
-| `gradlew run` | o jogo; a fatia está no canto da oficina (F1 → `tp 25 29`, `hora 21` para a noite) |
+| `gradlew run` | o jogo; a fatia está no canto da oficina (F1 → `tp 25 29`, `hora 21` para a noite); roda do mouse para trás até a vista de longe (`zoom 0`) |
 | `gradlew captures -Proteiro=v1` | refaz as capturas do portão (em `game-client/build/capturas/v1`) |
 | `gradlew sheets` | folhas de contato e GIFs em `build/revisao` |
 | `gradlew renderArt` | refaz a arte que mudou (precisa do Blender 5.3; `-Pso=avel` limita, `-Pforce` refaz tudo) |
 | `gradlew blenderTeste` | o teste do cubo |
 
 ## Problemas conhecidos (Fase V)
-- **Spike do MPFB2 não feito:** a instalação da extensão foi bloqueada pela permissão do ambiente desta sessão (D-091). Para fazer: liberar a instalação (pasta isolada `build/blender-ext`) e mandar continuar.
-- Na praça, os dois carvalhos novos (copa mais cheia que a antiga) escondem o poço no zoom 1. Opções: copa menor nessas duas posições, ou o poço também ficar translúcido como o jogador. Decido com o portão.
+- O spike do MPFB2 roda só com a extensão em `build/blender-ext` (instalar: `BLENDER_USER_RESOURCES=build/blender-ext blender -b --online-mode -c extension install mpfb --enable`).
+- Folhas de personagem e o chão ainda não estão no atlas (cada um é uma textura); hoje custam pouco, revisar no V2 quando houver 25 pessoas.
 - Arte nova e antiga lado a lado: a nova tem mais detalhe e sombra projetada; as casas antigas continuam com o telhado de face única até o V5.
 - Avel só aparece de dia dentro da oficina (interior ainda antigo); no portão, vê-se nas folhas e nos GIFs.
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-Depois da aprovação do portão: V2, tarefa 1 de `docs/visual/V2.md` (kit humano modular e silhuetas por papel). Se o portão reprovar algo, iterar no V1.
+Depois da aprovação das árvores novas: V2, tarefa 1 de `docs/visual/V2.md` (kit humano modular e silhuetas por papel). Se o portão reprovar algo, iterar no V1.
 
 ---
 

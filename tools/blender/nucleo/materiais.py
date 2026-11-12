@@ -27,7 +27,7 @@ def registrados():
 
 def material(nome, rampa, k=0.25, textura=None, escala=1.0, ruido=None, var_objeto=0.0,
              pontilhar=False, emissivo=False, contorno=True, luz_min=0.0, oa=1.0, tons=None, linhas=True,
-             rampa_brilho=None, escala2=None, peso2=0.0):
+             rampa_brilho=None, escala2=None, peso2=0.0, sem_sombra=0.0):
     """Registra (ou devolve) o material `nome`.
 
     k          quanto a textura mexe no valor (0 = liso; casca e colmo ~0,5)
@@ -37,6 +37,8 @@ def material(nome, rampa, k=0.25, textura=None, escala=1.0, ruido=None, var_obje
     luz_min    piso de luz (tecidos claros não afundam no preto do lado da sombra)
     oa         peso da oclusão ambiente
     tons       limita a rampa aos tons [i, j] (o pixelizador usa só esses)
+    sem_sombra luz sem sombra projetada, multiplicada por este fator (0 = luz normal, com sombra);
+               o tronco sob a copa: o pixel artista pinta o lado da luz mesmo na sombra da copa
     """
     for m in _MATS:
         if m["nome"] == nome:
@@ -46,7 +48,8 @@ def material(nome, rampa, k=0.25, textura=None, escala=1.0, ruido=None, var_obje
     info = {"nome": nome, "indice": len(_MATS) + 1, "rampa": rampa, "k": k, "textura": textura,
             "escala": escala, "ruido": ruido, "var_objeto": var_objeto, "pontilhar": pontilhar,
             "emissivo": emissivo, "contorno": contorno, "luz_min": luz_min, "oa": oa, "tons": tons,
-            "linhas": linhas, "rampa_brilho": rampa_brilho, "escala2": escala2, "peso2": peso2}
+            "linhas": linhas, "rampa_brilho": rampa_brilho, "escala2": escala2, "peso2": peso2,
+            "sem_sombra": sem_sombra}
     _MATS.append(info)
     mat = bpy.data.materials.new(nome)
     mat["etrava"] = info["indice"]
@@ -178,6 +181,22 @@ def _arvore(mat, indice, emissivo, info, passe, distancia_oa, amostras_oa=8):
     ao.only_local = False
     ao.inputs["Distance"].default_value = distancia_oa
     det = _detalhe(nt, info) if info else 0.5
+    if info and info.get("sem_sombra"):
+        # R = max(0, N·L) × fator, emitido (sem raio de sombra)
+        from .render import DIRECAO_LUZ
+        geo_ = nt.nodes.new("ShaderNodeNewGeometry")
+        dot = nt.nodes.new("ShaderNodeVectorMath")
+        dot.operation = "DOT_PRODUCT"
+        dot.inputs[1].default_value = tuple(DIRECAO_LUZ)
+        nt.links.new(geo_.outputs["Normal"], dot.inputs[0])
+        mul = nt.nodes.new("ShaderNodeMath")
+        mul.operation = "MULTIPLY"
+        mul.use_clamp = True
+        mul.inputs[1].default_value = info["sem_sombra"]
+        nt.links.new(dot.outputs["Value"], mul.inputs[0])
+        cor = _rgb(nt, mul.outputs[0], ao.outputs["AO"], det)
+        nt.links.new(_emissao(nt, cor).outputs[0], out.inputs["Surface"])
+        return
     cor = _rgb(nt, 0.0, ao.outputs["AO"], det)
     add = nt.nodes.new("ShaderNodeAddShader")
     nt.links.new(dif.outputs[0], add.inputs[0])

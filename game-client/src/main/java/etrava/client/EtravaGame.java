@@ -157,6 +157,7 @@ public final class EtravaGame extends ApplicationAdapter {
             for (String p : report.errors()) LOG.warn("Validador: {}", p);
         }
         assets = new Assets(options.assetsDir());
+        assets.preloadSprites();
         settings = Settings.load();
         audio = new etrava.client.audio.AudioPlayer(options.assetsDir(), assets.manifest(), settings);
         dayNight = DayNight.load(options.assetsDir());
@@ -1541,7 +1542,7 @@ public final class EtravaGame extends ApplicationAdapter {
                 return "velocidade x" + timeScale;
             case "zoom":
                 ((IsoCameraRig) camera).setPixelScale((int) num(p, 1));
-                return "zoom: cada pixel de arte ocupa " + (int) num(p, 1) + " px da tela (1 a 4)";
+                return "zoom: cada pixel de arte ocupa " + (int) num(p, 1) + " px da tela (0 = vista de longe, 1 a 4)";
             case "semente":
                 return "semente " + v.seed();
             case "luz":
@@ -1612,13 +1613,14 @@ public final class EtravaGame extends ApplicationAdapter {
     private final class Bench {
         private static final float WARMUP = 3f;
         private final float[] times = new float[1 << 20];
-        private int count;
+        private int count, calls0;
         private float elapsed;
 
         void frame() {
             float raw = Gdx.graphics.getDeltaTime();
             elapsed += raw;
             if (elapsed < WARMUP) return;
+            if (count == 0) calls0 = scene.totalRenderCalls();
             if (count < times.length) times[count++] = raw;
             if (elapsed < WARMUP + options.bench()) return;
             float[] sorted = java.util.Arrays.copyOf(times, count);
@@ -1631,10 +1633,11 @@ public final class EtravaGame extends ApplicationAdapter {
             Runtime rt = Runtime.getRuntime();
             String result = String.format(Locale.ROOT,
                     "BENCH área=%s %s NPCs=%d inimigos=%d %dx%d luz=%s pós=%s | média %.0f FPS | 1%% pior %.0f FPS | "
-                            + "pior quadro %.1f ms | heap %d MB | %s",
+                            + "pior quadro %.1f ms | %d chamadas/quadro | heap %d MB | %s",
                     sim.view().areaId(), sim.view().clock().format(), sim.view().actors().size(),
                     sim.view().enemies().size(), Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight(),
                     scene.lightingEnabled, scene.postEnabled, count / sum, worst / low, sorted[count - 1] * 1000,
+                    (scene.totalRenderCalls() - calls0) / Math.max(1, count),
                     (rt.totalMemory() - rt.freeMemory()) >> 20, Gdx.gl.glGetString(GL20.GL_RENDERER));
             LOG.info(result);
             System.out.println(result);

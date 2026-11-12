@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.PixmapPacker;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
 import etrava.sim.content.AssetManifest;
@@ -67,6 +68,13 @@ public final class Assets implements Disposable {
     private final Map<String, Sheet> sheets = new HashMap<>();
     private final Set<String> warned = new HashSet<>();
     private Texture checker;
+    /**
+     * Atlas dos sprites do mundo (D-099): cada quadro de cada sprite vai para páginas grandes, para
+     * o lote não quebrar a cada troca de textura (eram ~2.200 chamadas de desenho por quadro).
+     */
+    private final PixmapPacker packer = new PixmapPacker(2048, 2048, Pixmap.Format.RGBA8888, 2, false);
+    private final java.util.List<Object[]> pending = new java.util.ArrayList<>();
+    private boolean deferUpload;
 
     public Assets(Path assetsDir) {
         this.root = assetsDir;
@@ -79,6 +87,70 @@ public final class Assets implements Disposable {
 
     /** Pasta assets/ (configurações de apresentação: decoração, luz). */
     public Path root() { return root; }
+
+    /** Empacota de uma vez todos os sprites do manifesto (uma subida por página, não uma por sprite). */
+    public void preloadSprites() {
+        deferUpload = true;
+        int n = 0;
+        for (AssetManifest.Entry e : manifest.entries().values()) {
+            if (!"sprite".equals(e.type())) continue;
+            variants(e.id());
+            n++;
+        }
+        deferUpload = false;
+        flushAtlas();
+        LOG.info("Atlas: {} sprites em {} página(s) de 2048×2048", n, packer.getPages().size);
+    }
+
+    private TextureRegion packed(String id, String file, int frame, int frames) {
+        String name = file + "#" + frame;
+        TextureRegion r = new TextureRegion();
+        if (packer.getRect(name) == null) {
+            Pixmap whole = pixmap(id, file);
+            if (whole == null) return null;
+            int fw = whole.getWidth() / frames;
+            Pixmap one = new Pixmap(fw, whole.getHeight(), Pixmap.Format.RGBA8888);
+            one.setBlending(Pixmap.Blending.None);
+            one.drawPixmap(whole, 0, 0, frame * fw, 0, fw, whole.getHeight());
+            packer.pack(name, one);
+            one.dispose();
+        }
+        pending.add(new Object[] {r, name});
+        if (!deferUpload) flushAtlas();
+        return r;
+    }
+
+    private final Map<String, Pixmap> pixmaps = new HashMap<>();
+
+    private Pixmap pixmap(String id, String file) {
+        if (pixmaps.containsKey(file)) return pixmaps.get(file);
+        Path path = root.resolve(file);
+        Pixmap pm = null;
+        if (!Files.exists(path)) missing(id, "arquivo ausente: " + file);
+        else {
+            try {
+                pm = new Pixmap(Gdx.files.absolute(path.toString()));
+            } catch (RuntimeException ex) {
+                missing(id, "falha ao carregar " + file + ": " + ex.getMessage());
+            }
+        }
+        pixmaps.put(file, pm);
+        return pm;
+    }
+
+    private void flushAtlas() {
+        packer.updatePageTextures(Texture.TextureFilter.Linear, Texture.TextureFilter.Nearest, false);
+        for (Object[] p : pending) {
+            String name = (String) p[1];
+            PixmapPacker.PixmapPackerRectangle rc = packer.getRect(name);
+            TextureRegion r = (TextureRegion) p[0];
+            r.setTexture(packer.getPage(name).getTexture());
+            r.setRegion(rc.getX(), rc.getY(), rc.getWidth(), rc.getHeight());
+        }
+        pending.clear();
+        for (Pixmap pm : pixmaps.values()) if (pm != null) pm.dispose();
+        pixmaps.clear();
+    }
 
     public Sprite sprite(String id) {
         return variants(id)[0];
@@ -97,20 +169,25 @@ public final class Assets implements Disposable {
             java.util.List<Sprite> list = new java.util.ArrayList<>();
             for (int i = 0; i < files.size(); i++) {
                 String file = files.get(i);
-                Texture tex = load(key, file);
-                if (tex == null) continue;
+                Pixmap whole = pixmap(key, file);
+                if (whole == null) continue;
+                int tw = whole.getWidth(), th = whole.getHeight();
                 String glowFile = e.emissive() == null ? null : i == 0 ? e.emissive() : file.replace(".png", "_brilho.png");
-                Texture glow = glowFile != null && Files.exists(root.resolve(glowFile)) ? load(key, glowFile) : null;
+                boolean glow = glowFile != null && Files.exists(root.resolve(glowFile));
                 int n = e.frames() != null && e.frames() > 1 ? e.frames() : 1;
-                int fw = tex.getWidth() / n;
+                int fw = tw / n;
                 TextureRegion[] fr = new TextureRegion[n];
-                TextureRegion[] gl = glow != null ? new TextureRegion[n] : null;
+                TextureRegion[] gl = glow ? new TextureRegion[n] : null;
+                boolean defer = deferUpload;
+                deferUpload = true; // um sprite inteiro antes de subir
                 for (int f = 0; f < n; f++) {
-                    fr[f] = new TextureRegion(tex, f * fw, 0, fw, tex.getHeight());
-                    if (gl != null) gl[f] = new TextureRegion(glow, f * fw, 0, fw, glow.getHeight());
+                    fr[f] = packed(key, file, f, n);
+                    if (gl != null) gl[f] = packed(key, glowFile, f, n);
                 }
+                deferUpload = defer;
+                if (!defer) flushAtlas();
                 float ax = e.anchor() != null ? (float) e.anchor()[0] : fw / 2f;
-                float ay = e.anchor() != null ? (float) e.anchor()[1] : tex.getHeight();
+                float ay = e.anchor() != null ? (float) e.anchor()[1] : th;
                 list.add(new Sprite(fr, gl, ax, ay, e.scaleOr(), e.fps() != null ? e.fps().floatValue() : 6f));
             }
             if (list.isEmpty()) list.add(placeholderSprite());
@@ -191,7 +268,8 @@ public final class Assets implements Disposable {
         } else {
             try {
                 tex = new Texture(Gdx.files.absolute(path.toString()));
-                tex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest); // pixel art
+                // pixel art: ampliar sem filtro; reduzir (só na vista de longe, D-098) com média
+                tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Nearest);
             } catch (RuntimeException ex) {
                 missing(id, "falha ao carregar " + file + ": " + ex.getMessage());
             }
@@ -256,5 +334,6 @@ public final class Assets implements Disposable {
     @Override
     public void dispose() {
         for (Texture t : textures.values()) if (t != null) t.dispose();
+        packer.dispose();
     }
 }

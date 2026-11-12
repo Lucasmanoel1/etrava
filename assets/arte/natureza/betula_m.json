@@ -1,6 +1,6 @@
 {
-  "frame" : [ 247, 253 ],
-  "anchor" : [ 70.0, 223.0 ],
+  "frame" : [ 211, 202 ],
+  "anchor" : [ 52.0, 184.0 ],
   "directions" : 1,
   "animations" : {
     "vento" : {

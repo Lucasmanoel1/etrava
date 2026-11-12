@@ -124,8 +124,8 @@
   - "arte/natureza/carvalho_m.png"
   - "arte/natureza/carvalho_g.png"
   anchor:
-  - 111.0
-  - 206.0
+  - 90.0
+  - 184.0
   frames: 8
   fps: 5.0
   meta: "arte/natureza/carvalho_m.json"
@@ -139,8 +139,8 @@
   - "arte/natureza/betula_m.png"
   - "arte/natureza/betula_g.png"
   anchor:
-  - 70.0
-  - 223.0
+  - 52.0
+  - 184.0
   frames: 8
   fps: 5.0
   meta: "arte/natureza/betula_m.json"

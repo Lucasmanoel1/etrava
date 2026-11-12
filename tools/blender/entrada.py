@@ -53,6 +53,8 @@ def main():
         from tarefas import chao as tarefa
     elif tipo == "decoracao":
         from tarefas import decoracao as tarefa
+    elif tipo == "spike_mpfb":
+        from tarefas import spike_mpfb as tarefa
     else:
         raise SystemExit("tipo de trabalho desconhecido: " + tipo)
     tarefa.executar(trabalho)

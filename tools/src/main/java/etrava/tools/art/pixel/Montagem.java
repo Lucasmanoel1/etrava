@@ -105,6 +105,7 @@ final class Montagem {
             case "chao" -> "chao";
             case "decoracao" -> "decoracao";
             case "casa" -> "construcoes";
+            case "spike_mpfb" -> "spike";
             default -> "natureza";
         };
         Map<String, String> arquivos = new LinkedHashMap<>(), brilhos = new LinkedHashMap<>();

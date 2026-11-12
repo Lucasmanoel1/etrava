@@ -11,9 +11,12 @@ import etrava.client.render.IsoProjection;
  * (RF-020/021). O jogo é pixel art, então o zoom só assume valores em que um
  * pixel de arte ocupa um número inteiro de pixels da tela (1× a 4×), e a
  * câmera para sempre em cima de um pixel da tela — é isso que evita tremedeira.
+ * O passo 0 é a vista de longe (D-098): meio pixel de tela por pixel de arte; as texturas
+ * reduzem com filtro linear (média de 2×2), então nada pisca.
  */
 public final class IsoCameraRig implements CameraRig {
-    public static final int MIN_PIXEL_SCALE = 1;
+    /** 0 = vista de longe (meia escala). */
+    public static final int MIN_PIXEL_SCALE = 0;
     public static final int MAX_PIXEL_SCALE = 4;
     private static final float FOLLOW_SPEED = 8f;
     /** Mira um pouco acima dos pés, para o personagem ficar no centro da tela. */
@@ -45,7 +48,7 @@ public final class IsoCameraRig implements CameraRig {
     }
 
     private void apply() {
-        camera.zoom = IsoProjection.ART_SCALE / (float) pixelScale;
+        camera.zoom = IsoProjection.ART_SCALE / (pixelScale == 0 ? 0.5f : (float) pixelScale);
         float step = camera.zoom; // um pixel de tela, em unidades de mundo
         camera.position.set(Math.round(x / step) * step, Math.round(y / step) * step, 0);
         camera.update();
@@ -75,7 +78,7 @@ public final class IsoCameraRig implements CameraRig {
         return pixelScale;
     }
 
-    /** Quantos pixels da tela cada pixel de arte ocupa (1 = mais longe, 4 = mais perto). */
+    /** Quantos pixels da tela cada pixel de arte ocupa (0 = meio, a vista de longe; 4 = mais perto). */
     public void setPixelScale(int scale) {
         pixelScale = MathUtils.clamp(scale, MIN_PIXEL_SCALE, MAX_PIXEL_SCALE);
         scaleChosen = true;
