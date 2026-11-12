@@ -118,7 +118,7 @@
         - {learn: {who: ciro, fact: lauro_ganha_sempre, certainty: witnessed}}
       transitions:
         - {when: {flag: ciro_sabe_dado}, to: briga}
-      timeout: {after: {days: 9, jitterHours: 48}, to: briga}
+      timeout: {after: {days: 14, jitterHours: 60}, to: briga}
     briga:
       chronicle: Ciro virou a mesa da taverna e chamou Lauro de ladrão; Marta pôs os dois para fora
       onEnter:
@@ -158,7 +158,7 @@
       onEnter:
         - {learn: {who: comerciante_posto, fact: posto_procura_braco, certainty: witnessed}}
         - {learn: {who: viajante, fact: posto_procura_braco, certainty: rumor}}
-      timeout: {after: {days: 8, jitterHours: 60}, to: rastros}
+      timeout: {after: {days: 17, jitterHours: 72}, to: rastros}
     rastros:
       chronicle: Vessa achou rastros de gente acampada na curva da estrada
       onEnter:

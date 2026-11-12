@@ -37,7 +37,7 @@
   start: viagem
   stages:
     viagem:
-      timeout: {after: {days: 10, jitterHours: 120}, to: desaparecido}
+      timeout: {after: {days: 16, jitterHours: 120}, to: desaparecido}
     desaparecido:
       terminal: true
       outcome: neutro
@@ -52,18 +52,18 @@
   start: antes
   stages:
     antes:
-      timeout: {after: {days: 4, jitterHours: 48}, to: milagre}
+      timeout: {after: {days: 5, jitterHours: 48}, to: milagre}
     milagre:
       chronicle: chega a história da mulher que atravessou o incêndio
       onEnter:
         - {learn: {who: viajante, fact: berta_atravessou_fogo, certainty: rumor}}
-      timeout: {after: {days: 6, jitterHours: 48}, to: vizinhos}
+      timeout: {after: {days: 8, jitterHours: 60}, to: vizinhos}
     vizinhos:
       chronicle: a história muda — os vizinhos da mulher é que se queimaram
       onEnter:
         - {learn: {who: viajante, fact: berta_vizinhos_queimados, certainty: rumor}}
       timeout:
-        after: {days: 6, jitterHours: 48}
+        after: {days: 9, jitterHours: 60}
         choose:
           - {weight: 1, to: foi_embora}
           - {weight: 1, to: memorial}
@@ -85,7 +85,7 @@
   start: boato
   stages:
     boato:
-      timeout: {after: {days: 8, jitterHours: 120}, to: cobranca}
+      timeout: {after: {days: 13, jitterHours: 120}, to: cobranca}
     cobranca:
       terminal: true
       outcome: neutro

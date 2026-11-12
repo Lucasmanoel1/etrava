@@ -19,7 +19,7 @@
       chronicle: o campo de Bento está encharcado; ele quer abrir valas
       transitions:
         - {when: {var: {name: valas_abertas, min: 2}}, to: desabamento}
-      timeout: {after: {days: 6, jitterHours: 36}, to: desabamento}
+      timeout: {after: {days: 9, jitterHours: 48}, to: desabamento}
 
     desabamento:
       chronicle: a terra cedeu no campo de Bento; lá embaixo há pedra trabalhada
@@ -34,7 +34,7 @@
       transitions:
         - {when: {flag: mostrou_achado}, to: mostrado}
       timeout:
-        after: {days: 6, jitterHours: 24}
+        after: {days: 7, jitterHours: 36}
         choose:
           - when: {arc: {id: a2_avel, stage: comitiva}}
             to: registrado

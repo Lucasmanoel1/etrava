@@ -42,7 +42,7 @@ stages:
     onEnter:
       - {learn: {who: nalia, fact: nalia_ouve_vozes, certainty: witnessed}}
       - {learn: {who: moleiro, fact: nalia_ouve_vozes, certainty: witnessed}}
-    timeout: {after: {days: 2, jitterHours: 12}, to: impasse}
+    timeout: {after: {days: 3, jitterHours: 18}, to: impasse}
 
   impasse:
     chronicle: a família procurou a curandeira; o ferreiro quer cortar a árvore; Nalia se recusa
@@ -57,7 +57,7 @@ stages:
       - {when: {flag: ligacao_cortada}, to: arvore_morre}
       - {when: {flag: jogador_apoiou_corte}, to: pai_corta_arvore}
     timeout:
-      after: {days: 7, jitterHours: 24}
+      after: {days: 11, jitterHours: 36}
       choose:
         # o estudioso só aparece no moinho se passou pela região E se a história chegou à estrada
         - when: {all: [{flag: estudioso_na_regiao}, {knows: {who: viajante, fact: nalia_ouve_vozes}}]}

@@ -31,7 +31,7 @@ stages:
       - {learn: {who: aldea, fact: forasteiro_pergunta, certainty: rumor}}
       - {learn: {who: avel, fact: forasteiro_pergunta, certainty: claim}}
       - {learn: {who: ferreiro, fact: avel_nega_estranho, certainty: witnessed}}
-    timeout: {after: {days: 4, jitterHours: 18}, to: comitiva}
+    timeout: {after: {days: 6, jitterHours: 24}, to: comitiva}
 
   comitiva:
     chronicle: chegou a comitiva de Caldris, para medir as terras e atualizar os registros
@@ -62,7 +62,7 @@ stages:
     transitions:
       # alguém contou à comitiva que Avel chegou aqui com uma criança, há vinte e poucos anos
       - {when: {flag: contou_comitiva_avel}, to: carta}
-    timeout: {after: {days: 8, jitterHours: 24}, to: carta}
+    timeout: {after: {days: 10, jitterHours: 36}, to: carta}
 
   carta:
     chronicle: Avel recebeu uma carta pela estrada e queimou o envelope na lareira
