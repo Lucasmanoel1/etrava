@@ -3,101 +3,105 @@
 Última atualização: 2026-11-12
 
 ## Estado atual
-- **Marco concluído:** M7 — Conteúdo completo.
-- **Status:** **PARADO no fim do M7**, aguardando o usuário mandar continuar para o M8 (Polimento e release).
-- Marcos concluídos: M0, M1, M2, M3, M4, M5, M6, M7.
-- Aviso do usuário (2026-11-11): do M5 ao M7 ele usa o Opus; volta ao Fable no M8, para polir.
+- **Marco em fechamento:** M8 — Polimento e release do MVP.
+- **Status:** **PARADO no fim do M8.** Tudo o que dá para fazer sem uma pessoa jogando está feito e testado; o que falta para a "definição de pronto" do PRD 16 depende do diretor (lista em "O que só você pode fechar").
+- Marcos concluídos: M0 a M7. M8: trabalho de máquina concluído; aprovação humana pendente.
 
-## Feito no M7
+## Feito no M8
 
-**Região (D-067, D-068).** Pedra-Mansa inteira: 15 construções (oficina de Avel, taverna, forja de Doran, moinho com a árvore de Nalia, casa da curandeira, casas, celeiro), praça com poço, cemitério cercado, pomar de Celi, horta, as lavouras de Bento e Gil com a divisa e os marcos. A estrada para leste, pelo bosque ralo, com a curva de má fama, até o **Posto da Encruzilhada** (casa, bancas, carroça, encruzilhada). Quatro **interiores** em corte, com luz própria: oficina (onde o jogo começa), taverna, moinho e casa da curandeira. Tudo gerado por `gradlew generateRegion` (abre no Tiled). Arte nova por código: assoalho, lajota, lavoura, paredes em corte, mesas, bancos, camas, balcão, lareira, bancada, baú, sacos, mó, ervas, forja, bigorna, cercas, lápides, estacas, marco, tenda, carroça, banca, espantalho, árvore de fruta, cinco casas novas e 14 personagens.
+**Aparência e leitura**
+- **Fonte própria** (D-077): Alegreya (OFL), gerada no tamanho exato — o texto "Grande" e "Maior" não borra mais. Mudar o tamanho nas opções vale na hora.
+- **Ícones dos 43 itens** (por código, na paleta), na mochila, no comércio e nos contêineres.
+- **Golpes animados** (D-078): gente ergue o braço e bate; o inimigo ergue enquanto anuncia o golpe (dá para ler e esquivar). O lobo tem bote, cabeça, orelhas e olhos, e não vaza mais para o quadro vizinho.
+- **Borda do mapa** (D-079): o chão continua além do mapa, escurece e vira mato. Acabou o vazio preto perto do Posto e nos cantos da vila.
+- **HUD:** as teclas de luta só aparecem com inimigo por perto; as barras somem na conversa e no comércio e acompanham o tamanho do texto; balões não se sobrepõem; num bando, só o primeiro fala.
+- Posto: árvores afastadas das bancas.
 
-**Elenco.** 22 NPCs nomeados (8 de camada A) + viajante e estudioso. Retrato de todos pela Dreamina (17 novos), na paleta do jogo. Agendas que passam pelas portas; festa, arcos e estágios mudam a rotina.
+**Jogo**
+- **Ritmo** (D-081): prazos dos arcos redistribuídos. Sem o jogador, o último acontecimento caía no dia 18–22 e sobravam dez dias vazios; agora cai entre os dias 24 e 29, e os desfechos que se amontoavam nos dias 9–12 ficam espalhados.
+- **Defeito corrigido:** no ritmo Contemplativo o capítulo acabava no dia 30 com metade das histórias em aberto. Agora dura 60 dias.
+- **Tempo jogado** nos saves (cabeçalho do save; aparece na lista).
+- Inimigos não ficam mais um dentro do outro.
 
-**Histórias (todas andam sozinhas; o jogador pode mudar o fim):**
-| | O que é | Desfechos | Sem o jogador |
-|---|---|---|---|
-| A1 | Nalia e a árvore (M4) | 5 | pai corta / Nalia piora / estabilizada |
-| **A2** | O homem de fora procura alguém de Mir; a comitiva de Caldris mede as terras; Avel recebe uma carta | confessa · encontrado · partiu · averiguação | encontrado ou partiu |
-| **A3** | A terra cede no campo de Bento durante a vala; Avel diz que não reconhece as marcas | tapado · registrado · mostrado | tapado ou registrado |
-| H1 | O ladrão de frutas: é Pipo, alimentando um cachorro manco | Celi descobre · contado · segredo guardado | **leve** |
-| H2 | A divisa: as estacas de Caldris pioram; o livro de enterros de Firmino resolve | acordo · Firmino resolve · piorou | piorou ou Firmino |
-| H3 | Os apostadores (Cena 1 da lore); jogo de dados de verdade; o dado de Lauro tem chumbo | as pazes · Lauro barrado | **leve** |
-| H4 | Trabalho no Posto (carga e vigia); saqueadores atacam o Posto numa noite | defendido · roubado | roubado |
-| H5 | A festa da colheita; Anselmo diz que o trem vai passar por cima dos mortos — e dias depois as estacas cortam o cemitério | acabou bem | **leve** |
-| E1–E5 | Já do M4; agora com conversas no Posto | | |
+**Som**
+- Áudio em **OGG Vorbis** (D-080): 37 MB → 5 MB. O ZIP do jogo tem 51 MB.
 
-**Quantidades (AT-19):** 89 fatos, 48 conversas ambientes, 43 itens (10 documentos legíveis), 6 trabalhos, 2 comerciantes, 3 inimigos, 60 fragmentos de epílogo, 8 músicas, 16 arcos.
+**Ferramentas de verificação** (D-082)
+- `--bench=S` (mede FPS), `--bot=S` (jogador automático), `--hidden`, `--vel=N`; `ETRAVA_USERDIR` isola saves e opções nos testes.
+- `gradlew at16`: AT-16 automático.
+- `ChaosTest`: comandos ao acaso no núcleo, 31 dias, 6 sementes, com save e load no meio.
+- Os testes agora rodam de novo quando um dado de `content/` muda (antes o Gradle os dava por atualizados).
 
-**Som (D-071).** Música por contexto (vila de dia/noite, casa, taverna, estrada, ruína, combate, menu, festa), ambiente por área e período, passos em 3 superfícies, combate, portas, interface, fenômenos (a árvore, o eco). Cinco canais de volume.
+**Documentos:** `WRITING.md` (guia de escrita), `docs/TESTES_MANUAIS.md` (roteiro dos AT manuais e da sessão de 3 h), D-077 a D-083, `STYLE.md` atualizado, capturas em `docs/capturas/m8/`.
 
-**Telas.** Menu principal com ilustração; novo jogo (origem, nome, ritmo); carregar e salvar com miniaturas (3 manuais + rápido + 3 automáticos); opções (volumes, tela cheia, V-Sync, FPS, pós-processamento, luz, tamanho do texto, tempo dos balões); pausa no Esc. **Mapa ilustrado** (M) com os lugares por onde se passou. **Caderno** com as cinco abas do PRD: Ouvi dizer, Vi e li, Pessoas, Lugares, Documentos. Documentos abrem para ler. Epílogo com painéis ilustrados. Portas destacadas sob o cursor.
+## Definição de pronto (PRD 16) — onde cada critério está
 
-**Núcleo.** Saídas com condição; lugares visitados; origem com local, conhecimento, opiniões e flags; nó de desvio nos diálogos (sorte, estado); condição `{here}`; contêineres com condição; documentos que não se gastam; NPCs atravessam portas; save v6 com migração da v5 (D-070).
+| Critério | Situação |
+|---|---|
+| AT-01 a AT-09 | **passam** (automáticos, `gradlew build`) |
+| AT-10, AT-11, AT-12 | os mecanismos têm teste automático (desfechos do A1 e voluntários em `ArcsTest`; canais das escolhas no validador); **falta alguém jogar** o roteiro |
+| AT-13, AT-14 | **passam** no automático (`CombatTest`); roteiro manual escrito |
+| AT-15 portão visual | capturas prontas em `docs/capturas/m8/`; **falta a sua aprovação** |
+| AT-16 | **passa** (`gradlew at16`, duas sementes: 10 assets a menos, jogo roda, log avisa) |
+| AT-17 | medido só nesta máquina (RX 6650 XT, 1280×720): **503 FPS** de média, 286 no 1 % pior, festa à noite com 15 NPCs, luz e pós ligados. **Sem medida no hardware de referência (GTX 1050) nem no mínimo (Iris Xe)** |
+| AT-18 | o `Etrava.exe` roda com o `PATH` sem Java e sem `JAVA_HOME`. **Falta uma máquina de fato limpa** |
+| AT-19, AT-20, AT-21 | **passam** (`ContentM7Test`) |
+| Zero erros no validador | **ok** |
+| Sessão de 3 h sem queda | jogador automático: ver "Teste de resistência" abaixo. **A sessão humana de 3 h falta** |
+| RNF de tempo | início até o jogo ≈ 1,7 s; salvar 3–19 ms; carregar 4–9 ms; 30 dias headless ≈ 2 s (com a partida do Gradle) — todos com folga |
 
-## Testes de aceitação do marco
-| Critério | Situação | Teste |
-|---|---|---|
-| AT-19 | passa: todas as quantidades da tabela 13.2 (NPCs, A, conversas, fatos, documentos, itens por categoria, comerciantes, trabalhos, inimigos, fragmentos, músicas, interiores, retrato por NPC) | `ContentM7Test.at19_quantidadesDoMvp`, `AssetsAndActorsTest.conteudoEAssetsDoRepositorioSaoValidos` |
-| AT-20 | passa no automático (nenhum fato começa com verbo no imperativo; o caderno não tem objetivos). Conferência visual das telas: nenhum marcador | `ContentM7Test.at20_cadernoSemInstrucoes` + roteiro abaixo |
-| AT-21 | passa: em 8 sementes sem o jogador, ≥ 2 histórias leves (H1, H3, H5, às vezes H2) e no máximo metade trágica | `ContentM7Test.at21_tomDosDesfechosPadrao` |
+`gradlew build`: **129 testes passando**, cobertura do núcleo 92 %, validador sem erros.
 
-`gradlew build`: 125 testes passando, validador sem erros. `simulate --dias 30 --semente 42`: todos os arcos terminam e o epílogo cobre A1–A3, H1–H5 e E1–E5. `simulate --politica trabalhador --dias 10`: 144 moedas.
+## Teste de resistência
+Dois jogadores automáticos no executável de release, janela oculta, som mudo, pasta de usuário isolada:
+- **3 horas em tempo real** (`--bot=10800 --seed=101`): iniciado às 08:27 de 12/11. *Resultado: preencher ao terminar.*
+- **40 minutos a 8×** (`--bot=2400 --vel=8 --seed=202`): iniciado às 08:27. *Resultado: preencher ao terminar.*
+
+Antes desses: três rodadas curtas (40 a 150 s) e as duas do AT-16, todas sem erro.
 
 ## Como rodar e testar
 | Comando | Faz |
 |---|---|
-| `gradlew run` | abre o jogo **no menu principal** |
-| `gradlew run --args="--area=vila"` | pula o menu (desenvolvimento) |
+| `gradlew run` | abre o jogo no menu principal |
 | `gradlew build` | compila, testa, confere cobertura e valida conteúdo e assets |
-| `gradlew simulate --args="--dias 30 --semente 42"` | 30 dias sem o jogador: arcos, epílogo e crônica |
-| `gradlew generateRegion` / `generateArt` / `generateAudio` / `generateEstrutura` | regeneram mapas, arte e som |
-| `gradlew importPortraits` / `importIllustrations` | convertem a arte da Dreamina (pasta `arte-bruta`) |
-| `gradlew distWin` | gera o `Etrava.exe` e o ZIP |
+| `gradlew distWin` | gera `game-client/build/package/Etrava-0.1.0-win.zip` (51 MB, Java embutido) |
+| `gradlew at16` | AT-16 automático |
+| `gradlew simulate --args="--dias 30 --semente 42"` | 30 dias sem o jogador: crônica e epílogo |
+| `gradlew generateArt` / `generateRegion` / `generateAudio` | regeneram arte, mapas e som (o som pede Python com `pip install soundfile`) |
 
-No IntelliJ: janela Gradle → `ETRAVA > Tasks > application > run`.
+No IntelliJ: janela Gradle → `ETRAVA > Tasks > application > run` (ou `verification > at16`, `distribution > distWin`).
 
-Controles novos: **M** mapa · **Esc** pausa (salvar, carregar, opções) · setas trocam a aba do caderno. Os de antes continuam (I mochila, C ficha, J caderno, T esperar, F5/F9, F1 console).
+Para ver o M8 em dez minutos:
+1. `gradlew run`. Repare no nome do jogo e nos menus com a fonte nova. Opções → Tamanho do texto → Maior: as telas mudam na hora e continuam nítidas.
+2. Novo jogo. **I** abre a mochila: ícones. Fale com Avel: as barras de vida saem da frente do retrato.
+3. Saia para a vila e ande até um canto do mapa: o chão segue e some no mato.
+4. F1 → `area estrada`, `tp 57 24`, `encontro saqueadores_posto`: eles se espalham em volta, um fala, erguem o braço antes de bater; clique para bater de volta. `saude 500` se quiser durar.
+5. Esc → Salvar → Jogo 1; depois Esc → Carregar: o slot mostra o tempo de jogo (depois do primeiro minuto).
+6. O roteiro completo dos testes manuais está em `docs/TESTES_MANUAIS.md`.
 
-Roteiro para ver o M7 (uns 20 minutos):
-1. `gradlew run`. Menu → Novo jogo → nome e ritmo → Começar. Você acorda na oficina; Avel está na bancada. Fale com ele ("Termino o eixo agora") e repare na música e no fogo da lareira.
-2. Passe o mouse na porta (fundo da oficina): "Ir para: Pedra-Mansa". Saia. **M** mostra o mapa; **J** e as setas mostram as abas do caderno (Lugares já tem Pedra-Mansa).
-3. Ande pela vila: taverna (entre à noite: Lauro e Ciro jogam dados; sente para jogar com Lauro), moinho, casa da curandeira, cemitério, pomar, lavouras. Conversas ambientes aparecem em balões.
-4. Pelo console (F1), para acelerar as histórias: `arcos` lista tudo; `arco a2_avel comitiva` traz a comitiva (tenda no largo, estacas na divisa no dia seguinte); `arco a3_estrutura desabamento` abre o buraco no campo de Bento (ande até ele para descer); `arco h5_festa festa` começa a festa na praça; `arco h4_posto ataque` com você no Posto à noite faz os saqueadores aparecerem.
-5. A2 pelo caminho do jogador: com a comitiva no vilarejo, abra o baú de Avel (de noite, com ele dormindo, ninguém vê), leia os papéis na aba Documentos, suba a opinião dele (trabalhando na oficina) e pergunte.
-6. H1: no fim da tarde, procure Pipo atrás do feno no fundo do pomar.
-7. Esc → Salvar → Jogo 1 (a miniatura aparece no Carregar). Opções: mexa nos volumes e no tamanho do texto.
-8. `epilogo` no console mostra como o epílogo sairia agora, com os painéis.
-9. Sem janela: `gradlew test --tests "*ContentM7Test*"`.
+## O que só você pode fechar
+1. **Ouvir o som** (D-071). É sintetizado e eu não escuto: conferi níveis e emendas por número. Serve de base, ou trocamos por trilha de verdade?
+2. **AT-15:** aprovar (ou não) as capturas de `docs/capturas/m8/`.
+3. **Sessão de 3 horas** jogando o `Etrava.exe` (checklist no fim de `docs/TESTES_MANUAIS.md`).
+4. **AT-18** numa máquina sem Java, e **AT-17** numa GTX 1050 e numa Iris Xe, se houver como.
+5. **Termos de uso comercial da Dreamina** para os 18 retratos e as 4 ilustrações, antes de qualquer distribuição pública.
 
 ## Decisões que pedem aprovação
-- **D-069 / Q-08 (narrativa, alto impacto):** o homem de fora é Oren, que perdeu um filho na fuga de Mir e procura o técnico que saiu com crianças.
-- **D-073 (narrativa):** como A2 termina — o que Avel confessa (trabalhou em Mir, saiu com a criança, o nome Iria; nunca "não sou seu tio"), e a delação à comitiva como o único caminho trágico.
-- **D-074:** A3 sem nenhum desfecho trágico; a vala como gatilho.
-- **D-067:** elenco e nomes novos (todos provisórios, no glossário); Doran separado de Avel; Celi jovem (o retrato saiu assim).
-- **D-071 (som):** o som é sintetizado e provisório. **Eu não consigo ouvir** — conferi níveis, picos e emendas dos loops numericamente, mas o diretor precisa escutar e dizer se serve de base ou se trocamos por trilha de verdade no M8.
-- Texto novo de todas as conversas, fatos, documentos e epílogo: para a leitura de tom.
-- Ilustrações do menu e do mapa (Dreamina): se o estilo serve.
-
-## Créditos da Dreamina neste marco
-17 retratos × 30 + 1 (Avel) × 30 = 540; 5 ilustrações × 60 = 300 (uma, `epilogo_estrada`, foi cobrada mas o arquivo ficou inacessível: a CLI passou a apontar para outro canvas). **Total ≈ 840.**
+- Do M7, ainda abertas: **D-069** (quem é Oren), **D-073** (como A2 termina e o que Avel confessa), **D-074** (A3 sem desfecho trágico), **D-067** (elenco e nomes), texto de todas as conversas, ilustrações do menu e do mapa.
+- Do M8: **D-077** (Alegreya como fonte do jogo — impacto visual), **D-079** (mato além da borda), **D-081** (ritmo novo: veja se os dias 13–17 não ficaram parados para quem não investiga).
 
 ## Problemas conhecidos / pendências
-- **Som não escutado por mim** (ver acima). Arquivos em WAV (38 MB); o PRD pede OGG — conversão no M8, sem mudar código.
-- Slot de save sem "tempo jogado" (D-075).
-- A fonte padrão do libGDX fica borrada no texto grande; uma fonte serifada própria seria polimento do M8.
-- Combate ainda sem animação de golpe; personagens só têm parado/andando.
-- O mapa ilustrado é de IA: as marcas das áreas foram postas à mão sobre a imagem (`mapPos`) e ficam aproximadas.
-- Interiores: a borda da frente do cômodo fica aberta (corte), e o piso se esfuma um pouco além dela.
-- O Posto ficou com árvores densas perto das bancas; ajuste fino de mapa no M8.
-- O painel `epilogo_estrada` não veio; o epílogo usa dois painéis.
-- Do M6 e antes, ainda valem: inimigos atravessam uns aos outros; o lobo de frente vira mancha; itens sem ícone; furto só pesa para quem vê; conferir os termos de uso comercial da Dreamina antes de um release; AT-18 testado só nesta máquina.
+- Som nunca ouvido por quem o gerou (acima).
+- Sem medida de desempenho no hardware de referência e no mínimo.
+- Personagens sem arma na mão; o golpe é o mesmo para faca, cajado e punho.
+- De frente e de costas o lobo melhorou, mas continua estreito (é o ângulo; pede sprite desenhado à mão).
+- Interiores: a borda da frente do cômodo fica aberta (corte) e o piso se esfuma um pouco além dela.
+- O mapa ilustrado é de IA; as marcas das áreas são aproximadas.
+- O epílogo usa dois painéis (o terceiro, `epilogo_estrada`, nunca veio da Dreamina).
+- Furto só pesa para quem vê; NPCs não têm vida nem revidam (D-065).
+- `gradlew generateAudio` depende de Python + `soundfile` para a etapa OGG (D-080).
 
-## Próximo passo — M8 (Polimento e release do MVP), só com o "continue" do usuário
-PRD 18: ajuste de ritmo, correções, desempenho (AT-17), sessão de teste de 3 h, release. Inclui: ouvir e decidir o som, fonte própria, animações de golpe, ícones de itens, tempo jogado nos saves, conversão para OGG, AT-15 (portão visual com as capturas de `docs/capturas/m7/`), AT-16, AT-18 numa máquina limpa.
+## Próximo passo
+O MVP (M0–M8) está entregue do lado da máquina. Depois da sua rodada (itens de "O que só você pode fechar"), o caminho é: corrigir o que a sessão de 3 h apontar → marcar a versão 0.1.0 → só então abrir os itens [PÓS] do PRD 14. **Nada de [PÓS] começa sem o diretor mandar.**
 
-Para quem retomar (qualquer modelo): leia este arquivo, depois `CLAUDE.md`, as seções do PRD do marco e a `docs/SPEC.md`. O vocabulário de condições e efeitos está em `CONTENT.md`.
-
-## Paradas obrigatórias (lembrete)
-- Fim de cada marco (M0…M8).
-- Antes de decisão irreversível ou de alto impacto narrativo/visual.
+Para quem retomar (qualquer modelo): leia este arquivo, depois `CLAUDE.md`, a seção do PRD em questão e a `docs/SPEC.md`. Vocabulário de condições e efeitos: `CONTENT.md`. Tom do texto: `WRITING.md`.
