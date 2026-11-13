@@ -582,3 +582,41 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Resultado:** 51 chamadas por quadro e **1.106 FPS** no zoom 1; 178 chamadas e 735 FPS na vista de longe. Capturas iguais às de antes (VT-03 112/112).
 
 
+
+## D-100 — Árvores v2: estrutura no Blender, acabamento em pixel e Pixelorama no pipeline
+- **Data:** 2026-11-13
+- **Pedido do diretor:** as árvores da 2ª rodada melhoraram, mas "ainda parecem várias bolinhas sobrepostas"; quer árvores com cara de pixel art feita à mão, com espécies, idades e caráter, usando o Blender para a forma e o **Pixelorama** para o acabamento. Liberou o Pixelorama para qualquer arte do jogo.
+- **Decisão (forma, Blender — `natureza/arvore.py`):**
+  - galhos por **colonização do espaço**: pontos espalhados no volume da copa, com a silhueta da espécie e lobos irregulares, puxam os galhos, e a ramificação sai sozinha;
+  - raio dos galhos pelo modelo do cano, que também afina com o comprimento;
+  - tronco sinuoso com colo e raízes de apoio, tudo em curvas com bisel;
+  - tufos de folha só nas pontas: massas deformadas por ruído, com espaçamento que deixa vãos e galho à mostra;
+  - a normal da folha mistura a do tufo com a do elipsoide da copa, então a copa acende e escurece como um volume só e os tufos ficam como detalhe.
+- **Decisão (acabamento):**
+  - o pixelizador ganhou o **pintor de folhagem** (`Folhagem.java`), que carimba cachos de folha desenhados em pixel, de cima para baixo;
+  - cada cacho tem um tom só (o da luz onde cai), com luz no alto à esquerda e sombra embaixo; a borda da silhueta sai recortada em folhas, e há um vão escuro sob o tufo da frente;
+  - a grade de carimbos fica presa ao tufo (âncora por quadro), então o desenho anda com o vento em vez de cintilar.
+- **Decisão (Pixelorama):**
+  - os pincéis são um projeto do Pixelorama (`tools/art/pinceis/folhas.pxo`), uma camada por espécie, em cinza por nível;
+  - cada folha de árvore sai como projeto em camadas (`tools/art/acabamento/natureza/*.pxo`: sombra, tronco, folhagem, contorno, **retoque**), e a folha final é exportada pelo próprio Pixelorama pela linha de comando;
+  - a camada `retoque` é a única que o pipeline preserva: o retoque à mão fica versionado no `.pxo`, que é a fonte, e continua reproduzível (VT-16);
+  - sem o Pixelorama instalado, as camadas são compostas em Java (mesmo resultado, conferido pixel a pixel) e o pipeline avisa.
+- **Variedade:** 14 variantes, sorteadas pelo hash da posição; mapas, pegadas e colisões não mudaram.
+
+  | Asset | Variantes |
+  |---|---|
+  | carvalho | jovem, adulto, antigo, torto (com tufos pardos misturados) |
+  | bétula | jovem, adulta, dupla, alta (tronco branco com marcas pretas) |
+  | macieira | 2, com maçãs na copa e no chão |
+  | pereira | 2, copa em ogiva e peras |
+  | árvore seca | carvalho seco, partido, bétula seca (sem vento) |
+  | toco | 1 |
+
+- **Paleta:** rampas de folha com deslocamento de matiz (sombra fria, luz quente). Só o carvalho trouxe cores novas; a paleta foi de 92 para 99 cores.
+- **Desempenho:** o atlas passa a usar página de 4096² quando a placa aceita (todo sprite numa textura só); com 2048² eram 3 páginas e 633 chamadas por quadro. Resultado: 1.091 FPS no zoom 1 (147 chamadas) e 758 FPS na vista de longe (RX 6650 XT, 1280×720).
+- **Limite honesto:** a linha de comando do Pixelorama não roda as ferramentas de edição. A limpeza automática (cachos, pixel solto, contorno, paleta) roda no Java; o Pixelorama é onde ficam os pincéis e as camadas e onde se faz o retoque à mão, e é ele que exporta a folha final.
+- **Alternativas descartadas:**
+  - folha com ruído ou textura: reprovada no portão;
+  - mais esferas: dava o efeito "bolinhas";
+  - cartões de folha 3D: viram ruído a 48 px;
+  - editar o PNG final à mão: se perderia na próxima geração.

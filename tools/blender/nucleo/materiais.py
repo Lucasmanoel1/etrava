@@ -27,7 +27,8 @@ def registrados():
 
 def material(nome, rampa, k=0.25, textura=None, escala=1.0, ruido=None, var_objeto=0.0,
              pontilhar=False, emissivo=False, contorno=True, luz_min=0.0, oa=1.0, tons=None, linhas=True,
-             rampa_brilho=None, escala2=None, peso2=0.0, sem_sombra=0.0):
+             rampa_brilho=None, escala2=None, peso2=0.0, sem_sombra=0.0, ruido_eixos=None,
+             pincel=None, grupo=None, normal_copa=None, ruido_contraste=None):
     """Registra (ou devolve) o material `nome`.
 
     k          quanto a textura mexe no valor (0 = liso; casca e colmo ~0,5)
@@ -39,6 +40,13 @@ def material(nome, rampa, k=0.25, textura=None, escala=1.0, ruido=None, var_obje
     tons       limita a rampa aos tons [i, j] (o pixelizador usa só esses)
     sem_sombra luz sem sombra projetada, multiplicada por este fator (0 = luz normal, com sombra);
                o tronco sob a copa: o pixel artista pinta o lado da luz mesmo na sombra da copa
+    ruido_eixos escala do ruído por eixo (x, y, z): (3, 3, 14) dá listras de pé (casca)
+    pincel     conjunto de pincéis do pintor de folhagem (tools/art/pinceis); o pixelizador
+               desenha este material com cachos carimbados em vez de tom por pixel
+    grupo      nome comum de materiais que são o mesmo para o contorno (tufos da mesma árvore)
+    normal_copa (cx, cy, cz, rx, rz, peso): a normal de sombreamento mistura a do tufo com a do
+               elipsoide da copa inteira (truque das árvores estilizadas): a copa acende e escurece
+               como um volume só e os tufos ficam como detalhe. Coordenadas do mundo do Blender.
     """
     for m in _MATS:
         if m["nome"] == nome:
@@ -49,11 +57,54 @@ def material(nome, rampa, k=0.25, textura=None, escala=1.0, ruido=None, var_obje
             "escala": escala, "ruido": ruido, "var_objeto": var_objeto, "pontilhar": pontilhar,
             "emissivo": emissivo, "contorno": contorno, "luz_min": luz_min, "oa": oa, "tons": tons,
             "linhas": linhas, "rampa_brilho": rampa_brilho, "escala2": escala2, "peso2": peso2,
-            "sem_sombra": sem_sombra}
+            "sem_sombra": sem_sombra, "ruido_eixos": list(ruido_eixos) if ruido_eixos else None,
+            "pincel": pincel, "grupo": grupo, "ruido_contraste": ruido_contraste, "normal_copa": list(normal_copa) if normal_copa else None}
     _MATS.append(info)
     mat = bpy.data.materials.new(nome)
     mat["etrava"] = info["indice"]
     return mat
+
+
+def ajustar(nome, **campos):
+    """Muda parâmetros de um material já registrado (vale para os próximos passes)."""
+    for m in _MATS:
+        if m["nome"] == nome:
+            m.update(campos)
+            return
+    raise KeyError(nome)
+
+
+def _normal_copa(nt, nc):
+    """Normal misturada: (1 − peso)·N do tufo + peso·N do elipsoide da copa."""
+    cx, cy, cz, rx, rz, peso = nc
+    g = nt.nodes.new("ShaderNodeNewGeometry")
+    sub = nt.nodes.new("ShaderNodeVectorMath")
+    sub.operation = "SUBTRACT"
+    nt.links.new(g.outputs["Position"], sub.inputs[0])
+    sub.inputs[1].default_value = (cx, cy, cz)
+    esc = nt.nodes.new("ShaderNodeVectorMath")
+    esc.operation = "MULTIPLY"
+    nt.links.new(sub.outputs["Vector"], esc.inputs[0])
+    esc.inputs[1].default_value = (1.0 / (rx * rx), 1.0 / (rx * rx), 1.0 / (rz * rz))
+    n_copa = nt.nodes.new("ShaderNodeVectorMath")
+    n_copa.operation = "NORMALIZE"
+    nt.links.new(esc.outputs["Vector"], n_copa.inputs[0])
+    a = nt.nodes.new("ShaderNodeVectorMath")
+    a.operation = "SCALE"
+    nt.links.new(g.outputs["Normal"], a.inputs[0])
+    a.inputs["Scale"].default_value = 1.0 - peso
+    b = nt.nodes.new("ShaderNodeVectorMath")
+    b.operation = "SCALE"
+    nt.links.new(n_copa.outputs["Vector"], b.inputs[0])
+    b.inputs["Scale"].default_value = peso
+    soma = nt.nodes.new("ShaderNodeVectorMath")
+    soma.operation = "ADD"
+    nt.links.new(a.outputs["Vector"], soma.inputs[0])
+    nt.links.new(b.outputs["Vector"], soma.inputs[1])
+    nn = nt.nodes.new("ShaderNodeVectorMath")
+    nn.operation = "NORMALIZE"
+    nt.links.new(soma.outputs["Vector"], nn.inputs[0])
+    return nn.outputs["Vector"]
 
 
 def sombra_chao():
@@ -144,8 +195,23 @@ def _detalhe(nt, info):
         nz = nt.nodes.new("ShaderNodeTexNoise")
         nz.inputs["Scale"].default_value = info["ruido"]
         nz.inputs["Detail"].default_value = 3.0
-        nt.links.new(tc.outputs["Object"], nz.inputs["Vector"])
+        if info.get("ruido_eixos"):
+            mp = nt.nodes.new("ShaderNodeMapping")
+            mp.inputs["Scale"].default_value = tuple(info["ruido_eixos"])
+            nt.links.new(tc.outputs["Object"], mp.inputs["Vector"])
+            nt.links.new(mp.outputs["Vector"], nz.inputs["Vector"])
+        else:
+            nt.links.new(tc.outputs["Object"], nz.inputs["Vector"])
         saida = nz.outputs["Fac"]
+        if info.get("ruido_contraste"):
+            # estica o ruído em torno do meio: manchas de borda dura (marcas da casca da bétula)
+            c = info["ruido_contraste"]
+            mr = nt.nodes.new("ShaderNodeMapRange")
+            mr.clamp = True
+            mr.inputs["From Min"].default_value = 0.5 - c
+            mr.inputs["From Max"].default_value = 0.5 + c
+            nt.links.new(saida, mr.inputs["Value"])
+            saida = mr.outputs["Result"]
     if info["var_objeto"] > 0:
         oi = nt.nodes.new("ShaderNodeObjectInfo")
         mr = nt.nodes.new("ShaderNodeMapRange")
@@ -197,6 +263,8 @@ def _arvore(mat, indice, emissivo, info, passe, distancia_oa, amostras_oa=8):
         cor = _rgb(nt, mul.outputs[0], ao.outputs["AO"], det)
         nt.links.new(_emissao(nt, cor).outputs[0], out.inputs["Surface"])
         return
+    if info and info.get("normal_copa"):
+        nt.links.new(_normal_copa(nt, info["normal_copa"]), dif.inputs["Normal"])
     cor = _rgb(nt, 0.0, ao.outputs["AO"], det)
     add = nt.nodes.new("ShaderNodeAddShader")
     nt.links.new(dif.outputs[0], add.inputs[0])

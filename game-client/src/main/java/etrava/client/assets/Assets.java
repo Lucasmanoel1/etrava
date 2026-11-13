@@ -72,7 +72,22 @@ public final class Assets implements Disposable {
      * Atlas dos sprites do mundo (D-099): cada quadro de cada sprite vai para páginas grandes, para
      * o lote não quebrar a cada troca de textura (eram ~2.200 chamadas de desenho por quadro).
      */
-    private final PixmapPacker packer = new PixmapPacker(2048, 2048, Pixmap.Format.RGBA8888, 2, false);
+    /**
+     * Página do atlas: 4096² quando a placa aceita (toda a arte numa textura só: o lote não quebra
+     * na ordem de profundidade), senão 2048² (D-099, D-100).
+     */
+    private static final int PAGINA = paginaDoAtlas();
+    private final PixmapPacker packer = new PixmapPacker(PAGINA, PAGINA, Pixmap.Format.RGBA8888, 2, false);
+
+    private static int paginaDoAtlas() {
+        try {
+            java.nio.IntBuffer b = com.badlogic.gdx.utils.BufferUtils.newIntBuffer(16);
+            com.badlogic.gdx.Gdx.gl.glGetIntegerv(com.badlogic.gdx.graphics.GL20.GL_MAX_TEXTURE_SIZE, b);
+            return b.get(0) >= 4096 ? 4096 : 2048;
+        } catch (RuntimeException | UnsatisfiedLinkError e) {
+            return 2048;   // sem contexto GL (testes)
+        }
+    }
     private final java.util.List<Object[]> pending = new java.util.ArrayList<>();
     private boolean deferUpload;
 
@@ -99,7 +114,7 @@ public final class Assets implements Disposable {
         }
         deferUpload = false;
         flushAtlas();
-        LOG.info("Atlas: {} sprites em {} página(s) de 2048×2048", n, packer.getPages().size);
+        LOG.info("Atlas: {} sprites em {} página(s) de {}×{}", n, packer.getPages().size, PAGINA, PAGINA);
     }
 
     private TextureRegion packed(String id, String file, int frame, int frames) {

@@ -48,12 +48,20 @@ rampas:
   cabelo_grisalho:  ["3A3634", "524C46", "857D70", "A39A8A", "C4BBA8"]
   cabelo_loiro:     ["3D2A1C", "5A3F26", "7A5632", "9C7A45", "B8975A", "D4B878"]
   # --- vegetação
-  folha_carvalho:   ["141A16", "1E2A1C", "2E3C24", "44502E", "5A6438", "6B7045"]
-  folha_betula:     ["1E2A1C", "2E3C24", "4A5430", "6A7440", "8A9250", "A6A862"]
+  # folhagem das árvores (D-100): rampas longas com deslocamento de matiz — sombra fria
+  # (verde-azulado), luz quente (oliva-amarelo); o tom 0 é o contorno e o vão fundo da copa.
+  # Só o carvalho trouxe cores novas (8); as outras espécies reaproveitam cores da paleta.
+  folha_carvalho:   ["0F1514", "16211C", "1F2E21", "2B3D25", "3D4F2B", "556333", "707A3E", "8A8C4C"]
+  folha_carvalho_parda: ["0F1514", "16211C", "1F2E21", "2E3C24", "44502E", "5A6438", "6B7045", "868C52"]
+  folha_betula:     ["0F1514", "1E2A1C", "2E3C24", "4A5430", "6A7440", "8A9250", "A6A862"]
+  folha_macieira:   ["0F1514", "16211C", "1F2E21", "2B3D25", "4A5430", "6A7440", "8A9250"]
+  folha_pereira:    ["0F1514", "16211C", "1F2E21", "2B3D25", "3D4F2B", "556333", "707A3E"]
   folha_conifera:   ["10161A", "182420", "22322C", "34463A", "4A5C48"]
   grama:            ["1E2A1C", "2E3C24", "44502E", "5A6438", "6B7045", "868C52"]
   grama_seca:       ["44502E", "5A6438", "6B7045", "868C52", "A4A866"]
-  casca_carvalho:   ["14101A", "2E2018", "3A3634", "4A3526", "524C46", "6B645A"]
+  casca_carvalho:   ["14101A", "1E1A22", "2E2018", "3D2A1C", "4A3526", "624632", "7C5A40"]
+  casca_fruteira:   ["14101A", "1E1A22", "2E2018", "4A3526", "5A4232", "6A4A30"]
+  casca_seca:       ["14101A", "2A2428", "3A3634", "524C46", "6B645A", "857D70", "A39A8A"]
   casca_betula:     ["2A2428", "524C46", "857D70", "A39A8A", "C4BBA8", "D8CCB0"]
   # --- flores (dessaturadas)
   flor_violeta:     ["3E3048", "5E4A6A", "82709A"]

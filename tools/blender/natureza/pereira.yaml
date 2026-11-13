@@ -1,0 +1,14 @@
+# Pereira (D-100): copa alta em ogiva, galhos que sobem, peras amarelas.
+# Substitui prop.arvore_fruto_b (pomares da vila; mesma pegada e colisão).
+tipo: arvore
+id: pereira
+especie: pereira
+manifesto: {id: prop.arvore_fruto_b}
+pixelorama: true
+quadro: [340, 340]
+ancora: [130, 310]
+vento: {quadros: 8, fps: 5}
+variantes:
+  - {nome: pereira_a, altura: 5.2, copa: 2.6, idade: 1.0, semente: 13, frutos: {rampa: latao, raio: 0.07, quantos: 24, chao: 3}}
+  - {nome: pereira_b, altura: 4.6, copa: 2.4, idade: 0.8, semente: 37, frutos: {rampa: latao, raio: 0.07, quantos: 18, chao: 4}}
+pixelizador: {ambiente: 0.34, difusa: 0.78}

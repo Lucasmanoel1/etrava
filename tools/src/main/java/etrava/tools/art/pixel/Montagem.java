@@ -21,7 +21,7 @@ final class Montagem {
 
     record Quadro(String anim, int dir, int f, Pixelizador.Resultado r, JsonNode pontos) {}
 
-    static void montar(RenderArt ra, Pixelizador px, RenderArt.Objeto o, JsonNode rj, Path pasta) throws IOException {
+    static void montar(RenderArt ra, Pixelizador px, RenderArt.Objeto o, JsonNode rj, Path pasta) throws IOException, InterruptedException {
         JsonNode desc = o.desc();
         int ss = rj.path("ss").asInt(4);
         Map<Integer, Pixelizador.Material> mats = new HashMap<>();
@@ -32,7 +32,8 @@ final class Montagem {
                     m.path("rampa").asText(), m.path("k").asDouble(), m.path("pontilhar").asBoolean(),
                     m.path("emissivo").asBoolean(), m.path("contorno").asBoolean(true), m.path("luz_min").asDouble(),
                     m.path("oa").asDouble(1.0), tons, m.hasNonNull("rampa_brilho") ? m.get("rampa_brilho").asText() : null,
-                    m.path("linhas").asBoolean(true)));
+                    m.path("linhas").asBoolean(true), m.hasNonNull("pincel") ? m.get("pincel").asText() : null,
+                    m.hasNonNull("grupo") ? m.get("grupo").asText() : null));
         }
         JsonNode pp = desc.path("pixelizador");
         Pixelizador.Parametros def = Pixelizador.Parametros.padrao();
@@ -65,7 +66,7 @@ final class Montagem {
                             (int) Math.floor(p.path("y").asDouble()), d.getValue()));
                 }
                 qs.add(new Quadro(q.path("anim").asText(), q.path("dir").asInt(), q.path("f").asInt(),
-                        px.pixelizar(passes, mats, par, dec), q.path("pontos")));
+                        px.pixelizar(passes, mats, par, dec, ancoras(mats, q.path("pontos"))), q.path("pontos")));
             }
             porFolha.put(folha.path("nome").asText(), qs);
         }
@@ -147,11 +148,17 @@ final class Montagem {
                 if (q.pontos() != null && q.pontos().size() > 0) {
                     Map<String, Object> pq = new LinkedHashMap<>();
                     final int ox = x0, oy = y0;
-                    q.pontos().fields().forEachRemaining(e -> pq.put(e.getKey(), List.of(
+                    q.pontos().fields().forEachRemaining(e -> {
+                        if (!e.getKey().startsWith("tufo")) pq.put(e.getKey(), List.of(
                             Math.round((e.getValue().path("x").asDouble() - ox) * 10) / 10.0,
-                            Math.round((e.getValue().path("y").asDouble() - oy) * 10) / 10.0)));
-                    pontos.put(q.anim() + "/" + q.dir() + "/" + q.f(), pq);
+                            Math.round((e.getValue().path("y").asDouble() - oy) * 10) / 10.0));
+                    });
+                    if (!pq.isEmpty()) pontos.put(q.anim() + "/" + q.dir() + "/" + q.f(), pq);
                 }
+            }
+            if (desc.path("pixelorama").asBoolean(false)) {
+                folhaImg = Acabamento.pelaPixelorama(ra, sub, nome, qs, mats, x0, y0, fw, fh, col,
+                        anims.isEmpty() ? 5.0 : ((Number) ((Map<?, ?>) anims.values().iterator().next()).get("fps")).doubleValue());
             }
             String rel = "arte/" + sub + "/" + nome + ".png";
             RenderArt.escreverPng(folhaImg, ra.assetsDir.resolve(rel));
@@ -226,7 +233,23 @@ final class Montagem {
         System.out.printf("  %s: %d folha(s), quadro %d×%d, âncora (%.0f, %.0f)%n", o.id(), arquivos.size(), fw, fh, ax, ay);
     }
 
-    private static void copiar(BufferedImage src, int x0, int y0, int w, int h, BufferedImage dst, int dx, int dy) {
+    private static final java.util.regex.Pattern NUMERO_FINAL = java.util.regex.Pattern.compile("_([0-9]+)$");
+
+    /** Âncora de cada tufo pintado com pincel: material folha_x_NN ↔ ponto tufoNNN do quadro. */
+    static Map<Integer, int[]> ancoras(Map<Integer, Pixelizador.Material> mats, JsonNode pontos) {
+        Map<Integer, int[]> out = new HashMap<>();
+        for (Pixelizador.Material m : mats.values()) {
+            if (m.pincel() == null) continue;
+            var mt = NUMERO_FINAL.matcher(m.nome());
+            if (!mt.find()) continue;
+            JsonNode p = pontos.path(String.format("tufo%03d", Integer.parseInt(mt.group(1))));
+            if (p.isMissingNode()) continue;
+            out.put(m.indice(), new int[] {(int) Math.round(p.path("x").asDouble()), (int) Math.round(p.path("y").asDouble())});
+        }
+        return out;
+    }
+
+    static void copiar(BufferedImage src, int x0, int y0, int w, int h, BufferedImage dst, int dx, int dy) {
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++) {
                 int sx = x0 + x, sy = y0 + y;

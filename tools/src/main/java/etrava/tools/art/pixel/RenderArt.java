@@ -189,8 +189,8 @@ public final class RenderArt {
     /** Entradas do manifesto geradas nesta rodada, por id de asset. */
     final Map<String, Map<String, Object>> manifesto = new LinkedHashMap<>();
 
-    void pixelizarTudo(List<Objeto> objetos) throws IOException {
-        Pixelizador px = new Pixelizador(paleta);
+    void pixelizarTudo(List<Objeto> objetos) throws IOException, InterruptedException {
+        Pixelizador px = new Pixelizador(paleta, Pinceis.carregar(raiz.resolve("tools/art/pinceis/folhas.pxo")));
         for (Objeto o : objetos) {
             Path pasta = renderDir.resolve(o.id());
             Path rj = pasta.resolve("render.json");

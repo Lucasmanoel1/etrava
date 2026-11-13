@@ -1,0 +1,14 @@
+# Árvore seca (D-100): só o esqueleto — galhos nus, pontas quebradas, casca cinza. Parada (sem
+# vento). Substitui prop.arvore_morta (inclusive o estado inicial da árvore velha da Nália).
+tipo: arvore
+id: seca
+especie: carvalho
+manifesto: {id: prop.arvore_morta}
+pixelorama: true
+quadro: [380, 360]
+ancora: [150, 330]
+vento: {quadros: 1, fps: 1}
+variantes:
+  - {nome: seca_carvalho, altura: 5.6, copa: 4.0, idade: 1.4, semente: 51, seca: true, pontas: 1.0, grossura: 0.7}
+  - {nome: seca_partida,  altura: 4.4, copa: 3.0, idade: 1.2, semente: 63, seca: true, pontas: 0.9, inclinacao: 8, grossura: 0.75}
+  - {nome: seca_betula,   especie: betula, altura: 6.0, copa: 2.0, idade: 1.0, semente: 71, seca: true, pontas: 0.8, casca: casca_betula}

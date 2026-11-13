@@ -1,18 +1,18 @@
 # PROGRESS — ETRAVA
 
-Última atualização: 2026-11-12
+Última atualização: 2026-11-13
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V1 — Pipeline e portão visual: segunda rodada do portão (VT-13).** O diretor aprovou densidade, sombreamento, zoom e telhado; reprovou as árvores. Árvores refeitas, vista de longe, praça limpa, desempenho corrigido, spike do MPFB2 feito.
-- **Status:** **PARADO no portão visual do V1** esperando o diretor olhar as árvores novas. Nada de V2 sem o "pode seguir".
+- **Marco atual:** **V1 — Pipeline e portão visual: terceira rodada do portão (VT-13).** O diretor achou as árvores da 2ª rodada melhores, mas ainda "bolinhas"; pediu árvores com cara de pixel art feita à mão, com Blender e Pixelorama. Árvores v2 feitas (D-100).
+- **Status:** **PARADO no portão visual do V1** esperando o diretor olhar as árvores v2. Nada de V2 sem o "pode seguir".
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
 | Marco | Nome | Situação |
 |---|---|---|
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
-| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **2ª rodada: esperando o diretor ver as árvores** |
+| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **3ª rodada: esperando o diretor ver as árvores v2** |
 | V2 | Gente (25 humanos, animações de vida comum) | — |
 | V3 | Criaturas e combate | — |
 | V4 | Natureza e terreno | — |
@@ -34,6 +34,47 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## Portão V1, 3ª rodada (2026-11-13) — árvores v2 (D-100)
+Pedido: árvores com cara de pixel art artesanal (espécies, idades, caráter), Blender para a forma e Pixelorama para o acabamento; o Pixelorama fica liberado para toda a arte.
+
+Feito:
+- **Forma no Blender:**
+  - galhos por colonização do espaço;
+  - tronco sinuoso com colo e raízes;
+  - copa aberta com vãos;
+  - normal da copa: a copa se ilumina como um volume só.
+- **Pintor de folhagem** (`Folhagem.java`):
+  - cachos carimbados com pincéis desenhados em pixel;
+  - silhueta recortada em folhas e vão escuro sob o tufo da frente;
+  - o desenho anda com o vento.
+- **Pixelorama no pipeline:**
+  - pincéis em `tools/art/pinceis/folhas.pxo`;
+  - cada folha de árvore vira um `.pxo` em camadas (`tools/art/acabamento/`), com a camada `retoque` preservada;
+  - a folha final é exportada pelo Pixelorama.
+  - Guia: `tools/art/LEIA-pixelorama.md`.
+- **14 variantes** sorteadas pela posição, com o mapa intacto:
+  - carvalho: jovem, adulto, antigo, torto;
+  - bétula: jovem, adulta, dupla, alta;
+  - macieira e pereira: 2 cada, com frutos;
+  - árvore seca: 3, incluindo a da Nália;
+  - toco.
+- **Paleta:** 92 → 99 cores (verdes do carvalho com sombra fria e luz quente).
+- **Atlas:** página de 4096² (uma textura só): 1.091 FPS no zoom 1 e 758 na vista de longe.
+- **Verificação:**
+  - `gradlew build`: 156 testes (4 novos: `.pxo`, pincéis, folhagem determinística e na paleta, desenho que acompanha o tufo);
+  - validador sem erros;
+  - vt03 112/112;
+  - capturas 13/13;
+  - mesma entrada → mesmos bytes, passando pelo Pixelorama.
+- **Dreamina:** 0 créditos (usei a referência de carvalho que já existia).
+
+O que olhar:
+- no jogo: `docs/capturas/v1/vila_longe_dia.png`, `vila_longe_noite.png`, `vila_dia.png`, `mata_perto.png`, `oficina_*`;
+- todas as árvores: `docs/capturas/v1/folhas/arvores_carvalhos.png` e `arvores_demais.png`;
+- vento: `docs/capturas/v1/folhas/*_vento.gif`;
+- camadas no Pixelorama: `docs/capturas/v1/folhas/arvores_camadas_pixelorama.png`;
+- pincéis: `docs/capturas/v1/folhas/pinceis_carvalho.png`.
 
 ## Portão V1, 2ª rodada (2026-11-12)
 Resposta do diretor à 1ª rodada: 48 px ok (perguntou por que não mais — resposta em D-086); sombreamento e contorno ok; zoom ok, mas afasta pouco; **árvores reprovadas** ("forçadas, sem cara de pixel arte, como se renderizassem toda folha"; parecia mais pesado); telhado da oficina aprovado; liberou o MPFB2; tirar as árvores do meio da praça; o resto, eu decido.
@@ -68,6 +109,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 | `gradlew blenderTeste` | o teste do cubo |
 
 ## Problemas conhecidos (Fase V)
+- Árvores: o carvalho torto e algumas massas ainda lembram "almofadas" (topo aceso, base escura); o retoque à mão pode resolver caso a caso pelo `.pxo`. Precisa do Pixelorama para exportar as folhas (sem ele, compõe em Java e avisa).
 - O spike do MPFB2 roda só com a extensão em `build/blender-ext` (instalar: `BLENDER_USER_RESOURCES=build/blender-ext blender -b --online-mode -c extension install mpfb --enable`).
 - Folhas de personagem e o chão ainda não estão no atlas (cada um é uma textura); hoje custam pouco, revisar no V2 quando houver 25 pessoas.
 - Arte nova e antiga lado a lado: a nova tem mais detalhe e sombra projetada; as casas antigas continuam com o telhado de face única até o V5.
@@ -75,7 +117,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-Depois da aprovação das árvores novas: V2, tarefa 1 de `docs/visual/V2.md` (kit humano modular e silhuetas por papel). Se o portão reprovar algo, iterar no V1.
+Depois da aprovação das árvores v2: V2, tarefa 1 de `docs/visual/V2.md` (kit humano modular e silhuetas por papel). Se o portão reprovar algo, iterar no V1.
 
 ---
 

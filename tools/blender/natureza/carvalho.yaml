@@ -1,12 +1,18 @@
-# Carvalho (V1): copa larga em tufos, tronco grosso e torto. Duas alturas; o cliente escolhe a
-# variante pelo hash da posição (SPEC-visual §7.1). Substitui prop.arvore (o mapa não muda).
+# Carvalho (D-100): tronco grosso e torto, raízes de apoio, copa larga e baixa em massas de
+# folha. Quatro caracteres; o cliente escolhe a variante pelo hash da posição (SPEC-visual §7.1).
+# Substitui prop.arvore (o mapa não muda: mesma pegada, mesma colisão).
 tipo: arvore
 id: carvalho
 especie: carvalho
 manifesto: {id: prop.arvore}
-quadro: [400, 320]
-ancora: [150, 290]
+pixelorama: true
+quadro: [460, 360]
+ancora: [180, 330]
 vento: {quadros: 8, fps: 5}
 variantes:
-  - {nome: carvalho_m, altura: 5.6, copa: 3.2, semente: 11}
-  - {nome: carvalho_g, altura: 6.5, copa: 3.8, semente: 23}
+  - {nome: carvalho_jovem,  altura: 4.6, copa: 3.0, idade: 0.6, semente: 3, mistura: 0.0}
+  - {nome: carvalho_adulto, altura: 5.8, copa: 4.0, idade: 1.0, semente: 11}
+  - {nome: carvalho_antigo, altura: 6.3, copa: 5.0, idade: 1.6, semente: 23, tufo: 1.1}
+  - {nome: carvalho_torto,  altura: 5.2, copa: 3.6, idade: 1.2, inclinacao: 14, rumo: 200, semente: 31, densidade: 0.9}
+# folhagem mais clara que o padrão: a copa acesa chega ao tom de luz (a sombra continua funda)
+pixelizador: {ambiente: 0.34, difusa: 0.78}

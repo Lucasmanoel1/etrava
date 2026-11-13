@@ -36,7 +36,13 @@ public final class Pixelizador {
      * @param tons      [de, até] dentro da rampa, ou null para a rampa inteira
      */
     public record Material(int indice, String nome, String rampa, double k, boolean pontilhar, boolean emissivo,
-            boolean contorno, double luzMin, double oa, int[] tons, String rampaBrilho, boolean linhas) {}
+            boolean contorno, double luzMin, double oa, int[] tons, String rampaBrilho, boolean linhas,
+            String pincel, String grupo) {
+        public Material(int indice, String nome, String rampa, double k, boolean pontilhar, boolean emissivo,
+                boolean contorno, double luzMin, double oa, int[] tons, String rampaBrilho, boolean linhas) {
+            this(indice, nome, rampa, k, pontilhar, emissivo, contorno, luzMin, oa, tons, rampaBrilho, linhas, null, null);
+        }
+    }
 
     /**
      * @param ss            superamostragem do render (4 = cada pixel final vem de 4×4 subpixels)
@@ -60,12 +66,27 @@ public final class Pixelizador {
     public record Resultado(BufferedImage cor, BufferedImage brilho, int[] materialDoPixel) {}
 
     private final Paleta paleta;
+    private final Map<String, Pinceis.Conjunto> pinceis;
 
     public Pixelizador(Paleta paleta) {
+        this(paleta, Map.of());
+    }
+
+    public Pixelizador(Paleta paleta, Map<String, Pinceis.Conjunto> pinceis) {
         this.paleta = paleta;
+        this.pinceis = pinceis;
     }
 
     public Resultado pixelizar(Passes p, Map<Integer, Material> mats, Parametros par, List<Decalque> decalques) {
+        return pixelizar(p, mats, par, decalques, Map.of());
+    }
+
+    /**
+     * @param ancoras posição na tela (px de arte) de cada material pintado com pincel, por índice:
+     *                a grade de cachos fica presa a ela (sem âncora, a grade fica presa ao quadro)
+     */
+    public Resultado pixelizar(Passes p, Map<Integer, Material> mats, Parametros par, List<Decalque> decalques,
+            Map<Integer, int[]> ancoras) {
         int ss = par.ss();
         int w = p.largura / ss, h = p.altura / ss, n = w * h;
         int[] id = new int[n];
@@ -128,6 +149,7 @@ public final class Pixelizador {
 
         // 2 e 3. valor → tom da rampa
         int[] cor = new int[n], tom = new int[n];
+        double[] valores = new double[n];
         int[] brilho = null;
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -140,6 +162,7 @@ public final class Pixelizador {
                 Material m = material(mats, id[o]);
                 int[] r = tons(m);
                 double v = valor(m, par, luz[o], oa[o], det[o]);
+                valores[o] = v;
                 int t = quantizar(v, r.length, m.pontilhar(), x, y);
                 tom[o] = t;
                 cor[o] = r[t];
@@ -150,6 +173,17 @@ public final class Pixelizador {
                 }
             }
         }
+
+        // 3b. folhagem: os materiais com pincel são redesenhados em cachos (D-100)
+        Map<Integer, Folhagem.Tufo> tufos = new java.util.TreeMap<>();
+        for (Material m : mats.values()) {
+            if (m.pincel() == null) continue;
+            Pinceis.Conjunto cj = pinceis.get(m.pincel());
+            if (cj == null) throw new IllegalStateException("pincel desconhecido: " + m.pincel() + " (tools/art/pinceis/folhas.pxo)");
+            int[] a = ancoras.getOrDefault(m.indice(), new int[] {0, 0});
+            tufos.put(m.indice(), new Folhagem.Tufo(tons(m), cj, a[0], a[1], m.indice() * 7919 + 17));
+        }
+        Folhagem.pintar(w, h, id, prof, valores, cor, tufos, 0, SOMBRA);
 
         // 4. linhas internas: o pixel mais longe, onde a profundidade salta, escurece
         int[] linhas = cor.clone();

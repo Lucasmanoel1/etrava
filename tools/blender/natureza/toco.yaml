@@ -1,0 +1,12 @@
+# Toco (D-100): o que sobra da árvore cortada — colo largo, raízes, corte claro com anéis.
+# Substitui prop.toco (estado "cortada" da árvore velha).
+tipo: arvore
+id: toco
+especie: carvalho
+manifesto: {id: prop.toco}
+pixelorama: true
+quadro: [160, 140]
+ancora: [70, 110]
+vento: {quadros: 1, fps: 1}
+variantes:
+  - {nome: toco_carvalho, altura: 1.0, copa: 1.0, idade: 0.9, semente: 81, toco: true, fuste: 1.2, grossura: 0.9}

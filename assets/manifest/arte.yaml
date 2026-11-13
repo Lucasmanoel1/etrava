@@ -119,33 +119,81 @@
   license: "proprio"
 - id: "prop.arvore"
   type: "sprite"
-  file: "arte/natureza/carvalho_m.png"
+  file: "arte/natureza/carvalho_jovem.png"
   variants:
-  - "arte/natureza/carvalho_m.png"
-  - "arte/natureza/carvalho_g.png"
+  - "arte/natureza/carvalho_jovem.png"
+  - "arte/natureza/carvalho_adulto.png"
+  - "arte/natureza/carvalho_antigo.png"
+  - "arte/natureza/carvalho_torto.png"
   anchor:
-  - 90.0
-  - 184.0
+  - 142.0
+  - 215.0
   frames: 8
   fps: 5.0
-  meta: "arte/natureza/carvalho_m.json"
+  meta: "arte/natureza/carvalho_jovem.json"
   scale: 2
   source: "Blender (tools/blender/natureza/carvalho.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.arvore_b"
   type: "sprite"
-  file: "arte/natureza/betula_m.png"
+  file: "arte/natureza/betula_jovem.png"
   variants:
-  - "arte/natureza/betula_m.png"
-  - "arte/natureza/betula_g.png"
+  - "arte/natureza/betula_jovem.png"
+  - "arte/natureza/betula_adulta.png"
+  - "arte/natureza/betula_dupla.png"
+  - "arte/natureza/betula_alta.png"
   anchor:
-  - 52.0
-  - 184.0
+  - 67.0
+  - 227.0
   frames: 8
   fps: 5.0
-  meta: "arte/natureza/betula_m.json"
+  meta: "arte/natureza/betula_jovem.json"
   scale: 2
   source: "Blender (tools/blender/natureza/betula.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.arvore_fruto"
+  type: "sprite"
+  file: "arte/natureza/macieira_a.png"
+  variants:
+  - "arte/natureza/macieira_a.png"
+  - "arte/natureza/macieira_b.png"
+  anchor:
+  - 112.0
+  - 138.0
+  frames: 8
+  fps: 5.0
+  meta: "arte/natureza/macieira_a.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/macieira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.arvore_fruto_b"
+  type: "sprite"
+  file: "arte/natureza/pereira_a.png"
+  variants:
+  - "arte/natureza/pereira_a.png"
+  - "arte/natureza/pereira_b.png"
+  anchor:
+  - 78.0
+  - 166.0
+  frames: 8
+  fps: 5.0
+  meta: "arte/natureza/pereira_a.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/pereira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.arvore_morta"
+  type: "sprite"
+  file: "arte/natureza/seca_carvalho.png"
+  variants:
+  - "arte/natureza/seca_carvalho.png"
+  - "arte/natureza/seca_partida.png"
+  - "arte/natureza/seca_betula.png"
+  anchor:
+  - 55.0
+  - 161.0
+  meta: "arte/natureza/seca_carvalho.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/seca.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.casa_oficina"
   type: "sprite"
@@ -157,6 +205,16 @@
   meta: "arte/construcoes/casa_oficina.json"
   scale: 2
   source: "Blender (tools/blender/construcoes/casa_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.toco"
+  type: "sprite"
+  file: "arte/natureza/toco_carvalho.png"
+  anchor:
+  - 15.0
+  - 16.0
+  meta: "arte/natureza/toco_carvalho.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/toco.yaml) + pixelizador"
   license: "proprio"
 - id: "tile.grama"
   type: "tile"
