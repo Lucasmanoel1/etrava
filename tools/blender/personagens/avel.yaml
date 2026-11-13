@@ -4,14 +4,15 @@
 tipo: personagem
 id: avel
 manifesto: {id: personagem.avel, papel: comum}
+pixelorama: true
 quadro: [64, 80]
 ancora: [32, 72]
 direcoes: 8
 animacoes:
   - {nome: parado, quadros: 8, fps: 5}
-  - {nome: andar, quadros: 8, fps: 8, passada: 1.2}
+  - {nome: andar, quadros: 8, fps: 8, passada: 1.05}
   - {nome: correr, quadros: 8, fps: 12, passada: 2.2}
-corpo: {altura: 1.72, corpo: medio, postura: curvada}
+corpo: {altura: 1.72, corpo: medio, postura: curvada, cabeca: 1.2, rosto: 10}
 cores: {pele: pele_media}
 roupa:
   - {peca: camisa, rampa: tecido_oliva, barra: 0.16}

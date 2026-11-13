@@ -42,6 +42,7 @@ class Corpo:
         self.ombros = 0.185 * k * largo                                  # meia largura
         self.quadris = 0.085 * k * largo                                # meio afastamento das pernas
         self.curvado = p.get("postura", "ereta") == "curvada"
+        self.rosto = p.get("rosto", 16.0)        # graus de queixo para cima (ver anim.ciclos)
         self.j = {}
 
 
@@ -86,6 +87,31 @@ def _tubo(nome, comprimento, r_topo, r_base, material, junta_, prof=None, sub=2,
         v.co.z += z0 - comprimento / 2
         if prof is not None:
             v.co.x *= prof
+    ob = geo.objeto(nome, bm, material, suave=True)
+    _pai(ob, junta_)
+    if sub:
+        geo.subdividir(ob, sub)
+    return ob
+
+
+def _secao(nome, aneis, material, junta_, segs=12, sub=1):
+    """Tronco por seções: aneis = [(z, meia_largura_y, meia_profundidade_x, deslocamento_x)], de baixo
+    para cima. Dá cintura, peito e ombros (o tubo reto dava um caixote)."""
+    bm = bmesh.new()
+    voltas = []
+    for z, ly, lx, dx in aneis:
+        volta = []
+        for i in range(segs):
+            a = 2 * math.pi * i / segs
+            volta.append(bm.verts.new((dx + lx * math.cos(a), ly * math.sin(a), z)))
+        voltas.append(volta)
+    for k in range(len(voltas) - 1):
+        for i in range(segs):
+            j = (i + 1) % segs
+            bm.faces.new((voltas[k][i], voltas[k][j], voltas[k + 1][j], voltas[k + 1][i]))
+    bm.faces.new(list(reversed(voltas[0])))
+    bm.faces.new(voltas[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     ob = geo.objeto(nome, bm, material, suave=True)
     _pai(ob, junta_)
     if sub:
@@ -156,13 +182,28 @@ def montar(p):
     bota = mat_peca("botas", "couro")
 
     # --- tronco e quadril
-    _tubo("tronco", c.tronco, 0.172 * c.k * L, 0.15 * c.k * L, camisa, j["tronco"], prof=0.68, z0=c.tronco)
+    # tronco com cintura, peito e ombros caídos (seções); um pouco curvado para a frente no alto
+    T, k = c.tronco, c.k
+    _secao("tronco", [(-0.02, 0.140 * k * L, 0.100 * k, 0.0), (T * 0.35, 0.145 * k * L, 0.105 * k, 0.005),
+                      (T * 0.68, 0.160 * k * L, 0.104 * k, 0.010), (T * 0.88, 0.165 * k * L, 0.090 * k, 0.005),
+                      (T * 1.00, 0.120 * k * L, 0.075 * k, 0.0)], camisa, j["tronco"])
+    for lado, sy in (("e", 1), ("d", -1)):     # deltoide: ombro redondo, não quina
+        _bola("deltoide_" + lado, 0.046 * k, camisa, j["ombro_" + lado], centro=(0, -0.004 * sy * k, -0.018 * k),
+              escala=(1.0, 0.95, 1.0), sub=1, segs=10)
     _tubo("quadril", 0.17 * c.k, 0.145 * c.k * L, 0.15 * c.k * L, calca, j["quadril"], prof=0.7, z0=0.08 * c.k)
     _tubo("pescoco", c.pescoco + 0.03, 0.042 * c.k, 0.05 * c.k, pele, j["pescoco"], z0=c.pescoco + 0.02, sub=1)
 
     # --- cabeça (um pouco maior que o real, para ler a 48 px)
     hc = c.cabeca
-    _bola("cabeca", hc / 2, pele, j["cabeca"], centro=(0.005, 0, hc / 2), escala=(0.9, 0.86, 1.0), sub=1)
+    cab_ob = _bola("cabeca", hc / 2, pele, j["cabeca"], centro=(0.005, 0, hc / 2), escala=(0.9, 0.84, 1.0), sub=0, segs=16)
+    for v in cab_ob.data.vertices:          # queixo: a metade de baixo afina e vem um pouco à frente
+        f = max(0.0, (hc * 0.45 - v.co.z) / (hc * 0.45))
+        v.co.y *= 1.0 - 0.32 * f
+        v.co.x = v.co.x * (1.0 - 0.18 * f) + 0.012 * f * c.k
+    geo.subdividir(cab_ob, 1)
+    for lado, sy in (("e", 1), ("d", -1)):  # orelhas: quebram a silhueta redonda da cabeça
+        _bola("orelha_" + lado, 0.016 * c.k, pele, j["cabeca"], centro=(-0.005, sy * hc * 0.39, hc * 0.46),
+              escala=(0.7, 0.5, 1.2), sub=0, segs=6)
     _bola("nariz", 0.022 * c.k, pele, j["cabeca"], centro=(hc * 0.42, 0, hc * 0.42), sub=0, segs=6)
     olho_z, olho_x, olho_y = hc * 0.52, hc * 0.40, hc * 0.17
     ponto("olho_e", j["cabeca"], (olho_x, olho_y, olho_z), frente=(1, 0.25, 0))
@@ -175,8 +216,21 @@ def montar(p):
         if estilo == "sob_gorro":  # só a nuca e os lados, abaixo do gorro
             _bola("cabelo", hc / 2 * 1.04, cab, j["cabeca"], centro=(-0.03, 0, hc * 0.5), escala=(0.84, 0.86, 0.7), sub=1)
         else:
-            _bola("cabelo", hc / 2 * 1.08, cab, j["cabeca"], centro=(-0.012, 0, hc * 0.56),
-                  escala=(0.90, 0.84, 0.86 if estilo == "curto" else 0.95), sub=1)
+            # calota com linha do cabelo: alta na testa, na altura da orelha dos lados, baixa na
+            # nuca; abaixo da linha o cabelo entra na cabeça (some). Sem isso vira capacete e o
+            # rosto fica com 3 px.
+            cab_ob = _bola("cabelo", hc / 2 * 1.07, cab, j["cabeca"], centro=(0.002, 0, hc * 0.52),
+                           escala=(0.92, 0.88, 0.98 if estilo == "curto" else 1.02), sub=0, segs=16)
+            for v in cab_ob.data.vertices:
+                rel = Vector((v.co.x - 0.002, v.co.y, v.co.z - hc * 0.52))
+                nx = rel.x / max(1e-6, rel.length)
+                linha = hc * (0.50 + 0.24 * nx)          # testa 0,74 · lados 0,50 · nuca 0,26
+                if v.co.z < linha:
+                    v.co = Vector((0.002, 0, hc * 0.52)) + rel * 0.80
+            geo.subdividir(cab_ob, 1)
+            # franja: mecha caindo na testa (a frente da cabeça não fica careca nem capacete)
+            _bola("franja", hc * 0.13, cab, j["cabeca"], centro=(hc * 0.36, hc * 0.12, hc * 0.80),
+                  escala=(0.45, 1.2, 0.45), sub=1, segs=8)
         if estilo in ("bagunçado", "baguncado"):
             for i, (x, y, z) in enumerate(((0.07, 0.04, 0.92), (0.08, -0.05, 0.90), (0.0, 0.08, 0.95),
                                             (-0.06, -0.06, 0.88), (0.05, 0.0, 1.0))):
@@ -206,18 +260,18 @@ def montar(p):
             _tubo("punho_" + lado, 0.06 * c.k, 0.06 * c.k, 0.056 * c.k, camisa, j["antebraco_" + lado], z0=0.02, sub=1)
         else:
             _tubo("antebraco_" + lado, c.antebraco, 0.054 * c.k, 0.045 * c.k, camisa, j["antebraco_" + lado])
-        _bola("mao_" + lado, 0.05 * c.k, pele, j["mao_" + lado], centro=(0.0, 0, -0.035 * c.k),
+        _bola("mao_" + lado, 0.043 * c.k, pele, j["mao_" + lado], centro=(0.0, 0, -0.035 * c.k),
               escala=(0.9, 0.7, 1.15), sub=1, segs=8)
         ponto("mao_" + lado, j["mao_" + lado], (0, 0, -0.04 * c.k))
 
     # --- pernas
     for lado in ("e", "d"):
-        _tubo("coxa_" + lado, c.coxa + 0.03, 0.09 * c.k * L, 0.066 * c.k, calca, j["coxa_" + lado], z0=0.03)
+        _tubo("coxa_" + lado, c.coxa + 0.03, 0.082 * c.k * L, 0.060 * c.k, calca, j["coxa_" + lado], z0=0.03)
         alto_bota = roupa.get("botas", {}).get("altura", 0.16) * c.k
-        _tubo("canela_" + lado, c.canela - alto_bota + 0.02, 0.064 * c.k, 0.054 * c.k, calca, j["canela_" + lado])
+        _tubo("canela_" + lado, c.canela - alto_bota + 0.02, 0.058 * c.k, 0.050 * c.k, calca, j["canela_" + lado])
         _tubo("cano_" + lado, alto_bota, 0.06 * c.k, 0.054 * c.k, bota, j["canela_" + lado],
               z0=-(c.canela - alto_bota), sub=1)
-        _caixa("pe_" + lado, (0.22 * c.k, 0.1 * c.k, 0.08 * c.k), (0.045 * c.k, 0, -0.045 * c.k), bota,
+        _caixa("pe_" + lado, (0.20 * c.k, 0.09 * c.k, 0.075 * c.k), (0.04 * c.k, 0, -0.045 * c.k), bota,
                j["pe_" + lado], sub=1)
 
     # --- peças por cima
@@ -246,8 +300,8 @@ def _alca(material, tronco, c):
     """Alça diagonal da bolsa: do ombro direito ao quadril esquerdo, pela frente e pelas costas."""
     bm = bmesh.new()
     L = c.largo
-    pts = [(0.0, -0.13 * L, c.tronco - 0.02), (0.085, -0.06, c.tronco * 0.62), (0.085, 0.07, c.tronco * 0.25),
-           (0.06, 0.14 * L, 0.0)]
+    pts = [(0.0, -0.13 * L, c.tronco - 0.02), (0.108, -0.06, c.tronco * 0.62), (0.112, 0.07, c.tronco * 0.25),
+           (0.09, 0.14 * L, 0.0)]
     for frente in (1, -1):
         anterior = None
         for (x, y, z) in pts:

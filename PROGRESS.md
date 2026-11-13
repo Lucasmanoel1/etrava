@@ -5,7 +5,7 @@
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
 - **Marco atual:** **V1 — Pipeline e portão visual: terceira rodada do portão (VT-13).** O diretor achou as árvores da 2ª rodada melhores, mas ainda "bolinhas"; pediu árvores com cara de pixel art feita à mão, com Blender e Pixelorama. Árvores v2 feitas (D-100).
-- **Status:** **PARADO no portão visual do V1** esperando o diretor olhar as árvores v2. Nada de V2 sem o "pode seguir".
+- **Status:** **PARADO no portão visual do V1** esperando o diretor olhar as árvores v2 e a gente melhorada (D-101). Nada de V2 sem o "pode seguir".
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -34,6 +34,28 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## Portão V1, 3ª rodada (cont.) — gente melhorada (D-101)
+Pedido: melhorar o personagem e as animações com Blender e Pixelorama.
+
+Feito:
+- **Corpo:**
+  - cabeça maior, com queixo e orelhas, e queixo erguido para a câmera: o rosto agora lê, com olhos, testa e queixo;
+  - cabelo com linha do cabelo, em vez de capacete;
+  - tronco com cintura, peito e ombros;
+  - pernas mais finas e bota separada da calça.
+- **Animações:**
+  - andar com contrarrotação, troca de peso e braço natural;
+  - correr com braço dobrado a 90°;
+  - parado com respiração, troca de peso e olhar;
+  - passada mais curta.
+- **Pixelorama:** aprendiz e Avel viram `.pxo` de 192 quadros (`tools/art/acabamento/personagens/`), com tag por animação e direção e camada `retoque` preservada. A folha final é exportada pelo Pixelorama.
+- **Verificação:** 156 testes, validador, vt03 112/112, capturas 13/13.
+
+O que olhar:
+- `docs/capturas/v1/folhas/aprendiz_direcoes.png` e `avel_direcoes.png` (linhas: parado, andar, correr; colunas: as 8 direções);
+- os GIFs `aprendiz_*.gif` e `avel_*.gif`;
+- no jogo, `docs/capturas/v1/oficina_dia_perto.png`.
 
 ## Portão V1, 3ª rodada (2026-11-13) — árvores v2 (D-100)
 Pedido: árvores com cara de pixel art artesanal (espécies, idades, caráter), Blender para a forma e Pixelorama para o acabamento; o Pixelorama fica liberado para toda a arte.

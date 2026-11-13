@@ -620,3 +620,35 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - mais esferas: dava o efeito "bolinhas";
   - cartões de folha 3D: viram ruído a 48 px;
   - editar o PNG final à mão: se perderia na próxima geração.
+
+## D-101 — Gente melhorada: corpo, animações e acabamento no Pixelorama
+- **Data:** 2026-11-13
+- **Pedido do diretor:** melhorar o personagem e as animações, usando o Blender e o Pixelorama.
+- **Problemas medidos nas folhas do V1:**
+  - o rosto tinha 3 px: cabeça de 8 px, e o cabelo, uma bola que cobria até os olhos;
+  - o tronco era um caixote;
+  - na corrida, os braços ficavam esticados para a frente;
+  - no andar, o braço da frente parecia apontar, porque na isométrica ele "deita" nas direções de costas;
+  - a passada era larga demais;
+  - bota e calça no mesmo marrom.
+- **Decisão (Blender, `kit_humano/corpo.py`):**
+  - tronco por seções (cintura, peito, ombros) com deltoide;
+  - cabeça com queixo e orelhas, maior que a real (`cabeca: 1.25` no aprendiz, `1.2` no Avel);
+  - cabelo em calota com linha do cabelo, mais uma franja;
+  - pernas mais finas, mãos e pés menores;
+  - as botas do aprendiz passaram a couro.
+- **Decisão (animações, `anim/ciclos.py`):**
+  - truque do pixel artista: a cabeça sobe o queixo para a câmera (`rosto`, 16°; 10° no Avel, que é curvado);
+  - **andar:** contrarrotação quadril × ombros, peso de um pé para o outro, cabeça que olha para onde vai, balanço curto e mais para trás, cotovelo que dobra;
+  - **correr:** braço a 90° colado ao corpo, mais para trás que para a frente, contrarrotação forte;
+  - **parado:** respiração, troca de peso, cabeça que olha em volta, pés um pouco abertos;
+  - passada menor (aprendiz 1,15 m, Avel 1,05 m). O jogo avança o quadro por essa mesma passada, então o pé continua plantado.
+- **Decisão (Pixelorama):**
+  - o acabamento em camadas vale para qualquer folha com `pixelorama: true` no YAML, inclusive com 8 direções;
+  - o personagem vira um `.pxo` de 192 quadros (camadas `corpo`, `contorno`, `retoque`), com uma tag por animação e direção;
+  - a folha final é exportada pelo Pixelorama e confere pixel a pixel com a composição de referência.
+- **Verificação:** 156 testes, validador, vt03 112/112 (o jogador continua o mais claro sobre o chão) e capturas 13/13.
+- **Alternativas descartadas:**
+  - cabeça do tamanho real: o rosto não lê a 48 px;
+  - cabelo como bola deslocada: vira capacete;
+  - redesenhar os quadros à mão no Pixelorama: seriam 192 quadros por personagem, que se perderiam a cada nova geração; o caminho é a camada `retoque`.

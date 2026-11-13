@@ -68,7 +68,14 @@ public final class Pxo {
         return ((int) Math.round(fo * 255) << 24) | (r << 16) | (g << 8) | bl;
     }
 
+    /** Marca de animação no Pixelorama: quadros [de, ate], contados a partir de 1. */
+    public record Tag(String nome, int de, int ate) {}
+
     public static void escrever(Path destino, Projeto p, String tag) throws IOException {
+        escrever(destino, p, tag == null || p.quadros() == 0 ? List.of() : List.of(new Tag(tag, 1, p.quadros())));
+    }
+
+    public static void escrever(Path destino, Projeto p, List<Tag> marcas) throws IOException {
         ObjectNode d = JSON.createObjectNode();
         d.put("pixelorama_version", "v1.2.4");
         d.put("pxo_version", VERSAO);
@@ -105,12 +112,12 @@ public final class Pxo {
             q.putObject("metadata");
         }
         ArrayNode tags = d.putArray("tags");
-        if (tag != null && p.quadros() > 0) {
+        for (Tag m : marcas) {
             ObjectNode t = tags.addObject();
-            t.put("name", tag);
+            t.put("name", m.nome());
             t.put("color", "ffffff");
-            t.put("from", 1);
-            t.put("to", p.quadros());
+            t.put("from", m.de());
+            t.put("to", m.ate());
         }
         d.put("fps", p.fps());
         d.put("current_frame", 0);

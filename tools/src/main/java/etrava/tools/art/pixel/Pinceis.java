@@ -153,6 +153,6 @@ public final class Pinceis {
             }
             camadas.add(new Pxo.Camada(e.getKey(), true, List.of(px)));
         }
-        Pxo.escrever(destino, new Pxo.Projeto(w, h, 1.0, camadas), null);
+        Pxo.escrever(destino, new Pxo.Projeto(w, h, 1.0, camadas), java.util.List.of());
     }
 }

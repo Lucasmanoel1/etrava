@@ -136,11 +136,17 @@ final class Montagem {
             animsPorFolha.put(nome, new LinkedHashMap<>(anims));
             BufferedImage folhaImg = new BufferedImage(fw * col, fh * direcoes, BufferedImage.TYPE_INT_ARGB);
             BufferedImage brilhoImg = null;
+            int[] matFolha = new int[folhaImg.getWidth() * folhaImg.getHeight()];
             Map<String, Object> pontos = new LinkedHashMap<>();
             for (Quadro q : qs) {
                 int[] ini = inicio.get(q.anim());
                 int cx = (ini[0] + q.f()) * fw, cy = q.dir() * fh;
                 copiar(q.r().cor(), x0, y0, fw, fh, folhaImg, cx, cy);
+                int iw = q.r().cor().getWidth(), ih = q.r().cor().getHeight();
+                for (int y = 0; y < fh; y++)
+                    for (int x = 0; x < fw; x++)
+                        if (x0 + x < iw && y0 + y < ih)
+                            matFolha[(cy + y) * folhaImg.getWidth() + cx + x] = q.r().materialDoPixel()[(y0 + y) * iw + x0 + x];
                 if (q.r().brilho() != null) {
                     if (brilhoImg == null) brilhoImg = new BufferedImage(folhaImg.getWidth(), folhaImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
                     copiar(q.r().brilho(), x0, y0, fw, fh, brilhoImg, cx, cy);
@@ -157,7 +163,7 @@ final class Montagem {
                 }
             }
             if (desc.path("pixelorama").asBoolean(false)) {
-                folhaImg = Acabamento.pelaPixelorama(ra, sub, nome, qs, mats, x0, y0, fw, fh, col,
+                folhaImg = Acabamento.pelaPixelorama(ra, sub, nome, folhaImg, matFolha, mats, fw, fh, col, direcoes, inicio,
                         anims.isEmpty() ? 5.0 : ((Number) ((Map<?, ?>) anims.values().iterator().next()).get("fps")).doubleValue());
             }
             String rel = "arte/" + sub + "/" + nome + ".png";

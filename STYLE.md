@@ -10,7 +10,7 @@ Vale para toda arte do jogo. Direção: **pixel art dark fantasy** — o caprich
 
 ## 1. Regras gerais
 
-1. **Leitura a distância.** Silhueta clara vale mais que detalhe. Gente adulta tem **~48 px** de altura; a cabeça é um pouco maior que a real (~1/6 da altura) para o rosto ler.
+1. **Leitura a distância.** Silhueta clara vale mais que detalhe. Gente adulta tem **~48 px** de altura; a cabeça é maior que a real (`cabeca: 1.2–1.25`, ~10 px) e sobe o queixo para a câmera (`rosto`, ~16°), para o rosto ler (D-101).
 2. **Luz conta a história.** Âmbar de lamparina contra noite fria; dia suave e poeirento.
 3. **Pixel limpo.** Sem degradê suave, sem borrão: cada pixel é uma cor da paleta, opaco ou transparente. A única exceção é a sombra projetada no chão (preto translúcido, uma cor só).
 4. **Saturação controlada.** Tudo terroso e dessaturado; o único brilho é o fogo. Nenhuma cor mais saturada que a ferrugem mais viva (`#C47A48`).
@@ -72,6 +72,16 @@ gradlew captures -Proteiro=v1        o jogo fotografado (tools/capturas/v1.yaml)
 
 ### 4.1 Regras de modelagem
 - **Gente** (`kit_humano/corpo.py`): esqueleto padrão de vazios com nomes fixos; corpo de peças rígidas arredondadas; proporção estilizada (pernas um pouco curtas, cabeça um pouco grande, membros grossos — a correção vertical achata, e membro fino some no voto). Roupa por peça (`camisa` com `barra` e `manga`, `calca`, `botas`, `cabelo`, `gorro`, `barba`, `avental`, `cinto`, `bolsa`…), cada uma com sua rampa. Detalhe menor que 2,5 cm não sobrevive: vira decalque.
+  - **D-101 — corpo:**
+    - tronco por seções (cintura, peito, ombros caídos) e deltoide redondo;
+    - cabeça com queixo e orelhas pequenas;
+    - cabelo em calota com **linha do cabelo** (alta na testa, na orelha dos lados, baixa na nuca); nunca capacete;
+    - bota em cor diferente da calça.
+  - **D-101 — animação:**
+    - andar com contrarrotação (quadril para um lado, ombros para o outro), peso passando de um pé ao outro, cotovelo que dobra e balanço curto e mais para trás (na isométrica, o braço à frente "deita" nas direções de costas);
+    - correr com braço a 90° colado ao corpo;
+    - parado com respiração, troca de peso e cabeça que olha em volta.
+  - **Retoque à mão:** na camada `retoque` de `tools/art/acabamento/personagens/<id>.pxo`, que tem uma tag por animação e direção (`andar_d3`) para tocar no Pixelorama.
 - **Animação** (`anim/ciclos.py`): `parado` (respira, 1 px), `andar` e `correr` com o pé de apoio plantado por IK de dois ossos. O cliente avança o quadro pela **distância andada** (`stride` no manifesto), não pelo relógio: o pé não desliza em velocidade nenhuma.
 - **Árvores** (`natureza/arvore.py` + pintor de folhagem, D-100):
   - **Forma (Blender):** galhos por colonização do espaço, tronco sinuoso com colo e raízes, e copa aberta com vãos onde o galho aparece. A copa se ilumina como um volume só (normal da copa) e os tufos são detalhe.

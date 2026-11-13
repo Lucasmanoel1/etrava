@@ -16,10 +16,13 @@ O Pixelorama (1.2.x) entra no pipeline de três formas.
 
 Para mudar o desenho da folha: abra o `.pxo` no Pixelorama, pinte, salve e rode `gradlew pixelize -Pso=carvalho` (não precisa do Blender).
 
-## 2. Folhas em camadas: `acabamento/<pasta>/<folha>.pxo`
+## 2. Folhas em camadas: `acabamento/<pasta>/<folha>.pxo` (árvores e personagens)
 - São geradas pelo `renderArt` ou pelo `pixelize`.
-- Camadas: `sombra`, `tronco`, `folhagem`, `contorno` e `retoque`.
-- Cada quadro de animação é um quadro do projeto, com a tag `vento`.
+- Camadas:
+  - árvores: `sombra`, `tronco`, `folhagem`, `contorno` e `retoque`;
+  - personagens: `corpo`, `contorno` e `retoque`.
+- Cada quadro da folha é um quadro do projeto, direção por direção.
+- Cada animação de cada direção tem uma tag (`vento`, ou `parado_d0`…`correr_d7` nos personagens), para tocar no Pixelorama.
 
 ## 3. Retoque à mão
 - Abra o `.pxo` no Pixelorama e pinte **só na camada `retoque`**, usando cores da paleta (`paleta.yaml`). Depois salve.
