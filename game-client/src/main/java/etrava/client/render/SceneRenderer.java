@@ -103,7 +103,12 @@ public final class SceneRenderer implements Disposable {
     private final Matrix4 screenMatrix = new Matrix4();
     private final Texture lightTexture;
     private final Texture shadowTexture;
-    private ShaderProgram postShader, silhouetteShader;
+    private ShaderProgram postShader, silhouetteShader, paletaShader;
+    /** Shader em uso no lote dentro de drawSorted (troca por sprite indexado, D-103). */
+    private ShaderProgram shaderAtual;
+    private float reduzAtual = -1f, silhuetaAtual = -1f;
+    /** Zoom do quadro (0 = vista de longe): decide se o sprite indexado precisa da média 2x2. */
+    private int escala = 1;
     private FrameBuffer sceneFbo, lightFbo, glowFbo, maskFbo;
     /** Modos de {@link #drawSorted}: cena, brilho, máscara de todos os personagens, máscara só do jogador. */
     private static final int SCENE = 0, GLOW = 1, MASK_ALL = 2, MASK_PLAYER = 3;
@@ -214,6 +219,12 @@ public final class SceneRenderer implements Disposable {
             silhouetteShader.dispose();
             silhouetteShader = null;
         }
+        paletaShader = new ShaderProgram(Gdx.files.classpath("shaders/post.vert"), Gdx.files.classpath("shaders/paleta.frag"));
+        if (!paletaShader.isCompiled()) {
+            LOG.error("Shader de paleta não compilou; sprites indexados vão sair errados: {}", paletaShader.getLog());
+            paletaShader.dispose();
+            paletaShader = null;
+        }
         postShader = new ShaderProgram(Gdx.files.classpath("shaders/post.vert"), Gdx.files.classpath("shaders/post.frag"));
         if (!postShader.isCompiled()) {
             LOG.warn("Shader de pós-processamento não compilou; seguindo sem ele: {}", postShader.getLog());
@@ -270,6 +281,7 @@ public final class SceneRenderer implements Disposable {
         DayNight.Key light = dayNight.at(hour);
         float night = lightingEnabled ? (darkArea ? 1f : interior ? INTERIOR_NIGHT : (float) light.night()) : 0f;
         float[] bounds = camera.visibleBounds();
+        escala = camera.pixelScale();
         ActorDraw player = actors.isEmpty() ? null : actors.get(0);
 
         // ---- 1. cena
@@ -480,8 +492,11 @@ public final class SceneRenderer implements Disposable {
             float left = snap(sx(s.x(), s.y()) - sp.anchorX() * px);
             float bottom = snap(sy(s.x(), s.y(), 0) - (h - sp.anchorY() * px));
             if (left + w < b[0] || left > b[2] || bottom + h < b[1] || bottom > b[3]) continue;
+            usarShader(region, px, false);
             batch.draw(region, left, bottom, w, h);
         }
+        if (shaderAtual != null) batch.setShader(null);
+        shaderAtual = null;
     }
 
     private void drawLight(double x, double y, double z, float radius, float r, float g, float b, float intensity,
@@ -500,6 +515,8 @@ public final class SceneRenderer implements Disposable {
      */
     private void drawSorted(List<ActorDraw> actors, ActorDraw player, float[] b, float animTime, int mode) {
         boolean glow = mode == GLOW, mask = mode == MASK_ALL || mode == MASK_PLAYER;
+        ShaderProgram base = mask ? silhouetteShader : null;
+        shaderAtual = base;
         for (List<ActorDraw> bucket : buckets) bucket.clear();
         for (ActorDraw a : actors) {
             int index = statics.size();
@@ -522,6 +539,7 @@ public final class SceneRenderer implements Disposable {
                     if (glow) batch.setColor(0f, 0f, 0f, 1f);
                     else if (mask) batch.setColor(lit, lit, lit, 1f);
                     else if (a.flash > 0) batch.setColor(1f, 1f - a.flash * 0.55f, 1f - a.flash * 0.6f, 1f);
+                    usarShader(null, 0, mask);
                     drawActor(a, animTime);
                     if (!glow) batch.setColor(1f, 1f, 1f, 1f);
                     if (a == player) playerDrawn = true;
@@ -548,6 +566,7 @@ public final class SceneRenderer implements Disposable {
                     alpha = OCCLUDED_ALPHA;
                 }
             }
+            usarShader(region, px, mask);
             if (mask) { // o que está na frente tapa o personagem (translúcido tapa em parte)
                 batch.setColor(0f, 0f, 0f, alpha);
                 batch.draw(region, left, bottom, w, h);
@@ -555,6 +574,7 @@ public final class SceneRenderer implements Disposable {
                 batch.setColor(0f, 0f, 0f, alpha);
                 batch.draw(region, left, bottom, w, h);
                 if (sp.glow() != null) {
+                    usarShader(sp.glow()[f], px, false);
                     batch.setColor(1f, 1f, 1f, alpha);
                     batch.draw(sp.glow()[f], left, bottom, w, h);
                 }
@@ -564,6 +584,40 @@ public final class SceneRenderer implements Disposable {
             }
         }
         batch.setColor(1f, 1f, 1f, 1f);
+        if (shaderAtual != base) batch.setShader(base);
+        shaderAtual = base;
+    }
+
+    /**
+     * Shader do próximo desenho dentro de drawSorted: paleta.frag para página do atlas indexado
+     * (com a média 2x2 quando um pixel de arte fica menor que um de tela), o shader do passe para
+     * o resto. Só troca (e esvazia o lote) quando muda.
+     */
+    private void usarShader(TextureRegion r, int px, boolean mask) {
+        boolean idx = r != null && paletaShader != null && assets.indexada(r.getTexture());
+        ShaderProgram alvo = idx ? paletaShader : (mask ? silhouetteShader : null);
+        float reduz = idx && px * (escala == 0 ? 0.25f : escala / 2f) < 0.99f ? 1f : 0f;
+        float silh = mask ? 1f : 0f;
+        if (alvo != shaderAtual) {
+            batch.setShader(alvo);
+            shaderAtual = alvo;
+            if (idx) {
+                assets.paleta().bind(1);
+                Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
+                paletaShader.setUniformi("u_paleta", 1);
+                paletaShader.setUniformf("u_texel", 1f / r.getTexture().getWidth(), 1f / r.getTexture().getHeight());
+                paletaShader.setUniformf("u_reduz", reduz);
+                paletaShader.setUniformf("u_silhueta", silh);
+                reduzAtual = reduz;
+                silhuetaAtual = silh;
+            }
+        } else if (idx && (reduz != reduzAtual || silh != silhuetaAtual)) {
+            batch.flush();
+            paletaShader.setUniformf("u_reduz", reduz);
+            paletaShader.setUniformf("u_silhueta", silh);
+            reduzAtual = reduz;
+            silhuetaAtual = silh;
+        }
     }
 
     private void drawActor(ActorDraw a, float animTime) {
@@ -603,6 +657,7 @@ public final class SceneRenderer implements Disposable {
         if (postShader != null) postShader.dispose();
         if (ground != null) ground.dispose();
         if (silhouetteShader != null) silhouetteShader.dispose();
+        if (paletaShader != null) paletaShader.dispose();
         if (maskFbo != null) maskFbo.dispose();
         if (playerMask != null) playerMask.dispose();
         if (sceneFbo != null) sceneFbo.dispose();

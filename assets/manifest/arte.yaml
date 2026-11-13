@@ -39,8 +39,8 @@
   anchor:
   - 6.0
   - 17.0
-  frames: 4
-  fps: 3.0
+  frames: 96
+  fps: 60.0
   meta: "arte/decoracao/tufo_1.json"
   scale: 2
   source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
@@ -51,8 +51,8 @@
   anchor:
   - 6.0
   - 17.0
-  frames: 4
-  fps: 3.0
+  frames: 96
+  fps: 60.0
   meta: "arte/decoracao/tufo_seco_1.json"
   scale: 2
   source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
@@ -128,8 +128,8 @@
   anchor:
   - 142.0
   - 215.0
-  frames: 8
-  fps: 5.0
+  frames: 96
+  fps: 60.0
   meta: "arte/natureza/carvalho_jovem.json"
   scale: 2
   source: "Blender (tools/blender/natureza/carvalho.yaml) + pixelizador"
@@ -144,9 +144,9 @@
   - "arte/natureza/betula_alta.png"
   anchor:
   - 67.0
-  - 227.0
-  frames: 8
-  fps: 5.0
+  - 229.0
+  frames: 96
+  fps: 60.0
   meta: "arte/natureza/betula_jovem.json"
   scale: 2
   source: "Blender (tools/blender/natureza/betula.yaml) + pixelizador"
@@ -160,8 +160,8 @@
   anchor:
   - 112.0
   - 138.0
-  frames: 8
-  fps: 5.0
+  frames: 96
+  fps: 60.0
   meta: "arte/natureza/macieira_a.json"
   scale: 2
   source: "Blender (tools/blender/natureza/macieira.yaml) + pixelizador"
@@ -175,8 +175,8 @@
   anchor:
   - 78.0
   - 166.0
-  frames: 8
-  fps: 5.0
+  frames: 96
+  fps: 60.0
   meta: "arte/natureza/pereira_a.json"
   scale: 2
   source: "Blender (tools/blender/natureza/pereira.yaml) + pixelizador"

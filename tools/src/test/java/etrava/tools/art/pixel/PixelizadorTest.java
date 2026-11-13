@@ -39,7 +39,8 @@ class PixelizadorTest {
     @Test
     void paletaV3ContemTodaAPaletaDoM8() {
         for (int c : PixelArt.PALETTE) assertTrue(PALETA.contem(0xFF000000 | c), String.format("falta %06X", c));
-        assertTrue(PALETA.cores().size() <= 110, "paleta v3 com cores demais: " + PALETA.cores().size());
+        // o diretor liberou a paleta (D-103); o teto é o do atlas indexado: 255 cores + o vazio
+        assertTrue(PALETA.cores().size() <= 255, "paleta v3 com cores demais para o atlas indexado: " + PALETA.cores().size());
     }
 
     @Test

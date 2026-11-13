@@ -7,7 +7,7 @@ manifesto: {id: prop.arvore_fruto_b}
 pixelorama: true
 quadro: [340, 340]
 ancora: [130, 310]
-vento: {quadros: 8, fps: 5}
+vento: {quadros: 96, fps: 60}
 variantes:
   - {nome: pereira_a, altura: 5.2, copa: 2.6, idade: 1.0, semente: 13, frutos: {rampa: latao, raio: 0.07, quantos: 24, chao: 3}}
   - {nome: pereira_b, altura: 4.6, copa: 2.4, idade: 0.8, semente: 37, frutos: {rampa: latao, raio: 0.07, quantos: 18, chao: 4}}

@@ -1,12 +1,12 @@
 {
-  "frame" : [ 229, 249 ],
-  "anchor" : [ 67.0, 227.0 ],
+  "frame" : [ 228, 252 ],
+  "anchor" : [ 67.0, 229.0 ],
   "directions" : 1,
   "animations" : {
     "vento" : {
       "start" : 0,
-      "frames" : 8,
-      "fps" : 5.0
+      "frames" : 96,
+      "fps" : 60.0
     }
   },
   "points" : { }

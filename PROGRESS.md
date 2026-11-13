@@ -5,7 +5,7 @@
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
 - **Marco atual:** **V1 — Pipeline e portão visual: terceira rodada do portão (VT-13).** O diretor achou as árvores da 2ª rodada melhores, mas ainda "bolinhas"; pediu árvores com cara de pixel art feita à mão, com Blender e Pixelorama. Árvores v2 feitas (D-100).
-- **Status:** **PARADO no portão visual do V1** esperando o diretor olhar as árvores v2 e a gente melhorada (D-101). Nada de V2 sem o "pode seguir".
+- **Status:** **PARADO no portão visual do V1**, esperando o diretor ver o vento a 60 qps (D-103), as árvores v2 (D-100) e a gente (D-101/D-102). Nada de V2 sem o "pode seguir".
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -34,6 +34,25 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## Portão V1 — vento a 60 qps e atlas indexado (D-103)
+Pedido: árvores com mais fluidez, 96 quadros a 60 qps, e o mesmo no resto que balança; paleta liberada.
+
+Feito:
+- **Vento:**
+  - carvalho, bétula, macieira, pereira e os tufos de grama passaram a ter 96 quadros a 60 qps (laço de 1,6 s);
+  - o vento ganhou um segundo harmônico e um balanço de lado.
+- **Atlas indexado:**
+  - cada pixel guarda 1 byte (o índice da cor), e a cor sai do shader `paleta.frag`;
+  - ocupa ~144 MB de textura. Só as árvores, em RGBA, dariam ~307 MB.
+- **Desempenho:** `--bench` na vila dá 1.253 FPS, com 103 chamadas por quadro.
+- **Verificação:**
+  - 156 testes e validador sem erros;
+  - vt03 112/112 e capturas 13/13, com as cores conferidas a olho de dia, de noite e na vista de longe.
+
+O que olhar:
+- `docs/capturas/v1/folhas/*_vento.gif` (12 árvores + `tufo_1_vento.gif`);
+- no jogo: `gradlew run`, perto de árvores.
 
 ## Portão V1 — versão do diretor aplicada (D-102)
 O diretor fez a própria corrida do aprendiz (rig orgânico no Blender) e pediu para pô-la no jogo e aplicar ao Avel e às outras animações; depois, seguir os trabalhos.

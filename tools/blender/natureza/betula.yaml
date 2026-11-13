@@ -7,7 +7,7 @@ manifesto: {id: prop.arvore_b}
 pixelorama: true
 quadro: [400, 400]
 ancora: [150, 370]
-vento: {quadros: 8, fps: 5}
+vento: {quadros: 96, fps: 60}
 variantes:
   - {nome: betula_jovem,  altura: 5.0, copa: 1.7, idade: 0.6, semente: 5}
   - {nome: betula_adulta, altura: 6.6, copa: 2.2, idade: 1.0, semente: 17}

@@ -78,6 +78,20 @@ public final class Assets implements Disposable {
      */
     private static final int PAGINA = paginaDoAtlas();
     private final PixmapPacker packer = new PixmapPacker(PAGINA, PAGINA, Pixmap.Format.RGBA8888, 2, false);
+    /**
+     * Atlas indexado (D-103): a arte é de paleta única, então cada pixel guarda só o índice da cor
+     * (1 byte, textura de alfa) e a cor sai da {@link #paleta()} no shader {@code paleta.frag}. Um
+     * quarto da memória — o que paga o vento de 96 quadros. Sprite com cor que não cabe na paleta
+     * (mais de 255 cores no total) fica no atlas RGBA.
+     */
+    private final PixmapPacker packerIdx = new PixmapPacker(PAGINA, PAGINA, Pixmap.Format.Alpha, 2, false);
+    /** Cor RGBA8888 → índice (1..255); sem caixa de Integer: a conversão passa por dezenas de milhões de pixels. */
+    private final com.badlogic.gdx.utils.IntIntMap paletaIdx = new com.badlogic.gdx.utils.IntIntMap();
+    private final com.badlogic.gdx.utils.IntArray paletaCores = new com.badlogic.gdx.utils.IntArray();
+    private final Map<String, Boolean> arquivoIndexado = new HashMap<>();
+    private final Set<Texture> indexadas = new HashSet<>();
+    private Texture paletaTex;
+    private boolean paletaSuja = true;
 
     private static int paginaDoAtlas() {
         try {
@@ -114,25 +128,108 @@ public final class Assets implements Disposable {
         }
         deferUpload = false;
         flushAtlas();
-        LOG.info("Atlas: {} sprites em {} página(s) de {}×{}", n, packer.getPages().size, PAGINA, PAGINA);
+        LOG.info("Atlas: {} sprites; {} página(s) indexada(s) e {} RGBA de {}×{}; paleta com {} cores",
+                n, packerIdx.getPages().size, packer.getPages().size, PAGINA, PAGINA, paletaIdx.size);
     }
 
     private TextureRegion packed(String id, String file, int frame, int frames) {
+        return packed(id, file, frame, frames, false);
+    }
+
+    /** @param indexar pode ir para o atlas indexado (só sprites do mundo; a interface usa o shader padrão) */
+    private TextureRegion packed(String id, String file, int frame, int frames, boolean indexar) {
         String name = file + "#" + frame;
         TextureRegion r = new TextureRegion();
-        if (packer.getRect(name) == null) {
+        boolean idx;
+        if (packer.getRect(name) == null && packerIdx.getRect(name) == null) {
             Pixmap whole = pixmap(id, file);
             if (whole == null) return null;
-            int fw = whole.getWidth() / frames;
-            Pixmap one = new Pixmap(fw, whole.getHeight(), Pixmap.Format.RGBA8888);
-            one.setBlending(Pixmap.Blending.None);
-            one.drawPixmap(whole, 0, 0, frame * fw, 0, fw, whole.getHeight());
-            packer.pack(name, one);
+            idx = indexar && indexavel(file, whole);
+            int fw = whole.getWidth() / frames, h = whole.getHeight();
+            Pixmap one;
+            if (idx) {
+                one = new Pixmap(fw, h, Pixmap.Format.Alpha);
+                one.setBlending(Pixmap.Blending.None);
+                java.nio.ByteBuffer src = whole.getPixels(), dst = one.getPixels();
+                int W = whole.getWidth();
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < fw; x++)
+                        dst.put(y * fw + x, (byte) indice(rgba(src, (y * W + frame * fw + x) * 4)));
+                packerIdx.pack(name, one);
+            } else {
+                one = new Pixmap(fw, h, Pixmap.Format.RGBA8888);
+                one.setBlending(Pixmap.Blending.None);
+                one.drawPixmap(whole, 0, 0, frame * fw, 0, fw, h);
+                packer.pack(name, one);
+            }
             one.dispose();
         }
         pending.add(new Object[] {r, name});
         if (!deferUpload) flushAtlas();
         return r;
+    }
+
+    private static int rgba(java.nio.ByteBuffer b, int i) {
+        return (b.get(i) & 0xFF) << 24 | (b.get(i + 1) & 0xFF) << 16 | (b.get(i + 2) & 0xFF) << 8 | (b.get(i + 3) & 0xFF);
+    }
+
+    /** O arquivo inteiro cabe na paleta? Se sim, as cores novas entram nela (índice 0 = vazio). */
+    private boolean indexavel(String file, Pixmap pm) {
+        return arquivoIndexado.computeIfAbsent(file, f -> {
+            if (pm.getFormat() != Pixmap.Format.RGBA8888) return false;
+            java.nio.ByteBuffer b = pm.getPixels();
+            com.badlogic.gdx.utils.IntArray novas = new com.badlogic.gdx.utils.IntArray();
+            com.badlogic.gdx.utils.IntSet vistas = new com.badlogic.gdx.utils.IntSet();
+            int n = pm.getWidth() * pm.getHeight(), ultima = 0;
+            for (int i = 0; i < n; i++) {
+                int c = rgba(b, i * 4);
+                if ((c & 0xFF) == 0 || c == ultima) continue;
+                ultima = c;
+                if (paletaIdx.containsKey(c) || !vistas.add(c)) continue;
+                novas.add(c);
+                if (paletaIdx.size + novas.size > 255) {
+                    LOG.info("Atlas: {} fica em RGBA (a paleta passaria de 255 cores)", file);
+                    return false;
+                }
+            }
+            for (int k = 0; k < novas.size; k++) {
+                paletaCores.add(novas.get(k));
+                paletaIdx.put(novas.get(k), paletaCores.size);
+            }
+            if (novas.size > 0) paletaSuja = true;
+            return true;
+        });
+    }
+
+    /** Índice da cor RGBA8888 (0 = vazio). */
+    private int indice(int rgba) {
+        if ((rgba & 0xFF) == 0) return 0;
+        return paletaIdx.get(rgba, 0);
+    }
+
+    /** Textura 256×1 com a cor de cada índice (0 = transparente), para {@code paleta.frag}. */
+    public Texture paleta() {
+        if (paletaSuja || paletaTex == null) {
+            Pixmap pm = new Pixmap(256, 1, Pixmap.Format.RGBA8888);
+            pm.setBlending(Pixmap.Blending.None);
+            pm.setColor(0, 0, 0, 0);
+            pm.fill();
+            for (int k = 0; k < paletaCores.size; k++) pm.drawPixel(k + 1, 0, paletaCores.get(k));
+            if (paletaTex == null) {
+                paletaTex = new Texture(pm);
+                paletaTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+            } else {
+                paletaTex.draw(pm, 0, 0);
+            }
+            pm.dispose();
+            paletaSuja = false;
+        }
+        return paletaTex;
+    }
+
+    /** A textura é uma página do atlas indexado (desenhar com {@code paleta.frag})? */
+    public boolean indexada(Texture t) {
+        return t != null && indexadas.contains(t);
     }
 
     private final Map<String, Pixmap> pixmaps = new HashMap<>();
@@ -155,11 +252,16 @@ public final class Assets implements Disposable {
 
     private void flushAtlas() {
         packer.updatePageTextures(Texture.TextureFilter.Linear, Texture.TextureFilter.Nearest, false);
+        // índice não se filtra (misturaria cores): a média da vista de longe é feita no shader
+        packerIdx.updatePageTextures(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest, false);
         for (Object[] p : pending) {
             String name = (String) p[1];
-            PixmapPacker.PixmapPackerRectangle rc = packer.getRect(name);
             TextureRegion r = (TextureRegion) p[0];
-            r.setTexture(packer.getPage(name).getTexture());
+            PixmapPacker origem = packerIdx.getRect(name) != null ? packerIdx : packer;
+            PixmapPacker.PixmapPackerRectangle rc = origem.getRect(name);
+            Texture t = origem.getPage(name).getTexture();
+            if (origem == packerIdx) indexadas.add(t);
+            r.setTexture(t);
             r.setRegion(rc.getX(), rc.getY(), rc.getWidth(), rc.getHeight());
         }
         pending.clear();
@@ -195,9 +297,11 @@ public final class Assets implements Disposable {
                 TextureRegion[] gl = glow ? new TextureRegion[n] : null;
                 boolean defer = deferUpload;
                 deferUpload = true; // um sprite inteiro antes de subir
+                // só a arte nova do mundo vai para o atlas indexado; ícones são desenhados pela interface
+                boolean indexar = e.scaleOr() == 2 && !key.startsWith("icone.");
                 for (int f = 0; f < n; f++) {
-                    fr[f] = packed(key, file, f, n);
-                    if (gl != null) gl[f] = packed(key, glowFile, f, n);
+                    fr[f] = packed(key, file, f, n, indexar);
+                    if (gl != null) gl[f] = packed(key, glowFile, f, n, indexar);
                 }
                 deferUpload = defer;
                 if (!defer) flushAtlas();
@@ -350,5 +454,7 @@ public final class Assets implements Disposable {
     public void dispose() {
         for (Texture t : textures.values()) if (t != null) t.dispose();
         packer.dispose();
+        packerIdx.dispose();
+        if (paletaTex != null) paletaTex.dispose();
     }
 }

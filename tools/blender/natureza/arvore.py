@@ -424,8 +424,12 @@ def _frutos(var, tufos, rng):
 
 
 def vento(tufos, t):
-    """Laço de vento: a copa balança junta, cada tufo um pouco atrasado."""
+    """Laço de vento (D-103: 96 quadros a 60 qps): a copa balança junta, cada tufo um pouco
+    atrasado; um segundo harmônico (rajada) tira a cara de seno perfeito. Periódico em t ∈ [0, 1)."""
     dire = Vector((0.7, 0.7, 0.0))
+    lado = Vector((-0.7, 0.7, 0.0))
     for ob, base, fase, amp, _, _ in tufos:
-        s = math.sin(2 * math.pi * (t + fase))
-        ob.location = base + dire * (amp * s)
+        u = 2 * math.pi * (t + fase)
+        s = 0.78 * math.sin(u) + 0.22 * math.sin(2 * u + 1.3)
+        w = 0.25 * math.sin(u + 1.9)
+        ob.location = base + dire * (amp * s) + lado * (amp * w)

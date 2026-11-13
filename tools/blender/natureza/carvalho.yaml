@@ -8,7 +8,7 @@ manifesto: {id: prop.arvore}
 pixelorama: true
 quadro: [460, 360]
 ancora: [180, 330]
-vento: {quadros: 8, fps: 5}
+vento: {quadros: 96, fps: 60}
 variantes:
   - {nome: carvalho_jovem,  altura: 4.6, copa: 3.0, idade: 0.6, semente: 3, mistura: 0.0}
   - {nome: carvalho_adulto, altura: 5.8, copa: 4.0, idade: 1.0, semente: 11}

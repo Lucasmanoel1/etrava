@@ -679,3 +679,30 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Ajuste por VT-03:** a calça contínua ocupa mais do sprite e tem o marrom do chão de madeira da oficina. Às 21h, no zoom 4, o destaque caía para 0,60, no limite. A camisa do aprendiz virou túnica até o meio da coxa (`barra: 0.20`, coerente com a época), e o destaque mínimo foi para 0,62 (vt03 112/112).
 - **Problema conhecido (VT-16):** com a malha deformada, o passe de luz varia de 1 em 65.535 entre renders (e às vezes um degrau na oclusão), provavelmente pelas normais calculadas em paralelo. Raramente isso troca um pixel de tom na folha: em 3 tentativas, 2 deram bytes iguais. Renderizar com 1 núcleo não resolveu. Fica para investigar no V2.
 - **Fonte:** a pasta `docs/capturas/minha versao de andar/` foi apagada a pedido do diretor; as poses estão em `anim/correr_diretor.py`.
+
+## D-103 — Vento a 60 qps (96 quadros) e atlas indexado pela paleta
+- **Data:** 2026-11-13
+- **Pedido do diretor:** as árvores estão boas; falta fluidez. Ele pediu 96 quadros a 60 qps e, se fizer sentido, o mesmo para o resto, "para não ficar desproporcional". Também liberou a paleta para crescer à vontade.
+- **Decisão (vento):**
+  - árvores vivas (carvalho, bétula, macieira, pereira) e tufos de grama passam a ter 96 quadros a 60 qps (laço de 1,6 s), em vez de 8 a 5 qps (e 4 a 3 nos tufos);
+  - o vento ganhou um segundo harmônico e um leve balanço de lado, para não parecer seno perfeito;
+  - como antes, o desenho da folha anda preso a cada tufo, e cada tufo cruza o pixel no seu próprio instante — é isso que dá a fluidez.
+- **Custo medido:** em RGBA, 96 quadros das 12 árvores vivas dariam ~77 milhões de pixels de textura (~307 MB), mais da metade do teto de 512 MB do VT-10.
+- **Decisão (memória): atlas indexado.**
+  - a arte nova é de paleta única, então cada pixel guarda só o índice da cor: 1 byte (textura de alfa) em vez de 4;
+  - a cor sai de uma textura de paleta 256×1, montada na carga com as cores que aparecem, no shader `paleta.frag`;
+  - na vista de longe, a média 2×2 é feita no shader, já em cor (filtro linear misturaria índices), e fica igual à de antes;
+  - a máscara de silhueta (luz de presença, VT-03) também lê pela paleta;
+  - entram só os sprites do mundo na escala da arte nova (não os ícones, que a interface desenha com o shader padrão);
+  - um sprite cujas cores não caibam (mais de 255 no total) fica no atlas RGBA, com aviso no log.
+- **Paleta:** liberada pelo diretor. O teto passa a ser o do atlas indexado, 255 cores (o teste agora confere isso).
+- **Alternativas descartadas:**
+  - menos quadros: o diretor pediu 96;
+  - interpolar quadros no cliente: pixel art não se mistura;
+  - recorte por variante: só reduziria a ~227 MB;
+  - montar a copa em tempo real com um sprite por tufo: as partes escondidas de cada tufo não existem no render.
+- **Resultado medido (2026-11-13):**
+  - atlas: 65 sprites em 5 páginas indexadas + 1 RGBA de 4096² (~144 MB de textura, antes eram ~307 MB só das árvores em RGBA); a paleta usada em jogo tem 57 cores;
+  - `--bench` na vila, 1280×720: 1.253 FPS de média, 103 chamadas por quadro (eram 51: cada troca entre página indexada e RGBA esvazia o lote);
+  - 156 testes, validador, vt03 112/112 e capturas 13/13; render do vento novo: 44 min (Blender, sem cache).
+- **Nota:** o GIF de revisão não toca exatamente a 60 qps (o formato só guarda atrasos em centésimos de segundo); no jogo é 60.
