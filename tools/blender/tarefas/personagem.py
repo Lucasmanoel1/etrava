@@ -2,7 +2,7 @@
 import math
 
 from anim import ciclos
-from kit_humano import corpo
+from kit_humano import corpo, pele
 from nucleo import camera, materiais, render
 
 
@@ -23,6 +23,7 @@ def executar(t):
                 ciclo(c, f / a["quadros"], a)
                 # direção 0 = leste do jogo; o ângulo do jogo cresce para o sul (y do jogo = -Y)
                 c.j["raiz"].rotation_euler = (0.0, 0.0, -d * 2 * math.pi / direcoes)
+                pele.atualizar(c)      # a malha contínua segue as juntas (D-102)
                 nome = "%s_%d_%d" % (a["nome"], d, f)
                 pts = render.quadro(t["saida"], nome, L, A, distancia_oa=t.get("distancia_oa", 0.25))
                 quadros.append({"anim": a["nome"], "dir": d, "f": f, "arquivo": nome, "pontos": pts})

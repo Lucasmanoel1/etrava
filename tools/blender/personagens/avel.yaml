@@ -11,7 +11,7 @@ direcoes: 8
 animacoes:
   - {nome: parado, quadros: 8, fps: 5}
   - {nome: andar, quadros: 8, fps: 8, passada: 1.05}
-  - {nome: correr, quadros: 8, fps: 12, passada: 2.2}
+  - {nome: correr, quadros: 8, fps: 11.5, passada: 1.8}
 corpo: {altura: 1.72, corpo: medio, postura: curvada, cabeca: 1.2, rosto: 10}
 cores: {pele: pele_media}
 roupa:

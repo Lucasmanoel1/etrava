@@ -62,11 +62,11 @@
   file: "arte/personagens/aprendiz.png"
   meta: "arte/personagens/aprendiz.json"
   frame:
-  - 52
-  - 64
+  - 42
+  - 63
   anchor:
-  - 26.0
-  - 60.0
+  - 21.0
+  - 59.0
   directions: 8
   animations:
     parado:
@@ -81,8 +81,8 @@
     correr:
       start: 16
       frames: 8
-      fps: 12.0
-      stride: 2.4
+      fps: 12.5
+      stride: 1.9
   role: "jogador"
   scale: 2
   source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
@@ -92,11 +92,11 @@
   file: "arte/personagens/avel.png"
   meta: "arte/personagens/avel.json"
   frame:
-  - 50
-  - 66
+  - 42
+  - 64
   anchor:
-  - 25.0
-  - 61.0
+  - 21.0
+  - 60.0
   directions: 8
   animations:
     parado:
@@ -111,8 +111,8 @@
     correr:
       start: 16
       frames: 8
-      fps: 12.0
-      stride: 2.2
+      fps: 11.5
+      stride: 1.8
   role: "comum"
   scale: 2
   source: "Blender (tools/blender/personagens/avel.yaml) + pixelizador"

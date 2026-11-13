@@ -652,3 +652,30 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - cabeça do tamanho real: o rosto não lê a 48 px;
   - cabelo como bola deslocada: vira capacete;
   - redesenhar os quadros à mão no Pixelorama: seriam 192 quadros por personagem, que se perderiam a cada nova geração; o caminho é a camada `retoque`.
+
+## D-102 — O rig do diretor vira o kit humano: pele contínua, peito e a corrida dele
+- **Data:** 2026-11-13
+- **Pedido do diretor:** ele fez a própria versão do aprendiz no Blender (rig orgânico, corrida "V2 com joelhos um pouco mais baixos", pixelizada pelo pipeline) e pediu para pôr no jogo, aplicar ao Avel e aos outros sprites e animações, e apagar a pasta depois.
+- **O que o rig dele tinha, medido no `.blend`:**
+  - camisa, calça, botas e alça contínuas, deformadas por um esqueleto (as juntas vazias mandam na pose);
+  - uma junta `peito` entre o tronco e os ombros;
+  - tronco inclinado **para a frente** (+4,5° a +7,5°). No V1, por erro de sinal, eu inclinava para trás;
+  - quadril baixo na corrida (−9 a −12 cm);
+  - cotovelo dobrado de 34° a 47°;
+  - braço que vai mais para trás do que para a frente;
+  - nenhum pixel retocado: o ganho veio todo do modelo e da animação.
+- **Decisão (forma, `kit_humano/pele.py`):**
+  - as peças rígidas de camisa (com barra), calça, botas, alça e avental viram, em repouso, uma malha por grupo;
+  - antes de unir, entram esferas de ponte no quadril, no joelho e no tornozelo (sem elas a perna esticada virava "contas");
+  - a malha é refeita em voxels (1,1 cm), suavizada, e ganha pesos por distância aos ossos (os dois mais perto), sem nunca cruzar de uma perna para a outra;
+  - o avental só segue quadril e coluna, para não se rasgar no passo;
+  - os ossos não têm hierarquia: a cada quadro, cada osso copia o movimento da sua junta (`pele.atualizar`);
+  - braços, mãos e cabeça continuam rígidos, como no rig dele.
+- **Decisão (animação, `anim/ciclos.py`):**
+  - junta `peito` no esqueleto;
+  - **correr:** são as 8 poses dele, extraídas do `.blend` para `anim/correr_diretor.py` e interpoladas se o número de quadros mudar. Passada 1,9 m e 12,5 qps no aprendiz (no Avel, 1,8 m e 11,5 qps, um pouco mais curvado);
+  - **andar e parado:** refeitos no mesmo estilo (tronco à frente com o sinal certo, contrarrotação no peito, quadril baixo, braço para trás com cotovelo moderado);
+  - a convenção de sinal ficou anotada no código.
+- **Ajuste por VT-03:** a calça contínua ocupa mais do sprite e tem o marrom do chão de madeira da oficina. Às 21h, no zoom 4, o destaque caía para 0,60, no limite. A camisa do aprendiz virou túnica até o meio da coxa (`barra: 0.20`, coerente com a época), e o destaque mínimo foi para 0,62 (vt03 112/112).
+- **Problema conhecido (VT-16):** com a malha deformada, o passe de luz varia de 1 em 65.535 entre renders (e às vezes um degrau na oclusão), provavelmente pelas normais calculadas em paralelo. Raramente isso troca um pixel de tom na folha: em 3 tentativas, 2 deram bytes iguais. Renderizar com 1 núcleo não resolveu. Fica para investigar no V2.
+- **Fonte:** a pasta `docs/capturas/minha versao de andar/` foi apagada a pedido do diretor; as poses estão em `anim/correr_diretor.py`.

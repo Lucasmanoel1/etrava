@@ -10,11 +10,11 @@ direcoes: 8
 animacoes:
   - {nome: parado, quadros: 8, fps: 5}
   - {nome: andar, quadros: 8, fps: 10, passada: 1.15}
-  - {nome: correr, quadros: 8, fps: 12, passada: 2.4}
+  - {nome: correr, quadros: 8, fps: 12.5, passada: 1.9}
 corpo: {altura: 1.68, corpo: magro, cabeca: 1.25}
 cores: {pele: pele_clara}
 roupa:
-  - {peca: camisa, rampa: linho, manga: arregacada, luz_min: 0.42, barra: 0.13}
+  - {peca: camisa, rampa: linho, manga: arregacada, luz_min: 0.55, barra: 0.20}
   - {peca: calca, rampa: tecido_marrom}
   - {peca: botas, rampa: couro, altura: 0.17}
   - {peca: cabelo, rampa: cabelo_castanho, estilo: baguncado}

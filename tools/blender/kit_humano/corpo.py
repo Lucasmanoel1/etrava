@@ -15,7 +15,7 @@ from mathutils import Matrix, Vector
 
 from nucleo import camera, geo, materiais
 
-JUNTAS = ("raiz", "quadril", "tronco", "pescoco", "cabeca",
+JUNTAS = ("raiz", "quadril", "tronco", "peito", "pescoco", "cabeca",
           "ombro_e", "braco_e", "antebraco_e", "mao_e",
           "ombro_d", "braco_d", "antebraco_d", "mao_d",
           "coxa_e", "canela_e", "pe_e", "coxa_d", "canela_d", "pe_d")
@@ -44,6 +44,8 @@ class Corpo:
         self.curvado = p.get("postura", "ereta") == "curvada"
         self.rosto = p.get("rosto", 16.0)        # graus de queixo para cima (ver anim.ciclos)
         self.j = {}
+        self.pele = {"camisa": [], "calca": [], "botas_e": [], "botas_d": [], "alca": [], "avental": []}
+        self.organico = p.get("organico", True)
 
 
 def _pai(ob, junta):
@@ -63,10 +65,13 @@ def esqueleto(c):
     r = junta(c, "raiz", camera.raiz(), (0, 0, 0))
     q = junta(c, "quadril", r, (0, 0, c.quadril_h))
     t = junta(c, "tronco", q, (0, 0, 0.05 * c.k))
-    pe = junta(c, "pescoco", t, (0, 0, c.tronco))
+    # peito (D-102, do rig do diretor): a coluna dobra em dois — a contrarrotação dos ombros e a
+    # respiração ficam no peito, a inclinação no tronco
+    pt = junta(c, "peito", t, (0, 0, c.tronco * 0.52))
+    pe = junta(c, "pescoco", pt, (0, 0, c.tronco * 0.48))
     junta(c, "cabeca", pe, (0, 0, c.pescoco))
     for lado, s in (("e", 1), ("d", -1)):
-        o = junta(c, "ombro_" + lado, t, (0, s * c.ombros, c.tronco - 0.05 * c.k))
+        o = junta(c, "ombro_" + lado, pt, (0, s * c.ombros, c.tronco * 0.48 - 0.05 * c.k))
         b = junta(c, "braco_" + lado, o, (0, 0, 0))
         a = junta(c, "antebraco_" + lado, b, (0, 0, -c.braco))
         junta(c, "mao_" + lado, a, (0, 0, -c.antebraco))
@@ -184,13 +189,14 @@ def montar(p):
     # --- tronco e quadril
     # tronco com cintura, peito e ombros caídos (seções); um pouco curvado para a frente no alto
     T, k = c.tronco, c.k
-    _secao("tronco", [(-0.02, 0.140 * k * L, 0.100 * k, 0.0), (T * 0.35, 0.145 * k * L, 0.105 * k, 0.005),
+    c.pele["camisa"].append(_secao("tronco", [(-0.02, 0.140 * k * L, 0.100 * k, 0.0), (T * 0.35, 0.145 * k * L, 0.105 * k, 0.005),
                       (T * 0.68, 0.160 * k * L, 0.104 * k, 0.010), (T * 0.88, 0.165 * k * L, 0.090 * k, 0.005),
-                      (T * 1.00, 0.120 * k * L, 0.075 * k, 0.0)], camisa, j["tronco"])
+                      (T * 1.00, 0.120 * k * L, 0.075 * k, 0.0)], camisa, j["tronco"]))
     for lado, sy in (("e", 1), ("d", -1)):     # deltoide: ombro redondo, não quina
         _bola("deltoide_" + lado, 0.046 * k, camisa, j["ombro_" + lado], centro=(0, -0.004 * sy * k, -0.018 * k),
               escala=(1.0, 0.95, 1.0), sub=1, segs=10)
-    _tubo("quadril", 0.17 * c.k, 0.145 * c.k * L, 0.15 * c.k * L, calca, j["quadril"], prof=0.7, z0=0.08 * c.k)
+    c.pele["calca"].append(_tubo("quadril", 0.17 * c.k, 0.145 * c.k * L, 0.15 * c.k * L, calca, j["quadril"], prof=0.7,
+                                 z0=0.08 * c.k))
     _tubo("pescoco", c.pescoco + 0.03, 0.042 * c.k, 0.05 * c.k, pele, j["pescoco"], z0=c.pescoco + 0.02, sub=1)
 
     # --- cabeça (um pouco maior que o real, para ler a 48 px)
@@ -266,20 +272,22 @@ def montar(p):
 
     # --- pernas
     for lado in ("e", "d"):
-        _tubo("coxa_" + lado, c.coxa + 0.03, 0.082 * c.k * L, 0.060 * c.k, calca, j["coxa_" + lado], z0=0.03)
+        c.pele["calca"].append(_tubo("coxa_" + lado, c.coxa + 0.03, 0.082 * c.k * L, 0.060 * c.k, calca,
+                                     j["coxa_" + lado], z0=0.03))
         alto_bota = roupa.get("botas", {}).get("altura", 0.16) * c.k
-        _tubo("canela_" + lado, c.canela - alto_bota + 0.02, 0.058 * c.k, 0.050 * c.k, calca, j["canela_" + lado])
-        _tubo("cano_" + lado, alto_bota, 0.06 * c.k, 0.054 * c.k, bota, j["canela_" + lado],
-              z0=-(c.canela - alto_bota), sub=1)
-        _caixa("pe_" + lado, (0.20 * c.k, 0.09 * c.k, 0.075 * c.k), (0.04 * c.k, 0, -0.045 * c.k), bota,
-               j["pe_" + lado], sub=1)
+        c.pele["calca"].append(_tubo("canela_" + lado, c.canela - alto_bota + 0.02, 0.058 * c.k, 0.050 * c.k, calca,
+                                     j["canela_" + lado]))
+        c.pele["botas_" + lado].append(_tubo("cano_" + lado, alto_bota, 0.06 * c.k, 0.054 * c.k, bota,
+                                             j["canela_" + lado], z0=-(c.canela - alto_bota), sub=1))
+        c.pele["botas_" + lado].append(_caixa("pe_" + lado, (0.20 * c.k, 0.09 * c.k, 0.075 * c.k),
+                                              (0.04 * c.k, 0, -0.045 * c.k), bota, j["pe_" + lado], sub=1))
 
     # --- peças por cima
     barra = roupa.get("camisa", {}).get("barra")
     if barra:
         # a camisa cai por cima da calça até o alto da coxa, abrindo um pouco
-        _tubo("barra", barra * c.k + 0.06 * c.k, 0.155 * c.k * L, 0.175 * c.k * L, camisa, j["quadril"], prof=0.76,
-              z0=0.14 * c.k, segmentos=10)
+        c.pele["camisa"].append(_tubo("barra", barra * c.k + 0.06 * c.k, 0.155 * c.k * L, 0.175 * c.k * L, camisa,
+                                      j["quadril"], prof=0.76, z0=0.14 * c.k, segmentos=10))
     if tem("cinto"):
         cm = mat_peca("cinto", "couro", k=0.05)
         _tubo("cinto", 0.045 * c.k, 0.157 * c.k * L, 0.157 * c.k * L, cm, j["quadril"], prof=0.72, z0=0.11 * c.k, sub=1)
@@ -288,11 +296,14 @@ def montar(p):
         _caixa("bolsa", (0.11 * c.k, 0.06 * c.k, 0.12 * c.k), (-0.03 * c.k, 0.15 * c.k * L, -0.02 * c.k), bm_, j["quadril"])
         # alça do ombro direito ao quadril esquerdo, cruzando o peito
         alca = mat_peca("alca", "couro", k=0.05)
-        _alca(alca, j["tronco"], c)
+        c.pele["alca"].append(_alca(alca, j["peito"], c))
     if tem("avental"):
         av = mat_peca("avental", "couro", k=0.18)
         topo, base = c.quadril_h + 0.05 * c.k + c.tronco * 0.82, c.quadril_h - c.coxa * 0.72
-        _avental(av, j["quadril"], c, topo - c.quadril_h, base - c.quadril_h)
+        c.pele["avental"].extend(_avental(av, j["quadril"], c, topo - c.quadril_h, base - c.quadril_h))
+    if c.organico:
+        from kit_humano import pele
+        pele.montar(c)
     return c
 
 
@@ -315,6 +326,8 @@ def _alca(material, tronco, c):
     so = ob.modifiers.new("esp", "SOLIDIFY")
     so.thickness = 0.02
     _pai(ob, tronco)
+    ob.location = (0, 0, -c.tronco * 0.52)     # a alça foi desenhada a partir do tronco
+    return ob
 
 
 def _avental(material, quadril, c, topo, base):
@@ -338,7 +351,9 @@ def _avental(material, quadril, c, topo, base):
     so = ob.modifiers.new("esp", "SOLIDIFY")
     so.thickness = 0.025
     _pai(ob, quadril)
+    pecas = [ob]
     # alças do avental, por cima dos ombros
     for s in (1, -1):
-        _caixa("avental_alca_%d" % s, (0.20 * c.k, 0.03 * c.k, 0.025 * c.k),
-               (0.0, s * 0.10 * c.k * L, topo + 0.05 * c.k), material, quadril, sub=0)
+        pecas.append(_caixa("avental_alca_%d" % s, (0.20 * c.k, 0.03 * c.k, 0.025 * c.k),
+               (0.0, s * 0.10 * c.k * L, topo + 0.05 * c.k), material, quadril, sub=0))
+    return pecas

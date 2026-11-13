@@ -35,6 +35,24 @@
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
 
+## Portão V1 — versão do diretor aplicada (D-102)
+O diretor fez a própria corrida do aprendiz (rig orgânico no Blender) e pediu para pô-la no jogo e aplicar ao Avel e às outras animações; depois, seguir os trabalhos.
+
+Feito:
+- **Pele contínua** (`kit_humano/pele.py`): camisa, calça, botas, alça e avental deformados por esqueleto, sem "contas" no joelho.
+- **Junta `peito`.**
+- **Animações:**
+  - a corrida dele, em tabela (`anim/correr_diretor.py`);
+  - andar e parado no mesmo estilo;
+  - sinal da inclinação do tronco corrigido.
+- **Avel:** avental preso à coluna.
+- **Aprendiz:** túnica mais longa, por causa do VT-03.
+- **Verificação:** 156 testes, validador, vt03 112/112 (mínimo 0,62), capturas 13/13.
+- A pasta `docs/capturas/minha versao de andar/` foi apagada, como pedido.
+
+O que olhar:
+- `docs/capturas/v1/folhas/aprendiz_direcoes.png`, `avel_direcoes.png` e os GIFs.
+
 ## Portão V1, 3ª rodada (cont.) — gente melhorada (D-101)
 Pedido: melhorar o personagem e as animações com Blender e Pixelorama.
 
@@ -131,6 +149,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 | `gradlew blenderTeste` | o teste do cubo |
 
 ## Problemas conhecidos (Fase V)
+- VT-16 nos personagens: com a pele contínua, raramente um pixel muda de tom entre renders (D-102); investigar no V2.
 - Árvores: o carvalho torto e algumas massas ainda lembram "almofadas" (topo aceso, base escura); o retoque à mão pode resolver caso a caso pelo `.pxo`. Precisa do Pixelorama para exportar as folhas (sem ele, compõe em Java e avisa).
 - O spike do MPFB2 roda só com a extensão em `build/blender-ext` (instalar: `BLENDER_USER_RESOURCES=build/blender-ext blender -b --online-mode -c extension install mpfb --enable`).
 - Folhas de personagem e o chão ainda não estão no atlas (cada um é uma textura); hoje custam pouco, revisar no V2 quando houver 25 pessoas.

@@ -8,6 +8,10 @@ relógio), então o pé não desliza (VT-15).
 import math
 
 ADIANTE = -1.0  # girar a junta em Y por -a leva o membro a para a frente (+X)
+# Atenção ao sinal (D-102): nas juntas que apontam para CIMA (tronco, peito, pescoço, cabeça),
+# rotação Y positiva inclina para a FRENTE; nos membros que pendem (braço, perna), positiva
+# leva para TRÁS. O andar e o correr do V1 inclinavam o tronco para trás por isso.
+INCLINA = 1.0
 
 
 def _zera(c):
@@ -49,27 +53,46 @@ def _suave(u):
     return u * u * (3 - 2 * u)
 
 
+def _zera_peito(c):
+    if "peito" in c.j:
+        c.j["peito"].rotation_euler = (0.0, 0.0, 0.0)
+
+
+def _coluna(c, inclina_tronco, gira_quadril, gira_peito, lado_peito=0.0, respira=0.0):
+    """Coluna em duas partes (rig do diretor): o tronco inclina (graus, + = frente), o quadril e o
+    peito giram em Z em sentidos opostos (contrarrotação)."""
+    curv = 6.0 if c.curvado else 0.0
+    c.j["quadril"].rotation_euler.z = math.radians(gira_quadril)
+    c.j["tronco"].rotation_euler.y = INCLINA * math.radians(inclina_tronco + curv * 0.6)
+    if "peito" in c.j:
+        c.j["peito"].rotation_euler = (math.radians(lado_peito), INCLINA * math.radians(curv * 0.4 - respira),
+                                       math.radians(gira_peito))
+    else:
+        c.j["tronco"].rotation_euler.z = math.radians(gira_peito)
+
+
 def parado(c, t, p):
-    """Respira e transfere o peso: o quadril desliza meio pixel para o lado de apoio, ombros e
-    cabeça sobem no meio do ciclo, braços relaxados com o cotovelo um pouco dobrado."""
+    """Respira (o peito sobe e abre), transfere o peso (o quadril desliza para o lado de apoio e o
+    peito compensa), cabeça que olha em volta; braços soltos com o cotovelo um pouco dobrado."""
     _zera(c)
+    _zera_peito(c)
     r = 0.5 - 0.5 * math.cos(2 * math.pi * t)           # respiração
     w = math.sin(2 * math.pi * t)                       # peso de um lado para o outro
-    c.j["quadril"].location.z = c.quadril_h - 0.008 * (1 - r)
+    c.j["quadril"].location.z = c.quadril_h - 0.012 * c.k - 0.006 * (1 - r)
     c.j["quadril"].location.y = 0.010 * c.k * w
     c.j["quadril"].rotation_euler.x = math.radians(1.5) * w
-    c.j["tronco"].rotation_euler.x = -math.radians(2.0) * w
-    c.j["tronco"].rotation_euler.y = math.radians(-1.5 * r) + (math.radians(6) if c.curvado else 0)
+    _coluna(c, 2.0, 0.0, 0.0, lado_peito=-2.5 * w, respira=1.5 * r)
     balanco(c.j["pescoco"], math.radians(2 * r - 1))
     c.j["cabeca"].rotation_euler.z = math.radians(4) * math.sin(2 * math.pi * t + 1.0)
     for lado, s in (("e", 1), ("d", -1)):
-        c.j["braco_" + lado].rotation_euler.x = s * math.radians(-6)
-        balanco(c.j["braco_" + lado], math.radians(3 + 2 * r))
-        balanco(c.j["antebraco_" + lado], math.radians(12 + 4 * r))
+        c.j["braco_" + lado].rotation_euler.x = s * math.radians(-5)
+        balanco(c.j["braco_" + lado], math.radians(-3 + 2 * r))
+        balanco(c.j["antebraco_" + lado], math.radians(16 + 4 * r))
         c.j["coxa_" + lado].rotation_euler.x = s * math.radians(-3)
         c.j["pe_" + lado].rotation_euler.x = s * math.radians(3)
         c.j["pe_" + lado].rotation_euler.z = s * math.radians(10)     # pés um pouco abertos
-        _ik_perna(c, lado, 0.0, c.tornozelo)
+        canela = _ik_perna(c, lado, 0.0, c.tornozelo)
+        _pe(c, lado, canela)
 
 
 def _passo(c, t, passada, apoio, altura_pe, quadril_med, quadril_amp, chute=0.0):
@@ -97,53 +120,56 @@ def _passo(c, t, passada, apoio, altura_pe, quadril_med, quadril_amp, chute=0.0)
 
 
 def andar(c, t, p):
-    """Andar: quadril gira com a perna que avança e os ombros giram ao contrário (contrarrotação),
-    o peso passa de um pé para o outro, a cabeça acompanha o sobe-e-desce, o braço oposto à
-    perna balança e o cotovelo dobra mais quando o braço vai à frente."""
+    """Andar no estilo do rig do diretor: corpo um pouco baixo e inclinado para a frente, quadril
+    gira com a perna que avança e o peito gira ao contrário, peso de um pé para o outro, braço
+    que balança mais para trás que para a frente com o cotovelo meio dobrado."""
     _zera(c)
-    passada = p.get("passada", 1.3) * c.k
-    pes = _passo(c, t, passada, 0.62, 0.08 * c.k, c.quadril_h - 0.035 * c.k, 0.016 * c.k)
+    _zera_peito(c)
+    passada = p.get("passada", 1.15) * c.k
+    pes = _passo(c, t, passada, 0.62, 0.08 * c.k, c.quadril_h - 0.045 * c.k, 0.016 * c.k)
     fase = 2 * math.pi * t
-    c.j["quadril"].rotation_euler.z = math.radians(7) * math.sin(fase)
-    c.j["quadril"].location.y = 0.016 * c.k * math.cos(fase)          # peso sobre o pé de apoio
-    c.j["quadril"].rotation_euler.x = math.radians(2.5) * math.cos(fase)
-    c.j["tronco"].rotation_euler.y = math.radians(-2 - (2 if c.curvado else 0))
-    c.j["tronco"].rotation_euler.z = -math.radians(13) * math.sin(fase)  # desfaz o giro do quadril e passa
-    c.j["tronco"].rotation_euler.x = -math.radians(2.5) * math.cos(fase)
-    c.j["cabeca"].rotation_euler.z = math.radians(5) * math.sin(fase)    # olha para onde vai
-    for lado, s, fs in (("e", 1, 0.0), ("d", -1, 0.5)):
-        x, z, incl = pes[lado]
-        canela = _ik_perna(c, lado, x, z)
-        _pe(c, lado, canela, incl)
-        # mais para trás que para a frente; o cotovelo dobra um pouco ao ir à frente (sem "apontar")
-        # na isométrica o braço que vai à frente "deita" na tela nas direções de costas: o
-        # balanço é curto e mais para trás, e o antebraço quase não abre
-        a = math.radians(-6) + math.radians(14) * math.cos(2 * math.pi * (t + fs + 0.5))
-        c.j["braco_" + lado].rotation_euler.x = s * math.radians(-5)
-        balanco(c.j["braco_" + lado], a)
-        balanco(c.j["antebraco_" + lado], math.radians(10) + max(0.0, a) * 0.3)
-
-
-def correr(c, t, p):
-    """Correr: corpo inclinado, joelho alto, braços dobrados a 90° colados ao corpo, que vão mais
-    para trás do que para a frente; ombros em contrarrotação forte."""
-    _zera(c)
-    passada = p.get("passada", 2.4) * c.k
-    pes = _passo(c, t, passada, 0.38, 0.20 * c.k, c.quadril_h - 0.06 * c.k, 0.028 * c.k, chute=0.30 * c.k)
-    fase = 2 * math.pi * t
-    c.j["quadril"].rotation_euler.z = math.radians(9) * math.sin(fase)
-    c.j["tronco"].rotation_euler.y = math.radians(-12)
-    c.j["tronco"].rotation_euler.z = -math.radians(18) * math.sin(fase)
-    balanco(c.j["pescoco"], math.radians(-8))
+    c.j["quadril"].location.y = 0.014 * c.k * math.cos(fase)          # peso sobre o pé de apoio
+    c.j["quadril"].rotation_euler.x = math.radians(2.0) * math.cos(fase)
+    _coluna(c, 4.0, 6.0 * math.sin(fase), -9.0 * math.sin(fase), lado_peito=-2.0 * math.cos(fase))
+    balanco(c.j["pescoco"], math.radians(-2))
+    c.j["cabeca"].rotation_euler.z = math.radians(4) * math.sin(fase)
     for lado, s, fs in (("e", 1, 0.0), ("d", -1, 0.5)):
         x, z, incl = pes[lado]
         canela = _ik_perna(c, lado, x, z)
         _pe(c, lado, canela, incl)
         u = math.cos(2 * math.pi * (t + fs + 0.5))
-        a = math.radians(-22) + math.radians(38) * u
-        c.j["braco_" + lado].rotation_euler.x = s * math.radians(-6)
+        a = math.radians(-8) + math.radians(16) * u               # de −24° (trás) a +8° (frente)
+        c.j["braco_" + lado].rotation_euler.x = s * math.radians(-3)
         balanco(c.j["braco_" + lado], a)
-        balanco(c.j["antebraco_" + lado], math.radians(80) + math.radians(15) * max(0.0, u))
+        balanco(c.j["antebraco_" + lado], math.radians(18) + math.radians(10) * max(0.0, u))
+
+
+def correr(c, t, p):
+    """Corrida do diretor (anim/correr_diretor.py): as 8 poses gravadas, interpoladas se a
+    animação tiver outro número de quadros. Corpo curvado inclina um pouco mais."""
+    from anim.correr_diretor import POSES
+    _zera(c)
+    _zera_peito(c)
+    n = len(POSES)
+    x = (t % 1.0) * n
+    i0 = int(math.floor(x)) % n
+    i1 = (i0 + 1) % n
+    f = x - math.floor(x)
+    a, b = POSES[i0], POSES[i1]
+    for junta in set(a) | set(b):
+        if junta.startswith("_") or junta not in c.j:
+            continue
+        ra, rb = a.get(junta, [0, 0, 0]), b.get(junta, [0, 0, 0])
+        rot = [math.radians(ra[k] + (rb[k] - ra[k]) * f) for k in range(3)]
+        if junta == "cabeca":
+            rot[1] += math.radians(16.0)     # o rig do diretor já trazia o rosto erguido; aqui é o embrulho
+        c.j[junta].rotation_euler = rot
+    dz = a["_quadril_dz"] + (b["_quadril_dz"] - a["_quadril_dz"]) * f
+    dy = a["_quadril_dy"] + (b["_quadril_dy"] - a["_quadril_dy"]) * f
+    c.j["quadril"].location.z = c.quadril_h + dz * c.k
+    c.j["quadril"].location.y = dy * c.k
+    if c.curvado:
+        c.j["tronco"].rotation_euler.y += INCLINA * math.radians(4)
 
 
 def _rosto_para_a_camera(ciclo):

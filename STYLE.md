@@ -81,6 +81,12 @@ gradlew captures -Proteiro=v1        o jogo fotografado (tools/capturas/v1.yaml)
     - andar com contrarrotação (quadril para um lado, ombros para o outro), peso passando de um pé ao outro, cotovelo que dobra e balanço curto e mais para trás (na isométrica, o braço à frente "deita" nas direções de costas);
     - correr com braço a 90° colado ao corpo;
     - parado com respiração, troca de peso e cabeça que olha em volta.
+  - **D-102, rig do diretor:**
+    - camisa, calça, botas, alça e avental são uma pele contínua deformada por esqueleto (`kit_humano/pele.py`), sem "contas" no joelho;
+    - coluna em dois segmentos (`tronco` + `peito`);
+    - tronco sempre inclinado **para a frente** (Y positivo nas juntas que apontam para cima);
+    - a corrida é a do diretor (`anim/correr_diretor.py`);
+    - camisa longa (túnica) ajuda o jogador a ler sobre chão marrom.
   - **Retoque à mão:** na camada `retoque` de `tools/art/acabamento/personagens/<id>.pxo`, que tem uma tag por animação e direção (`andar_d3`) para tocar no Pixelorama.
 - **Animação** (`anim/ciclos.py`): `parado` (respira, 1 px), `andar` e `correr` com o pé de apoio plantado por IK de dois ossos. O cliente avança o quadro pela **distância andada** (`stride` no manifesto), não pelo relógio: o pé não desliza em velocidade nenhuma.
 - **Árvores** (`natureza/arvore.py` + pintor de folhagem, D-100):
