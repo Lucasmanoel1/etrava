@@ -1,0 +1,28 @@
+# Marta, da taverna (camada B). Retrato: lenço claro na cabeça, cabelo ruivo preso, xale rosado,
+# avental, caneca na mão.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: taberneira
+manifesto: {id: personagem.taberneira, papel: comum}
+ficha:
+  idade: 42
+  oficio: taberneira
+  traco: lenço claro na cabeça + avental claro comprido + caneca
+  postura: ereta, mão na cintura quando para, passo de quem conhece o chão
+  trabalho: trabalhar_bancada   # servir no balcão; varrer
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.00, fps: 9, balanco: 1.0}
+corpo: {altura: 1.64, corpo: medio, sexo: f, cabeca: 1.22}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: tecido_oliva, manga: arregacada}
+  - {peca: xale, rampa: flor_rosa}
+  - {peca: saia, rampa: tecido_marrom, comprimento: longa}
+  - {peca: avental, rampa: linho, comprimento: longo, so_cintura: true}
+  - {peca: botas, rampa: couro, altura: 0.10}
+  - {peca: cabelo, rampa: cabelo_ruivo, estilo: sob_lenco}
+  - {peca: lenco_cabeca, rampa: linho}
+ferramenta: {mao_d: caneca}

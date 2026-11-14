@@ -32,7 +32,7 @@ import javax.imageio.ImageIO;
  * {@code assets/manifest/arte.yaml}.
  *
  * <pre>
- *   renderArt  [--so=id,id] [--force]   renderiza o que mudou (cache por hash) e pixeliza
+ *   renderArt  [--so=id,id] [--force] [--processos=N] [--dispositivo=HIP]   renderiza o que mudou (cache por hash) e pixeliza
  *   pixelize   [--so=id,id]             só pixeliza passes já renderizados
  * </pre>
  * O Blender fica fora do build e da execução do jogo (RNF-006): os PNG gerados vão para o git.
@@ -52,6 +52,11 @@ public final class RenderArt {
         this.paleta = Paleta.carregar(raiz.resolve("tools/art/paleta.yaml"));
     }
 
+    /** Quantos Blender ao mesmo tempo (0 = metade dos núcleos). */
+    static int processos = 0;
+    /** --dispositivo=HIP (sobrepõe blender.dispositivo do local.properties). */
+    static String dispositivo = null;
+
     public static void main(String[] args) throws Exception {
         Path raiz = Path.of(args[0]).toAbsolutePath();
         String modo = args[1];
@@ -61,6 +66,8 @@ public final class RenderArt {
             if (args[i].startsWith("--so=")) {
                 for (String s : args[i].substring(5).split(",")) if (!s.isBlank()) so.add(s.trim());
             } else if (args[i].equals("--force")) force = true;
+            else if (args[i].startsWith("--processos=")) processos = Integer.parseInt(args[i].substring(12).trim());
+            else if (args[i].startsWith("--dispositivo=")) dispositivo = args[i].substring(14).trim();
         }
         RenderArt r = new RenderArt(raiz);
         List<Objeto> objetos = r.objetos(so);
@@ -85,6 +92,8 @@ public final class RenderArt {
                 String id = d.path("id").asText(p.getFileName().toString().replace(".yaml", ""));
                 if (!so.isEmpty() && !so.contains(id)) continue;
                 if (d.path("spike").asBoolean(false) && !so.contains(id)) continue; // spikes só por nome
+                // ficha ainda sem kit para ela (V2): só por nome, para não trocar a folha em uso
+                if (d.path("rascunho").asBoolean(false) && !so.contains(id)) continue;
                 lista.add(new Objeto(id, p, d));
             }
         }
@@ -93,21 +102,57 @@ public final class RenderArt {
 
     // ------------------------------------------------------------------ Blender
 
+    /** Configuração desta máquina (local.properties, fora do git): blender.path, blender.dispositivo, blender.processos. */
+    String local(String chave) throws IOException {
+        Path lp = raiz.resolve("local.properties");
+        if (!Files.exists(lp)) return null;
+        Properties pr = new Properties();
+        try (var in = Files.newBufferedReader(lp)) {
+            pr.load(in);
+        }
+        String v = pr.getProperty(chave);
+        return v == null || v.isBlank() ? null : v.trim();
+    }
+
     Path blender() throws IOException {
         String env = System.getenv("BLENDER");
         if (env != null && !env.isBlank()) return Path.of(env);
-        Path lp = raiz.resolve("local.properties");
-        if (Files.exists(lp)) {
-            Properties pr = new Properties();
-            try (var in = Files.newBufferedReader(lp)) {
-                pr.load(in);
-            }
-            if (pr.getProperty("blender.path") != null) return Path.of(pr.getProperty("blender.path"));
-        }
+        if (local("blender.path") != null) return Path.of(local("blender.path"));
         return Path.of("C:/Program Files/Blender Foundation/Blender 5.3/blender.exe");
     }
 
+    /**
+     * Dispositivo do Cycles (D-106): CPU (padrão), HIP (AMD), CUDA/OPTIX (NVIDIA)... Vai na linha de
+     * comando (depois do "--", onde o Cycles o lê) e não entra na chave do cache. Numa mesma
+     * máquina o resultado se repete (o ruído de 1/65535 entre rodadas é o mesmo da CPU).
+     */
+    String dispositivo() throws IOException {
+        if (dispositivo != null) return dispositivo;
+        return local("blender.dispositivo");
+    }
+
+    /**
+     * Chave do cache: o YAML do objeto, só os scripts que ele de fato usa (entrada.py, a tarefa do
+     * tipo e o que ela importa, transitivamente), as texturas e o caminho do Blender. Antes eram
+     * todos os .py da pasta, e mexer no kit humano refazia as árvores (D-105).
+     */
     String hash(Objeto o) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(Files.readAllBytes(o.yaml()));
+        java.util.SortedSet<Path> usados = new TreeSet<>(scripts(o.desc().path("tipo").asText()));
+        try (Stream<Path> s = Files.walk(blenderDir)) {
+            s.filter(Files::isRegularFile).filter(f -> f.toString().endsWith(".png")).forEach(usados::add);
+        }
+        for (Path p : usados) {
+            md.update(blenderDir.relativize(p).toString().replace('\\', '/').getBytes(StandardCharsets.UTF_8));
+            md.update(Files.readAllBytes(p));
+        }
+        md.update(blender().toString().getBytes(StandardCharsets.UTF_8));
+        return HexFormat.of().formatHex(md.digest());
+    }
+
+    /** Chave do esquema antigo (todos os .py), só para migrar as marcas sem renderizar de novo. */
+    String hashAntigo(Objeto o) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(Files.readAllBytes(o.yaml()));
         try (Stream<Path> s = Files.walk(blenderDir)) {
@@ -122,32 +167,102 @@ public final class RenderArt {
         return HexFormat.of().formatHex(md.digest());
     }
 
+    private static final java.util.regex.Pattern IMPORT = java.util.regex.Pattern.compile(
+            "^\\s*(?:from\\s+([\\w.]+)\\s+import\\s+([\\w, ]+)|import\\s+([\\w.]+))", java.util.regex.Pattern.MULTILINE);
+
+    /** entrada.py + tarefas/<tipo>.py + os módulos locais que eles importam, transitivamente. */
+    Set<Path> scripts(String tipo) throws IOException {
+        Set<Path> vistos = new TreeSet<>();
+        java.util.ArrayDeque<Path> fila = new java.util.ArrayDeque<>();
+        fila.add(blenderDir.resolve("entrada.py"));
+        fila.add(blenderDir.resolve("tarefas/" + tipo + ".py"));
+        while (!fila.isEmpty()) {
+            Path p = fila.poll();
+            if (!Files.isRegularFile(p) || !vistos.add(p)) continue;
+            Path pacote = p.getParent();
+            if (Files.isRegularFile(pacote.resolve("__init__.py"))) fila.add(pacote.resolve("__init__.py"));
+            var m = IMPORT.matcher(Files.readString(p));
+            while (m.find()) {
+                if (m.group(1) != null) {
+                    String mod = m.group(1);
+                    // entrada.py despacha por tipo: as outras tarefas não entram na chave
+                    if (p.getFileName().toString().equals("entrada.py") && mod.equals("tarefas")) continue;
+                    Path base = mod.equals(".") ? pacote : blenderDir.resolve(mod.replace('.', '/'));
+                    if (mod.startsWith(".") && !mod.equals(".")) base = pacote.resolve(mod.substring(1).replace('.', '/'));
+                    fila.add(base.resolveSibling(base.getFileName() + ".py"));
+                    fila.add(base.resolve("__init__.py"));
+                    for (String nome : m.group(2).split(",")) {
+                        nome = nome.trim().split("\\s+")[0];
+                        if (!nome.isEmpty()) fila.add(base.resolve(nome + ".py"));
+                    }
+                } else {
+                    Path base = blenderDir.resolve(m.group(3).replace('.', '/'));
+                    fila.add(base.resolveSibling(base.getFileName() + ".py"));
+                    fila.add(base.resolve("__init__.py"));
+                }
+            }
+        }
+        return vistos;
+    }
+
     void renderizar(List<Objeto> objetos, boolean force) throws Exception {
         Path exe = blender();
         if (!Files.exists(exe)) throw new IllegalStateException("Blender não encontrado: " + exe
                 + " (defina BLENDER ou blender.path em local.properties)");
         Files.createDirectories(renderDir);
-        int n = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
-        ExecutorService pool = Executors.newFixedThreadPool(n);
+        // cada Blender ocupa ~0,4 GB; com pouca memória, -Pprocessos=N limita quantos rodam juntos
+        if (processos <= 0 && local("blender.processos") != null) processos = Integer.parseInt(local("blender.processos"));
+        List<String> vagas = vagas();
+        // cada objeto vai sempre para o mesmo dispositivo (pelo id): CPU e GPU dão ruído diferente
+        // na oclusão, e refazer do zero tem de dar os mesmos bytes (VT-16)
+        Map<String, ExecutorService> pools = new LinkedHashMap<>();
+        for (String d : new java.util.LinkedHashSet<>(vagas))
+            pools.put(d, Executors.newFixedThreadPool((int) vagas.stream().filter(d::equals).count()));
+        System.out.println("Render: " + vagas.size() + " Blender ao mesmo tempo " + vagas);
         List<Future<String>> fut = new ArrayList<>();
         long t0 = System.currentTimeMillis();
         for (Objeto o : objetos) {
-            fut.add(pool.submit(() -> renderizarUm(exe, o, force)));
+            String d = vagas.get(Math.floorMod(o.id().hashCode(), vagas.size()));
+            fut.add(pools.get(d).submit(() -> renderizarUm(exe, o, force, d)));
         }
         List<String> erros = new ArrayList<>();
         for (Future<String> f : fut) {
             String e = f.get();
             if (e != null) erros.add(e);
         }
-        pool.shutdown();
+        pools.values().forEach(ExecutorService::shutdown);
         System.out.printf("Render: %d objeto(s) em %.1f s%n", objetos.size(), (System.currentTimeMillis() - t0) / 1000.0);
         if (!erros.isEmpty()) throw new IllegalStateException("Falhou no Blender:\n" + String.join("\n", erros));
     }
 
-    private String renderizarUm(Path exe, Objeto o, boolean force) throws Exception {
+    /**
+     * Uma vaga por Blender simultâneo, cada uma com seu dispositivo (D-106). blender.dispositivo
+     * pode ser um só ("HIP": todas as vagas na GPU) ou uma lista ("HIP,HIP,CPU": duas na GPU, uma na
+     * CPU). Os dois juntos no mesmo Blender ("HIP+CPU") não ganham nada nos quadros pequenos: a CPU
+     * segura a GPU.
+     */
+    List<String> vagas() throws IOException {
+        String d = dispositivo();
+        List<String> l = new ArrayList<>();
+        if (d != null && d.contains(",")) {
+            for (String x : d.split(",")) if (!x.isBlank()) l.add(x.trim().toUpperCase());
+            if (processos > 0) while (l.size() > processos) l.remove(l.size() - 1);
+            return l;
+        }
+        int n = processos > 0 ? processos : Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
+        for (int i = 0; i < n; i++) l.add(d == null ? "CPU" : d.trim().toUpperCase());
+        return l;
+    }
+
+    private String renderizarUm(Path exe, Objeto o, boolean force, String disp) throws Exception {
         Path pasta = renderDir.resolve(o.id());
         Path marca = pasta.resolve("hash.txt");
         String h = hash(o);
+        if (!force && Files.exists(marca) && Files.exists(pasta.resolve("render.json"))
+                && !Files.readString(marca).equals(h) && Files.readString(marca).equals(hashAntigo(o))) {
+            Files.writeString(marca, h);  // migração da chave (D-105): o render é o mesmo
+            System.out.println("  " + o.id() + ": chave do cache migrada");
+        }
         if (!force && Files.exists(marca) && Files.readString(marca).equals(h) && Files.exists(pasta.resolve("render.json"))) {
             System.out.println("  " + o.id() + ": sem mudança (cache)");
             return null;
@@ -165,8 +280,10 @@ public final class RenderArt {
         Path jobFile = renderDir.resolve(o.id() + ".json");
         JSON.writeValue(jobFile.toFile(), job);
         long t0 = System.currentTimeMillis();
-        ProcessBuilder pb = new ProcessBuilder(exe.toString(), "-b", "--factory-startup", "-noaudio",
-                "-P", blenderDir.resolve("entrada.py").toString(), "--", jobFile.toString())
+        List<String> cmd = new ArrayList<>(List.of(exe.toString(), "-b", "--factory-startup", "-noaudio",
+                "-P", blenderDir.resolve("entrada.py").toString(), "--", jobFile.toString()));
+        if (!disp.equals("CPU")) cmd.addAll(List.of("--cycles-device", disp));
+        ProcessBuilder pb = new ProcessBuilder(cmd)
                 .redirectErrorStream(true).redirectOutput(pasta.resolve("blender.log").toFile());
         // spikes com extensão (MPFB2): extensões numa pasta isolada, nunca nas preferências do usuário
         if (o.desc().path("spike").asBoolean(false)) {
@@ -180,7 +297,7 @@ public final class RenderArt {
                     + String.join("\n    ", log.subList(Math.max(0, log.size() - 25), log.size()));
         }
         Files.writeString(marca, h);
-        System.out.printf("  %s: renderizado em %.1f s%n", o.id(), (System.currentTimeMillis() - t0) / 1000.0);
+        System.out.printf("  %s: renderizado em %.1f s (%s)%n", o.id(), (System.currentTimeMillis() - t0) / 1000.0, disp);
         return null;
     }
 

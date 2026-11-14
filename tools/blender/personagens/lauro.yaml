@@ -1,0 +1,28 @@
+# Lauro, jogador de dados (camada B). Retrato: gorro vermelho pequeno, gordo, sorriso largo, nariz
+# vermelho, lenço vermelho, anel, dados na mão.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: lauro
+manifesto: {id: personagem.lauro, papel: comum}
+ficha:
+  idade: 44
+  oficio: carregador no celeiro; joga à noite
+  traco: o mais gordo do vilarejo + gorrinho vermelho
+  postura: barriga à frente, balança de lado ao andar
+  trabalho: trabalhar_chao   # carregar fardos
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.90, fps: 8, balanco: 1.6}
+corpo: {altura: 1.68, corpo: largo, barriga: 1.6, cabeca: 1.22}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: palha, barra: 0.16}
+  - {peca: colete, rampa: tecido_oliva}
+  - {peca: lenco_pescoco, rampa: tecido_vermelho}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: couro, altura: 0.14}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: curto}
+  - {peca: gorro, rampa: tecido_vermelho, tamanho: pequeno}
+  - {peca: barba, rampa: cabelo_preto, estilo: por_fazer}

@@ -1,0 +1,28 @@
+# Celi, viúva nova, dona do pomar (camada B). Retrato: capuz vermelho-ferrugem, trança castanha,
+# vestido de linho com corpete.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: aldea
+manifesto: {id: personagem.aldea, papel: comum}
+ficha:
+  idade: 26
+  oficio: pomareira
+  traco: capa longa e capuz vermelhos sempre postos (luto que ela não chama de luto)
+  postura: ereta, passo miúdo, braços junto do corpo
+  trabalho: trabalhar_chao   # colhe e cata do chão
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.95, fps: 9, balanco: 0.6}
+corpo: {altura: 1.60, corpo: magro, sexo: f, cabeca: 1.25}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: linho}
+  - {peca: corpete, rampa: tecido_marrom}
+  - {peca: saia, rampa: tecido_marrom, comprimento: longa}
+  - {peca: botas, rampa: couro, altura: 0.10}
+  - {peca: cabelo, rampa: cabelo_castanho, estilo: tranca}
+  - {peca: capa, rampa: ferrugem, comprimento: longa}
+  - {peca: capuz, rampa: ferrugem}
+ferramenta: {mao_e: cesto}

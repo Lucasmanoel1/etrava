@@ -1,0 +1,30 @@
+# Ibbo, comerciante do Posto, dos Cantões do Sal (camada A). Retrato: bandana vermelha, bigode,
+# colete acolchoado com bolsos, lenço no pescoço; sorriso de quem já fez a conta.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: comerciante
+manifesto: {id: personagem.comerciante, papel: comum}
+ficha:
+  idade: 48
+  oficio: comerciante (troca, paga e cobra)
+  traco: bandana vermelha + colete cheio de bolsos; barriga
+  postura: ereta, peito estufado, passo sem pressa
+  trabalho: trabalhar_bancada   # contar e vender na banca
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.95, fps: 8, balanco: 1.0}
+corpo: {altura: 1.70, corpo: largo, barriga: 1.0, cabeca: 1.2}
+cores: {pele: pele_escura}
+roupa:
+  - {peca: camisa, rampa: linho, manga: arregacada, barra: 0.16}
+  - {peca: colete, rampa: tecido_oliva, bolsos: true}
+  - {peca: lenco_pescoco, rampa: tecido_marrom}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: couro, altura: 0.16}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: curto}
+  - {peca: bandana, rampa: tecido_vermelho}
+  - {peca: barba, rampa: cabelo_preto, estilo: bigode}
+  - {peca: cinto, rampa: couro}
+  - {peca: bolsa, rampa: couro}

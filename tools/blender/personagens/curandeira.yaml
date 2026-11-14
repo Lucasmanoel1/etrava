@@ -1,0 +1,28 @@
+# Odila, a curandeira (camada A). Retrato: lenço de cabeça verde-oliva, xale xadrez vermelho, ervas
+# secas no cinto, rosto velho e desconfiado.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: curandeira
+manifesto: {id: personagem.curandeira, papel: comum}
+ficha:
+  idade: 62
+  oficio: curandeira
+  traco: lenço verde na cabeça + maços de erva pendurados no cinto
+  postura: um pouco curvada, passo curto e decidido
+  trabalho: trabalhar_bancada   # preparar ervas, atender
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.85, fps: 8, balanco: 0.6, curvatura: 0.8}
+corpo: {altura: 1.58, corpo: medio, sexo: f, idade: velho, postura: curvada, cabeca: 1.22}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_oliva}
+  - {peca: saia, rampa: tecido_marrom, comprimento: longa}
+  - {peca: xale, rampa: tecido_vermelho}
+  - {peca: botas, rampa: couro, altura: 0.10}
+  - {peca: cabelo, rampa: cabelo_grisalho, estilo: sob_lenco}
+  - {peca: lenco_cabeca, rampa: tecido_oliva}
+  - {peca: cinto, rampa: couro}
+  - {peca: ervas, rampa: folha_conifera}

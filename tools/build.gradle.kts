@@ -119,16 +119,18 @@ fun artArgs(modo: String): List<String> {
     val a = mutableListOf(rootDir.absolutePath, modo)
     (project.findProperty("so") as String?)?.let { a.add("--so=$it") }
     if (project.hasProperty("force")) a.add("--force")
+    (project.findProperty("processos") as String?)?.let { a.add("--processos=$it") }
+    (project.findProperty("dispositivo") as String?)?.let { a.add("--dispositivo=$it") }
     return a
 }
 
 tasks.register<JavaExec>("renderArt") {
     group = "assets"
-    description = "Renderiza no Blender o que mudou (cache por hash) e pixeliza. -Pso=avel,carvalho limita; -Pforce refaz."
+    description = "Renderiza no Blender o que mudou (cache por hash) e pixeliza. -Pso=avel,carvalho limita; -Pforce refaz; -Pprocessos=N limita os Blender simultâneos; -Pdispositivo=HIP usa a GPU (padrões em local.properties)."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("etrava.tools.art.pixel.RenderArt")
     args(artArgs("render"))
-    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx2g")
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx4g")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
@@ -138,7 +140,7 @@ tasks.register<JavaExec>("pixelize") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("etrava.tools.art.pixel.RenderArt")
     args(artArgs("pixelize"))
-    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx2g")
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx4g")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 

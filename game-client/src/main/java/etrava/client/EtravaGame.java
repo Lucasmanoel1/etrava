@@ -776,6 +776,7 @@ public final class EtravaGame extends ApplicationAdapter {
         d.y = py + (a.y() - py) * alpha;
         d.facing = a.facing();
         d.moving = a.moving();
+        d.activity = a.activity() == null ? "" : a.activity();
         // distância andada e velocidade (arte da Fase V: o quadro do andar sai da distância)
         double[] m = motion.computeIfAbsent(a.id(), id -> new double[] {d.x, d.y, 0, 0});
         double step = Math.hypot(d.x - m[0], d.y - m[1]);

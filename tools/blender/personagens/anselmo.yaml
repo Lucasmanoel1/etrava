@@ -1,0 +1,27 @@
+# Velho Anselmo, o mais velho do vilarejo (camada B). Retrato: careca no alto, cabelo e barba
+# brancos compridos dos lados, manta xadrez sobre os ombros.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: anselmo
+manifesto: {id: personagem.anselmo, papel: comum}
+ficha:
+  idade: 84
+  oficio: nenhum (senta no banco da praça)
+  traco: cabeça careca e branca + bengala; o mais curvado do jogo
+  postura: muito curvada, passo curto e arrastado
+  trabalho: nenhum
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.70, fps: 6.5, balanco: 0.4, curvatura: 1.6}
+corpo: {altura: 1.62, corpo: magro, idade: velho, postura: curvada, cabeca: 1.22}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom, barra: 0.18}
+  - {peca: manta, rampa: tecido_vermelho}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.12}
+  - {peca: cabelo, rampa: cabelo_grisalho, estilo: calvo}
+  - {peca: barba, rampa: cabelo_grisalho, estilo: longa}
+ferramenta: {mao_d: bengala}

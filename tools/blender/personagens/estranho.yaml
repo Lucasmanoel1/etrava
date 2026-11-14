@@ -1,0 +1,27 @@
+# Oren, o homem de fora (camada A). Retrato: casaco escuro gasto, barba por fazer grisalha, carta
+# com lacre vermelho na mão.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: estranho
+manifesto: {id: personagem.estranho, papel: comum}
+ficha:
+  idade: 50
+  oficio: nenhum declarado
+  traco: casaco longo escuro até a canela (ninguém do vilarejo usa casaco longo)
+  postura: ereta, mas cansada; para e olha antes de entrar
+  trabalho: nenhum
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.10, fps: 8, balanco: 0.5}
+corpo: {altura: 1.78, corpo: magro, cabeca: 1.2}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom}
+  - {peca: casaco, rampa: tecido_cinza, comprimento: longo}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.22}
+  - {peca: cabelo, rampa: cabelo_grisalho, estilo: curto}
+  - {peca: barba, rampa: cabelo_grisalho, estilo: por_fazer}
+ferramenta: {mao_d: carta}

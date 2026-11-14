@@ -1,0 +1,27 @@
+# Tobias, carregador do Posto (camada B). Retrato: careca, pescoço grosso, corda enrolada no ombro,
+# camisa verde-oliva, capuz caído vermelho.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: tobias
+manifesto: {id: personagem.tobias, papel: comum}
+ficha:
+  idade: 30
+  oficio: carregador
+  traco: careca + o mais alto do jogo + rolo de corda no ombro
+  postura: enorme, mas encolhido; passo cuidadoso
+  trabalho: trabalhar_chao   # carregar fardos
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.15, fps: 7, balanco: 1.1, curvatura: 0.4}
+corpo: {altura: 1.92, corpo: largo, bracos: 1.2, cabeca: 1.12}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_oliva, manga: arregacada, barra: 0.16}
+  - {peca: capuz, rampa: ferrugem, caido: true}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: couro, altura: 0.18}
+  - {peca: cabelo, estilo: careca}
+  - {peca: corda, rampa: palha}
+  - {peca: cinto, rampa: couro}

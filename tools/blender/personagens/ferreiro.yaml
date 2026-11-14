@@ -1,0 +1,27 @@
+# Doran, o ferreiro (camada B). Retrato: barba cheia escura, cabelo curto, avental de couro
+# vermelho-escuro sobre camisa, braços grossos.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: ferreiro
+manifesto: {id: personagem.ferreiro, papel: comum}
+ficha:
+  idade: 52
+  oficio: ferreiro
+  traco: o mais largo do vilarejo + avental de forja até a canela + martelo
+  postura: ereta, ombros enormes, braços afastados do corpo
+  trabalho: trabalhar_martelo
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.05, fps: 7.5, balanco: 1.3}
+corpo: {altura: 1.80, corpo: largo, bracos: 1.25, cabeca: 1.18}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom, manga: arregacada}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.20}
+  - {peca: cabelo, rampa: cabelo_castanho, estilo: curto}
+  - {peca: barba, rampa: cabelo_castanho, estilo: cheia}
+  - {peca: avental, rampa: ferrugem, comprimento: longo}
+ferramenta: {mao_d: martelo_forja}

@@ -61,7 +61,7 @@ def _zera_peito(c):
 def _coluna(c, inclina_tronco, gira_quadril, gira_peito, lado_peito=0.0, respira=0.0):
     """Coluna em duas partes (rig do diretor): o tronco inclina (graus, + = frente), o quadril e o
     peito giram em Z em sentidos opostos (contrarrotação)."""
-    curv = 6.0 if c.curvado else 0.0
+    curv = 6.0 * getattr(c, "curvatura", 1.0 if c.curvado else 0.0)
     c.j["quadril"].rotation_euler.z = math.radians(gira_quadril)
     c.j["tronco"].rotation_euler.y = INCLINA * math.radians(inclina_tronco + curv * 0.6)
     if "peito" in c.j:
@@ -168,8 +168,8 @@ def correr(c, t, p):
     dy = a["_quadril_dy"] + (b["_quadril_dy"] - a["_quadril_dy"]) * f
     c.j["quadril"].location.z = c.quadril_h + dz * c.k
     c.j["quadril"].location.y = dy * c.k
-    if c.curvado:
-        c.j["tronco"].rotation_euler.y += INCLINA * math.radians(4)
+    if getattr(c, "curvatura", 1.0 if c.curvado else 0.0) > 0:
+        c.j["tronco"].rotation_euler.y += INCLINA * math.radians(4 * getattr(c, "curvatura", 1.0))
 
 
 def _rosto_para_a_camera(ciclo):

@@ -1,0 +1,27 @@
+# Tomé, o moleiro, pai de Nalia (camada A). Retrato: faixa de pano na testa, barba grisalha curta,
+# capuz caído vermelho-escuro, roupa empoeirada de farinha.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: moleiro
+manifesto: {id: personagem.moleiro, papel: comum}
+ficha:
+  idade: 50
+  oficio: moleiro (a mó anda parada)
+  traco: faixa clara na testa + roupa salpicada de farinha
+  postura: médio, ombros pesados, passo cansado
+  trabalho: trabalhar_chao   # ensacar, mexer na mó
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.95, fps: 7.5, balanco: 0.8, curvatura: 0.7}
+corpo: {altura: 1.74, corpo: medio, cabeca: 1.2}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom, barra: 0.20, farinha: true}
+  - {peca: capuz, rampa: ferrugem, caido: true}
+  - {peca: calca, rampa: tecido_cinza, farinha: true}
+  - {peca: botas, rampa: couro, altura: 0.16}
+  - {peca: cabelo, rampa: cabelo_grisalho, estilo: curto}
+  - {peca: faixa_testa, rampa: la_crua}
+  - {peca: barba, rampa: cabelo_grisalho, estilo: curta}

@@ -1,0 +1,30 @@
+# Aurel Dask, registrador de Caldris (camada A). Retrato: rosto magro e pálido, óculos, cabelo
+# preto penteado, sobretudo escuro abotoado até o pescoço, pasta.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: registrador
+manifesto: {id: personagem.registrador, papel: comum}
+ficha:
+  idade: 42
+  oficio: registrador de terras
+  traco: chapéu alto preto + sobretudo abotoado + pasta debaixo do braço (silhueta da cidade)
+  postura: rígida, ereta demais, passo medido
+  trabalho: trabalhar_bancada   # escrever, registrar
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.00, fps: 8, balanco: 0.3}
+corpo: {altura: 1.76, corpo: magro, cabeca: 1.2}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: quase_preto}
+  - {peca: casaco, rampa: quase_preto, comprimento: joelho, abotoado: true}
+  - {peca: calca, rampa: quase_preto}
+  - {peca: botas, rampa: couro, altura: 0.20}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: penteado}
+  - {peca: chapeu_alto, rampa: quase_preto}
+  - {peca: oculos}
+ferramenta: {mao_e: pasta}
+pixelizador:
+  decalques: {oculos: "A39A8A"}

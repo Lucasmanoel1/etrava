@@ -1,0 +1,28 @@
+# Vessa, guarda do Posto, paga pelos Cantões (camada B). Retrato: cabelo escuro preso, lança no
+# ombro, gibão de couro com ombreiras e capa escura.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: vessa
+manifesto: {id: personagem.vessa, papel: comum, animacoes_extra: [correr]}
+ficha:
+  idade: 32
+  oficio: guarda
+  traco: lança mais alta que ela + ombreiras de couro (a única armada do Capítulo I)
+  postura: ereta, peso nos calcanhares, olha a estrada
+  trabalho: nenhum   # vigiar = parado em guarda
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.10, fps: 9, balanco: 0.5}
+corpo: {altura: 1.70, corpo: medio, sexo: f, cabeca: 1.2}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom}
+  - {peca: gibao, rampa: couro, ombreiras: true}
+  - {peca: capa, rampa: tecido_cinza, comprimento: curta}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.26}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: preso}
+  - {peca: cinto, rampa: couro}
+ferramenta: {mao_d: lanca}

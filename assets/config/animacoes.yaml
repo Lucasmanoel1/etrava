@@ -1,0 +1,43 @@
+# Animação pelo que o NPC está fazendo (SPEC-visual §6.3, V2). A simulação diz a atividade da
+# agenda (o `do:` de content/npcs/*.yaml); aqui ela vira uma animação da folha. Andando, vale
+# andar/correr; sem regra, ou se a folha não tiver a animação, `parado`.
+# Uma lista alterna a cada `alternar` segundos, com fase própria de cada NPC.
+# `sentado` entra com `sentar` uma vez antes, se a folha tiver.
+alternar: 7
+
+atividades:
+  # trabalho: o tipo sai do ofício (ficha em tools/blender/personagens/<id>.yaml)
+  trabalhar:
+    padrao: trabalhar_bancada
+    por_npc: {ferreiro: trabalhar_martelo, moleiro: trabalhar_chao, nalia: trabalhar_chao, aldea: trabalhar_chao}
+  lavrar: trabalhar_chao
+  colher: trabalhar_chao
+  cuidar: trabalhar_chao
+  ajudar: trabalhar_chao
+  carregar: trabalhar_chao
+  medir: trabalhar_chao
+  varrer: trabalhar_chao
+  consertar: trabalhar_bancada
+  preparar: trabalhar_bancada
+  servir: trabalhar_bancada
+  lavar: trabalhar_bancada
+  escrever: trabalhar_bancada
+  registrar: trabalhar_bancada
+  estudar: trabalhar_bancada
+  contar: trabalhar_bancada
+  # sentado
+  comer: sentado
+  jantar: sentado
+  beber: sentado
+  jogar: sentado
+  sentar: sentado
+  descansar: sentado
+  # deitado
+  dormir: dormir
+  de_cama: dormir
+  # fala
+  conversar: conversar
+  perguntar: conversar
+  atender: conversar
+  vender: [conversar, parado]
+  festejar: [conversar, parado]

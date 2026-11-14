@@ -1,0 +1,26 @@
+# Ciro, jogador de dados que jura que é a última (camada B). Retrato: boné achatado cinza-azulado,
+# rosto magro, olheira, capuz caído.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: ciro
+manifesto: {id: personagem.ciro, papel: comum}
+ficha:
+  idade: 38
+  oficio: diarista no campo de Gil; conserta coisas em casa
+  traco: boné achatado azul-acinzentado + ombros encolhidos
+  postura: magro, ombros para dentro, mãos perto do corpo
+  trabalho: trabalhar_bancada   # consertar
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.00, fps: 9, balanco: 0.7, curvatura: 0.6}
+corpo: {altura: 1.70, corpo: magro, cabeca: 1.2}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_vermelho, barra: 0.18}
+  - {peca: capuz, rampa: tecido_marrom, caido: true}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.14}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: curto}
+  - {peca: bone, rampa: tecido_azul}

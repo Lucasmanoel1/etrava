@@ -128,7 +128,7 @@
   anchor:
   - 142.0
   - 215.0
-  frames: 96
+  frames: 192
   fps: 60.0
   meta: "arte/natureza/carvalho_jovem.json"
   scale: 2
@@ -145,7 +145,7 @@
   anchor:
   - 67.0
   - 229.0
-  frames: 96
+  frames: 192
   fps: 60.0
   meta: "arte/natureza/betula_jovem.json"
   scale: 2
@@ -160,7 +160,7 @@
   anchor:
   - 112.0
   - 138.0
-  frames: 96
+  frames: 192
   fps: 60.0
   meta: "arte/natureza/macieira_a.json"
   scale: 2
@@ -175,7 +175,7 @@
   anchor:
   - 78.0
   - 166.0
-  frames: 96
+  frames: 192
   fps: 60.0
   meta: "arte/natureza/pereira_a.json"
   scale: 2

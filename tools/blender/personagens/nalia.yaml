@@ -1,0 +1,25 @@
+# Nalia, a filha do moleiro (camada A). Retrato: cabelo preto comprido e solto, olheiras, capuz
+# marrom caído, vestido claro manchado.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: nalia
+manifesto: {id: personagem.nalia, papel: comum}
+ficha:
+  idade: 16
+  oficio: ajuda no moinho; cuida da árvore velha
+  traco: cabelo preto comprido e solto + capuz marrom caído; magra demais
+  postura: ombros para dentro, cabeça baixa, passo lento
+  trabalho: trabalhar_chao   # cuidar da árvore, do quintal
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.90, fps: 8, balanco: 0.5, curvatura: 0.6}
+corpo: {altura: 1.58, corpo: magro, sexo: f, cabeca: 1.25}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: la_crua}
+  - {peca: saia, rampa: la_crua, comprimento: longa}
+  - {peca: capuz, rampa: tecido_marrom, caido: true}
+  - {peca: botas, rampa: couro, altura: 0.10}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: longo}

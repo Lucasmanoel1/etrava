@@ -39,9 +39,16 @@ class Corpo:
         self.cabeca = 0.29 * k * p.get("cabeca", 1.0)
         self.braco = 0.27 * k
         self.antebraco = 0.24 * k
-        self.ombros = 0.185 * k * largo                                  # meia largura
-        self.quadris = 0.085 * k * largo                                # meio afastamento das pernas
+        f = p.get("sexo", "m") == "f"
+        self.sexo = "f" if f else "m"
+        # V2: ombro mais estreito e quadril mais largo no corpo feminino; barriga; braços grossos
+        self.ombros = 0.185 * k * largo * (0.88 if f else 1.0)          # meia largura
+        self.quadris = 0.085 * k * largo * (1.06 if f else 1.0)         # meio afastamento das pernas
+        self.largo_quadril = largo * (1.10 if f else 1.0)
+        self.barriga = p.get("barriga", 0.0)
+        self.bracos = p.get("bracos", 1.0)
         self.curvado = p.get("postura", "ereta") == "curvada"
+        self.curvatura = 1.0 if self.curvado else 0.0      # a ficha (jeito.curvatura) pode mudar
         self.rosto = p.get("rosto", 16.0)        # graus de queixo para cima (ver anim.ciclos)
         self.j = {}
         self.pele = {"camisa": [], "calca": [], "botas_e": [], "botas_d": [], "alca": [], "avental": []}
@@ -189,13 +196,22 @@ def montar(p):
     # --- tronco e quadril
     # tronco com cintura, peito e ombros caídos (seções); um pouco curvado para a frente no alto
     T, k = c.tronco, c.k
-    c.pele["camisa"].append(_secao("tronco", [(-0.02, 0.140 * k * L, 0.100 * k, 0.0), (T * 0.35, 0.145 * k * L, 0.105 * k, 0.005),
-                      (T * 0.68, 0.160 * k * L, 0.104 * k, 0.010), (T * 0.88, 0.165 * k * L, 0.090 * k, 0.005),
-                      (T * 1.00, 0.120 * k * L, 0.075 * k, 0.0)], camisa, j["tronco"]))
+    f = c.sexo == "f"
+    Lq, Lo = c.largo_quadril, L * (0.90 if f else 1.0)
+    bar = c.barriga
+    c.secoes_tronco = [(-0.02, 0.140 * k * Lq, 0.100 * k + 0.02 * k * bar, 0.0),
+                       (T * 0.35, (0.145 if not f else 0.130) * k * max(Lq, L) + 0.02 * k * bar,
+                        0.105 * k + 0.05 * k * bar, 0.005 + 0.035 * k * bar),
+                       (T * 0.68, 0.160 * k * Lo + 0.01 * k * bar, (0.116 if f else 0.104) * k + 0.02 * k * bar,
+                        0.010 + 0.01 * k * bar),
+                       (T * 0.88, 0.165 * k * Lo, 0.090 * k, 0.005),
+                       (T * 1.00, 0.120 * k * Lo, 0.075 * k, 0.0)]
+    c.pele["camisa"].append(_secao("tronco", c.secoes_tronco, camisa, j["tronco"]))
     for lado, sy in (("e", 1), ("d", -1)):     # deltoide: ombro redondo, não quina
         _bola("deltoide_" + lado, 0.046 * k, camisa, j["ombro_" + lado], centro=(0, -0.004 * sy * k, -0.018 * k),
               escala=(1.0, 0.95, 1.0), sub=1, segs=10)
-    c.pele["calca"].append(_tubo("quadril", 0.17 * c.k, 0.145 * c.k * L, 0.15 * c.k * L, calca, j["quadril"], prof=0.7,
+    c.pele["calca"].append(_tubo("quadril", 0.17 * c.k, 0.145 * c.k * c.largo_quadril, 0.15 * c.k * c.largo_quadril,
+                                 calca, j["quadril"], prof=0.7,
                                  z0=0.08 * c.k))
     _tubo("pescoco", c.pescoco + 0.03, 0.042 * c.k, 0.05 * c.k, pele, j["pescoco"], z0=c.pescoco + 0.02, sub=1)
 
@@ -215,11 +231,15 @@ def montar(p):
     ponto("olho_e", j["cabeca"], (olho_x, olho_y, olho_z), frente=(1, 0.25, 0))
     ponto("olho_d", j["cabeca"], (olho_x, -olho_y, olho_z), frente=(1, -0.25, 0))
     ponto("cabeca", j["cabeca"], (0, 0, hc))
-    if tem("cabelo"):
+    from kit_humano import roupa as rp
+    estilo = roupa.get("cabelo", {}).get("estilo", "curto")
+    if tem("cabelo") and estilo != "careca":
         cab = mat_peca("cabelo", "cabelo_castanho", k=0.2)
-        estilo = roupa["cabelo"].get("estilo", "curto")
         # calota: cobre topo e nuca, deixa a testa
-        if estilo == "sob_gorro":  # só a nuca e os lados, abaixo do gorro
+        if estilo in ("calvo", "ralo"):  # careca no alto: só os lados e a nuca, mais baixos
+            _bola("cabelo", hc / 2 * 1.05, cab, j["cabeca"], centro=(-0.035, 0, hc * 0.40), escala=(0.84, 0.92, 0.55),
+                  sub=1)
+        elif estilo in ("sob_gorro", "sob_lenco", "sob_capuz"):  # só a nuca e os lados, abaixo do gorro
             _bola("cabelo", hc / 2 * 1.04, cab, j["cabeca"], centro=(-0.03, 0, hc * 0.5), escala=(0.84, 0.86, 0.7), sub=1)
         else:
             # calota com linha do cabelo: alta na testa, na altura da orelha dos lados, baixa na
@@ -235,19 +255,25 @@ def montar(p):
                     v.co = Vector((0.002, 0, hc * 0.52)) + rel * 0.80
             geo.subdividir(cab_ob, 1)
             # franja: mecha caindo na testa (a frente da cabeça não fica careca nem capacete)
-            _bola("franja", hc * 0.13, cab, j["cabeca"], centro=(hc * 0.36, hc * 0.12, hc * 0.80),
-                  escala=(0.45, 1.2, 0.45), sub=1, segs=8)
+            if estilo != "penteado":
+                _bola("franja", hc * 0.13, cab, j["cabeca"], centro=(hc * 0.36, hc * 0.12, hc * 0.80),
+                      escala=(0.45, 1.2, 0.45), sub=1, segs=8)
+        rp.cabelo_extra(c, estilo, cab)
         if estilo in ("bagunçado", "baguncado"):
             for i, (x, y, z) in enumerate(((0.07, 0.04, 0.92), (0.08, -0.05, 0.90), (0.0, 0.08, 0.95),
                                             (-0.06, -0.06, 0.88), (0.05, 0.0, 1.0))):
                 _bola("mecha%d" % i, 0.035 * c.k, cab, j["cabeca"], centro=(x * c.k, y * c.k, hc * z), sub=0, segs=6)
     if tem("gorro"):
         g = mat_peca("gorro", "ferrugem", k=0.2)
+        if roupa["gorro"].get("tamanho") == "pequeno":
+            rp.gorro_pequeno(c, roupa["gorro"], g)
+    if tem("gorro") and roupa["gorro"].get("tamanho") != "pequeno":
+        g = mat_peca("gorro", "ferrugem", k=0.2)
         _bola("gorro", hc / 2 * 1.06, g, j["cabeca"], centro=(-0.018, 0, hc * 0.76), escala=(0.9, 0.86, 0.56), sub=1)
         _tubo("gorro_aba", 0.045 * c.k, hc * 0.455, hc * 0.455, g, j["cabeca"], prof=0.9, z0=hc * 0.84, sub=1)
     if tem("barba"):
         b = mat_peca("barba", "cabelo_grisalho", k=0.15)
-        _bola("barba", hc * 0.30, b, j["cabeca"], centro=(hc * 0.24, 0, hc * 0.22), escala=(0.8, 1.15, 0.9), sub=1)
+        rp.barba(c, roupa["barba"].get("estilo", "cheia"), b)
     if tem("oculos"):
         # óculos na testa: dois pontos claros sobre o gorro/testa (decalque do pixelizador)
         ponto("oculos", j["cabeca"], (hc * 0.40, 0, hc * 0.70))
@@ -255,7 +281,8 @@ def montar(p):
     # --- braços
     manga = roupa.get("camisa", {}).get("manga", "longa")
     for lado in ("e", "d"):
-        _tubo("braco_" + lado, c.braco + 0.02, 0.064 * c.k * L, 0.055 * c.k, camisa, j["braco_" + lado], z0=0.02)
+        B = c.bracos
+        _tubo("braco_" + lado, c.braco + 0.02, 0.064 * c.k * L * B, 0.055 * c.k * B, camisa, j["braco_" + lado], z0=0.02)
         if tem("manga_baixo"):
             mb = mat_peca("manga_baixo", "la_crua", k=0.1)
             _tubo("antebraco_" + lado, c.antebraco * 0.62, 0.056 * c.k, 0.05 * c.k, mb, j["antebraco_" + lado], z0=0.0)
@@ -299,8 +326,20 @@ def montar(p):
         c.pele["alca"].append(_alca(alca, j["peito"], c))
     if tem("avental"):
         av = mat_peca("avental", "couro", k=0.18)
-        topo, base = c.quadril_h + 0.05 * c.k + c.tronco * 0.82, c.quadril_h - c.coxa * 0.72
-        c.pele["avental"].extend(_avental(av, j["quadril"], c, topo - c.quadril_h, base - c.quadril_h))
+        ra = roupa["avental"]
+        topo = c.quadril_h + 0.05 * c.k + (c.tronco * 0.12 if ra.get("so_cintura") else c.tronco * 0.82)
+        base = c.quadril_h - {"longo": c.coxa + c.canela * 0.55, "curto": c.coxa * 0.45}.get(
+            ra.get("comprimento"), c.coxa * 0.72)
+        c.pele["avental"].extend(_avental(av, j["quadril"], c, topo - c.quadril_h, base - c.quadril_h,
+                                          alcas=not ra.get("so_cintura")))
+    # V2: peças por cima (roupa.PECAS) e ferramentas de ofício
+    for peca, r in roupa.items():
+        if peca in rp.PECAS:
+            fn, rampa = rp.PECAS[peca]
+            fn(c, r, mat_peca(peca, rampa))
+    for mao in ("mao_d", "mao_e"):
+        if p.get("ferramenta", {}).get(mao):
+            rp.ferramenta(c, mao[-1], p["ferramenta"][mao])
     if c.organico:
         from kit_humano import pele
         pele.montar(c)
@@ -330,7 +369,7 @@ def _alca(material, tronco, c):
     return ob
 
 
-def _avental(material, quadril, c, topo, base):
+def _avental(material, quadril, c, topo, base, alcas=True):
     """Avental de couro: placa levemente curva na frente do peito até o joelho, com alças."""
     bm = bmesh.new()
     L = c.largo
@@ -353,7 +392,7 @@ def _avental(material, quadril, c, topo, base):
     _pai(ob, quadril)
     pecas = [ob]
     # alças do avental, por cima dos ombros
-    for s in (1, -1):
+    for s in ((1, -1) if alcas else ()):
         pecas.append(_caixa("avental_alca_%d" % s, (0.20 * c.k, 0.03 * c.k, 0.025 * c.k),
                (0.0, s * 0.10 * c.k * L, topo + 0.05 * c.k), material, quadril, sub=0))
     return pecas

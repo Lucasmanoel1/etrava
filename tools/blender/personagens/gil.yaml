@@ -1,0 +1,28 @@
+# Gil, lavrador do campo de leste (camada B). Retrato: cabelo escuro curto, bigode e barba rala,
+# lenço no pescoço, camisa ferrugem, olhar cabisbaixo.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: gil
+manifesto: {id: personagem.gil, papel: comum}
+ficha:
+  idade: 40
+  oficio: lavrador
+  traco: cabeça descoberta, camisa cor de ferrugem e foice curta na mão
+  postura: magro, ombros caídos, olha para o chão
+  trabalho: trabalhar_chao
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.00, fps: 8.5, balanco: 0.7, curvatura: 0.5}
+corpo: {altura: 1.71, corpo: magro, cabeca: 1.2}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: ferrugem, barra: 0.18}
+  - {peca: lenco_pescoco, rampa: la_crua}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: couro, altura: 0.16}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: curto}
+  - {peca: barba, rampa: cabelo_preto, estilo: bigode}
+  - {peca: cinto, rampa: couro}
+ferramenta: {mao_d: foice}

@@ -706,3 +706,57 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - `--bench` na vila, 1280×720: 1.253 FPS de média, 103 chamadas por quadro (eram 51: cada troca entre página indexada e RGBA esvazia o lote);
   - 156 testes, validador, vt03 112/112 e capturas 13/13; render do vento novo: 44 min (Blender, sem cache).
 - **Nota:** o GIF de revisão não toca exatamente a 60 qps (o formato só guarda atrasos em centésimos de segundo); no jogo é 60.
+
+## D-104 — Vento das árvores na metade da velocidade, ainda a 60 qps; V1 aprovado
+- **Data:** 2026-11-13
+- **Pedido do diretor:** o vento a 60 qps ficou "perfeito", mas as folhas se mexem demais; reduzir a velocidade pela metade **sem baixar os 60 qps**.
+- **Decisão:**
+  - árvores vivas passam a ter 192 quadros a 60 qps (laço de 3,2 s, antes 1,6 s). A amplitude é a mesma, então o movimento fica com a metade da velocidade;
+  - os tufos de grama ficam como estão (96 quadros a 60 qps): o pedido foi sobre as árvores.
+- **Custo:** o dobro de quadros das árvores, no atlas indexado (1 byte por pixel). Fica medido na entrega.
+- **Alternativas descartadas:**
+  - 96 quadros a 30 qps: mesma velocidade, mas o diretor quer os 60 qps;
+  - reduzir a amplitude pela metade: deixaria o balanço menor, e não mais lento.
+- **Portão do V1:** aprovado pelo diretor ("tá perfeito, pode continuar"). O V2 começa.
+
+## D-105 — Chave do cache de render por objeto
+- **Data:** 2026-11-14
+- **Problema:** a chave do cache (`RenderArt.hash`) incluía todos os `.py` de `tools/blender`. Qualquer mudança no kit humano refazia também as árvores (~1 h 30 de Blender), e o V2 mexe no kit o tempo todo.
+- **Decisão:**
+  - a chave passa a ser: o YAML do objeto, `entrada.py`, a tarefa do tipo (`tarefas/<tipo>.py`) e os módulos locais que ela importa, seguidos transitivamente pelos `import`/`from … import`, mais as texturas e o caminho do Blender;
+  - na primeira rodada, a marca gravada no esquema antigo é aceita e regravada no novo, sem render;
+  - teste: a árvore não depende de `kit_humano/` nem de `anim/`, e o personagem depende dos dois.
+- **Alternativas descartadas:**
+  - lista manual de dependências por tipo: esquece um módulo e o cache fica velho sem aviso;
+  - hash só do YAML: mudança de script não refaria nada.
+- **Fichas em rascunho:** `rascunho: true` no YAML faz o `renderArt` pular o objeto (só sai com `-Pso=id`). As 24 fichas do V2 entram assim até o kit ter as peças delas.
+
+## D-106 — Blender na GPU, com a CPU como apoio, e no máximo 3 de cada vez
+- **Data:** 2026-11-14
+- **Pedido do diretor:** com 6 Blender a máquina ficou sem memória e o render foi interrompido. Ele pediu no máximo 3 de cada vez e, depois, usar a GPU e a CPU juntas, para não pesar num só.
+- **Medido** (um carvalho, 12 quadros, RX 6650 XT):
+
+  | Dispositivo | Tempo |
+  |---|---|
+  | CPU | 109 a 112 s |
+  | GPU (HIP) | 64 a 66 s |
+  | GPU + CPU no mesmo Blender (`HIP+CPU`) | 112 s |
+
+  No mesmo Blender, a CPU segura a GPU, porque os quadros são pequenos.
+- **Decisão:**
+  - `renderArt` aceita `-Pprocessos=N` e `-Pdispositivo=…`, com padrões no `local.properties` (fora do git), que vale também pelo IntelliJ;
+  - o dispositivo pode ser uma lista de vagas: `HIP,HIP,CPU` = três Blender, dois na GPU e um na CPU;
+  - o dispositivo vai na linha de comando (`--cycles-device`, depois do `--`) e não entra na chave do cache.
+- **Determinismo (VT-16):**
+  - GPU contra GPU: diferença de no máximo 1/65535, o mesmo ruído que a CPU já tinha (D-102);
+  - GPU contra CPU: o ruído da oclusão muda;
+  - por isso cada objeto vai sempre para o mesmo dispositivo, escolhido pelo id, e refazer do zero na mesma máquina dá o mesmo resultado.
+- **Alternativas descartadas:**
+  - `HIP+CPU` no mesmo processo: sem ganho;
+  - fila livre (cada objeto na primeira vaga livre): o dispositivo variaria de uma rodada para outra.
+- **Escolha para esta máquina:** o diretor deixou a escolha comigo ("se GPU mais CPU ficou mais lento, pode usar apenas GPU"). Ficam os 3 Blender só na GPU (`blender.dispositivo=HIP`): é o mais rápido medido e deixa a CPU livre. A lista de vagas (`HIP,HIP,CPU`) continua disponível.
+- **Resultado (D-104, 2026-11-14):**
+  - árvores com 192 quadros: 10 páginas indexadas + 1 RGBA, ~224 MB de textura (teto do VT-10: 512 MB);
+  - vt03 112/112;
+  - o `--bench` caiu para 438 FPS e 344 chamadas por quadro, medido com o Blender usando a GPU ao mesmo tempo; as árvores se espalham por mais páginas e cada troca esvazia o lote. Medir de novo com a GPU livre; se preciso, agrupar os quadros de cada espécie na mesma página;
+  - a pixelização estourou os 2 GB do Java ao ler o `.pxo`: o heap de `renderArt`/`pixelize` subiu para 4 GB e o leitor solta os bytes brutos de cada quadro ao decodificar.

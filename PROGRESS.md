@@ -4,16 +4,16 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V1 — Pipeline e portão visual: terceira rodada do portão (VT-13).** O diretor achou as árvores da 2ª rodada melhores, mas ainda "bolinhas"; pediu árvores com cara de pixel art feita à mão, com Blender e Pixelorama. Árvores v2 feitas (D-100).
-- **Status:** **PARADO no portão visual do V1**, esperando o diretor ver o vento a 60 qps (D-103), as árvores v2 (D-100) e a gente (D-101/D-102). Nada de V2 sem o "pode seguir".
+- **Marco atual:** **V2 — Gente** (`docs/visual/V2.md`). V1 aprovado pelo diretor em 2026-11-13 (D-104).
+- **Status:** V2 em andamento: fichas dos personagens (tarefa 1). Em paralelo, as árvores estão sendo refeitas com 192 quadros a 60 qps, para o vento ficar na metade da velocidade (D-104).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
 | Marco | Nome | Situação |
 |---|---|---|
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
-| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **3ª rodada: esperando o diretor ver as árvores v2** |
-| V2 | Gente (25 humanos, animações de vida comum) | — |
+| V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **concluído** (aprovado, D-104) |
+| V2 | Gente (25 humanos, animações de vida comum) | **em andamento** |
 | V3 | Criaturas e combate | — |
 | V4 | Natureza e terreno | — |
 | V5 | Arquitetura e exteriores | — |

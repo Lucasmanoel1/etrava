@@ -1,0 +1,27 @@
+# Firmino, o coveiro (camada B). Retrato: cabelo ralo grisalho comprido, cachecol cru enrolado,
+# casaco preto, cabo de pá.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: firmino
+manifesto: {id: personagem.firmino, papel: comum}
+ficha:
+  idade: 66
+  oficio: coveiro
+  traco: roupa preta + cachecol claro enrolado + pá no ombro
+  postura: curvada, alto e magro, cabeça para a frente
+  trabalho: trabalhar_chao   # cuidar das covas
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.00, fps: 7, balanco: 0.4, curvatura: 1.2}
+corpo: {altura: 1.80, corpo: magro, idade: velho, postura: curvada, cabeca: 1.2}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: quase_preto, barra: 0.22}
+  - {peca: cachecol, rampa: la_crua}
+  - {peca: calca, rampa: quase_preto}
+  - {peca: botas, rampa: couro, altura: 0.18}
+  - {peca: cabelo, rampa: cabelo_grisalho, estilo: ralo}
+  - {peca: barba, rampa: cabelo_grisalho, estilo: por_fazer}
+ferramenta: {mao_d: pa}

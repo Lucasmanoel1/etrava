@@ -1,0 +1,29 @@
+# Sena, agrimensora de Caldris (camada A). Retrato: cabelo escuro preso, capa curta vermelha, corda
+# de nós enrolada no ombro, lanterna, bastão de medir.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: agrimensora
+manifesto: {id: personagem.agrimensora, papel: comum}
+ficha:
+  idade: 30
+  oficio: agrimensora (mede a terra com corda de nós e bastão)
+  traco: bastão de medir mais alto que a cabeça + rolo de corda no ombro
+  postura: ereta, passo firme de quem anda o dia todo no campo
+  trabalho: trabalhar_chao   # medir - crava o bastão, estica a corda
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.20, fps: 9.5, balanco: 0.8}
+corpo: {altura: 1.66, corpo: magro, sexo: f, cabeca: 1.22}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom, barra: 0.22}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.24}
+  - {peca: cabelo, rampa: cabelo_preto, estilo: preso}
+  - {peca: capa, rampa: tecido_vermelho, comprimento: curta}
+  - {peca: cinto, rampa: couro}
+  - {peca: bolsa, rampa: couro}
+  - {peca: corda, rampa: palha}
+ferramenta: {mao_d: bastao_medir}

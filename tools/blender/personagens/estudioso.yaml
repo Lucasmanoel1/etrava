@@ -1,0 +1,30 @@
+# Halden, homem de livros (camada C). Retrato: chapéu de aba escuro, barba, capa de viagem cinza,
+# bolsa de livros, cinto com frascos.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: estudioso
+manifesto: {id: personagem.estudioso, papel: comum}
+ficha:
+  idade: 55
+  oficio: estudioso de passagem
+  traco: chapéu de aba + livro aberto na mão
+  postura: ereta, cabeça baixa no livro, passo lento
+  trabalho: trabalhar_bancada   # estudar - escreve num livro em pé
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.95, fps: 7.5, balanco: 0.5}
+corpo: {altura: 1.74, corpo: medio, cabeca: 1.2}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom, barra: 0.20}
+  - {peca: capa, rampa: tecido_cinza, comprimento: media}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: couro, altura: 0.22}
+  - {peca: cabelo, rampa: cabelo_grisalho, estilo: curto}
+  - {peca: barba, rampa: cabelo_grisalho, estilo: cheia}
+  - {peca: chapeu_aba, rampa: madeira_escura, aba: media}
+  - {peca: cinto, rampa: couro}
+  - {peca: bolsa, rampa: couro}
+ferramenta: {mao_e: livro}

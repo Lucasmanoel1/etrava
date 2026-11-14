@@ -169,7 +169,7 @@ def montar(c):
         for ob in pecas:
             bpy.data.objects.remove(ob, do_unlink=True)
         ob = _refazer_em_voxels("pele_" + grupo, me, material)
-        _pesos(c, ob, GRUPOS[grupo])
+        _pesos(c, ob, GRUPOS.get(grupo, ("pelvis", "lower_spine", "chest")))
         mod = ob.modifiers.new("esqueleto", "ARMATURE")
         mod.object = arm
         mod.use_vertex_groups = True

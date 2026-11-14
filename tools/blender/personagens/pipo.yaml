@@ -1,0 +1,26 @@
+# Pipo, o menino de Bento (camada B). Retrato: cabelo loiro desgrenhado, capuz marrom grande demais
+# para ele, cara de choro.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: pipo
+manifesto: {id: personagem.pipo, papel: comum, animacoes_extra: [correr]}
+ficha:
+  idade: 8
+  oficio: criança (ajuda no campo do pai)
+  traco: o menor de todos + cabelo loiro + bolsos estufados
+  postura: cabeça grande, passo rápido, não anda em linha reta
+  trabalho: trabalhar_chao   # ajudar, brincar
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 0.70, fps: 12, balanco: 1.0}
+corpo: {altura: 1.22, corpo: magro, idade: crianca, cabeca: 1.45}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom, barra: 0.24}
+  - {peca: capuz, rampa: tecido_marrom, caido: true}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.12}
+  - {peca: cabelo, rampa: cabelo_loiro, estilo: baguncado}
+  - {peca: bolsa, rampa: couro}

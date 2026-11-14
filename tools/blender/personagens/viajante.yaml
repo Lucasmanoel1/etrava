@@ -1,0 +1,28 @@
+# Viajante da estrada (camada C). Retrato: capuz fundo cobrindo o rosto, barba, capa de viagem
+# marrom com fivela, cajado com trouxa.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: viajante
+manifesto: {id: personagem.viajante, papel: comum}
+ficha:
+  idade: 45
+  oficio: anda entre o Posto e o vilarejo
+  traco: capuz fundo + cajado com trouxa pendurada
+  postura: curvado sob a trouxa, passo longo e regular
+  trabalho: nenhum
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.15, fps: 8, balanco: 0.6, curvatura: 0.6}
+corpo: {altura: 1.74, corpo: medio, cabeca: 1.2}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_marrom, barra: 0.22}
+  - {peca: capa, rampa: tecido_marrom, comprimento: longa}
+  - {peca: capuz, rampa: tecido_marrom}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.22}
+  - {peca: cabelo, rampa: cabelo_castanho, estilo: sob_capuz}
+  - {peca: barba, rampa: cabelo_castanho, estilo: cheia}
+ferramenta: {mao_d: cajado_trouxa}

@@ -1,0 +1,28 @@
+# Bento, lavrador do campo maior (camada B). Retrato: chapéu de palha de aba larga, rosto
+# vermelho, braços cruzados, lenço no pescoço, colete.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: bento
+manifesto: {id: personagem.bento, papel: comum}
+ficha:
+  idade: 45
+  oficio: lavrador
+  traco: chapéu de palha de aba larga (a maior silhueta de cabeça do vilarejo)
+  postura: largo, peito para a frente, passo pesado de dono
+  trabalho: trabalhar_chao   # lavrar com enxada
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.05, fps: 8, balanco: 1.2}
+corpo: {altura: 1.72, corpo: largo, cabeca: 1.2}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: tecido_oliva, barra: 0.16}
+  - {peca: colete, rampa: tecido_marrom}
+  - {peca: lenco_pescoco, rampa: tecido_vermelho}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: couro, altura: 0.18}
+  - {peca: cabelo, rampa: cabelo_castanho, estilo: curto}
+  - {peca: chapeu_aba, rampa: palha, aba: larga}
+ferramenta: {mao_d: enxada}

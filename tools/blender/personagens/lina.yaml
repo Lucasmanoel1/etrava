@@ -1,0 +1,27 @@
+# Lina, filha de Marta, serve as mesas (camada B). Retrato: trança ruiva longa, blusa de linho com
+# mangas bufantes, corpete ferrugem.
+tipo: personagem
+rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
+id: lina
+manifesto: {id: personagem.lina, papel: comum}
+ficha:
+  idade: 17
+  oficio: serve na taverna
+  traco: trança ruiva comprida + corpete vermelho
+  postura: ereta, passo rápido e leve, olha para a estrada
+  trabalho: trabalhar_bancada   # servir, lavar
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.05, fps: 10, balanco: 0.8}
+corpo: {altura: 1.60, corpo: magro, sexo: f, cabeca: 1.25}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: linho, luz_min: 0.4}
+  - {peca: corpete, rampa: ferrugem}
+  - {peca: saia, rampa: tecido_marrom, comprimento: longa}
+  - {peca: avental, rampa: linho, comprimento: curto, so_cintura: true}
+  - {peca: botas, rampa: couro, altura: 0.10}
+  - {peca: cabelo, rampa: cabelo_ruivo, estilo: tranca}
+ferramenta: {mao_e: bandeja}

@@ -173,7 +173,7 @@ public final class Pxo {
             List<int[]> qs = new ArrayList<>();
             for (int f = 0; f < fs.size(); f++) {
                 int[] px = new int[w * h];
-                byte[] b = arquivos.get("image_data/frames/" + (f + 1) + "/layer_" + (k + 1));
+                byte[] b = arquivos.remove("image_data/frames/" + (f + 1) + "/layer_" + (k + 1)); // solta o bruto já lido
                 if (b != null) {
                     JsonNode cel = fs.get(f).path("cels").path(k);
                     int cw = w, ch = h, ox = 0, oy = 0;

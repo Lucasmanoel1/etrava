@@ -5,7 +5,7 @@
   "animations" : {
     "vento" : {
       "start" : 0,
-      "frames" : 96,
+      "frames" : 192,
       "fps" : 60.0
     }
   },

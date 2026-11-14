@@ -22,6 +22,7 @@ import etrava.sim.content.PropDef;
 import etrava.sim.content.PropPlacement;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -56,6 +57,8 @@ public final class SceneRenderer implements Disposable {
         public double travel;
         /** Velocidade suavizada, em m/s (andar ou correr). */
         public double speed;
+        /** O que está fazendo pela agenda ({@code ActorView.activity()}); decide a animação parada (V2). */
+        public String activity = "";
     }
 
     /** Acima disto (m/s) o personagem corre, se a folha tiver a animação. */
@@ -104,6 +107,7 @@ public final class SceneRenderer implements Disposable {
     private final Texture lightTexture;
     private final Texture shadowTexture;
     private ShaderProgram postShader, silhouetteShader, paletaShader;
+    private final Animacoes animacoes;
     /** Shader em uso no lote dentro de drawSorted (troca por sprite indexado, D-103). */
     private ShaderProgram shaderAtual;
     private float reduzAtual = -1f, silhuetaAtual = -1f;
@@ -152,6 +156,7 @@ public final class SceneRenderer implements Disposable {
      */
     public SceneRenderer(AreaDef area, Map<String, PropDef> props, Assets assets, DayNight dayNight, boolean outdoor) {
         this.assets = assets;
+        this.animacoes = Animacoes.carregar(assets.root());
         this.dayNight = dayNight;
 
         int margin = outdoor ? MARGIN : 0;
@@ -620,21 +625,53 @@ public final class SceneRenderer implements Disposable {
         }
     }
 
+    /** Atividade de cada ator e desde quando (segundos de animTime): {@code sentar} toca uma vez. */
+    private final Map<String, String> atividadeAtual = new HashMap<>();
+    private final Map<String, Float> atividadeDesde = new HashMap<>();
+
+    private float desde(ActorDraw a, String chave, float animTime) {
+        if (!chave.equals(atividadeAtual.get(a.id))) {
+            atividadeAtual.put(a.id, chave);
+            atividadeDesde.put(a.id, animTime);
+        }
+        return animTime - atividadeDesde.getOrDefault(a.id, animTime);
+    }
+
     private void drawActor(ActorDraw a, float animTime) {
         Assets.Sheet sheet = assets.sheet(a.sprite);
         int dirs = sheet.directions();
         int dir = Math.floorMod((int) Math.round(a.facing / (Math.PI * 2 / dirs)), dirs);
         int frame;
         if (sheet.has("parado")) { // folha da Fase V: nomes em português, passo pela distância
-            String name = a.attack >= 0 && sheet.has("golpe") ? "golpe"
-                    : !a.moving ? "parado"
-                    : a.speed > RUN_SPEED && sheet.has("correr") ? "correr" : "andar";
+            double fase = Animacoes.fase(a.id);
+            String name;
+            float tempoNela = 0;
+            boolean umaVez = false;
+            if (a.attack >= 0 && sheet.has("golpe")) name = "golpe";
+            else if (a.moving) {
+                name = a.speed > RUN_SPEED && sheet.has("correr") ? "correr" : "andar";
+                desde(a, "", animTime);
+            } else {
+                // parado: a animação sai da atividade da agenda (V2, assets/config/animacoes.yaml)
+                name = animacoes.escolher(a.id, a.activity, animTime, fase);
+                if (!sheet.has(name)) name = "parado";
+                tempoNela = desde(a, name, animTime);
+                if (name.equals("sentado") && sheet.has("sentar")) {
+                    var s = sheet.anim("sentar");
+                    if (tempoNela < s.frames() / Math.max(1f, s.fps())) {
+                        name = "sentar";
+                        umaVez = true;
+                    }
+                }
+            }
             var anim = sheet.anim(name);
             int n = Math.max(1, anim.frames());
             if (name.equals("golpe")) frame = anim.start() + Math.min(n - 1, (int) (a.attack * n));
+            else if (umaVez) frame = anim.start() + Math.min(n - 1, (int) (tempoNela * anim.fps()));
             else if (anim.stride() != null && anim.stride() > 0)
                 frame = anim.start() + Math.floorMod((int) Math.floor(a.travel / anim.stride() * n), n);
-            else frame = anim.start() + Math.floorMod((int) (animTime * anim.fps()), n);
+            // fase própria: o bando não respira (nem martela) junto
+            else frame = anim.start() + Math.floorMod((int) (animTime * anim.fps() + fase * n), n);
         } else {
             boolean striking = a.attack >= 0 && sheet.animations().containsKey("attack");
             var anim = sheet.anim(striking ? "attack" : a.moving ? "walk" : "idle");
