@@ -1,7 +1,6 @@
 # Bento, lavrador do campo maior (camada B). Retrato: chapéu de palha de aba larga, rosto
 # vermelho, braços cruzados, lenço no pescoço, colete.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: bento
 manifesto: {id: personagem.bento, papel: comum}
 ficha:

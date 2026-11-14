@@ -1,7 +1,6 @@
 # Velho Anselmo, o mais velho do vilarejo (camada B). Retrato: careca no alto, cabelo e barba
 # brancos compridos dos lados, manta xadrez sobre os ombros.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: anselmo
 manifesto: {id: personagem.anselmo, papel: comum}
 ficha:

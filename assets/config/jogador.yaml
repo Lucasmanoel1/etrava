@@ -1,0 +1,10 @@
+# O que o jogador veste muda a folha (SPEC-visual §6.4, V2). Corpo: uma folha por roupa; cabeça:
+# uma camada desenhada por cima do corpo, no mesmo quadro. Item sem folha (ou folha que ainda não
+# existe) fica com a do corpo base, sem camada. Mãos (faca, martelo, lamparina) entram no V3.
+corpo:
+  camisa_linho: personagem.aprendiz
+  gibao_couro: personagem.aprendiz_gibao
+  avental_couro: personagem.aprendiz_avental
+cabeca:
+  chapeu_feltro: personagem.aprendiz_chapeu
+  capuz_la: personagem.aprendiz_capuz

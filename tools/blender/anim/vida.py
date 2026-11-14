@@ -149,23 +149,27 @@ def conversar(c, t, p):
 
 
 def dormir(c, t, p):
-    """Deitado de costas no chão (ou na cama, que o mapa põe embaixo): o corpo inteiro gira no
-    quadril; só o peito respira."""
+    """Deitado de lado, encolhido (no chão junto à lareira ou na cama, que o mapa põe embaixo): o
+    corpo rola no eixo da coluna e deita; joelhos e braços dobrados à frente. Encolhido cabe no
+    quadro de 64 px em toda direção (estendido, 1,7 m passava). Só o peito respira."""
     _zera(c)
     _zera_peito(c)
     r = 0.5 - 0.5 * math.cos(2 * math.pi * t)
     k = c.k
-    c.j["quadril"].location.z = 0.11 * k
-    c.j["quadril"].location.x = 0.0
-    c.j["quadril"].rotation_euler.y = INCLINA * math.radians(-90)    # de costas: a cabeça para trás (-X)
-    c.j["peito"].rotation_euler.y = INCLINA * math.radians(-2 * r)
-    balanco(c.j["pescoco"], math.radians(-10))
-    for lado, s in (("e", 1), ("d", -1)):
-        c.j["braco_" + lado].rotation_euler.x = s * math.radians(-8)
-        balanco(c.j["antebraco_" + lado], math.radians(10))
-        c.j["coxa_" + lado].rotation_euler.x = s * math.radians(-4)
-        balanco(c.j["canela_" + lado], math.radians(-6))
-        balanco(c.j["pe_" + lado], math.radians(-60))       # pés para cima
+    q = c.j["quadril"]
+    q.rotation_mode = "ZYX"                      # rola no eixo do corpo (Z) e depois deita (Y)
+    q.rotation_euler = (0.0, INCLINA * math.radians(-90), math.radians(90))
+    q.location.z = 0.16 * k * c.largo_quadril
+    q.location.x = 0.18 * k                      # centra o corpo encolhido sobre a âncora
+    c.j["tronco"].rotation_euler.y = INCLINA * math.radians(14)
+    c.j["peito"].rotation_euler.y = INCLINA * math.radians(8 - 2 * r)
+    balanco(c.j["pescoco"], math.radians(10))
+    for lado in ("e", "d"):
+        balanco(c.j["braco_" + lado], math.radians(55))
+        balanco(c.j["antebraco_" + lado], math.radians(75))
+        balanco(c.j["coxa_" + lado], math.radians(70))
+        balanco(c.j["canela_" + lado], math.radians(-95))
+        balanco(c.j["pe_" + lado], math.radians(20))
 
 
 CICLOS = {"sentar": sentar, "sentado": sentado, "trabalhar_bancada": trabalhar_bancada,

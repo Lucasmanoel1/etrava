@@ -1,7 +1,6 @@
 # Doran, o ferreiro (camada B). Retrato: barba cheia escura, cabelo curto, avental de couro
 # vermelho-escuro sobre camisa, braços grossos.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: ferreiro
 manifesto: {id: personagem.ferreiro, papel: comum}
 ficha:

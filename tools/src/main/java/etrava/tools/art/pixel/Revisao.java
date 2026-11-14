@@ -54,6 +54,70 @@ public final class Revisao {
             }
         }
         System.out.println("Revisão: " + n + " folha(s) em build/revisao");
+        quemEQuem(raiz, man, saida.resolve("quem_e_quem.png"));
+    }
+
+    /**
+     * Prancha "quem é quem" (V2, tarefa 9): todos os humanos lado a lado, com os pés na mesma
+     * linha. Duas faixas: no tamanho do zoom 1 do jogo (cada px de arte = 2 px), para julgar a
+     * silhueta como o jogador a vê, e ampliada 4×. Em cada uma, de frente para a câmera (direção
+     * 1) e de perfil (direção 0), com o nome de `content/npcs` embaixo. Camadas ficam de fora.
+     */
+    static void quemEQuem(Path raiz, Path man, Path destino) throws IOException {
+        record Gente(String nome, BufferedImage img, int fw, int fh, double ax, double ay, int parado) {}
+        List<Gente> gente = new ArrayList<>();
+        for (JsonNode e : RenderArt.YAML.readTree(man.toFile())) {
+            String id = e.path("id").asText();
+            if (!id.startsWith("personagem.") || "camada".equals(e.path("role").asText())) continue;
+            Path f = raiz.resolve("assets").resolve(e.path("file").asText());
+            BufferedImage img = Files.exists(f) ? ImageIO.read(f.toFile()) : null;
+            if (img == null || !e.path("animations").has("parado")) continue;
+            String curto = id.substring("personagem.".length());
+            String nome = curto;
+            Path npc = raiz.resolve("content/npcs/" + curto + ".yaml");
+            if (Files.exists(npc)) nome = RenderArt.YAML.readTree(npc.toFile()).path("name").asText(curto);
+            gente.add(new Gente(nome, img, e.path("frame").get(0).asInt(), e.path("frame").get(1).asInt(),
+                    e.path("anchor").get(0).asDouble(), e.path("anchor").get(1).asDouble(),
+                    e.path("animations").path("parado").path("start").asInt()));
+        }
+        if (gente.isEmpty()) return;
+        int maxCima = 0, maxBaixo = 0;
+        for (Gente g : gente) {
+            maxCima = Math.max(maxCima, (int) Math.ceil(g.ay()));
+            maxBaixo = Math.max(maxBaixo, g.fh() - (int) Math.floor(g.ay()));
+        }
+        int coluna = 240, rotulo = 14;                    // px por pessoa; altura do nome
+        int[] zooms = {2, 4};
+        int largura = gente.size() * coluna + 16, altura = 8;
+        for (int z : zooms) altura += (maxCima + maxBaixo) * z + rotulo + 8;
+        BufferedImage out = new BufferedImage(largura, altura, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = out.createGraphics();
+        g2.setColor(FUNDO);
+        g2.fillRect(0, 0, largura, altura);
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        int y0 = 8;
+        for (int z : zooms) {
+            int base = y0 + maxCima * z;                  // linha dos pés
+            g2.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.PLAIN, z == 2 ? 11 : 13));
+            for (int i = 0; i < gente.size(); i++) {
+                Gente g = gente.get(i);
+                int colW = (largura - 16) / gente.size();   // a coluna de cada um (cabe a 4×)
+                int cx = 8 + i * colW + colW / 2;
+                for (int lado = 0; lado < 2; lado++) {
+                    int dir = lado == 0 ? 1 : 0;
+                    BufferedImage q = g.img().getSubimage(g.parado() * g.fw(), dir * g.fh(), g.fw(), g.fh());
+                    int x = cx + (lado == 0 ? -1 : 1) * colW / 4 - (int) Math.round(g.ax() * z);
+                    g2.drawImage(q, x, base - (int) Math.round(g.ay() * z), g.fw() * z, g.fh() * z, null);
+                }
+                g2.setColor(new Color(0xE8E0C8));
+                int tw = g2.getFontMetrics().stringWidth(g.nome());
+                g2.drawString(g.nome(), cx - tw / 2, base + maxBaixo * z + rotulo - 3);
+            }
+            y0 += (maxCima + maxBaixo) * z + rotulo + 8;
+        }
+        g2.dispose();
+        ImageIO.write(out, "png", destino.toFile());
+        System.out.println("Quem é quem: " + gente.size() + " pessoa(s) em " + raiz.relativize(destino));
     }
 
     static void folha(BufferedImage img, JsonNode m, Path destino) throws IOException {

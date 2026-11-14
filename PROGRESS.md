@@ -1,11 +1,11 @@
 # PROGRESS — ETRAVA
 
-Última atualização: 2026-11-13
+Última atualização: 2026-11-14
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
 - **Marco atual:** **V2 — Gente** (`docs/visual/V2.md`). V1 aprovado pelo diretor em 2026-11-13 (D-104).
-- **Status:** V2 em andamento: fichas dos personagens (tarefa 1). Em paralelo, as árvores estão sendo refeitas com 192 quadros a 60 qps, para o vento ficar na metade da velocidade (D-104).
+- **Status:** **PARADO no fim do V2**, à espera da aprovação do diretor (seção "Parada do V2", abaixo).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -13,7 +13,7 @@
 |---|---|---|
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
 | V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **concluído** (aprovado, D-104) |
-| V2 | Gente (25 humanos, animações de vida comum) | **em andamento** |
+| V2 | Gente (25 humanos, animações de vida comum) | **concluído; aguarda aprovação** |
 | V3 | Criaturas e combate | — |
 | V4 | Natureza e terreno | — |
 | V5 | Arquitetura e exteriores | — |
@@ -34,6 +34,67 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## V2 — Gente (em andamento)
+**Feito:**
+- **Fichas:** 24 em `tools/blender/personagens/` (23 NPCs + saqueador). Cada uma tem idade, ofício, um traço que identifica a pessoa de longe, jeito de andar (`jeito`), trabalho e `dorme` (só quem dorme à vista).
+  - Ficam com `rascunho: true` até o kit cobrir as peças: o `renderArt` só as faz com `-Pso`.
+- **Pranchas na Dreamina:** 22, a partir dos retratos (i2i), em `arte-bruta/referencias/v2/` (fora do git). Gasto: 660 créditos.
+- **Kit humano V2:**
+  - `kit_humano/roupa.py`: saia, corpete, colete, gibão, casaco, capa, capuz, chapéus, bandana, lenços, cachecol, xale/manta, corda e ervas;
+  - cabelos: preso, trança, longo, calvo, careca e penteado;
+  - barbas: cheia, curta, longa, bigode e por fazer;
+  - 15 ferramentas de ofício;
+  - corpo feminino, barriga e braços grossos;
+  - saias e abas com peso no quadril.
+- **Animações** (`anim/vida.py`): sentar, sentado, trabalhar (bancada, martelo, chão), conversar e dormir (deitado de lado, encolhido).
+- **Cliente:**
+  - a animação de quem está parado sai da atividade da agenda (`assets/config/animacoes.yaml`), com fase própria por NPC;
+  - quem está sentado é desenhado no banco mais próximo, e quem dorme, na cama;
+  - página do atlas de 8192² (D-107).
+- **Ferramentas:**
+  - cache de render por objeto (D-105);
+  - Blender na GPU, no máximo 3 de cada vez (D-106, `local.properties`);
+  - VT-05 completo (animações e quadros por papel) e VT-15 (pixel isolado). Valem quando todos os humanos estiverem na folha nova;
+  - roteiro de capturas `tools/capturas/v2.yaml`.
+- **Lotes renderizados:**
+  - 1: ferreiro, Celi, Anselmo, Bento, Ciro;
+  - 2: comerciante, curandeira, estranho, estudioso, Firmino.
+
+- **Lotes 3 a 5 e passada final (2026-11-14):** os 27 humanos com o kit final: 23 NPCs, saqueador, o jogador e as roupas dele (gibão e avental) mais as camadas de chapéu e capuz.
+- **Kit (D-109):**
+  - remendos no gibão do saqueador;
+  - cartola do registrador com copa reta;
+  - hastes e cabos sem subdivisão: a lança da Vessa e o cajado do viajante não somem mais na ponta.
+- **VT-15 (D-108):**
+  - o validador mede o pé de apoio pelos pontos `pe_e`/`pe_d` contra o chão que o cliente anda;
+  - a medida achou três defeitos, todos corrigidos:
+    - o pé ia junto com o balanço do quadril (`_planta`);
+    - a passada no JSON estava sem a escala do corpo;
+    - a perna esticava demais no toque do calcanhar (`_alcanca`);
+  - todos abaixo de 1 px: o pior era 2,2 e caiu para ~0,8.
+- **Camadas do jogador (§6.4):**
+  - o corpo muda pela roupa (`assets/config/jogador.yaml` + `Vestimenta`);
+  - chapéu e capuz são desenhados por cima, no mesmo quadro.
+- **Pixelização em paralelo (D-110):** 3 objetos de cada vez; os 36 em 14 min.
+- **Prancha "quem é quem"** (`gradlew sheets` → `build/revisao/quem_e_quem.png`): os 27 lado a lado, com os pés na mesma linha, de frente e de perfil, no tamanho do jogo e a 4×.
+- **Verificação:**
+  - `gradlew build`: 167 testes, validador sem erros (VT-04, VT-05 e VT-15 passam para humanos);
+  - capturas v2: 9/9, visibilidade 8/8.
+
+## Parada do V2 — o que olhar
+- `docs/capturas/v2/quem_e_quem.png`: todos lado a lado. A faixa de baixo está a 4×.
+- `docs/capturas/v2/taverna_noite.png`, `praca_manha_perto.png`, `forja.png`, `campo.png`, `posto.png`, `praca_almoco.png`, `vila_manha_longe.png`.
+- `docs/capturas/v2/gifs/`: andar (aprendiz, Avel, ferreiro, Vessa, registrador, Pipo, Tobias), martelo, bancada, chão, sentado, dormir.
+- No jogo: `gradlew run`. F1 → `hora 20`, `area taverna`; ou `tp 31 37`, `hora 8` para a praça.
+
+**A aprovar:**
+1. A aparência de cada NPC de camada A: Avel, Nália, curandeira, ferreiro, estranho, registrador, agrimensora.
+2. As decisões D-108 (como medir o pé), D-109 (peças do kit, criança sem esqueleto próprio) e D-110 (pixelização em paralelo).
+
+**Ficou para depois da aprovação:**
+- **Conferência dos retratos** (tarefa 8): comparar cada retrato ao sprite e refazer na Dreamina os que divergirem. Prefiro fazer depois do seu aval na aparência, para não pagar créditos por um retrato de um sprite que ainda pode mudar.
+- **Cache de render:** 19 personagens não foram refeitos depois da última mudança no andar (`_alcanca`). Nos que não esticavam a perna, a pose sai a mesma, e o validador confirma: todos abaixo de 1 px. O próximo `renderArt` sem `-Pso` vai refazê-los, porque a chave do cache mudou, e leva cerca de 1 h de GPU. Para evitar isso, rode com `-Pso`.
 
 ## Portão V1 — vento a 60 qps e atlas indexado (D-103)
 Pedido: árvores com mais fluidez, 96 quadros a 60 qps, e o mesmo no resto que balança; paleta liberada.

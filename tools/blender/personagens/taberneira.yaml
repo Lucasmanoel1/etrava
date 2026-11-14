@@ -1,7 +1,6 @@
 # Marta, da taverna (camada B). Retrato: lenço claro na cabeça, cabelo ruivo preso, xale rosado,
 # avental, caneca na mão.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: taberneira
 manifesto: {id: personagem.taberneira, papel: comum}
 ficha:

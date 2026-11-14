@@ -1,7 +1,6 @@
 # Celi, viúva nova, dona do pomar (camada B). Retrato: capuz vermelho-ferrugem, trança castanha,
 # vestido de linho com corpete.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: aldea
 manifesto: {id: personagem.aldea, papel: comum}
 ficha:

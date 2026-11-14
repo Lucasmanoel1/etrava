@@ -16,6 +16,7 @@ INCLINA = 1.0
 
 def _zera(c):
     for v in c.j.values():
+        v.rotation_mode = "XYZ"       # dormir troca a ordem no quadril
         v.rotation_euler = (0.0, 0.0, 0.0)
     c.j["quadril"].location.z = c.quadril_h
     c.j["quadril"].location.x = 0.0
@@ -42,6 +43,66 @@ def _ik_perna(c, lado, pe_x, pe_z):
     balanco(c.j["coxa_" + lado], coxa)
     balanco(c.j["canela_" + lado], -joelho)
     return coxa - joelho                                        # ângulo absoluto da canela
+
+
+def _planta(c, lado, x, z, y=None, inclinacao=0.0, pe_x=0.0):
+    """Põe o tornozelo em (x, y, z) no espaço da raiz (o do sprite), seja qual for a pose do quadril.
+
+    O _ik_perna resolve só no plano da passada e a partir do centro do quadril; quando o quadril
+    desliza para o lado, gira e rola (o peso que passa de um pé ao outro), o pé de apoio ia junto
+    e escorregava até 2 px (VT-15, D-108). Aqui o alvo é levado para o espaço do quadril, a coxa
+    abre para o lado (X) e anula o giro do quadril (Z), e a perna dobra no próprio plano (Y).
+    y: afastamento lateral; padrão = o da articulação da coxa. pe_x: rolagem extra do pé."""
+    from mathutils import Matrix, Vector
+    q, cx = c.j["quadril"], c.j["coxa_" + lado]
+    if y is None:
+        y = cx.location.y
+    mq = Matrix.Translation(q.location) @ q.rotation_euler.to_matrix().to_4x4()
+    v = (mq.inverted() @ Vector((x, y, z))) - cx.location
+    gama = -q.rotation_euler.z                                  # o pé aponta para a frente do sprite
+    w = Matrix.Rotation(-gama, 3, "Z") @ v
+    theta = math.atan2(w.y, -w.z)                               # abertura lateral da perna
+    dx, dz = w.x, -math.hypot(w.y, w.z)
+    l1, l2 = c.coxa, c.canela
+    d = min(math.hypot(dx, dz), (l1 + l2) * 0.9995)
+    d = max(d, abs(l1 - l2) + 1e-3)
+    phi = math.atan2(dx, -dz)
+    alfa = math.acos(max(-1, min(1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d))))
+    joelho = math.pi - math.acos(max(-1, min(1, (l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2))))
+    coxa = phi + alfa
+    # YXZ: R = Rz·Rx·Ry — a perna dobra para a frente (Y), abre para o lado (X), gira com o quadril (Z)
+    cx.rotation_mode = "YXZ"
+    cx.rotation_euler = (theta, ADIANTE * coxa, gama)
+    balanco(c.j["canela_" + lado], -joelho)
+    pe = c.j["pe_" + lado]
+    pe.rotation_euler.x = pe_x - theta                          # sola de novo paralela ao chão
+    _pe(c, lado, coxa - joelho, inclinacao)
+
+
+def _alcanca(c, alvos, folga=0.985):
+    """Baixa o quadril o mínimo para que todo alvo de tornozelo caiba na perna (com folga).
+
+    No toque do calcanhar, a perna da frente vai esticada e o quadril está no auge do balanço
+    lateral: o alvo passava do comprimento da perna, o IK encurtava e o pé de apoio pousava ~4 cm
+    fora do lugar (1,1–1,4 px no VT-15, D-108). alvos: [(lado, x, z)] no espaço da raiz."""
+    from mathutils import Matrix, Vector
+    q = c.j["quadril"]
+    alcance = (c.coxa + c.canela) * folga
+    for _ in range(8):
+        mq = Matrix.Translation(q.location) @ q.rotation_euler.to_matrix().to_4x4()
+        pior = 0.0
+        for lado, x, z in alvos:
+            cx = c.j["coxa_" + lado]
+            quadril = mq @ cx.location                          # articulação da coxa, no espaço da raiz
+            dx, dy, dz = x - quadril.x, cx.location.y - quadril.y, z - quadril.z
+            horiz = math.hypot(dx, dy)
+            if horiz >= alcance:
+                continue
+            falta = -dz - math.sqrt(alcance * alcance - horiz * horiz)
+            pior = max(pior, falta)
+        if pior <= 1e-5:
+            return
+        q.location.z -= pior
 
 
 def _pe(c, lado, canela_abs, inclinacao=0.0):
@@ -88,11 +149,11 @@ def parado(c, t, p):
         c.j["braco_" + lado].rotation_euler.x = s * math.radians(-5)
         balanco(c.j["braco_" + lado], math.radians(-3 + 2 * r))
         balanco(c.j["antebraco_" + lado], math.radians(16 + 4 * r))
-        c.j["coxa_" + lado].rotation_euler.x = s * math.radians(-3)
-        c.j["pe_" + lado].rotation_euler.x = s * math.radians(3)
         c.j["pe_" + lado].rotation_euler.z = s * math.radians(10)     # pés um pouco abertos
-        canela = _ik_perna(c, lado, 0.0, c.tornozelo)
-        _pe(c, lado, canela)
+        # pés fixos no chão enquanto o peso passa de um para o outro (antes a coxa abria -3° e o pé
+        # ia com o quadril; agora o alvo já tem os pés um pouco mais juntos que o quadril)
+        y = s * (c.quadris - math.sin(math.radians(3)) * (c.coxa + c.canela))
+        _planta(c, lado, 0.0, c.tornozelo, y=y)
 
 
 def _passo(c, t, passada, apoio, altura_pe, quadril_med, quadril_amp, chute=0.0):
@@ -133,10 +194,10 @@ def andar(c, t, p):
     _coluna(c, 4.0, 6.0 * math.sin(fase), -9.0 * math.sin(fase), lado_peito=-2.0 * math.cos(fase))
     balanco(c.j["pescoco"], math.radians(-2))
     c.j["cabeca"].rotation_euler.z = math.radians(4) * math.sin(fase)
+    _alcanca(c, [(lado, pes[lado][0], pes[lado][1]) for lado in ("e", "d")])
     for lado, s, fs in (("e", 1, 0.0), ("d", -1, 0.5)):
         x, z, incl = pes[lado]
-        canela = _ik_perna(c, lado, x, z)
-        _pe(c, lado, canela, incl)
+        _planta(c, lado, x, z, inclinacao=incl)
         u = math.cos(2 * math.pi * (t + fs + 0.5))
         a = math.radians(-8) + math.radians(16) * u               # de −24° (trás) a +8° (frente)
         c.j["braco_" + lado].rotation_euler.x = s * math.radians(-3)

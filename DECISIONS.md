@@ -760,3 +760,50 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - vt03 112/112;
   - o `--bench` caiu para 438 FPS e 344 chamadas por quadro, medido com o Blender usando a GPU ao mesmo tempo; as árvores se espalham por mais páginas e cada troca esvazia o lote. Medir de novo com a GPU livre; se preciso, agrupar os quadros de cada espécie na mesma página;
   - a pixelização estourou os 2 GB do Java ao ler o `.pxo`: o heap de `renderArt`/`pixelize` subiu para 4 GB e o leitor solta os bytes brutos de cada quadro ao decodificar.
+
+## D-107 — Sem teto de memória de textura nem de disco: o que importa é rodar leve
+- **Data:** 2026-11-14
+- **Pedido do diretor:** "não precisa ter um teto de textura, pode literalmente não ter limite": melhor um jogo pesado em disco e memória, bonito e leve para rodar, do que leve no disco, com a arte limitada e pesado para rodar.
+- **Decisão:**
+  - o VT-10 perde os tetos de memória de textura (512 MB) e de ZIP (150 MB). Os dois continuam medidos e relatados;
+  - o que fica com teto é o que se sente jogando: ≥ 60 FPS no hardware de referência e o tempo de abertura;
+  - quando houver troca, vence a fluidez. Primeira aplicação: a página do atlas passa de 4096² para 8192² quando a placa suporta. Uma espécie de árvore inteira cabe numa página e o desenho troca menos de textura, com menos chamadas por quadro;
+  - o atlas indexado (D-103) continua: não custa em tempo de execução (uma leitura de textura a mais no shader) e deixa caber mais arte por página, o que também corta chamadas.
+- **Alternativas descartadas:**
+  - voltar ao RGBA: 4× mais memória por página, sem ganho de velocidade, e mais páginas, logo mais chamadas;
+  - manter o teto: limitaria o vento a 60 qps e os quadros dos personagens sem ganho para quem joga.
+
+## D-108 — VT-15: como medir o pé que desliza
+- **Data:** 2026-11-14
+- **Decisão:**
+  - o kit humano marca o meio da sola de cada pé (`pe_e`, `pe_d`), que sai no JSON da folha como os outros pontos;
+  - o validador compara, entre dois quadros seguidos de `parado` e `andar`, o deslocamento de cada pé com o do chão. No parado, o chão não anda. No andar, o cliente avança o quadro pela distância (D-095): entre dois quadros, o chão corre `stride/n` m para trás, projetado como no `IsoProjection`;
+  - o pé de apoio é o que fica mais perto desse deslocamento, e a diferença não pode passar de 1 px de arte;
+  - folha sem os pontos dos pés fica de fora: vale para a arte antiga e para criaturas, até o V3.
+- **O que a medida achou e foi corrigido:**
+  - o andar plantava o pé só no plano da passada, a partir do centro do quadril. Quando o quadril desliza de lado (±1,4 cm), gira (6°) e rola (2°), o pé de apoio ia junto, deslizando até 2 px, mais de frente para a câmera. Agora `_planta` (`anim/ciclos.py`) leva o alvo para o espaço do quadril e a coxa abre para o lado e anula o giro. O parado também usa;
+  - o JSON gravava a passada da ficha, mas o ciclo a escala pelo corpo (`passada × k`). Com o Pipo (k = 0,72), o cliente o levava 40 % mais longe que o pé empurrava o chão. Agora o JSON grava `passada × k`;
+  - no toque do calcanhar, a perna da frente vai esticada e o quadril está no auge do balanço lateral. O alvo do tornozelo passava do comprimento da perna, o IK encurtava, e o pé pousava ~4 cm fora do lugar: 1,1 a 1,4 px nas direções 3 e 7, em quem tem passada longa. Agora `_alcanca` baixa o quadril o mínimo para o alvo caber, com folga de 1,5 %;
+  - resultado:
+    - Gil: o andar caiu de 1,9 para 0,36 px e o parado, de 1,0 para 0,10 px;
+    - agrimensora: o andar caiu de 1,9 para 0,13 px.
+- **Alternativa descartada:** achar o pé pelos pixels mais baixos do quadro. No isométrico, o pé mais baixo na tela nem sempre é o que pisa, e os dois pés se confundem de frente e de costas.
+
+## D-109 — Lote final do V2: peças que faltavam no kit
+- **Data:** 2026-11-14
+- **Decisão:**
+  - **gibão com `remendos`:** três retalhos chatos de outra cor (um no peito, dois nas costas), para o saqueador ler "roupa de várias origens";
+  - **cartola do registrador:** copa sem subdivisão e mais alta. Com a subdivisão, o cilindro arredondava e virava um chapéu-coco, e a silhueta da cidade se perdia;
+  - **hastes (lança, cajado, bastão, pá, enxada) e cabos (martelo, foice, machadinha) sem subdivisão:** cilindro longo e tampado, sem anéis no meio, vira charuto no subsurf. A lança da Vessa perdia a metade de cima, a ponta flutuava, e a trouxa do viajante ficava solta no ar;
+  - **criança (Pipo):** sem esqueleto próprio. É o corpo comum com 1,22 m e a cabeça 1,45×, que já lê como criança a 48 px.
+- **Alternativa descartada:** um esqueleto infantil com outras proporções de perna. Daria mais trabalho, e a diferença não aparece no tamanho do jogo.
+
+## D-110 — Pixelização em paralelo
+- **Data:** 2026-11-14
+- **Pedido do diretor:** a máquina ficava parada depois do render ("pode colocar no máximo").
+- **Decisão:**
+  - o pixelizador roda vários objetos ao mesmo tempo, `pixel.threads` de cada vez (`local.properties`; padrão 3), com o heap do `renderArt` e do `pixelize` em 8 GB;
+  - cada objeto monta as próprias entradas do manifesto, e elas entram na ordem da lista. A saída não depende de quem termina primeiro (VT-16);
+  - cada Pixelorama escreve no próprio arquivo (`build/acabamento/<nome>.png`).
+- **Resultado:** os 36 objetos, árvores incluídas, em 14 min.
+- **Por que não 12 de cada vez:** uma árvore de 192 quadros passa de 2 GB de heap, e a máquina tem 16 GB. Com 12 de cada vez faltaria memória, como já aconteceu com 6 Blender (D-106).

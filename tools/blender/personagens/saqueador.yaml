@@ -1,7 +1,6 @@
 # Saqueador (inimigo humano do Posto). Corpo e roupa no V2; golpes, dano e queda no V3.
 # Não tem retrato. Gente de estrada sem bandeira: roupa de várias origens, remendada.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: saqueador
 manifesto: {id: personagem.saqueador, papel: saqueador}
 ficha:

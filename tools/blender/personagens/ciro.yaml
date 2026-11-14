@@ -1,7 +1,6 @@
 # Ciro, jogador de dados que jura que é a última (camada B). Retrato: boné achatado cinza-azulado,
 # rosto magro, olheira, capuz caído.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: ciro
 manifesto: {id: personagem.ciro, papel: comum}
 ficha:

@@ -1,7 +1,6 @@
 # Vessa, guarda do Posto, paga pelos Cantões (camada B). Retrato: cabelo escuro preso, lança no
 # ombro, gibão de couro com ombreiras e capa escura.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: vessa
 manifesto: {id: personagem.vessa, papel: comum, animacoes_extra: [correr]}
 ficha:

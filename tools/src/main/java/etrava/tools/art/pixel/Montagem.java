@@ -21,7 +21,8 @@ final class Montagem {
 
     record Quadro(String anim, int dir, int f, Pixelizador.Resultado r, JsonNode pontos) {}
 
-    static void montar(RenderArt ra, Pixelizador px, RenderArt.Objeto o, JsonNode rj, Path pasta) throws IOException, InterruptedException {
+    static void montar(RenderArt ra, Pixelizador px, RenderArt.Objeto o, JsonNode rj, Path pasta,
+                       Map<String, Map<String, Object>> manifesto) throws IOException, InterruptedException {
         JsonNode desc = o.desc();
         int ss = rj.path("ss").asInt(4);
         Map<Integer, Pixelizador.Material> mats = new HashMap<>();
@@ -234,7 +235,7 @@ final class Montagem {
             m.put("scale", 2);
             m.put("source", fonte);
             m.put("license", "proprio");
-            ra.manifesto.put(id, m);
+            manifesto.put(id, m);
         }
         System.out.printf("  %s: %d folha(s), quadro %d×%d, âncora (%.0f, %.0f)%n", o.id(), arquivos.size(), fw, fh, ax, ay);
     }

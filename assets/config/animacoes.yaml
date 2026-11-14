@@ -33,7 +33,7 @@ atividades:
   sentar: sentado
   descansar: sentado
   # deitado
-  dormir: dormir
+  dormir: {padrao: dormir, por_npc: {estranho: sentado}}   # o estranho dorme sentado à mesa da taverna
   de_cama: dormir
   # fala
   conversar: conversar

@@ -1,7 +1,6 @@
 # Nalia, a filha do moleiro (camada A). Retrato: cabelo preto comprido e solto, olheiras, capuz
 # marrom caído, vestido claro manchado.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: nalia
 manifesto: {id: personagem.nalia, papel: comum}
 ficha:
@@ -10,6 +9,7 @@ ficha:
   traco: cabelo preto comprido e solto + capuz marrom caído; magra demais
   postura: ombros para dentro, cabeça baixa, passo lento
   trabalho: trabalhar_chao   # cuidar da árvore, do quintal
+  dorme: true   # dorme à vista (a agenda não esconde)
 pixelorama: true
 quadro: [64, 80]
 ancora: [32, 72]

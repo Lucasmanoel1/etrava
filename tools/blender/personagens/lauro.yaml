@@ -1,7 +1,6 @@
 # Lauro, jogador de dados (camada B). Retrato: gorro vermelho pequeno, gordo, sorriso largo, nariz
 # vermelho, lenço vermelho, anel, dados na mão.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: lauro
 manifesto: {id: personagem.lauro, papel: comum}
 ficha:

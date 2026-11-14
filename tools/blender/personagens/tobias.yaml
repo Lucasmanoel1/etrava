@@ -1,7 +1,6 @@
 # Tobias, carregador do Posto (camada B). Retrato: careca, pescoço grosso, corda enrolada no ombro,
 # camisa verde-oliva, capuz caído vermelho.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: tobias
 manifesto: {id: personagem.tobias, papel: comum}
 ficha:

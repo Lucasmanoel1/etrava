@@ -1,7 +1,6 @@
 # Ibbo, comerciante do Posto, dos Cantões do Sal (camada A). Retrato: bandana vermelha, bigode,
 # colete acolchoado com bolsos, lenço no pescoço; sorriso de quem já fez a conta.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: comerciante
 manifesto: {id: personagem.comerciante, papel: comum}
 ficha:

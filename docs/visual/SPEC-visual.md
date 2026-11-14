@@ -243,7 +243,7 @@ Por personagem: uma folha com todas as animações × 8 direções em 2× e um G
 As capturas de visibilidade pedem também a máscara do jogador (silhueta branca num buffer à parte, com o que está na frente dele em preto). Na imagem final: L_entorno = luminância média de uma moldura de 12 px de arte em volta da silhueta; **destaque** = fração dos pixels da silhueta com |L − L_entorno| ≥ 0,12. Passa com destaque ≥ 0,60 (D-090). Roteiro: `tools/capturas/visibilidade.yaml`; relatório em `build/capturas/visibilidade/relatorio.csv`.
 
 ### 9.4 Validador (`gradlew validateContent`)
-Passa a checar: paleta (VT-04), animações por papel (VT-05), origem provisória (VT-06), pegada e porta das construções contra o mapa (VT-07), tamanho de atlas por área e soma de memória de textura (VT-10).
+Passa a checar: paleta (VT-04), animações por papel (VT-05), origem provisória (VT-06), pegada e porta das construções contra o mapa (VT-07), tamanho de atlas por área e soma de memória de textura (VT-10, só relatório: sem teto, D-107).
 
 ## 10. Manifesto: campos novos
 ```yaml

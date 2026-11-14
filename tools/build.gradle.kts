@@ -130,7 +130,7 @@ tasks.register<JavaExec>("renderArt") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("etrava.tools.art.pixel.RenderArt")
     args(artArgs("render"))
-    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx4g")
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx8g", "-XX:+UseG1GC", "-XX:G1PeriodicGCInterval=3000", "-XX:MinHeapFreeRatio=10", "-XX:MaxHeapFreeRatio=30")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
@@ -140,7 +140,7 @@ tasks.register<JavaExec>("pixelize") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("etrava.tools.art.pixel.RenderArt")
     args(artArgs("pixelize"))
-    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx4g")
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true", "-Xmx8g", "-XX:+UseG1GC", "-XX:G1PeriodicGCInterval=3000", "-XX:MinHeapFreeRatio=10", "-XX:MaxHeapFreeRatio=30")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 

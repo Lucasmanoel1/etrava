@@ -1,7 +1,6 @@
 # Lina, filha de Marta, serve as mesas (camada B). Retrato: trança ruiva longa, blusa de linho com
 # mangas bufantes, corpete ferrugem.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: lina
 manifesto: {id: personagem.lina, papel: comum}
 ficha:

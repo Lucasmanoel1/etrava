@@ -308,6 +308,8 @@ def montar(p):
                                              j["canela_" + lado], z0=-(c.canela - alto_bota), sub=1))
         c.pele["botas_" + lado].append(_caixa("pe_" + lado, (0.20 * c.k, 0.09 * c.k, 0.075 * c.k),
                                               (0.04 * c.k, 0, -0.045 * c.k), bota, j["pe_" + lado], sub=1))
+        # meio da sola: o VT-15 mede por ele se o pé de apoio desliza entre quadros
+        ponto("pe_" + lado, j["pe_" + lado], (0.04 * c.k, 0, -0.08 * c.k))
 
     # --- peças por cima
     barra = roupa.get("camisa", {}).get("barra")

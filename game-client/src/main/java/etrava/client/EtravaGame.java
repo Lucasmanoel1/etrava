@@ -68,6 +68,8 @@ public final class EtravaGame extends ApplicationAdapter {
     private ContentDb content;
     private Simulation sim;
     private Assets assets;
+    /** Roupa e chapéu do jogador → folha e camada (V2, assets/config/jogador.yaml). */
+    private etrava.client.render.Vestimenta vestimenta;
     private SceneRenderer scene;
     private DayNight dayNight;
     private CameraRig camera;
@@ -157,6 +159,7 @@ public final class EtravaGame extends ApplicationAdapter {
             for (String p : report.errors()) LOG.warn("Validador: {}", p);
         }
         assets = new Assets(options.assetsDir());
+        vestimenta = etrava.client.render.Vestimenta.carregar(options.assetsDir());
         assets.preloadSprites();
         settings = Settings.load();
         audio = new etrava.client.audio.AudioPlayer(options.assetsDir(), assets.manifest(), settings);
@@ -762,6 +765,9 @@ public final class EtravaGame extends ApplicationAdapter {
         while (draws.size() < n) draws.add(new ActorDraw());
         while (draws.size() > n) draws.remove(draws.size() - 1);
         fill(draws.get(0), v.player(), alpha);
+        ActorDraw jogador = draws.get(0);
+        jogador.sprite = vestimenta.corpo(v.equipment(), jogador.sprite, assets::temEntrada);
+        jogador.camada = vestimenta.cabeca(v.equipment(), assets::temEntrada);
         for (int i = 0; i < v.actors().size(); i++) fill(draws.get(i + 1), v.actors().get(i), alpha);
         int base = 1 + v.actors().size();
         for (int i = 0; i < v.enemies().size(); i++) fill(draws.get(base + i), v.enemies().get(i), alpha);

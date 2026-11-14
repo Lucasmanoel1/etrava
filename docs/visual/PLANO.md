@@ -79,7 +79,7 @@ Cada marco termina **executável**, com `gradlew build` passando, capturas novas
 | VT-07 | A | Construções: a pegada declarada na arte bate com a colisão do mapa e a porta da arte cai no tile de porta |
 | VT-08 | A | **Rolagem:** com 80 itens no comércio, 60 fatos no caderno e 12 falas na conversa, cada lista rola pela roda (com o mouse em cima), pela barra e pelo teclado, e o último item fica visível e clicável |
 | VT-09 | A+M | Cada tela capturada em 1280×720, 1366×768, 1600×900, 1920×1080, 2560×1080, 2560×1440, 3840×2160 e 1280×1024, nos três tamanhos de texto: nenhum elemento fora da tela, nenhum texto cortado (checagem automática de limites) e revisão das capturas |
-| VT-10 | A+M | Desempenho: vila à noite, festa, 15 NPCs, decoração e vento ligados: ≥ 60 FPS no hardware de referência (aqui: não cair mais de 40 % em relação ao M8); memória de textura ≤ 512 MB; ZIP ≤ 150 MB; jogo abre em ≤ 3 s |
+| VT-10 | A+M | Desempenho: vila à noite, festa, 15 NPCs, decoração e vento ligados: ≥ 60 FPS no hardware de referência (aqui: não cair mais de 40 % em relação ao M8); jogo abre em ≤ 3 s. Memória de textura e tamanho do ZIP **sem teto** (D-107): só medidos e relatados |
 | VT-11 | A | AT-16 continua passando: tirar 10 assets novos ao acaso → placeholders e aviso no log |
 | VT-12 | A | Regressão: todos os testes do MVP passam; saves da 0.1.0 carregam |
 | VT-13 | M | **Portão visual V1:** capturas da fatia (antes × depois, dia e noite, zoom perto e longe) e folhas de contato das animações aprovadas pelo diretor |

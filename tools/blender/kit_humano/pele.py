@@ -98,6 +98,22 @@ def _refazer_em_voxels(nome, me, material):
     return ob
 
 
+# saias e abas (casaco, gibão): a barra pegava o peso da coxa inteira e virava um triângulo no
+# passo; aqui o quadril manda e a coxa do lado entra até 40 %, crescendo para baixo
+SAIAS = {"saia", "casaco_aba", "gibao_aba"}
+
+
+def _pesos_saia(c, ob):
+    grupos = {o: ob.vertex_groups.new(name=o) for o in ("pelvis", "thigh_e", "thigh_d")}
+    for v in ob.data.vertices:
+        p = v.co
+        fundo = max(0.0, min(1.0, (c.quadril_h - p.z) / max(1e-6, c.coxa + c.canela)))
+        lado = max(0.0, min(1.0, abs(p.y) / (0.10 * c.k)))
+        w = 0.40 * fundo * lado
+        grupos["thigh_e" if p.y > 0 else "thigh_d"].add([v.index], w, "REPLACE")
+        grupos["pelvis"].add([v.index], 1.0 - w, "REPLACE")
+
+
 def _pesos(c, ob, ossos):
     """Peso por distância ao segmento de cada osso (os dois mais perto, potência 4); a perna de um
     lado nunca puxa vértice do outro lado (a virilha une as duas pernas na malha)."""
@@ -169,7 +185,10 @@ def montar(c):
         for ob in pecas:
             bpy.data.objects.remove(ob, do_unlink=True)
         ob = _refazer_em_voxels("pele_" + grupo, me, material)
-        _pesos(c, ob, GRUPOS.get(grupo, ("pelvis", "lower_spine", "chest")))
+        if grupo in SAIAS:
+            _pesos_saia(c, ob)
+        else:
+            _pesos(c, ob, GRUPOS.get(grupo, ("pelvis", "lower_spine", "chest")))
         mod = ob.modifiers.new("esqueleto", "ARMATURE")
         mod.object = arm
         mod.use_vertex_groups = True

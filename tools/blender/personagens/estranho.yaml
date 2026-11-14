@@ -1,7 +1,6 @@
 # Oren, o homem de fora (camada A). Retrato: casaco escuro gasto, barba por fazer grisalha, carta
 # com lacre vermelho na mão.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: estranho
 manifesto: {id: personagem.estranho, papel: comum}
 ficha:

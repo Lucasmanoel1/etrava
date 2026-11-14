@@ -1,7 +1,6 @@
 # Firmino, o coveiro (camada B). Retrato: cabelo ralo grisalho comprido, cachecol cru enrolado,
 # casaco preto, cabo de pá.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: firmino
 manifesto: {id: personagem.firmino, papel: comum}
 ficha:

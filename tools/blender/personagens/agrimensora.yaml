@@ -1,7 +1,6 @@
 # Sena, agrimensora de Caldris (camada A). Retrato: cabelo escuro preso, capa curta vermelha, corda
 # de nós enrolada no ombro, lanterna, bastão de medir.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: agrimensora
 manifesto: {id: personagem.agrimensora, papel: comum}
 ficha:

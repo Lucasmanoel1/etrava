@@ -97,7 +97,9 @@ public final class Assets implements Disposable {
         try {
             java.nio.IntBuffer b = com.badlogic.gdx.utils.BufferUtils.newIntBuffer(16);
             com.badlogic.gdx.Gdx.gl.glGetIntegerv(com.badlogic.gdx.graphics.GL20.GL_MAX_TEXTURE_SIZE, b);
-            return b.get(0) >= 4096 ? 4096 : 2048;
+            // D-107: página grande = menos trocas de textura = menos chamadas de desenho; memória não tem teto
+            int max = b.get(0);
+            return max >= 8192 ? 8192 : max >= 4096 ? 4096 : 2048;
         } catch (RuntimeException | UnsatisfiedLinkError e) {
             return 2048;   // sem contexto GL (testes)
         }
@@ -345,6 +347,11 @@ public final class Assets implements Disposable {
             }
             return new Tiles(list.toArray(new TextureRegion[0]), priority, px, world);
         });
+    }
+
+    /** O manifesto tem esta entrada (sem carregar nada)? */
+    public boolean temEntrada(String id) {
+        return id != null && manifest.get(id) != null;
     }
 
     public Sheet sheet(String id) {

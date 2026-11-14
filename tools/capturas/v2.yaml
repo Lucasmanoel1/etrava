@@ -1,0 +1,21 @@
+# Capturas do V2 — gente (gradlew captures -Proteiro=v2). A vila se mexe: quem trabalha trabalha,
+# quem come senta, quem conversa gesticula (docs/visual/V2.md, tarefa 9).
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 90}
+
+cenas:
+  # praça de manhã: Celi no poço/pomar, o banco, gente passando
+  - {nome: praca_manha, area: vila, cmds: ["tp 31 38", "hora 8", "zoom 1"], medir: true}
+  - {nome: praca_manha_perto, area: vila, cmds: ["tp 31 37", "hora 8", "zoom 2"], medir: true}
+  # almoço no banco da praça (comer = sentado)
+  - {nome: praca_almoco, area: vila, cmds: ["tp 31 37", "hora 12.3", "zoom 2"], medir: true}
+  # a forja: Doran martelando
+  - {nome: forja, area: vila, cmds: ["tp 17 31", "hora 10", "zoom 2"], medir: true}
+  # o campo de Bento: trabalho no chão
+  - {nome: campo, area: vila, cmds: ["tp 42 51", "hora 9", "zoom 2"], medir: true}
+  # a taverna à noite: sentados, jogando, servindo
+  - {nome: taverna_noite, area: taverna, cmds: ["tp 7 6", "hora 20", "zoom 2"], medir: true}
+  - {nome: taverna_noite_longe, area: taverna, cmds: ["tp 6 5", "hora 20", "zoom 1"], medir: true}
+  # o Posto da Encruzilhada: Ibbo na banca, Tobias carregando, Vessa de guarda
+  - {nome: posto, area: estrada, cmds: ["tp 62 23", "hora 10", "zoom 2"], medir: true}
+  # o vilarejo inteiro de manhã, de longe
+  - {nome: vila_manha_longe, area: vila, cmds: ["tp 30 33", "hora 8", "zoom 0"]}

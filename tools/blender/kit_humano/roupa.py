@@ -119,6 +119,7 @@ def colete(c, r, mat):
     T = c.tronco
     # aberto na frente: a camisa aparece numa faixa de ~3 px
     _apagar(ob, lambda co: co.x > 0.05 * c.k and abs(co.y) < 0.045 * c.k and co.z > T * 0.15)
+    _espessura(ob, 0.03)      # aberto vira casca; sem espessura a pele em voxels o apaga
     _grupo(c, "colete", TRONCO).append(ob)
 
 
@@ -132,6 +133,17 @@ def gibao(c, r, mat):
         for lado, s in (("e", 1), ("d", -1)):
             _bola("ombreira_" + lado, 0.068 * c.k, mat, c.j["ombro_" + lado], centro=(0, 0.006 * s, -0.004),
                   escala=(1.05, 1.0, 0.75), sub=1, segs=10)
+    if r.get("remendos"):
+        # remendos de outra cor (saqueador): retalhos chatos sobre o gibão, um no peito e dois nas costas,
+        # de ~3 px, para a roupa ler como "de várias origens"; presos ao tronco, rígidos
+        rem = _mat("remendo", r["remendos"])
+        T = c.tronco
+        for nome, zf, lado, sy in (("remendo_peito", 0.62, 1, 0.07), ("remendo_costas", 0.45, -1, -0.06),
+                                   ("remendo_costas2", 0.80, -1, 0.08)):
+            z = zf * T
+            s = min(c.secoes_tronco, key=lambda s: abs(s[0] - z))
+            x = s[3] + lado * (s[2] + 0.016 * k)
+            _caixa(nome, (0.03 * k, 0.10 * k, 0.09 * k), (x, sy * k, z), rem, c.j["tronco"], sub=0)
 
 
 def casaco(c, r, mat):
@@ -155,6 +167,8 @@ def capa(c, r, mat):
     topo = c.tronco * 0.48 - 0.02 * k
     ob = _cone_aberto("capa", topo, topo - comp, c.ombros + 0.04 * k, c.ombros + 0.10 * k + 0.08 * comp, mat,
                       c.j["peito"], prof=0.75, segs=16, arco=(70, 290), dx=-0.05 * k, esp=0.025)
+    # na pele contínua: a barra segue o quadril e as coxas (rígida, virava tábua ao curvar)
+    _grupo(c, "capa", ("chest", "lower_spine", "pelvis", "thigh_e", "thigh_d")).append(ob)
     # gola da capa (fecha na frente do pescoço)
     _tubo("capa_gola", 0.05 * k, 0.085 * k, 0.11 * k, mat, c.j["pescoco"], z0=0.0, sub=1)
     return ob
@@ -205,14 +219,16 @@ def chapeu_aba(c, r, mat):
 
 def chapeu_alto(c, r, mat):
     hc, k = c.cabeca, c.k
-    _tubo("chapeu_aba", 0.022 * k, hc * 0.64, hc * 0.64, mat, c.j["cabeca"], z0=hc * 0.80, sub=1, segmentos=16)
-    _tubo("chapeu_copa", 0.20 * k, hc * 0.43, hc * 0.46, mat, c.j["cabeca"], z0=hc * 0.80 + 0.20 * k, sub=1,
-          segmentos=16)
+    _tubo("chapeu_aba", 0.030 * k, hc * 0.64, hc * 0.64, mat, c.j["cabeca"], z0=hc * 0.80, sub=1, segmentos=16)
+    # copa de cartola: sem subdivisão (o subsurf arredondava o cilindro num chapéu-coco) e mais alta,
+    # para a silhueta da cidade ler de longe
+    _tubo("chapeu_copa", 0.26 * k, hc * 0.44, hc * 0.42, mat, c.j["cabeca"], z0=hc * 0.80 + 0.26 * k, sub=0,
+          segmentos=20)
 
 
 def bone(c, r, mat):
     hc = c.cabeca
-    _bola("bone", hc / 2 * 1.10, mat, c.j["cabeca"], centro=(0.012, 0, hc * 0.80), escala=(1.12, 0.98, 0.42), sub=1)
+    _bola("bone", hc / 2 * 1.02, mat, c.j["cabeca"], centro=(0.010, 0, hc * 0.80), escala=(1.04, 0.95, 0.40), sub=1)
     _caixa("bone_pala", (hc * 0.26, hc * 0.62, 0.025 * c.k), (hc * 0.52, 0, hc * 0.74), mat, c.j["cabeca"], sub=1)
 
 
@@ -330,7 +346,9 @@ def _mat(nome, rampa, **kw):
 def _haste(nome, mao, baixo, alto, raio, mat):
     """Haste vertical na mão (cajado, lança, cabo): de `baixo` (negativo, para o chão) a `alto`,
     medidos ao longo do antebraço em repouso (o braço pende, então é a vertical)."""
-    return _tubo(nome, alto - baixo, raio, raio, mat, mao, z0=alto, sub=1, segmentos=8)
+    # sem subdivisão: num cilindro longo e tampado, sem anéis no meio, o subsurf afinava as duas
+    # pontas até sumir (a lança da Vessa perdia a metade de cima e a ponta flutuava)
+    return _tubo(nome, alto - baixo, raio, raio, mat, mao, z0=alto, sub=0, segmentos=10)
 
 
 def ferramenta(c, mao_lado, qual):
@@ -338,37 +356,37 @@ def ferramenta(c, mao_lado, qual):
     k = c.k
     # da mão até 4 cm acima do chão, com o braço pendente (o quadril desce até 4,5 cm no andar)
     chao = -(c.quadril_h + c.tronco - c.braco - c.antebraco - 0.04 * k)
-    madeira = _mat("ferr_madeira", "madeira")
+    madeira = _mat("ferr_madeira", "madeira_clara")   # contrasta com calça e túnica marrons
     ferro = _mat("ferr_ferro", "ferro", k=0.05)
     if qual == "martelo_forja":
-        _tubo("martelo_cabo", 0.36 * k, 0.022 * k, 0.022 * k, madeira, j, z0=0.04 * k, sub=1, segmentos=8)
+        _tubo("martelo_cabo", 0.36 * k, 0.030 * k, 0.030 * k, madeira, j, z0=0.04 * k, sub=0, segmentos=10)
         _caixa("martelo_cabeca", (0.15 * k, 0.07 * k, 0.07 * k), (0.02 * k, 0, -0.32 * k), ferro, j, sub=0)
     elif qual in ("enxada", "pa"):
-        _haste(qual + "_cabo", j, chao + 0.10 * k, 0.55 * k, 0.022 * k, madeira)
+        _haste(qual + "_cabo", j, chao + 0.10 * k, 0.55 * k, 0.030 * k, madeira)
         if qual == "enxada":
             _caixa("enxada_lamina", (0.10 * k, 0.20 * k, 0.03 * k), (0.06 * k, 0, chao + 0.08 * k), ferro, j, sub=0)
         else:
             _caixa("pa_lamina", (0.04 * k, 0.20 * k, 0.26 * k), (0, 0, chao + 0.02 * k), ferro, j, sub=0)
     elif qual == "foice":
-        _tubo("foice_cabo", 0.22 * k, 0.022 * k, 0.022 * k, madeira, j, z0=0.03 * k, sub=1, segmentos=8)
+        _tubo("foice_cabo", 0.22 * k, 0.030 * k, 0.030 * k, madeira, j, z0=0.03 * k, sub=0, segmentos=10)
         _bola("foice_lamina", 0.12 * k, ferro, j, centro=(0.09 * k, 0, -0.24 * k), escala=(1.0, 0.18, 0.35), sub=1)
     elif qual == "bastao_medir":
-        _haste("bastao", j, chao, 1.05 * k, 0.024 * k, madeira)
+        _haste("bastao", j, chao, 1.05 * k, 0.032 * k, madeira)
         for i, z in enumerate((0.25, 0.55, 0.85)):
             _tubo("bastao_marca_%d" % i, 0.035 * k, 0.03 * k, 0.03 * k, _mat("ferr_marca", "tecido_vermelho"), j,
                   z0=z * k, sub=0, segmentos=8)
     elif qual == "bengala":
-        _haste("bengala", j, chao, 0.08 * k, 0.022 * k, madeira)
+        _haste("bengala", j, chao, 0.08 * k, 0.030 * k, madeira)
         _bola("bengala_cabo", 0.035 * k, madeira, j, centro=(0.03 * k, 0, 0.09 * k), escala=(1.6, 0.7, 0.7), sub=1)
     elif qual == "lanca":
-        _haste("lanca", j, chao, 1.25 * k, 0.022 * k, madeira)
+        _haste("lanca", j, chao, 1.25 * k, 0.030 * k, madeira)
         _bola("lanca_ponta", 0.05 * k, ferro, j, centro=(0, 0, 1.33 * k), escala=(0.45, 0.25, 1.8), sub=1, segs=8)
     elif qual == "cajado_trouxa":
-        _haste("cajado", j, chao, 0.95 * k, 0.024 * k, madeira)
+        _haste("cajado", j, chao, 0.95 * k, 0.032 * k, madeira)
         _bola("trouxa", 0.13 * k, _mat("ferr_trouxa", "linho", luz_min=0.3), j, centro=(-0.06 * k, 0, 0.98 * k),
               escala=(1.0, 0.9, 0.85), sub=1)
     elif qual == "machadinha":
-        _tubo("machado_cabo", 0.40 * k, 0.022 * k, 0.022 * k, madeira, j, z0=0.05 * k, sub=1, segmentos=8)
+        _tubo("machado_cabo", 0.40 * k, 0.030 * k, 0.030 * k, madeira, j, z0=0.05 * k, sub=0, segmentos=10)
         _caixa("machado_lamina", (0.12 * k, 0.03 * k, 0.10 * k), (0.06 * k, 0, -0.30 * k), ferro, j, sub=0)
     elif qual == "livro":
         _caixa("livro", (0.17 * k, 0.13 * k, 0.04 * k), (0.06 * k, 0, -0.06 * k), _mat("ferr_livro", "couro"), j, sub=0)

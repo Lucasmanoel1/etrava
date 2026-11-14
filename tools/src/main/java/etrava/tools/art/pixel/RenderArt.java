@@ -306,8 +306,18 @@ public final class RenderArt {
     /** Entradas do manifesto geradas nesta rodada, por id de asset. */
     final Map<String, Map<String, Object>> manifesto = new LinkedHashMap<>();
 
+    /**
+     * Pixeliza os objetos em paralelo, {@code pixel.threads} de cada vez (local.properties; padrão
+     * 3). O pixelizador só lê (paleta e pincéis). Cada objeto monta as próprias entradas do
+     * manifesto num mapa seu, e os mapas entram no manifesto na ordem da lista: a saída não depende
+     * de quem terminou primeiro (VT-16). O limite vem da memória: uma árvore de 192 quadros passa de
+     * 2 GB de heap.
+     */
     void pixelizarTudo(List<Objeto> objetos) throws IOException, InterruptedException {
         Pixelizador px = new Pixelizador(paleta, Pinceis.carregar(raiz.resolve("tools/art/pinceis/folhas.pxo")));
+        int n = local("pixel.threads") != null ? Integer.parseInt(local("pixel.threads").trim()) : 3;
+        ExecutorService pool = Executors.newFixedThreadPool(Math.max(1, n));
+        List<Future<Map<String, Map<String, Object>>>> fut = new ArrayList<>();
         for (Objeto o : objetos) {
             Path pasta = renderDir.resolve(o.id());
             Path rj = pasta.resolve("render.json");
@@ -315,7 +325,19 @@ public final class RenderArt {
                 System.out.println("  " + o.id() + ": sem render (rode renderArt)");
                 continue;
             }
-            Montagem.montar(this, px, o, JSON.readTree(rj.toFile()), pasta);
+            fut.add(pool.submit(() -> {
+                Map<String, Map<String, Object>> m = new LinkedHashMap<>();
+                Montagem.montar(this, px, o, JSON.readTree(rj.toFile()), pasta, m);
+                return m;
+            }));
+        }
+        pool.shutdown();
+        try {
+            for (Future<Map<String, Map<String, Object>>> f : fut) manifesto.putAll(f.get());
+        } catch (java.util.concurrent.ExecutionException e) {
+            pool.shutdownNow();
+            if (e.getCause() instanceof IOException io) throw io;
+            throw new IllegalStateException(e.getCause());
         }
     }
 

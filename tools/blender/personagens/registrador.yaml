@@ -1,7 +1,6 @@
 # Aurel Dask, registrador de Caldris (camada A). Retrato: rosto magro e pálido, óculos, cabelo
 # preto penteado, sobretudo escuro abotoado até o pescoço, pasta.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: registrador
 manifesto: {id: personagem.registrador, papel: comum}
 ficha:

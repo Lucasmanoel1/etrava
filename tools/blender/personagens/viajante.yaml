@@ -1,7 +1,6 @@
 # Viajante da estrada (camada C). Retrato: capuz fundo cobrindo o rosto, barba, capa de viagem
 # marrom com fivela, cajado com trouxa.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: viajante
 manifesto: {id: personagem.viajante, papel: comum}
 ficha:

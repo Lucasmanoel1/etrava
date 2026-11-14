@@ -57,15 +57,56 @@
   scale: 2
   source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
   license: "proprio"
-- id: "personagem.aprendiz"
+- id: "personagem.agrimensora"
   type: "spritesheet"
-  file: "arte/personagens/aprendiz.png"
-  meta: "arte/personagens/aprendiz.json"
+  file: "arte/personagens/agrimensora.png"
+  meta: "arte/personagens/agrimensora.json"
   frame:
-  - 42
-  - 63
+  - 64
+  - 76
   anchor:
-  - 21.0
+  - 32.0
+  - 68.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.5
+      stride: 1.1718
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/agrimensora.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aldea"
+  type: "spritesheet"
+  file: "arte/personagens/aldea.png"
+  meta: "arte/personagens/aldea.json"
+  frame:
+  - 64
+  - 64
+  anchor:
+  - 32.0
   - 59.0
   directions: 8
   animations:
@@ -76,27 +117,345 @@
     andar:
       start: 8
       frames: 8
+      fps: 9.0
+      stride: 0.8941
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aldea.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.anselmo"
+  type: "spritesheet"
+  file: "arte/personagens/anselmo.png"
+  meta: "arte/personagens/anselmo.json"
+  frame:
+  - 64
+  - 70
+  anchor:
+  - 32.0
+  - 63.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 6.5
+      stride: 0.6671
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    conversar:
+      start: 23
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/anselmo.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz.png"
+  meta: "arte/personagens/aprendiz.json"
+  frame:
+  - 64
+  - 70
+  anchor:
+  - 32.0
+  - 62.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
       fps: 10.0
-      stride: 1.15
+      stride: 1.1365
     correr:
       start: 16
       frames: 8
       fps: 12.5
-      stride: 1.9
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
   role: "jogador"
   scale: 2
   source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_avental"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_avental.png"
+  meta: "arte/personagens/aprendiz_avental.json"
+  frame:
+  - 64
+  - 69
+  anchor:
+  - 32.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+  role: "jogador"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_avental.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_capuz"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_capuz.png"
+  meta: "arte/personagens/aprendiz_capuz.json"
+  frame:
+  - 64
+  - 70
+  anchor:
+  - 32.0
+  - 62.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_chapeu"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_chapeu.png"
+  meta: "arte/personagens/aprendiz_chapeu.json"
+  frame:
+  - 64
+  - 70
+  anchor:
+  - 32.0
+  - 62.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_gibao"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_gibao.png"
+  meta: "arte/personagens/aprendiz_gibao.json"
+  frame:
+  - 64
+  - 69
+  anchor:
+  - 32.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+  role: "jogador"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_gibao.yaml) + pixelizador"
   license: "proprio"
 - id: "personagem.avel"
   type: "spritesheet"
   file: "arte/personagens/avel.png"
   meta: "arte/personagens/avel.json"
   frame:
-  - 42
   - 64
+  - 69
   anchor:
-  - 21.0
-  - 60.0
+  - 32.0
+  - 61.0
   directions: 8
   animations:
     parado:
@@ -107,15 +466,858 @@
       start: 8
       frames: 8
       fps: 8.0
-      stride: 1.05
+      stride: 1.0624
     correr:
       start: 16
       frames: 8
       fps: 11.5
-      stride: 1.8
+      stride: 1.8212
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 39
+      frames: 6
+      fps: 5.0
+    dormir:
+      start: 45
+      frames: 4
+      fps: 2.0
   role: "comum"
   scale: 2
   source: "Blender (tools/blender/personagens/avel.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.bento"
+  type: "spritesheet"
+  file: "arte/personagens/bento.png"
+  meta: "arte/personagens/bento.json"
+  frame:
+  - 64
+  - 79
+  anchor:
+  - 32.0
+  - 71.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 1.0624
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/bento.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.ciro"
+  type: "spritesheet"
+  file: "arte/personagens/ciro.png"
+  meta: "arte/personagens/ciro.json"
+  frame:
+  - 50
+  - 64
+  anchor:
+  - 25.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.0
+      stride: 1.0
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 23
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/ciro.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.comerciante"
+  type: "spritesheet"
+  file: "arte/personagens/comerciante.png"
+  meta: "arte/personagens/comerciante.json"
+  frame:
+  - 50
+  - 62
+  anchor:
+  - 25.0
+  - 59.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 0.95
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 23
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/comerciante.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.curandeira"
+  type: "spritesheet"
+  file: "arte/personagens/curandeira.png"
+  meta: "arte/personagens/curandeira.json"
+  frame:
+  - 64
+  - 63
+  anchor:
+  - 32.0
+  - 55.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 0.79
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 23
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+    dormir:
+      start: 37
+      frames: 4
+      fps: 2.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.estranho"
+  type: "spritesheet"
+  file: "arte/personagens/estranho.png"
+  meta: "arte/personagens/estranho.json"
+  frame:
+  - 50
+  - 64
+  anchor:
+  - 25.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 1.1518
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    conversar:
+      start: 23
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/estranho.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.estudioso"
+  type: "spritesheet"
+  file: "arte/personagens/estudioso.png"
+  meta: "arte/personagens/estudioso.json"
+  frame:
+  - 64
+  - 69
+  anchor:
+  - 32.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 7.5
+      stride: 0.9724
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 23
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+    dormir:
+      start: 37
+      frames: 4
+      fps: 2.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/estudioso.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.ferreiro"
+  type: "spritesheet"
+  file: "arte/personagens/ferreiro.png"
+  meta: "arte/personagens/ferreiro.json"
+  frame:
+  - 64
+  - 75
+  anchor:
+  - 32.0
+  - 72.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 7.5
+      stride: 1.1118
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_martelo:
+      start: 23
+      frames: 8
+      fps: 8.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/ferreiro.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.firmino"
+  type: "spritesheet"
+  file: "arte/personagens/firmino.png"
+  meta: "arte/personagens/firmino.json"
+  frame:
+  - 64
+  - 80
+  anchor:
+  - 32.0
+  - 72.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 7.0
+      stride: 1.0588
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/firmino.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.gil"
+  type: "spritesheet"
+  file: "arte/personagens/gil.png"
+  meta: "arte/personagens/gil.json"
+  frame:
+  - 64
+  - 64
+  anchor:
+  - 32.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.5
+      stride: 1.0059
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/gil.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.lauro"
+  type: "spritesheet"
+  file: "arte/personagens/lauro.png"
+  meta: "arte/personagens/lauro.json"
+  frame:
+  - 58
+  - 63
+  anchor:
+  - 29.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 0.8894
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/lauro.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.lina"
+  type: "spritesheet"
+  file: "arte/personagens/lina.png"
+  meta: "arte/personagens/lina.json"
+  frame:
+  - 48
+  - 61
+  anchor:
+  - 24.0
+  - 56.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 0.9882
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 23
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/lina.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.moleiro"
+  type: "spritesheet"
+  file: "arte/personagens/moleiro.png"
+  meta: "arte/personagens/moleiro.json"
+  frame:
+  - 64
+  - 70
+  anchor:
+  - 32.0
+  - 62.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 7.5
+      stride: 0.9724
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+    dormir:
+      start: 37
+      frames: 4
+      fps: 2.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/moleiro.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.nalia"
+  type: "spritesheet"
+  file: "arte/personagens/nalia.png"
+  meta: "arte/personagens/nalia.json"
+  frame:
+  - 64
+  - 66
+  anchor:
+  - 32.0
+  - 58.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 0.8365
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+    dormir:
+      start: 37
+      frames: 4
+      fps: 2.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/nalia.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.pipo"
+  type: "spritesheet"
+  file: "arte/personagens/pipo.png"
+  meta: "arte/personagens/pipo.json"
+  frame:
+  - 42
+  - 49
+  anchor:
+  - 21.0
+  - 48.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 12.0
+      stride: 0.5024
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.0
+      stride: 1.2918
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 31
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 39
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/pipo.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.registrador"
+  type: "spritesheet"
+  file: "arte/personagens/registrador.png"
+  meta: "arte/personagens/registrador.json"
+  frame:
+  - 64
+  - 71
+  anchor:
+  - 32.0
+  - 68.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 1.0353
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 23
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/registrador.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.saqueador"
+  type: "spritesheet"
+  file: "arte/personagens/saqueador.png"
+  meta: "arte/personagens/saqueador.json"
+  frame:
+  - 55
+  - 66
+  anchor:
+  - 28.0
+  - 61.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.5
+      stride: 1.1771
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.0
+      stride: 1.8424
+  role: "saqueador"
+  scale: 2
+  source: "Blender (tools/blender/personagens/saqueador.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.taberneira"
+  type: "spritesheet"
+  file: "arte/personagens/taberneira.png"
+  meta: "arte/personagens/taberneira.json"
+  frame:
+  - 52
+  - 63
+  anchor:
+  - 26.0
+  - 57.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.0
+      stride: 0.9647
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 23
+      frames: 8
+      fps: 7.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/taberneira.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.tobias"
+  type: "spritesheet"
+  file: "arte/personagens/tobias.png"
+  meta: "arte/personagens/tobias.json"
+  frame:
+  - 64
+  - 72
+  anchor:
+  - 32.0
+  - 66.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 7.0
+      stride: 1.2988
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    trabalhar_chao:
+      start: 23
+      frames: 8
+      fps: 6.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/tobias.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.vessa"
+  type: "spritesheet"
+  file: "arte/personagens/vessa.png"
+  meta: "arte/personagens/vessa.json"
+  frame:
+  - 64
+  - 78
+  anchor:
+  - 32.0
+  - 72.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.0
+      stride: 1.1
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.0
+      stride: 1.8
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    conversar:
+      start: 31
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/vessa.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.viajante"
+  type: "spritesheet"
+  file: "arte/personagens/viajante.png"
+  meta: "arte/personagens/viajante.json"
+  frame:
+  - 64
+  - 76
+  anchor:
+  - 32.0
+  - 70.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 8.0
+      stride: 1.1771
+    sentar:
+      start: 16
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 19
+      frames: 4
+      fps: 3.0
+    conversar:
+      start: 23
+      frames: 6
+      fps: 5.0
+  role: "comum"
+  scale: 2
+  source: "Blender (tools/blender/personagens/viajante.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.arvore"
   type: "sprite"

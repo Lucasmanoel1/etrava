@@ -59,6 +59,12 @@ public final class SceneRenderer implements Disposable {
         public double speed;
         /** O que está fazendo pela agenda ({@code ActorView.activity()}); decide a animação parada (V2). */
         public String activity = "";
+        /** Camada desenhada por cima do corpo, no mesmo quadro (chapéu ou capuz do jogador, V2); null = nenhuma. */
+        public String camada;
+        /** Altura do desenho (m): quem dorme na cama fica sobre o colchão. Posta a cada quadro. */
+        double z;
+        /** Banco ou cama em que está (desenhado por cima dele, não atrás). */
+        Static assento;
     }
 
     /** Acima disto (m/s) o personagem corre, se a folha tiver a animação. */
@@ -287,6 +293,7 @@ public final class SceneRenderer implements Disposable {
         float night = lightingEnabled ? (darkArea ? 1f : interior ? INTERIOR_NIGHT : (float) light.night()) : 0f;
         float[] bounds = camera.visibleBounds();
         escala = camera.pixelScale();
+        for (ActorDraw a : actors) assentar(a, animTime);
         ActorDraw player = actors.isEmpty() ? null : actors.get(0);
 
         // ---- 1. cena
@@ -527,6 +534,7 @@ public final class SceneRenderer implements Disposable {
             int index = statics.size();
             for (int i = 0; i < statics.size(); i++) {
                 Static s = statics.get(i);
+                if (s == a.assento) continue;
                 if (a.x < s.x1() && a.y < s.y1() && s.key() > a.x + a.y - 12) {
                     index = i;
                     break;
@@ -637,6 +645,54 @@ public final class SceneRenderer implements Disposable {
         return animTime - atividadeDesde.getOrDefault(a.id, animTime);
     }
 
+    /** Distância máxima (m) do lugar da agenda até o banco ou a cama em que o NPC se acomoda. */
+    private static final double ALCANCE_ASSENTO = 1.6;
+    private static final double ALTURA_COLCHAO = 0.55;
+
+    /**
+     * Quem está sentado (ou dormindo) perto de um banco (ou cama) é desenhado nele: no ponto do
+     * eixo comprido mais perto, de costas para o assento (deitado ao longo da cama). Só desenho: a
+     * simulação continua com o NPC no lugar da agenda (V2).
+     */
+    private void assentar(ActorDraw a, float animTime) {
+        a.z = 0;
+        a.assento = null;
+        if (a.moving || a.attack >= 0 || a.sprite == null) return;
+        Assets.Sheet sheet = assets.sheet(a.sprite);
+        if (sheet == null || !sheet.has("parado")) return;
+        String anim = animacoes.escolher(a.id, a.activity, animTime, Animacoes.fase(a.id));
+        String alvo = anim.equals("sentado") && sheet.has("sentado") ? "banco"
+                : anim.equals("dormir") && sheet.has("dormir") ? "cama" : null;
+        if (alvo == null) return;
+        Static melhor = null;
+        double md = ALCANCE_ASSENTO;
+        for (Static st : statics) {
+            if (st.def() == null || !alvo.equals(st.def().id())) continue;
+            double cx = Math.max(st.x0(), Math.min(st.x1(), a.x)), cy = Math.max(st.y0(), Math.min(st.y1(), a.y));
+            double d = Math.hypot(a.x - cx, a.y - cy);
+            if (d < md) {
+                md = d;
+                melhor = st;
+            }
+        }
+        if (melhor == null) return;
+        boolean longoEmX = melhor.x1() - melhor.x0() >= melhor.y1() - melhor.y0();
+        double margem = 0.3;
+        if (longoEmX) {
+            double lado = Math.signum(a.y - melhor.y());
+            a.x = Math.max(melhor.x0() + margem, Math.min(melhor.x1() - margem, a.x));
+            a.y = melhor.y();
+            a.facing = alvo.equals("cama") ? 0 : (lado >= 0 ? Math.PI / 2 : -Math.PI / 2);
+        } else {
+            double lado = Math.signum(a.x - melhor.x());
+            a.y = Math.max(melhor.y0() + margem, Math.min(melhor.y1() - margem, a.y));
+            a.x = melhor.x();
+            a.facing = alvo.equals("cama") ? Math.PI / 2 : (lado >= 0 ? 0 : Math.PI);
+        }
+        if (alvo.equals("cama")) a.z = ALTURA_COLCHAO;
+        a.assento = melhor;
+    }
+
     private void drawActor(ActorDraw a, float animTime) {
         Assets.Sheet sheet = assets.sheet(a.sprite);
         int dirs = sheet.directions();
@@ -681,9 +737,19 @@ public final class SceneRenderer implements Disposable {
         }
         int px = sheet.px();
         float x = snap(sx(a.x, a.y) - sheet.anchorX() * px);
-        float y = snap(sy(a.x, a.y, 0) - (sheet.frameH() - sheet.anchorY()) * px);
+        float y = snap(sy(a.x, a.y, a.z) - (sheet.frameH() - sheet.anchorY()) * px);
         batch.draw(sheet.texture(), x, y, sheet.frameW() * px, sheet.frameH() * px,
                 frame * sheet.frameW(), dir * sheet.frameH(), sheet.frameW(), sheet.frameH(), false, false);
+        if (a.camada != null) { // mesma grade de quadros, a âncora da própria camada (SPEC-visual §6.4)
+            Assets.Sheet c = assets.sheet(a.camada);
+            if (c.directions() == sheet.directions() && c.has("parado")) {
+                int cpx = c.px();
+                float cx = snap(sx(a.x, a.y) - c.anchorX() * cpx);
+                float cy = snap(sy(a.x, a.y, a.z) - (c.frameH() - c.anchorY()) * cpx);
+                batch.draw(c.texture(), cx, cy, c.frameW() * cpx, c.frameH() * cpx,
+                        frame * c.frameW(), dir * c.frameH(), c.frameW(), c.frameH(), false, false);
+            }
+        }
     }
 
     @Override

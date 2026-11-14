@@ -1,7 +1,6 @@
 # Gil, lavrador do campo de leste (camada B). Retrato: cabelo escuro curto, bigode e barba rala,
 # lenço no pescoço, camisa ferrugem, olhar cabisbaixo.
 tipo: personagem
-rascunho: true   # V2: sai do rascunho quando o kit tiver as peças desta ficha
 id: gil
 manifesto: {id: personagem.gil, papel: comum}
 ficha:
