@@ -65,6 +65,8 @@ public final class SceneRenderer implements Disposable {
         double z;
         /** Banco ou cama em que está (desenhado por cima dele, não atrás). */
         Static assento;
+        /** A animação de quem está parado, já conferida com o lugar (assentar); null = parado. */
+        String animParada;
     }
 
     /** Acima disto (m/s) o personagem corre, se a folha tiver a animação. */
@@ -114,6 +116,7 @@ public final class SceneRenderer implements Disposable {
     private final Texture shadowTexture;
     private ShaderProgram postShader, silhouetteShader, paletaShader;
     private final Animacoes animacoes;
+    private final AreaDef area;
     /** Shader em uso no lote dentro de drawSorted (troca por sprite indexado, D-103). */
     private ShaderProgram shaderAtual;
     private float reduzAtual = -1f, silhuetaAtual = -1f;
@@ -163,6 +166,7 @@ public final class SceneRenderer implements Disposable {
     public SceneRenderer(AreaDef area, Map<String, PropDef> props, Assets assets, DayNight dayNight, boolean outdoor) {
         this.assets = assets;
         this.animacoes = Animacoes.carregar(assets.root());
+        this.area = area;
         this.dayNight = dayNight;
 
         int margin = outdoor ? MARGIN : 0;
@@ -645,29 +649,34 @@ public final class SceneRenderer implements Disposable {
         return animTime - atividadeDesde.getOrDefault(a.id, animTime);
     }
 
-    /** Distância máxima (m) do lugar da agenda até o banco ou a cama em que o NPC se acomoda. */
-    private static final double ALCANCE_ASSENTO = 1.6;
     private static final double ALTURA_COLCHAO = 0.55;
 
     /**
-     * Quem está sentado (ou dormindo) perto de um banco (ou cama) é desenhado nele: no ponto do
-     * eixo comprido mais perto, de costas para o assento (deitado ao longo da cama). Só desenho: a
-     * simulação continua com o NPC no lugar da agenda (V2).
+     * Decide a animação de quem está parado: a da atividade da agenda (animacoes.yaml), mas só se
+     * o lugar dela estiver ali (V2). Martelo pede bigorna ou forja; bancada pede bancada, balcão ou
+     * mesa; trabalho no chão pede plantio, feno, sacos...; sentado pede banco; dormir pede cama.
+     * Longe do lugar, fica em {@code parado}. Perto, vira-se para o objeto, e quem senta ou deita é
+     * desenhado nele: no ponto do eixo comprido mais perto, de costas para o assento (deitado ao
+     * longo da cama). Só desenho: a simulação continua com o NPC no lugar da agenda.
      */
     private void assentar(ActorDraw a, float animTime) {
         a.z = 0;
         a.assento = null;
+        a.animParada = null;
         if (a.moving || a.attack >= 0 || a.sprite == null) return;
         Assets.Sheet sheet = assets.sheet(a.sprite);
         if (sheet == null || !sheet.has("parado")) return;
         String anim = animacoes.escolher(a.id, a.activity, animTime, Animacoes.fase(a.id));
-        String alvo = anim.equals("sentado") && sheet.has("sentado") ? "banco"
-                : anim.equals("dormir") && sheet.has("dormir") ? "cama" : null;
-        if (alvo == null) return;
+        if (!sheet.has(anim)) return;
+        Animacoes.Lugar lugar = animacoes.lugar(anim);
+        if (lugar == null) {
+            a.animParada = anim;
+            return;
+        }
         Static melhor = null;
-        double md = ALCANCE_ASSENTO;
+        double md = lugar.alcance();
         for (Static st : statics) {
-            if (st.def() == null || !alvo.equals(st.def().id())) continue;
+            if (st.def() == null || !lugar.props().contains(st.def().id())) continue;
             double cx = Math.max(st.x0(), Math.min(st.x1(), a.x)), cy = Math.max(st.y0(), Math.min(st.y1(), a.y));
             double d = Math.hypot(a.x - cx, a.y - cy);
             if (d < md) {
@@ -675,21 +684,31 @@ public final class SceneRenderer implements Disposable {
                 melhor = st;
             }
         }
-        if (melhor == null) return;
+        boolean noTerreno = !lugar.terrenos().isEmpty()
+                && lugar.terrenos().contains(area.terrainAt((int) Math.floor(a.x), (int) Math.floor(a.y)));
+        if (melhor == null && !noTerreno) return;           // fora do lugar: parado
+        a.animParada = anim;
+        if (melhor == null) return;                         // no plantio: trabalha onde está
+        boolean acomoda = anim.equals("sentado") || anim.equals("dormir");
+        if (!acomoda) {                                     // de frente para a bigorna, a bancada, o feno
+            a.facing = Math.atan2(melhor.y() - a.y, melhor.x() - a.x);
+            return;
+        }
+        boolean cama = anim.equals("dormir");
         boolean longoEmX = melhor.x1() - melhor.x0() >= melhor.y1() - melhor.y0();
         double margem = 0.3;
         if (longoEmX) {
             double lado = Math.signum(a.y - melhor.y());
             a.x = Math.max(melhor.x0() + margem, Math.min(melhor.x1() - margem, a.x));
             a.y = melhor.y();
-            a.facing = alvo.equals("cama") ? 0 : (lado >= 0 ? Math.PI / 2 : -Math.PI / 2);
+            a.facing = cama ? 0 : (lado >= 0 ? Math.PI / 2 : -Math.PI / 2);
         } else {
             double lado = Math.signum(a.x - melhor.x());
             a.y = Math.max(melhor.y0() + margem, Math.min(melhor.y1() - margem, a.y));
             a.x = melhor.x();
-            a.facing = alvo.equals("cama") ? Math.PI / 2 : (lado >= 0 ? 0 : Math.PI);
+            a.facing = cama ? Math.PI / 2 : (lado >= 0 ? 0 : Math.PI);
         }
-        if (alvo.equals("cama")) a.z = ALTURA_COLCHAO;
+        if (cama) a.z = ALTURA_COLCHAO;
         a.assento = melhor;
     }
 
@@ -709,8 +728,7 @@ public final class SceneRenderer implements Disposable {
                 desde(a, "", animTime);
             } else {
                 // parado: a animação sai da atividade da agenda (V2, assets/config/animacoes.yaml)
-                name = animacoes.escolher(a.id, a.activity, animTime, fase);
-                if (!sheet.has(name)) name = "parado";
+                name = a.animParada != null && sheet.has(a.animParada) ? a.animParada : "parado";
                 tempoNela = desde(a, name, animTime);
                 if (name.equals("sentado") && sheet.has("sentar")) {
                     var s = sheet.anim("sentar");

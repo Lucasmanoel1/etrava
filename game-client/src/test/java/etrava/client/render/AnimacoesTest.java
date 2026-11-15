@@ -61,7 +61,7 @@ class AnimacoesTest {
         Path raiz = Path.of("..").toAbsolutePath().normalize();
         JsonNode cfg = new ObjectMapper(new YAMLFactory()).readTree(raiz.resolve("assets/config/animacoes.yaml").toFile());
         Set<String> paradas = Set.of("olhar", "vigiar", "esperar", "andar", "viajar", "em_casa", "emburrar",
-                "esconder", "visitar", "examinar", "buscar_agua", "brincar");
+                "esconder", "visitar", "examinar", "buscar_agua", "brincar", "varrer");
         Set<String> faltam = new HashSet<>();
         ObjectMapper y = new ObjectMapper(new YAMLFactory());
         try (Stream<Path> s = Files.list(raiz.resolve("content/npcs"))) {
@@ -73,5 +73,18 @@ class AnimacoesTest {
             }
         }
         assertTrue(faltam.isEmpty(), "atividades sem animação: " + faltam);
+    }
+
+    /** Trabalho, assento e cama só no lugar certo; parado e conversar valem em qualquer lugar. */
+    @Test
+    void lugaresDasAnimacoes() throws Exception {
+        Animacoes a = Animacoes.carregar(Path.of("..").toAbsolutePath().normalize().resolve("assets"));
+        assertTrue(a.lugar("trabalhar_martelo").props().contains("bigorna"));
+        assertTrue(a.lugar("trabalhar_chao").terrenos().contains("plantio"));
+        assertTrue(a.lugar("sentado").props().contains("banco"));
+        assertTrue(a.lugar("dormir").props().contains("cama"));
+        assertTrue(a.lugar("parado") == null && a.lugar("conversar") == null);
+        Animacoes b = Animacoes.de("lugares: {trabalhar_bancada: {props: [bancada]}}");
+        assertTrue(b.lugar("trabalhar_bancada").alcance() == 1.6, "alcance padrão");
     }
 }

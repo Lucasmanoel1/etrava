@@ -807,3 +807,20 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - cada Pixelorama escreve no próprio arquivo (`build/acabamento/<nome>.png`).
 - **Resultado:** os 36 objetos, árvores incluídas, em 14 min.
 - **Por que não 12 de cada vez:** uma árvore de 192 quadros passa de 2 GB de heap, e a máquina tem 16 GB. Com 12 de cada vez faltaria memória, como já aconteceu com 6 Blender (D-106).
+
+## D-111 — Animação de trabalho, assento e cama só no lugar certo
+- **Data:** 2026-11-15
+- **Pedido do diretor:** havia NPC fazendo a animação de trabalho no meio da praça e dentro da taverna. Sugestão dele: só ativar quando o NPC estiver no lugar exato do trabalho; fora disso, andar ou parado.
+- **Causa:** a animação saía só da atividade da agenda (`trabalhar`, `servir`, `varrer`...), sem olhar onde o NPC estava. Sentado e dormir procuravam banco e cama, mas, sem achar, sentavam no ar.
+- **Decisão:**
+  - `assets/config/animacoes.yaml` ganha `lugares`: cada animação que depende de um lugar diz de que props (até `alcance` m) ou de que terreno precisa:
+    - martelo: bigorna ou forja;
+    - bancada: bancada, balcão, banca ou mesa;
+    - trabalho no chão: plantio, feno, sacos, mó, ervas, árvores de fruto...;
+    - sentado: banco;
+    - dormir: cama;
+  - sem o lugar, o NPC fica em `parado`;
+  - no lugar, ele se vira para o objeto;
+  - parado e conversar valem em qualquer lugar;
+  - `varrer` deixou de usar a animação de cavar e fica parado até ter animação própria.
+- **Alternativa descartada:** mudar as agendas na simulação para o lugar exato. Mexeria no `core-sim` por causa de arte, o que a Fase V proíbe, e não resolveria quem chega ao lugar por outro caminho.

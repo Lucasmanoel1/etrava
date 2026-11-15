@@ -5,6 +5,21 @@
 # `sentado` entra com `sentar` uma vez antes, se a folha tiver.
 alternar: 7
 
+# Onde cada animação pode acontecer (V2): perto (até `alcance` m) de um destes props, ou sobre um
+# destes terrenos. Sem o lugar, o NPC fica em `parado`: ninguém trabalha no meio da praça, senta no
+# ar ou dorme no chão. Perto, ele se vira para o objeto; no banco e na cama, é desenhado nele.
+# Animação sem entrada aqui (parado, conversar) vale em qualquer lugar.
+lugares:
+  trabalhar_martelo: {props: [bigorna, forja], alcance: 2.0}
+  trabalhar_bancada: {props: [bancada, balcao, banca, mesa, mesa_longa], alcance: 1.6}
+  trabalhar_chao:
+    props: [feno, sacos, caixote, fibra, ervas, mo, buraco_campo, espantalho, arvore_fruto, arvore_fruto_b,
+            arvore_velha, arvore_morta, marco, estaca, poco, carroca]
+    terrenos: [plantio]
+    alcance: 1.6
+  sentado: {props: [banco], alcance: 1.6}
+  dormir: {props: [cama], alcance: 1.6}
+
 atividades:
   # trabalho: o tipo sai do ofício (ficha em tools/blender/personagens/<id>.yaml)
   trabalhar:
@@ -16,7 +31,6 @@ atividades:
   ajudar: trabalhar_chao
   carregar: trabalhar_chao
   medir: trabalhar_chao
-  varrer: trabalhar_chao
   consertar: trabalhar_bancada
   preparar: trabalhar_bancada
   servir: trabalhar_bancada

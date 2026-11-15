@@ -32,6 +32,15 @@ public final class Animacoes {
     private record Regra(List<String> padrao, Map<String, List<String>> porNpc) {}
 
     private final Map<String, Regra> regras = new HashMap<>();
+
+    /**
+     * Onde uma animação pode acontecer: perto (até {@code alcance} m) de um destes props ou sobre um
+     * destes terrenos. Sem o lugar, o NPC fica em {@code parado}: ninguém martela no meio da praça
+     * nem senta no ar (V2).
+     */
+    public record Lugar(java.util.Set<String> props, java.util.Set<String> terrenos, double alcance) {}
+
+    private final Map<String, Lugar> lugares = new HashMap<>();
     private double alternar = 7.0;
 
     public static Animacoes carregar(Path assetsDir) {
@@ -57,6 +66,11 @@ public final class Animacoes {
 
     private void ler(JsonNode raiz) {
         alternar = raiz.path("alternar").asDouble(alternar);
+        raiz.path("lugares").fields().forEachRemaining(e -> {
+            JsonNode v = e.getValue();
+            lugares.put(e.getKey(), new Lugar(new java.util.HashSet<>(lista(v.path("props"))),
+                    new java.util.HashSet<>(lista(v.path("terrenos"))), v.path("alcance").asDouble(1.6)));
+        });
         raiz.path("atividades").fields().forEachRemaining(e -> {
             JsonNode v = e.getValue();
             Map<String, List<String>> por = new HashMap<>();
@@ -93,6 +107,11 @@ public final class Animacoes {
         if (l.size() == 1) return l.get(0);
         int i = (int) Math.floor(tempo / alternar + fase * l.size());
         return l.get(Math.floorMod(i, l.size()));
+    }
+
+    /** O lugar que a animação exige, ou null se ela vale em qualquer lugar (parado, conversar). */
+    public Lugar lugar(String animacao) {
+        return lugares.get(animacao);
     }
 
     /** Fase 0..1 estável por id (o mesmo NPC sempre com a mesma). */
