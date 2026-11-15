@@ -670,7 +670,7 @@
   meta: "arte/personagens/estranho.json"
   frame:
   - 50
-  - 64
+  - 65
   anchor:
   - 25.0
   - 61.0
@@ -752,7 +752,7 @@
   meta: "arte/personagens/ferreiro.json"
   frame:
   - 64
-  - 75
+  - 76
   anchor:
   - 32.0
   - 72.0
@@ -1093,7 +1093,7 @@
   meta: "arte/personagens/registrador.json"
   frame:
   - 64
-  - 71
+  - 72
   anchor:
   - 32.0
   - 68.0

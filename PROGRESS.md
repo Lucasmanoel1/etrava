@@ -81,6 +81,7 @@
 - **Verificação:**
   - `gradlew build`: 167 testes, validador sem erros (VT-04, VT-05 e VT-15 passam para humanos);
   - capturas v2: 9/9, visibilidade 8/8.
+- **Animação no lugar certo (D-111):** trabalho, assento e cama só perto do objeto ou do terreno que pedem (`lugares` em `animacoes.yaml`); fora disso, parado. 168 testes.
 
 ## Parada do V2 — o que olhar
 - `docs/capturas/v2/quem_e_quem.png`: todos lado a lado. A faixa de baixo está a 4×.
@@ -90,11 +91,11 @@
 
 **A aprovar:**
 1. A aparência de cada NPC de camada A: Avel, Nália, curandeira, ferreiro, estranho, registrador, agrimensora.
-2. As decisões D-108 (como medir o pé), D-109 (peças do kit, criança sem esqueleto próprio) e D-110 (pixelização em paralelo).
+2. As decisões D-108 (como medir o pé), D-109 (peças do kit, criança sem esqueleto próprio), D-110 (pixelização em paralelo), D-111 (animação só no lugar certo) e D-112 (GPU e CPU juntas).
 
 **Ficou para depois da aprovação:**
 - **Conferência dos retratos** (tarefa 8): comparar cada retrato ao sprite e refazer na Dreamina os que divergirem. Prefiro fazer depois do seu aval na aparência, para não pagar créditos por um retrato de um sprite que ainda pode mudar.
-- **Cache de render:** 19 personagens não foram refeitos depois da última mudança no andar (`_alcanca`). Nos que não esticavam a perna, a pose sai a mesma, e o validador confirma: todos abaixo de 1 px. O próximo `renderArt` sem `-Pso` vai refazê-los, porque a chave do cache mudou, e leva cerca de 1 h de GPU. Para evitar isso, rode com `-Pso`.
+- **Cache de render:** em dia. Os 27 personagens foram refeitos com o andar final (D-112: 5 Blender, GPU e CPU, 26 min).
 
 ## Portão V1 — vento a 60 qps e atlas indexado (D-103)
 Pedido: árvores com mais fluidez, 96 quadros a 60 qps, e o mesmo no resto que balança; paleta liberada.

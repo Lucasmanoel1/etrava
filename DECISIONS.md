@@ -824,3 +824,18 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - parado e conversar valem em qualquer lugar;
   - `varrer` deixou de usar a animação de cavar e fica parado até ter animação própria.
 - **Alternativa descartada:** mudar as agendas na simulação para o lugar exato. Mexeria no `core-sim` por causa de arte, o que a Fase V proíbe, e não resolveria quem chega ao lugar por outro caminho.
+
+## D-112 — Render com GPU e CPU juntas: 5 Blender
+- **Data:** 2026-11-15
+- **Pedido do diretor:** "pode usar 100% do meu PC".
+- **Medido** (personagens, 5 Blender: 3 na GPU e 2 na CPU):
+
+  | Dispositivo | Por personagem | Por personagem, na prática |
+  |---|---|---|
+  | GPU, dividida entre 3 processos | 372 s | ~124 s |
+  | CPU | 182 s | ~91 s |
+
+  Nos personagens (quadros pequenos), a CPU rende mais que a GPU, ao contrário da árvore medida no D-106.
+- **Decisão:** o padrão desta máquina passa a ser `blender.dispositivo=HIP,HIP,HIP,CPU,CPU` e `blender.processos=5`, no `local.properties`, fora do git.
+- **Resultado:** os 19 personagens refeitos em 26 min.
+- **Memória:** 5 Blender de personagem cabem nos 16 GB. Se faltar memória nas árvores, baixar para 4.
