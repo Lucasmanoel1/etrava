@@ -13,6 +13,10 @@ public final class ValidateContent {
         // arte da Fase V: paleta v3 (VT-04) e folhas de personagem (VT-05)
         java.util.List<String> arte = etrava.tools.art.pixel.ValidaArte.validar(assets,
                 assets.toAbsolutePath().getParent().resolve("tools/art/paleta.yaml"));
+        // VT-07: fichas das construções contra as pegadas e as portas dos mapas
+        arte = new java.util.ArrayList<>(arte);
+        arte.addAll(etrava.tools.art.pixel.ValidaConstrucoes.validar(content,
+                assets.toAbsolutePath().getParent().resolve("tools/blender/construcoes")));
         if (!arte.isEmpty()) {
             System.err.println("Arte inválida (" + arte.size() + " problema(s)):");
             for (String p : arte) System.err.println("  - " + p);

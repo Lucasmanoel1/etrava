@@ -1,0 +1,27 @@
+# A casa da curandeira. Pegada 5 × 4 m; porta no meio da face sul (curandeira_porta). Baixa,
+# de colmo grosso, com os maços de ervas secando sob o beiral e os vasos da horta na frente.
+tipo: casa
+id: casa_curandeira
+manifesto: {id: prop.casa_curandeira}
+quadro: [510, 410]
+ancora: [194, 276]
+largura: 5.0
+profundidade: 4.0
+parede: 2.6
+pedra: 0.5
+telhado: 1.9
+beiral: 0.3
+espessura_colmo: 0.44
+semente: 51
+chamine: {x: 1.5, y: 0.0, acima: 0.8}
+ervas: {face: S, de: 0.4, ate: 4.6, n: 9}
+aberturas:
+  - {face: S, pos: 2.5, porta: true}
+  - {face: S, pos: 1.0}
+  - {face: S, pos: 4.0}
+  - {face: E, pos: 2.0}
+extras:
+  - {tipo: vaso, x: -1.9, y: 2.3}
+  - {tipo: vaso, x: -1.4, y: 2.4}
+  - {tipo: vaso, x: 1.9, y: 2.3}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

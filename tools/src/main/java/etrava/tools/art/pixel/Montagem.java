@@ -113,6 +113,7 @@ final class Montagem {
             case "chao" -> "chao";
             case "decoracao" -> "decoracao";
             case "casa" -> "construcoes";
+            case "objetos" -> "objetos";
             case "spike_mpfb" -> "spike";
             default -> "natureza";
         };
@@ -188,6 +189,10 @@ final class Montagem {
             meta.put("directions", direcoes);
             meta.put("animations", new LinkedHashMap<>(anims));
             meta.put("points", pontos);
+            // V5: pontos em metros do jogo (luz das janelas, fumaça), para o cliente pôr a luz e a
+            // fumaça no lugar certo sem adivinhar a altura a partir da tela
+            JsonNode mundo = rj.path("mundo").path(nome);
+            if (!mundo.isMissingNode()) meta.put("world", RenderArt.JSON.convertValue(mundo, Map.class));
             RenderArt.JSON.writeValue(ra.assetsDir.resolve("arte/" + sub + "/" + nome + ".json").toFile(), meta);
         }
 

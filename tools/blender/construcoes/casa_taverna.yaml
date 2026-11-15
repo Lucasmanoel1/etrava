@@ -1,0 +1,34 @@
+# A taverna: a maior e a mais gasta. Pegada 9 × 6 m; porta no meio da face sul (taverna_porta).
+# O corpo recua 1,2 m e a frente vira alpendre; colmo velho e escuro, duas chaminés, tabuleta.
+tipo: casa
+id: casa_taverna
+manifesto: {id: prop.casa_taverna}
+quadro: [740, 540]
+ancora: [290, 362]
+largura: 9.0
+profundidade: 6.0
+corpo: [9.0, 4.8, 0.0, -0.6]
+parede: 3.0
+pedra: 0.7
+telhado: 2.9
+beiral: 0.4
+espessura_colmo: 0.42
+desgaste: 0.8
+reboco: la_crua
+semente: 11
+chamines:
+  - {x: -3.2, y: -0.6, acima: 1.0}
+  - {x: 3.0, y: -1.2, acima: 0.8}
+alpendre: {face: S, prof: 1.2, de: 2.6, ate: 6.4, altura: 2.6}
+placa: {face: E, pos: 0.5, altura: 2.6}
+aberturas:
+  - {face: S, pos: 4.5, porta: true, largura: 1.2}
+  - {face: S, pos: 1.2}
+  - {face: S, pos: 7.8}
+  - {face: E, pos: 1.9}
+  - {face: E, pos: 3.6}
+extras:
+  - {tipo: barril, x: -3.9, y: 2.2}
+  - {tipo: barril, x: -3.2, y: 2.3}
+  - {tipo: caixote, x: 3.8, y: 2.25}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

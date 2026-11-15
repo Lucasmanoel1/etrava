@@ -1,0 +1,30 @@
+# Casa pequena (4 no mapa). Pegada 5 × 5 m; a porta fica no meio da face leste (casa_doran,
+# casa_ciro, casa_celi, casa_vazia). Três variantes escolhidas pela posição.
+tipo: casa
+id: casa_pequena
+manifesto: {id: prop.casa_pequena}
+quadro: [550, 420]
+ancora: [210, 284]
+largura: 5.0
+profundidade: 5.0
+parede: 2.4
+pedra: 0.5
+telhado: 2.2
+beiral: 0.34
+espessura_colmo: 0.36
+cumeeira: y
+chamine: {x: -1.2, y: -0.8, acima: 0.8}
+aberturas:
+  - {face: E, pos: 2.5, porta: true}
+  - {face: S, pos: 1.3}
+  - {face: S, pos: 3.7}
+  - {face: E, pos: 4.2}
+variantes:
+  - {nome: a, semente: 21}
+  - {nome: b, semente: 22, desgaste: 0.7, reboco: la_crua, cumeeira: x,
+     extras: [{tipo: lenha, x: -1.2, y: 2.85}]}
+  - {nome: c, semente: 23, cobertura: tabuinha, reboco: linho, telhado: 2.0,
+     corpo: [3.8, 5.0, 0.6, 0.0], puxado: {face: W, prof: 1.2, larg: 3.2, altura: 1.9},
+     aberturas: [{face: E, pos: 2.5, porta: true}, {face: S, pos: 1.9}, {face: E, pos: 4.2}],
+     chamine: {x: 0.2, y: -0.8, acima: 0.8}}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

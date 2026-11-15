@@ -4,8 +4,8 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V4 — Natureza e terreno** (`docs/visual/V4.md`). V3 aprovado pelo diretor em 2026-11-15 ("continua").
-- **Status:** **PARADO no fim do V4**, à espera da aprovação do diretor (seção "Parada do V4", abaixo).
+- **Marco atual:** **V5 — Arquitetura e exteriores** (`docs/visual/V5.md`). V4 aprovado pelo diretor em 2026-11-15 ("continua").
+- **Status:** **PARADO no fim do V5**, à espera da aprovação do diretor (seção "Parada do V5", abaixo).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -15,8 +15,8 @@
 | V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **concluído** (aprovado, D-104) |
 | V2 | Gente (25 humanos, animações de vida comum) | **concluído** (aprovado) |
 | V3 | Criaturas e combate | **concluído** (aprovado) |
-| V4 | Natureza e terreno | **concluído; aguarda aprovação** |
-| V5 | Arquitetura e exteriores | — |
+| V4 | Natureza e terreno | **concluído** (aprovado) |
+| V5 | Arquitetura e exteriores | **concluído; aguarda aprovação** |
 | V6 | Interiores, objetos e itens | — |
 | V7 | Interfaces | — |
 | V8 | Acabamento e entrega — **portão final** | — |
@@ -34,6 +34,47 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## V5 — Arquitetura e exteriores (2026-11-15)
+**Feito:**
+- **Kit de construção** (D-124, `construcoes/casa.py`): enxaimel, pedra ou tábua; duas águas, quatro águas ou meia-água; colmo, tabuinha ou lousa; chaminés, alpendre, puxado, tabuleta, ervas, peças soltas, pás do moinho.
+- **As 9 construções** refeitas, com a mesma pegada e a porta no mesmo lugar (D-125):
+  - taverna, oficina, moinho (pás que giram), Posto, curandeira, celeiro;
+  - `casa_pequena` (3 variantes), `casa_media` (3) e `casa_estreita` (2), escolhidas pela posição.
+- **22 objetos de fora** (D-127, `construcoes/objetos.py`): cercas, poço, lampião, banca, tenda, carroça, barril, caixote, feno, sacos, espantalho, lápides, marco, placa, estaca, bigorna, forja com brasa, entulho, buraco, terra remexida, laje, banco.
+- **Cliente** (D-126): a luz das janelas e a fumaça saem dos pontos do JSON da arte; fumaça nas chaminés e na forja.
+- **VT-07** (`ValidaConstrucoes.java`, dentro do `validateContent`): pegada da ficha igual à do mapa, corpo dentro da pegada, porta desenhada perto do ponto de porta em cada lugar do mapa.
+- **Verificação:**
+  - `gradlew build` verde: 168 testes, validador sem erros (VT-04 e VT-07 passam);
+  - capturas v5: 16/16, olhadas (dia, entardecer, noite);
+  - nenhum exterior da vila ou da estrada usa mais a arte antiga;
+  - `--bench=10 --area=vila`: **398 FPS** de média, 1 % pior 289, 158 chamadas por quadro.
+- **Dreamina:** nenhum crédito.
+
+## Parada do V5 — o que olhar
+- `docs/capturas/v5/`:
+  - `prancha_construcoes.png` e `prancha_variantes.png`;
+  - `prancha_objetos_pequenos.png` e `prancha_objetos_grandes.png`;
+  - `vila_dia`, `vila_entardecer`, `vila_noite` (vista de longe, todas as casas);
+  - `praca_*`, `oficina_forja*`, `taverna*`, `moinho`, `celeiro_campo`, `curandeira`, `norte`, `cemiterio`, `posto*`.
+- No jogo: `gradlew run` (IntelliJ: Gradle → ETRAVA → Tasks → application → run).
+  - `hora 22` para as janelas acesas; perto do moinho, as pás giram; fumaça nas chaminés.
+  - F1 → `area estrada`, `tp 63 20` para o Posto.
+
+**A aprovar:**
+1. **A identidade da taverna, da oficina, do moinho e do Posto** (D-125).
+2. O moinho de vento, sem roda de água.
+3. D-124 a D-127.
+
+**Problemas conhecidos do V5:**
+- **Desempenho:** 398 FPS e 158 chamadas por quadro na vila. No V4 eu tinha anotado 708 FPS e 65 chamadas, mas não sei se com a mesma posição e hora, então a queda real não está medida. Está dentro do VT-10 (M8: 503 FPS; queda de 21 %). As casas novas dividem páginas do atlas com as árvores; rever no V8.
+- **O roteiro manual de entrar em cada porta clicando (D-072) não foi feito**: precisa de alguém jogando. O VT-07 só confere a posição.
+- A oclusão com as casas novas (telhado alto sobre o jogador) não foi conferida caso a caso; a regra de translucidez é a mesma de antes.
+- Cada construção isolada nas 4 horas do dia (tarefa 8) não foi capturada: há a prancha de dia e as cenas de dia, entardecer e noite.
+- O puxado da `casa_pequena_c` fica na face oeste e não aparece.
+- O monte de feno está redondo demais; a brasa da forja é uma mancha chapada.
+- A fumaça é discreta; se pedir mais, aumento a taxa.
+- Água-furtada, escada externa e varal não entraram (D-124, D-127). `fibra` e `luz_buraco` ficam para o V6.
 
 ## V4 — Natureza e terreno (2026-11-15)
 **Feito:**
@@ -366,7 +407,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-Com o ok do diretor no V3: V4, Natureza e terreno (`docs/visual/V4.md`).
+Com o ok do diretor no V5: V6, Interiores, objetos e itens (`docs/visual/V6.md`).
 
 ---
 

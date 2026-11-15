@@ -1,0 +1,28 @@
+# Casa média (3 no mapa). Pegada 6 × 5 m; porta no meio da face sul (casa_lauro, casa_gil,
+# casa_bento). Três variantes escolhidas pela posição.
+tipo: casa
+id: casa_media
+manifesto: {id: prop.casa_media}
+quadro: [590, 440]
+ancora: [226, 300]
+largura: 6.0
+profundidade: 5.0
+parede: 2.6
+pedra: 0.6
+telhado: 2.3
+beiral: 0.36
+espessura_colmo: 0.38
+chamine: {x: 1.8, y: 0.0, acima: 0.9}
+aberturas:
+  - {face: S, pos: 3.0, porta: true}
+  - {face: S, pos: 1.1}
+  - {face: S, pos: 4.9}
+  - {face: E, pos: 2.5}
+variantes:
+  - {nome: a, semente: 31}
+  - {nome: b, semente: 32, cobertura: lousa, forma: quatro_aguas, telhado: 2.0, reboco: linho}
+  - {nome: c, semente: 33, desgaste: 0.6, reboco: la_crua,
+     corpo: [4.6, 5.0, -0.7, 0.0], puxado: {face: E, prof: 1.4, larg: 3.4, altura: 2.0, porta: true},
+     aberturas: [{face: S, pos: 3.0, porta: true}, {face: S, pos: 1.1}, {face: E, pos: 4.3, apagada: true}],
+     chamine: {x: -1.8, y: 0.0, acima: 0.9}}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

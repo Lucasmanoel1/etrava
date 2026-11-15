@@ -28,9 +28,11 @@ public final class Assets implements Disposable {
     /**
      * Sprite com ponto de apoio no chão, em pixels de arte; {@code glow} (opcional) acende à noite.
      * {@code px}: pixels de mundo por pixel de arte (4 na arte do M8, 2 na da Fase V, D-086).
-     * Com mais de um quadro, é um laço (vento, fogo) a {@code fps}.
+     * Com mais de um quadro, é um laço (vento, fogo) a {@code fps}. {@code world} (V5): pontos em metros a
+     * partir do centro da base, vindos do JSON da folha (luzN = janela acesa, fumacaN = boca da chaminé).
      */
-    public record Sprite(TextureRegion[] frames, TextureRegion[] glow, float anchorX, float anchorY, int px, float fps) {
+    public record Sprite(TextureRegion[] frames, TextureRegion[] glow, float anchorX, float anchorY, int px, float fps,
+            Map<String, double[]> world) {
         public TextureRegion region() { return frames[0]; }
 
         public TextureRegion emissive() { return glow == null ? null : glow[0]; }
@@ -123,8 +125,23 @@ public final class Assets implements Disposable {
     public void preloadSprites() {
         deferUpload = true;
         int n = 0;
-        for (AssetManifest.Entry e : manifest.entries().values()) {
-            if (!"sprite".equals(e.type())) continue;
+        // V5: do menor para o maior (pelo tamanho do arquivo). Casas, objetos e decoração ficam juntos
+        // na primeira página e só as árvores (192 quadros cada) ocupam as outras: o lote quebra menos
+        // na ordem de profundidade (eram 276 chamadas por quadro na vila com as casas novas).
+        java.util.List<AssetManifest.Entry> ordem = new java.util.ArrayList<>();
+        for (AssetManifest.Entry e : manifest.entries().values()) if ("sprite".equals(e.type())) ordem.add(e);
+        Map<String, Long> peso = new HashMap<>();
+        for (AssetManifest.Entry e : ordem) {
+            long t = 0;
+            try {
+                if (e.file() != null) t = Files.size(root.resolve(e.file()));
+            } catch (java.io.IOException | RuntimeException ex) {
+                t = 0;
+            }
+            peso.put(e.id(), t);
+        }
+        ordem.sort(java.util.Comparator.comparingLong(e -> peso.get(e.id())));
+        for (AssetManifest.Entry e : ordem) {
             variants(e.id());
             n++;
         }
@@ -309,7 +326,8 @@ public final class Assets implements Disposable {
                 if (!defer) flushAtlas();
                 float ax = e.anchor() != null ? (float) e.anchor()[0] : fw / 2f;
                 float ay = e.anchor() != null ? (float) e.anchor()[1] : th;
-                list.add(new Sprite(fr, gl, ax, ay, e.scaleOr(), e.fps() != null ? e.fps().floatValue() : 6f));
+                list.add(new Sprite(fr, gl, ax, ay, e.scaleOr(), e.fps() != null ? e.fps().floatValue() : 6f,
+                        key.startsWith("prop.") ? worldPoints(file) : Map.of()));
             }
             if (list.isEmpty()) list.add(placeholderSprite());
             return list.toArray(new Sprite[0]);
@@ -318,7 +336,24 @@ public final class Assets implements Disposable {
 
     private Sprite placeholderSprite() {
         TextureRegion r = new TextureRegion(checker(), 0, 0, 12, 18);
-        return new Sprite(new TextureRegion[] {r}, null, 6, 18, 4, 1f);
+        return new Sprite(new TextureRegion[] {r}, null, 6, 18, 4, 1f, Map.of());
+    }
+
+    /** Pontos {@code world} do JSON que acompanha a folha (SPEC-visual §7.1); vazio se não houver. */
+    private Map<String, double[]> worldPoints(String file) {
+        Path json = root.resolve(file.replace(".png", ".json"));
+        if (!Files.exists(json)) return Map.of();
+        try {
+            com.badlogic.gdx.utils.JsonValue w = new com.badlogic.gdx.utils.JsonReader()
+                    .parse(Files.readString(json)).get("world");
+            if (w == null) return Map.of();
+            Map<String, double[]> out = new java.util.TreeMap<>();
+            for (com.badlogic.gdx.utils.JsonValue v = w.child; v != null; v = v.next) out.put(v.name, v.asDoubleArray());
+            return out;
+        } catch (Exception ex) {
+            LOG.warn("pontos do asset ilegíveis em {}: {}", json, ex.toString());
+            return Map.of();
+        }
     }
 
     public Tiles tiles(String terrain) {

@@ -1,0 +1,28 @@
+# Objetos de fora grandes (V5). Mesmo ID, mesma pegada e colisão do content/props.yaml.
+tipo: objetos
+id: objetos_grandes
+quadro: [310, 240]
+ancora: [118, 160]
+manifesto:
+  - {id: prop.poco, folhas: [poco]}
+  - {id: prop.feno, folhas: [feno_a, feno_b]}
+  - {id: prop.carroca, folhas: [carroca]}
+  - {id: prop.banca, folhas: [banca_a, banca_b]}
+  - {id: prop.tenda, folhas: [tenda]}
+  - {id: prop.forja, folhas: [forja]}
+  - {id: prop.buraco_terra, folhas: [buraco_terra]}
+  - {id: prop.terra_remexida, folhas: [terra_remexida]}
+  - {id: prop.laje_simbolos, folhas: [laje_simbolos]}
+elementos:
+  - {nome: poco, forma: poco}
+  - {nome: feno_a, forma: feno, semente: 2}
+  - {nome: feno_b, forma: feno, semente: 9}
+  - {nome: carroca, forma: carroca}
+  - {nome: banca_a, forma: banca, pano: tecido_vermelho}
+  - {nome: banca_b, forma: banca, pano: tecido_oliva}
+  - {nome: tenda, forma: tenda}
+  - {nome: forja, forma: forja, quadros: 6, fps: 8}
+  - {nome: buraco_terra, forma: buraco}
+  - {nome: terra_remexida, forma: terra_remexida}
+  - {nome: laje_simbolos, forma: laje}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

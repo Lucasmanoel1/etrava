@@ -959,3 +959,41 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - Cores só da paleta.
   - Opção nova: "Detalhes do ambiente: Alto/Baixo". Baixo desliga tudo isto.
   - A fumaça de chaminé fica para o V5, junto com as chaminés novas.
+
+## D-124 — Kit de construção por parâmetros; a pegada é a colisão, o corpo pode ser menor
+- **Data:** 2026-11-15
+- **Decisão:**
+  - Um kit só (`tools/blender/construcoes/casa.py`) faz as 9 construções a partir da ficha YAML: paredes de enxaimel, pedra ou tábua; telhado de duas águas, quatro águas ou meia-água, de colmo, tabuinha ou lousa; chaminés, alpendre, puxado, tabuleta, ervas, peças soltas e as pás do moinho.
+  - **A pegada da ficha é a do `props.yaml`.** Quando a casa tem alpendre ou puxado, o corpo (`corpo`) encolhe dentro da pegada; nenhum mapa e nenhuma colisão mudaram.
+  - Peças soltas pequenas (barril, lenha, vasos, ferramentas) podem sair até ~0,5 m da pegada: são desenho, não colidem.
+  - Tabuinha e lousa são texturas por script (`texturas/procedurais.py`), como plantio e tábuas (D-122). Nenhum crédito da Dreamina.
+- **Motivo:** uma ficha por construção, variedade por parâmetro, e a regra da Fase V (a arte não muda o `core-sim`).
+- **Alternativa descartada:** modelar cada casa à mão (lento, sem variantes). Água-furtada e escada externa não entraram; ficam para o V8, se fizerem falta.
+
+## D-125 — Variantes de casa pela posição; identidade das construções principais
+- **Data:** 2026-11-15
+- **Decisão:**
+  - `casa_pequena` (3 variantes), `casa_media` (3) e `casa_estreita` (2) mudam telhado, reboco, desgaste, direção da cumeeira e puxado. O cliente escolhe pela posição (o mesmo mecanismo das árvores).
+  - **Taverna:** a maior, colmo velho e escuro, corpo recuado com alpendre na frente, duas chaminés, tabuleta, barris.
+  - **Oficina:** como no V1, mais ferramentas, lenha e barril do lado de fora.
+  - **Moinho:** torre de pedra com empena para o sul, tabuinha, **pás de vento** que giram (16 quadros, um quarto de volta). Não tem roda de água: o mapa não tem água ali.
+  - **Posto:** lousa de quatro águas, duas chaminés, tabuleta, alpendre de carga a leste. É a única construção "de fora".
+  - **Curandeira:** baixa, colmo grosso, ervas sob o beiral e vasos. **Celeiro:** tábua, portão duplo, sem luz.
+- **A aprovar pelo diretor:** a identidade da taverna, da oficina, do moinho e do Posto.
+
+## D-126 — Luz das janelas e fumaça vêm do JSON da arte
+- **Data:** 2026-11-15
+- **Decisão:**
+  - O Blender grava, por folha, os pontos em metros do jogo (`world`: `luzN` diante de cada janela, `fumacaN` na boca da chaminé e na forja).
+  - O cliente usa esses pontos para a variante daquele lugar; o `props.yaml` continua dizendo raio e cor (a primeira luz do prop). Sem pontos, valem os do `props.yaml`.
+  - A fumaça é da vida ambiente (`Ambiente.java`), desliga com "Detalhes do ambiente: Baixo" e não disputa o teto com folhas e bichos. Ao entrar na área, o ar já começa com 6 s simulados.
+- **Motivo:** cada variante tem janelas e chaminé em lugares diferentes; pontos fixos no `props.yaml` ficariam errados.
+
+## D-127 — Objetos de fora; atlas do menor para o maior
+- **Data:** 2026-11-15
+- **Decisão:**
+  - 22 objetos por script (`construcoes/objetos.py`, fichas em `tools/blender/objetos/`): cercas, poço, lampião, banca, tenda, carroça, barril, caixote, feno, sacos, espantalho, lápides, marco, placa, estaca, bigorna, forja (brasa em laço), entulho, buraco, terra remexida, laje e o banco da praça. Mesmo ID e mesma pegada.
+  - **Varal** não entra: não existe prop nem lugar no mapa para ele.
+  - A laje tem sulcos que não se leem (anel, riscos, pontos): não confirma nada.
+  - O atlas passa a empacotar do menor arquivo para o maior: casas, objetos e decoração ficam na primeira página e só as árvores ocupam as outras (276 → 158 chamadas por quadro).
+- **Pendência:** `fibra` e `luz_buraco` (dentro da estrutura) ficam para o V6.

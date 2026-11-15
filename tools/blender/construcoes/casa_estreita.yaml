@@ -1,0 +1,26 @@
+# Casa estreita (2 no mapa). Pegada 4 × 6 m, de empena para a rua; porta no meio da face sul
+# (casa_anselmo, casa_firmino). Alta, de tabuinha.
+tipo: casa
+id: casa_estreita
+manifesto: {id: prop.casa_estreita}
+quadro: [560, 440]
+ancora: [210, 304]
+largura: 4.0
+profundidade: 6.0
+parede: 2.9
+pedra: 0.6
+telhado: 2.5
+beiral: 0.32
+cumeeira: y
+cobertura: tabuinha
+chamine: {x: -0.9, y: -1.6, acima: 0.9}
+aberturas:
+  - {face: S, pos: 2.0, porta: true}
+  - {face: S, pos: 0.75, largura: 0.5}
+  - {face: S, pos: 3.25, largura: 0.5}
+  - {face: E, pos: 1.6}
+  - {face: E, pos: 4.2}
+variantes:
+  - {nome: a, semente: 41}
+  - {nome: b, semente: 42, cobertura: colmo, desgaste: 0.5, reboco: la_crua}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

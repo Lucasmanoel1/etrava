@@ -2478,16 +2478,325 @@
   scale: 2
   source: "Blender (tools/blender/natureza/arvore_nalia.yaml) + pixelizador"
   license: "proprio"
+- id: "prop.banca"
+  type: "sprite"
+  file: "arte/objetos/banca_a.png"
+  variants:
+  - "arte/objetos/banca_a.png"
+  - "arte/objetos/banca_b.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/banca_a.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.banco"
+  type: "sprite"
+  file: "arte/objetos/banco.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/banco.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.barril"
+  type: "sprite"
+  file: "arte/objetos/barril.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/barril.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.bigorna"
+  type: "sprite"
+  file: "arte/objetos/bigorna.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/bigorna.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.buraco_terra"
+  type: "sprite"
+  file: "arte/objetos/buraco_terra.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/buraco_terra.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.caixote"
+  type: "sprite"
+  file: "arte/objetos/caixote.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/caixote.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.carroca"
+  type: "sprite"
+  file: "arte/objetos/carroca.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/carroca.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_curandeira"
+  type: "sprite"
+  file: "arte/construcoes/casa_curandeira.png"
+  anchor:
+  - 162.0
+  - 184.0
+  emissive: "arte/construcoes/casa_curandeira_brilho.png"
+  meta: "arte/construcoes/casa_curandeira.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_estreita"
+  type: "sprite"
+  file: "arte/construcoes/casa_estreita_a.png"
+  variants:
+  - "arte/construcoes/casa_estreita_a.png"
+  - "arte/construcoes/casa_estreita_b.png"
+  anchor:
+  - 181.0
+  - 217.0
+  emissive: "arte/construcoes/casa_estreita_a_brilho.png"
+  meta: "arte/construcoes/casa_estreita_a.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_estreita.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_media"
+  type: "sprite"
+  file: "arte/construcoes/casa_media_a.png"
+  variants:
+  - "arte/construcoes/casa_media_a.png"
+  - "arte/construcoes/casa_media_b.png"
+  - "arte/construcoes/casa_media_c.png"
+  anchor:
+  - 200.0
+  - 215.0
+  emissive: "arte/construcoes/casa_media_a_brilho.png"
+  meta: "arte/construcoes/casa_media_a.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_media.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_moinho"
+  type: "sprite"
+  file: "arte/construcoes/casa_moinho.png"
+  anchor:
+  - 210.0
+  - 256.0
+  frames: 16
+  fps: 8.0
+  emissive: "arte/construcoes/casa_moinho_brilho.png"
+  meta: "arte/construcoes/casa_moinho.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_moinho.yaml) + pixelizador"
+  license: "proprio"
 - id: "prop.casa_oficina"
   type: "sprite"
   file: "arte/construcoes/casa_oficina.png"
   anchor:
   - 213.0
-  - 215.0
+  - 221.0
   emissive: "arte/construcoes/casa_oficina_brilho.png"
   meta: "arte/construcoes/casa_oficina.json"
   scale: 2
   source: "Blender (tools/blender/construcoes/casa_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_pequena"
+  type: "sprite"
+  file: "arte/construcoes/casa_pequena_a.png"
+  variants:
+  - "arte/construcoes/casa_pequena_a.png"
+  - "arte/construcoes/casa_pequena_b.png"
+  - "arte/construcoes/casa_pequena_c.png"
+  anchor:
+  - 181.0
+  - 187.0
+  emissive: "arte/construcoes/casa_pequena_a_brilho.png"
+  meta: "arte/construcoes/casa_pequena_a.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_pequena.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_posto"
+  type: "sprite"
+  file: "arte/construcoes/casa_posto.png"
+  anchor:
+  - 279.0
+  - 228.0
+  emissive: "arte/construcoes/casa_posto_brilho.png"
+  meta: "arte/construcoes/casa_posto.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_posto.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.casa_taverna"
+  type: "sprite"
+  file: "arte/construcoes/casa_taverna.png"
+  anchor:
+  - 225.0
+  - 279.0
+  emissive: "arte/construcoes/casa_taverna_brilho.png"
+  meta: "arte/construcoes/casa_taverna.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/casa_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.celeiro"
+  type: "sprite"
+  file: "arte/construcoes/celeiro.png"
+  anchor:
+  - 250.0
+  - 229.0
+  meta: "arte/construcoes/celeiro.json"
+  scale: 2
+  source: "Blender (tools/blender/construcoes/celeiro.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.cerca_x"
+  type: "sprite"
+  file: "arte/objetos/cerca_x_a.png"
+  variants:
+  - "arte/objetos/cerca_x_a.png"
+  - "arte/objetos/cerca_x_b.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/cerca_x_a.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.cerca_y"
+  type: "sprite"
+  file: "arte/objetos/cerca_y_a.png"
+  variants:
+  - "arte/objetos/cerca_y_a.png"
+  - "arte/objetos/cerca_y_b.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/cerca_y_a.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.entulho"
+  type: "sprite"
+  file: "arte/objetos/entulho.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/entulho.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.espantalho"
+  type: "sprite"
+  file: "arte/objetos/espantalho.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/espantalho.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.estaca"
+  type: "sprite"
+  file: "arte/objetos/estaca.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/estaca.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.feno"
+  type: "sprite"
+  file: "arte/objetos/feno_a.png"
+  variants:
+  - "arte/objetos/feno_a.png"
+  - "arte/objetos/feno_b.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/feno_a.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.forja"
+  type: "sprite"
+  file: "arte/objetos/forja.png"
+  anchor:
+  - 81.0
+  - 113.0
+  frames: 6
+  fps: 8.0
+  emissive: "arte/objetos/forja_brilho.png"
+  meta: "arte/objetos/forja.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.laje_simbolos"
+  type: "sprite"
+  file: "arte/objetos/laje_simbolos.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/laje_simbolos.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.lampiao"
+  type: "sprite"
+  file: "arte/objetos/lampiao.png"
+  anchor:
+  - 36.0
+  - 70.0
+  emissive: "arte/objetos/lampiao_brilho.png"
+  meta: "arte/objetos/lampiao.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.lapide"
+  type: "sprite"
+  file: "arte/objetos/lapide_a.png"
+  variants:
+  - "arte/objetos/lapide_a.png"
+  - "arte/objetos/lapide_c.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/lapide_a.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.lapide_b"
+  type: "sprite"
+  file: "arte/objetos/lapide_b.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/lapide_b.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.marco"
+  type: "sprite"
+  file: "arte/objetos/marco.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/marco.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.pedras"
   type: "sprite"
@@ -2501,6 +2810,56 @@
   meta: "arte/decoracao/pedras_a.json"
   scale: 2
   source: "Blender (tools/blender/decoracao/pedras.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.placa"
+  type: "sprite"
+  file: "arte/objetos/placa.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/placa.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.poco"
+  type: "sprite"
+  file: "arte/objetos/poco.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/poco.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.sacos"
+  type: "sprite"
+  file: "arte/objetos/sacos.png"
+  anchor:
+  - 36.0
+  - 70.0
+  meta: "arte/objetos/sacos.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.tenda"
+  type: "sprite"
+  file: "arte/objetos/tenda.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/tenda.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.terra_remexida"
+  type: "sprite"
+  file: "arte/objetos/terra_remexida.png"
+  anchor:
+  - 81.0
+  - 113.0
+  meta: "arte/objetos/terra_remexida.json"
+  scale: 2
+  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.toco"
   type: "sprite"

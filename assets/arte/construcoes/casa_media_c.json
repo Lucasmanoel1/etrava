@@ -1,0 +1,21 @@
+{
+  "frame" : [ 448, 310 ],
+  "anchor" : [ 200.0, 215.0 ],
+  "directions" : 1,
+  "animations" : {
+    "parado" : {
+      "start" : 0,
+      "frames" : 1,
+      "fps" : 1.0
+    }
+  },
+  "points" : {
+    "parado/0/0" : {
+      "fumaca0" : [ 142.4, 10.4 ]
+    }
+  },
+  "world" : {
+    "fumaca0" : [ -1.8, 0.0, 6.33 ],
+    "luz0" : [ -1.9, 3.1, 1.61 ]
+  }
+}

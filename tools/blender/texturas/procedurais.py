@@ -81,7 +81,47 @@ def tabuas():
     im.save(os.path.join(AQUI, "tabuas.png"))
 
 
+def _telhas(nome, fiadas, por_fiada, semente, fresta=0.10, arred=0.0):
+    """Peças em fiadas desencontradas (tabuinha de madeira, lousa): cada peça com o seu tom, a
+    borda de baixo mais clara (o fio) e a sombra da fiada de cima."""
+    rng = random.Random(semente)
+    grao = _ruido(semente + 1, 64)
+    im = Image.new("L", (N, N))
+    px = im.load()
+    h = N // fiadas
+    tons = [[rng.uniform(-0.13, 0.13) for _ in range(por_fiada)] for _ in range(fiadas)]
+    desl = [rng.randrange(N) if f % 2 else 0 for f in range(fiadas)]
+    larg = N // por_fiada
+    for y in range(N):
+        f = (y // h) % fiadas
+        dy = (y % h) / h                      # 0 no alto da fiada, 1 na borda de baixo
+        for x in range(N):
+            xx = (x + desl[f] + (larg // 2 if f % 2 else 0)) % N
+            k = (xx // larg) % por_fiada
+            dx = (xx % larg) / larg
+            v = 0.52 + tons[f][k] + 0.12 * (grao(x, (y * 3) % N) - 0.5)
+            v += 0.16 * (dy - 0.5)            # clareia para a borda de baixo
+            if dy < 0.16:
+                v -= 0.22 * (1 - dy / 0.16)   # sombra da fiada de cima
+            if dx < 0.06 or dx > 0.97:
+                v = fresta
+            if arred and dy > 1 - arred * abs(dx - 0.5) * 2:
+                v = fresta
+            px[x, y] = max(0, min(255, int(v * 255)))
+    im.save(os.path.join(AQUI, nome))
+
+
+def tabuinha():
+    _telhas("tabuinha.png", 8, 6, 31)
+
+
+def lousa():
+    _telhas("lousa.png", 8, 5, 41, fresta=0.14, arred=0.22)
+
+
 if __name__ == "__main__":
     plantio()
     tabuas()
-    print("plantio.png e tabuas.png gerados")
+    tabuinha()
+    lousa()
+    print("plantio, tabuas, tabuinha e lousa gerados")

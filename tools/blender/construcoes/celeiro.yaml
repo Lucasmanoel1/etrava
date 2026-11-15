@@ -1,0 +1,24 @@
+# O celeiro. Pegada 8 × 6 m; portão duplo na face sul, sobre o ponto `celeiro` (meio metro a
+# oeste do centro). Tábua sobre base de pedra, de empena para o sul, tabuinha gasta. Sem luz.
+tipo: casa
+id: celeiro
+manifesto: {id: prop.celeiro}
+quadro: [690, 490]
+ancora: [274, 326]
+largura: 8.0
+profundidade: 6.0
+paredes: tabua
+parede: 3.2
+pedra: 0.4
+telhado: 2.8
+beiral: 0.4
+cumeeira: y
+cobertura: tabuinha
+desgaste: 0.6
+semente: 81
+aberturas:
+  - {face: S, pos: 3.5, porta: true, largura: 2.2, altura: 2.6}
+extras:
+  - {tipo: ferramentas, x: 2.4, y: 3.3}
+  - {tipo: barril, x: -3.3, y: 3.35}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

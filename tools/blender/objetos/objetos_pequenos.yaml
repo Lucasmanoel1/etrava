@@ -1,0 +1,41 @@
+# Objetos de fora pequenos (V5). Mesmo ID, mesma pegada e colisão do content/props.yaml.
+tipo: objetos
+id: objetos_pequenos
+quadro: [170, 160]
+ancora: [62, 112]
+manifesto:
+  - {id: prop.cerca_x, folhas: [cerca_x_a, cerca_x_b]}
+  - {id: prop.cerca_y, folhas: [cerca_y_a, cerca_y_b]}
+  - {id: prop.marco, folhas: [marco]}
+  - {id: prop.estaca, folhas: [estaca]}
+  - {id: prop.placa, folhas: [placa]}
+  - {id: prop.lapide, folhas: [lapide_a, lapide_c]}
+  - {id: prop.lapide_b, folhas: [lapide_b]}
+  - {id: prop.barril, folhas: [barril]}
+  - {id: prop.caixote, folhas: [caixote]}
+  - {id: prop.sacos, folhas: [sacos]}
+  - {id: prop.lampiao, folhas: [lampiao]}
+  - {id: prop.espantalho, folhas: [espantalho]}
+  - {id: prop.banco, folhas: [banco]}
+  - {id: prop.bigorna, folhas: [bigorna]}
+  - {id: prop.entulho, folhas: [entulho]}
+elementos:
+  - {nome: cerca_x_a, forma: cerca, eixo: x, semente: 1}
+  - {nome: cerca_x_b, forma: cerca, eixo: x, semente: 2}
+  - {nome: cerca_y_a, forma: cerca, eixo: y, semente: 3}
+  - {nome: cerca_y_b, forma: cerca, eixo: y, semente: 4}
+  - {nome: marco, forma: marco}
+  - {nome: estaca, forma: estaca}
+  - {nome: placa, forma: placa}
+  - {nome: lapide_a, forma: lapide, semente: 11}
+  - {nome: lapide_c, forma: lapide, semente: 12}
+  - {nome: lapide_b, forma: lapide, semente: 13, cruz: true}
+  - {nome: barril, forma: barril}
+  - {nome: caixote, forma: caixote}
+  - {nome: sacos, forma: sacos}
+  - {nome: lampiao, forma: lampiao}
+  - {nome: espantalho, forma: espantalho}
+  - {nome: banco, forma: banco}
+  - {nome: bigorna, forma: bigorna}
+  - {nome: entulho, forma: entulho, semente: 71}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

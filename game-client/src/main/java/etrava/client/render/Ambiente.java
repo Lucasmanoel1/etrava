@@ -24,8 +24,10 @@ final class Ambiente {
             Color.valueOf("7E8EAE")};
     private static final Color VAGALUME = Color.valueOf("D8BC70"), VAGALUME2 = Color.valueOf("FFE9A8");
     private static final Color MARIPOSA = Color.valueOf("C4BBA8");
+    /** V5: fumaça de chaminé e de forja, em dois cinzas da paleta. */
+    private static final Color[] FUMACA = {Color.valueOf("A39A8A"), Color.valueOf("C4BBA8")};
 
-    private enum Tipo { FOLHA, PASSARO, BORBOLETA, VAGALUME, MARIPOSA }
+    private enum Tipo { FOLHA, PASSARO, BORBOLETA, VAGALUME, MARIPOSA, FUMACA }
 
     private static final class P {
         Tipo tipo;
@@ -37,12 +39,14 @@ final class Ambiente {
     /** Ponto de origem: árvore (x, y, altura da copa), flor ou lampião. */
     record Ponto(double x, double y, double z) {}
 
-    private final List<Ponto> arvores, flores, lampioes;
+    private final List<Ponto> arvores, flores, lampioes, chamines;
     private final List<P> vivas = new ArrayList<>();
     private final Random rnd = new Random(11);
     private float acum;
+    private boolean aquecido;
 
-    Ambiente(List<Ponto> arvores, List<Ponto> flores, List<Ponto> lampioes) {
+    Ambiente(List<Ponto> arvores, List<Ponto> flores, List<Ponto> lampioes, List<Ponto> chamines) {
+        this.chamines = chamines;
         this.arvores = arvores;
         this.flores = flores;
         this.lampioes = lampioes;
@@ -58,12 +62,27 @@ final class Ambiente {
      * @param b     limites visíveis (pixels de mundo: x0, y0, x1, y1)
      */
     void atualizar(float dt, double noite, double vento, float[] b) {
+        if (!aquecido) {   // ao entrar na área o ar já tem fumaça, folhas e vaga-lumes (6 s simulados)
+            aquecido = true;
+            for (int i = 0; i < 60; i++) atualizar(0.1f, noite, vento, b);
+        }
         dt = Math.min(dt, 0.1f);
         acum += dt;
         // nasce de 4 em 4 décimos de segundo; cada tipo pela sua chance e só no que se vê
         while (acum >= 0.1f) {
             acum -= 0.1f;
-            if (vivas.size() >= TETO) break;
+            // fumaça: cada chaminé à vista solta um floco de vez em quando (não disputa o teto com o resto)
+            for (Ponto c : chamines) {
+                if (rnd.nextDouble() >= 0.3) continue;   // mesmo fora da vista: ao chegar, a fumaça já está lá
+                P p = nova(Tipo.FUMACA, FUMACA[rnd.nextInt(FUMACA.length)], 4.5f + rnd.nextFloat() * 2f);
+                p.x = c.x() + (rnd.nextDouble() - 0.5) * 0.25;
+                p.y = c.y() + (rnd.nextDouble() - 0.5) * 0.25;
+                p.z = c.z();
+                p.vz = 0.45 + rnd.nextDouble() * 0.25;
+            }
+            int outras = 0;   // a fumaça não disputa o teto com folhas e bichos
+            for (P q : vivas) if (q.tipo != Tipo.FUMACA) outras++;
+            if (outras >= TETO) break;
             double dia = 1 - noite;
             if (rnd.nextDouble() < 0.10 + 0.35 * vento) folha(b);
             if (dia > 0.6 && rnd.nextDouble() < 0.004) bando(b);
@@ -87,6 +106,12 @@ final class Ambiente {
                         p.y += (p.vy - bal * 0.35 + vento * 0.4) * dt;
                         p.z = Math.max(0, p.z - (0.55 + 0.25 * Math.abs(bal)) * dt);
                     }
+                }
+                case FUMACA -> {         // sobe, perde força e deita com o vento
+                    double bal = Math.sin(t * 1.3 + p.fase) * 0.12;
+                    p.x += (0.05 + vento * 0.35 + bal) * dt;
+                    p.y += (-0.03 - vento * 0.2 + bal) * dt;
+                    p.z += p.vz * dt * Math.max(0.35, 1 - t / 7);
                 }
                 case PASSARO -> {
                     p.x += p.vx * dt;
@@ -216,6 +241,15 @@ final class Ambiente {
                     batch.setColor(p.cor.r, p.cor.g, p.cor.b, a);
                     batch.draw(branco, sx, sy, px, px);
                     if (aberta) batch.draw(branco, sx - px, sy, px * 3, px);
+                }
+                case FUMACA -> {         // floco redondo que cresce e rareia (3, 5, 7 px de arte)
+                    float f = p.vida / p.dura;
+                    int r = f < 0.15f ? 1 : f < 0.5f ? 2 : 3;
+                    batch.setColor(p.cor.r, p.cor.g, p.cor.b, a * (0.8f - 0.55f * f));
+                    for (int dy = -r; dy <= r; dy++) {
+                        int larg = r - (Math.abs(dy) == r && r > 1 ? 1 : 0) - (Math.abs(dy) == r && r == 1 ? 1 : 0);
+                        batch.draw(branco, sx - larg * px, sy + dy * px, (2 * larg + 1) * px, px);
+                    }
                 }
                 case VAGALUME -> {
                     float pisca = (float) Math.max(0, Math.sin(p.vida * 2.2 + p.fase));

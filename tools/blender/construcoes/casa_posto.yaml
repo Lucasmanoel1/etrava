@@ -1,0 +1,33 @@
+# O Posto da estrada. Pegada 10 × 6 m; porta no meio da face sul (posto_porta). Construção de
+# fora: telhado de lousa de quatro águas, duas chaminés, tabuleta, alpendre de carga a leste.
+tipo: casa
+id: casa_posto
+manifesto: {id: prop.casa_posto}
+quadro: [770, 540]
+ancora: [306, 360]
+largura: 10.0
+profundidade: 6.0
+corpo: [8.8, 6.0, -0.6, 0.0]
+parede: 3.0
+pedra: 0.9
+telhado: 2.5
+beiral: 0.34
+forma: quatro_aguas
+cobertura: lousa
+reboco: linho
+semente: 71
+chamines:
+  - {x: -3.4, y: 0.0, acima: 1.0}
+  - {x: 2.2, y: 0.0, acima: 1.0}
+alpendre: {face: E, prof: 1.2, de: 0.6, ate: 5.4, altura: 2.5}
+placa: {face: S, pos: 6.6, altura: 2.7, pintura: ferrugem}
+aberturas:
+  - {face: S, pos: 5.6, porta: true, largura: 1.2}
+  - {face: S, pos: 1.2}
+  - {face: S, pos: 3.0}
+  - {face: S, pos: 8.0}
+  - {face: E, pos: 3.0}
+extras:
+  - {tipo: caixote, x: 4.9, y: 1.2}
+  - {tipo: barril, x: 4.9, y: 0.3}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

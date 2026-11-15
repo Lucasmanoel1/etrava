@@ -134,7 +134,8 @@ public final class SceneRenderer implements Disposable {
     private final Ambiente ambiente;
     /** Opção "Detalhes do ambiente": baixo desliga a vida ambiente. */
     public boolean ambienteLigado = true;
-    private final List<Ambiente.Ponto> pontosArvore = new ArrayList<>(), pontosFlor = new ArrayList<>();
+    private final List<Ambiente.Ponto> pontosArvore = new ArrayList<>(), pontosFlor = new ArrayList<>(),
+            pontosLampiao = new ArrayList<>(), pontosFumaca = new ArrayList<>();
     private final Texture shadowTexture;
     private ShaderProgram postShader, silhouetteShader, paletaShader;
     private final Animacoes animacoes;
@@ -245,11 +246,26 @@ public final class SceneRenderer implements Disposable {
                     variants ? p.key() : null, def, 1f, phaseOf(p.x(), p.y())));
             if (def == null) continue;
             if ("vegetacao".equals(def.category())) pontosArvore.add(new Ambiente.Ponto(p.x(), p.y(), 4.0));
-            for (PropDef.Light l : def.lightList()) {
+            // V5 (SPEC-visual §7.1): onde ficam as janelas e a chaminé vem do JSON da arte (a variante
+            // desta posição); o props.yaml continua dizendo o raio e a cor. Sem pontos, vale o props.yaml.
+            boolean daArte = false;
+            for (Map.Entry<String, double[]> w : sprite.world().entrySet()) {
+                double[] o = w.getValue();
+                if (w.getKey().startsWith("fumaca")) pontosFumaca.add(new Ambiente.Ponto(p.x() + o[0], p.y() + o[1], o[2]));
+                else if (w.getKey().startsWith("luz") && !def.lightList().isEmpty()) {
+                    PropDef.Light l = def.lightList().get(0);
+                    double[] c = l.color();
+                    lamps.add(new Lamp(p.x() + o[0], p.y() + o[1], o[2], (float) l.radius(),
+                            (float) c[0], (float) c[1], (float) c[2]));
+                    daArte = true;
+                }
+            }
+            if (!daArte) for (PropDef.Light l : def.lightList()) {
                 double[] o = l.offset(), c = l.color();
                 lamps.add(new Lamp(p.x() + o[0], p.y() + o[1], o[2], (float) l.radius(),
                         (float) c[0], (float) c[1], (float) c[2]));
             }
+            if ("lampiao".equals(p.propId())) pontosLampiao.add(new Ambiente.Ponto(p.x() + 0.2, p.y() - 0.2, 2.05));
         }
         // decoração do chão (Fase V): tufos e flores entram na ordenação; pedrinhas ficam deitadas
         if (outdoor) {
@@ -271,9 +287,7 @@ public final class SceneRenderer implements Disposable {
             }
         }
         if (outdoor) {
-            List<Ambiente.Ponto> luzes = new ArrayList<>();
-            for (Lamp l : lamps) luzes.add(new Ambiente.Ponto(l.x(), l.y(), l.z()));
-            ambiente = new Ambiente(pontosArvore, pontosFlor, luzes);
+            ambiente = new Ambiente(pontosArvore, pontosFlor, pontosLampiao, pontosFumaca);
         } else {
             ambiente = null;
         }

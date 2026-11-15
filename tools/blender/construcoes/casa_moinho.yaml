@@ -1,0 +1,24 @@
+# O moinho. Pegada 5 × 6 m; porta no meio da face sul (moinho_porta). Torre de pedra, de empena
+# para o sul, telhado de tabuinha; as pás giram na empena, acima da porta.
+tipo: casa
+id: casa_moinho
+manifesto: {id: prop.casa_moinho}
+quadro: [660, 530]
+ancora: [240, 386]
+largura: 5.0
+profundidade: 6.0
+paredes: pedra
+parede: 4.6
+telhado: 2.4
+beiral: 0.3
+cumeeira: y
+cobertura: tabuinha
+semente: 61
+pas: {face: S, y: 3.0, z: 5.5, raio: 3.2, quadros: 16, fps: 8}
+aberturas:
+  - {face: S, pos: 2.5, porta: true}
+  - {face: E, pos: 1.6, peitoril: 1.4}
+  - {face: E, pos: 4.3, peitoril: 2.9, largura: 0.5, postigos: false}
+extras:
+  - {tipo: caixote, x: -1.9, y: 3.3}
+pixelizador: {ambiente: 0.30, difusa: 0.52}
