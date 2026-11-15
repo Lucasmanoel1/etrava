@@ -41,22 +41,12 @@ def main():
     from nucleo import cena
     cena.limpar()
     tipo = trabalho["tipo"]
-    if tipo == "cubo":
-        from tarefas import cubo as tarefa
-    elif tipo == "personagem":
-        from tarefas import personagem as tarefa
-    elif tipo == "arvore":
-        from tarefas import arvore as tarefa
-    elif tipo == "casa":
-        from tarefas import casa as tarefa
-    elif tipo == "chao":
-        from tarefas import chao as tarefa
-    elif tipo == "decoracao":
-        from tarefas import decoracao as tarefa
-    elif tipo == "spike_mpfb":
-        from tarefas import spike_mpfb as tarefa
-    else:
+    # despacho genérico (D-116): o tipo é o nome do módulo em tarefas/; tipo novo não mexe aqui
+    # (este arquivo entra na chave do cache de todo objeto)
+    import importlib
+    if not tipo.isidentifier() or not os.path.isfile(os.path.join(AQUI, "tarefas", tipo + ".py")):
         raise SystemExit("tipo de trabalho desconhecido: " + tipo)
+    tarefa = importlib.import_module("tarefas." + tipo)
     tarefa.executar(trabalho)
     print("ETRAVA: ok", trabalho["id"])
 

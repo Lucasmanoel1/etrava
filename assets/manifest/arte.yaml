@@ -182,10 +182,10 @@
   meta: "arte/personagens/aprendiz.json"
   frame:
   - 64
-  - 70
+  - 71
   anchor:
   - 32.0
-  - 62.0
+  - 63.0
   directions: 8
   animations:
     parado:
@@ -226,6 +226,34 @@
       start: 55
       frames: 4
       fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
   role: "jogador"
   scale: 2
   source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
@@ -236,10 +264,10 @@
   meta: "arte/personagens/aprendiz_avental.json"
   frame:
   - 64
-  - 69
+  - 71
   anchor:
   - 32.0
-  - 61.0
+  - 63.0
   directions: 8
   animations:
     parado:
@@ -280,20 +308,48 @@
       start: 55
       frames: 4
       fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
   role: "jogador"
   scale: 2
   source: "Blender (tools/blender/personagens/aprendiz_avental.yaml) + pixelizador"
   license: "proprio"
-- id: "personagem.aprendiz_capuz"
+- id: "personagem.aprendiz_cajado"
   type: "spritesheet"
-  file: "arte/personagens/aprendiz_capuz.png"
-  meta: "arte/personagens/aprendiz_capuz.json"
+  file: "arte/personagens/aprendiz_c_cajado_cajado.png"
+  meta: "arte/personagens/aprendiz_c_cajado_cajado.json"
   frame:
   - 64
-  - 70
+  - 80
   anchor:
   - 32.0
-  - 62.0
+  - 72.0
   directions: 8
   animations:
     parado:
@@ -334,20 +390,130 @@
       start: 55
       frames: 4
       fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
   role: "camada"
   scale: 2
-  source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
+  source: "Blender (tools/blender/personagens/aprendiz_c_cajado.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_capuz"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_c_capuz_capuz.png"
+  meta: "arte/personagens/aprendiz_c_capuz_capuz.json"
+  frame:
+  - 64
+  - 71
+  anchor:
+  - 32.0
+  - 63.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_c_capuz.yaml) + pixelizador"
   license: "proprio"
 - id: "personagem.aprendiz_chapeu"
   type: "spritesheet"
-  file: "arte/personagens/aprendiz_chapeu.png"
-  meta: "arte/personagens/aprendiz_chapeu.json"
+  file: "arte/personagens/aprendiz_c_chapeu_chapeu.png"
+  meta: "arte/personagens/aprendiz_c_chapeu_chapeu.json"
   frame:
   - 64
-  - 70
+  - 71
   anchor:
   - 32.0
-  - 62.0
+  - 63.0
   directions: 8
   animations:
     parado:
@@ -388,9 +554,119 @@
       start: 55
       frames: 4
       fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
   role: "camada"
   scale: 2
-  source: "Blender (tools/blender/personagens/aprendiz.yaml) + pixelizador"
+  source: "Blender (tools/blender/personagens/aprendiz_c_chapeu.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_faca"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_c_faca_faca.png"
+  meta: "arte/personagens/aprendiz_c_faca_faca.json"
+  frame:
+  - 64
+  - 68
+  anchor:
+  - 32.0
+  - 66.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_c_faca.yaml) + pixelizador"
   license: "proprio"
 - id: "personagem.aprendiz_gibao"
   type: "spritesheet"
@@ -398,10 +674,10 @@
   meta: "arte/personagens/aprendiz_gibao.json"
   frame:
   - 64
-  - 69
+  - 71
   anchor:
   - 32.0
-  - 61.0
+  - 63.0
   directions: 8
   animations:
     parado:
@@ -442,9 +718,365 @@
       start: 55
       frames: 4
       fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
   role: "jogador"
   scale: 2
   source: "Blender (tools/blender/personagens/aprendiz_gibao.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_lamparina"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_c_lamparina_lamparina.png"
+  meta: "arte/personagens/aprendiz_c_lamparina_lamparina.json"
+  frame:
+  - 64
+  - 74
+  anchor:
+  - 32.0
+  - 66.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_c_lamparina.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_lanca_curta"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_c_lanca_curta_lanca_curta.png"
+  meta: "arte/personagens/aprendiz_c_lanca_curta_lanca_curta.json"
+  frame:
+  - 64
+  - 80
+  anchor:
+  - 32.0
+  - 72.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_c_lanca_curta.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_machadinha"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_c_machadinha_machadinha.png"
+  meta: "arte/personagens/aprendiz_c_machadinha_machadinha.json"
+  frame:
+  - 64
+  - 75
+  anchor:
+  - 32.0
+  - 70.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_c_machadinha.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.aprendiz_martelo"
+  type: "spritesheet"
+  file: "arte/personagens/aprendiz_c_martelo_martelo.png"
+  meta: "arte/personagens/aprendiz_c_martelo_martelo.json"
+  frame:
+  - 64
+  - 72
+  anchor:
+  - 32.0
+  - 68.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 10.0
+      stride: 1.1365
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.5
+      stride: 1.8776
+    sentar:
+      start: 24
+      frames: 3
+      fps: 6.0
+    sentado:
+      start: 27
+      frames: 4
+      fps: 3.0
+    trabalhar_bancada:
+      start: 31
+      frames: 8
+      fps: 7.0
+    trabalhar_martelo:
+      start: 39
+      frames: 8
+      fps: 8.0
+    trabalhar_chao:
+      start: 47
+      frames: 8
+      fps: 6.0
+    dormir:
+      start: 55
+      frames: 4
+      fps: 2.0
+    golpe_corte:
+      start: 59
+      frames: 6
+      fps: 12.0
+    golpe_estocada:
+      start: 65
+      frames: 6
+      fps: 12.0
+    golpe_pesado:
+      start: 71
+      frames: 6
+      fps: 10.0
+    dano:
+      start: 77
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 80
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 86
+      frames: 1
+      fps: 1.0
+    levantar:
+      start: 87
+      frames: 5
+      fps: 8.0
+  role: "camada"
+  scale: 2
+  source: "Blender (tools/blender/personagens/aprendiz_c_martelo.yaml) + pixelizador"
   license: "proprio"
 - id: "personagem.avel"
   type: "spritesheet"
@@ -951,6 +1583,56 @@
   scale: 2
   source: "Blender (tools/blender/personagens/lina.yaml) + pixelizador"
   license: "proprio"
+- id: "personagem.lobo"
+  type: "spritesheet"
+  file: "arte/personagens/lobo.png"
+  meta: "arte/personagens/lobo.json"
+  frame:
+  - 86
+  - 69
+  anchor:
+  - 43.0
+  - 50.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.0
+      stride: 1.2
+    correr:
+      start: 16
+      frames: 8
+      fps: 13.0
+      stride: 2.4
+    bote:
+      start: 24
+      frames: 6
+      fps: 12.0
+    dano:
+      start: 30
+      frames: 3
+      fps: 10.0
+    morrer:
+      start: 33
+      frames: 6
+      fps: 10.0
+    morto:
+      start: 39
+      frames: 1
+      fps: 1.0
+    deitado:
+      start: 40
+      frames: 4
+      fps: 2.0
+  role: "lobo"
+  scale: 2
+  source: "Blender (tools/blender/personagens/lobo.yaml) + pixelizador"
+  license: "proprio"
 - id: "personagem.moleiro"
   type: "spritesheet"
   file: "arte/personagens/moleiro.png"
@@ -1133,11 +1815,11 @@
   file: "arte/personagens/saqueador.png"
   meta: "arte/personagens/saqueador.json"
   frame:
-  - 55
-  - 66
+  - 64
+  - 78
   anchor:
-  - 28.0
-  - 61.0
+  - 32.0
+  - 70.0
   directions: 8
   animations:
     parado:
@@ -1154,9 +1836,117 @@
       frames: 8
       fps: 12.0
       stride: 1.8424
+    golpe_corte:
+      start: 24
+      frames: 6
+      fps: 12.0
+    dano:
+      start: 30
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 33
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 39
+      frames: 1
+      fps: 1.0
   role: "saqueador"
   scale: 2
   source: "Blender (tools/blender/personagens/saqueador.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.saqueador_b"
+  type: "spritesheet"
+  file: "arte/personagens/saqueador_b.png"
+  meta: "arte/personagens/saqueador_b.json"
+  frame:
+  - 64
+  - 78
+  anchor:
+  - 32.0
+  - 70.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.5
+      stride: 1.1771
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.0
+      stride: 1.8424
+    golpe_corte:
+      start: 24
+      frames: 6
+      fps: 12.0
+    dano:
+      start: 30
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 33
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 39
+      frames: 1
+      fps: 1.0
+  role: "saqueador"
+  scale: 2
+  source: "Blender (tools/blender/personagens/saqueador_b.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.saqueador_c"
+  type: "spritesheet"
+  file: "arte/personagens/saqueador_c.png"
+  meta: "arte/personagens/saqueador_c.json"
+  frame:
+  - 64
+  - 76
+  anchor:
+  - 32.0
+  - 68.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 5.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 9.5
+      stride: 1.15
+    correr:
+      start: 16
+      frames: 8
+      fps: 12.0
+      stride: 1.8
+    golpe_corte:
+      start: 24
+      frames: 6
+      fps: 12.0
+    dano:
+      start: 30
+      frames: 3
+      fps: 10.0
+    cair:
+      start: 33
+      frames: 6
+      fps: 10.0
+    caido:
+      start: 39
+      frames: 1
+      fps: 1.0
+  role: "saqueador"
+  scale: 2
+  source: "Blender (tools/blender/personagens/saqueador_c.yaml) + pixelizador"
   license: "proprio"
 - id: "personagem.taberneira"
   type: "spritesheet"
@@ -1318,6 +2108,43 @@
   role: "comum"
   scale: 2
   source: "Blender (tools/blender/personagens/viajante.yaml) + pixelizador"
+  license: "proprio"
+- id: "personagem.vulto"
+  type: "spritesheet"
+  file: "arte/personagens/vulto.png"
+  meta: "arte/personagens/vulto.json"
+  frame:
+  - 102
+  - 103
+  anchor:
+  - 51.0
+  - 83.0
+  directions: 8
+  animations:
+    parado:
+      start: 0
+      frames: 8
+      fps: 4.0
+    andar:
+      start: 8
+      frames: 8
+      fps: 6.0
+      stride: 1.0324
+    golpe:
+      start: 16
+      frames: 6
+      fps: 8.0
+    dano:
+      start: 22
+      frames: 3
+      fps: 8.0
+    desfazer:
+      start: 25
+      frames: 6
+      fps: 6.0
+  role: "vulto"
+  scale: 2
+  source: "Blender (tools/blender/personagens/vulto.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.arvore"
   type: "sprite"

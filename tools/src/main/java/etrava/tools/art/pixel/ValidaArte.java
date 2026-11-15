@@ -27,19 +27,28 @@ public final class ValidaArte {
             java.util.Map.entry("parado", 8), java.util.Map.entry("andar", 8), java.util.Map.entry("correr", 8),
             java.util.Map.entry("sentar", 3), java.util.Map.entry("sentado", 4),
             java.util.Map.entry("trabalhar_bancada", 8), java.util.Map.entry("trabalhar_martelo", 8),
-            java.util.Map.entry("trabalhar_chao", 8), java.util.Map.entry("conversar", 6), java.util.Map.entry("dormir", 4));
+            java.util.Map.entry("trabalhar_chao", 8), java.util.Map.entry("conversar", 6), java.util.Map.entry("dormir", 4),
+            // V3: combate
+            java.util.Map.entry("golpe_corte", 6), java.util.Map.entry("golpe_estocada", 6), java.util.Map.entry("golpe_pesado", 6),
+            java.util.Map.entry("dano", 3), java.util.Map.entry("cair", 6), java.util.Map.entry("caido", 1),
+            java.util.Map.entry("levantar", 5),
+            java.util.Map.entry("bote", 6), java.util.Map.entry("golpe", 6), java.util.Map.entry("morrer", 6),
+            java.util.Map.entry("morto", 1), java.util.Map.entry("deitado", 4), java.util.Map.entry("desfazer", 6));
 
     /**
      * Animações exigidas por papel (SPEC-visual §6.2, até o V2): gente comum senta e conversa (o
      * trabalho depende do ofício e dormir só de quem dorme à vista); o jogador também trabalha nos
-     * três jeitos e dorme. Golpes, dano e queda entram no V3.
+     * três jeitos e dorme. No V3 entram golpes, dano e queda (jogador e saqueador).
      */
     static List<String> exigidas(String papel) {
         return switch (papel == null ? "comum" : papel) {
             case "jogador" -> List.of("parado", "andar", "correr", "sentar", "sentado", "trabalhar_bancada",
-                    "trabalhar_martelo", "trabalhar_chao", "dormir");
-            case "saqueador" -> List.of("parado", "andar", "correr");
-            case "camada" -> List.of("parado", "andar");   // chapéu e capuz do jogador: a grade do corpo
+                    "trabalhar_martelo", "trabalhar_chao", "dormir", "golpe_corte", "golpe_estocada", "golpe_pesado",
+                    "dano", "cair", "caido", "levantar");
+            case "saqueador" -> List.of("parado", "andar", "correr", "golpe_corte", "dano", "cair", "caido");
+            case "camada" -> List.of("parado", "andar");
+            case "lobo" -> List.of("parado", "andar", "correr", "bote", "dano", "morrer", "morto", "deitado");
+            case "vulto" -> List.of("parado", "andar", "golpe", "dano", "desfazer");   // chapéu e capuz do jogador: a grade do corpo
             default -> List.of("parado", "andar", "sentar", "sentado", "conversar");
         };
     }

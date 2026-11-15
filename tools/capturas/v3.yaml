@@ -1,0 +1,15 @@
+# Capturas do V3 — criaturas e combate (gradlew captures -Proteiro=v3; docs/visual/V3.md, tarefa 7).
+# Cada cena força o encontro e deixa a luta correr alguns segundos antes da foto.
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 240}
+
+cenas:
+  # saqueadores no Posto, de dia: o bando de três, cada um com uma roupa; o jogador de faca
+  - {nome: posto_saqueadores, area: estrada, cmds: ["tp 57 24", "hora 10", "dar faca", "equipar faca", "saude 500", "encontro saqueadores_posto", "puxar", "zoom 2"], medir: true}
+  - {nome: posto_saqueadores_longe, area: estrada, cmds: ["tp 57 24", "hora 10", "saude 500", "encontro saqueadores_posto", "puxar", "zoom 1"], quadros: 240}
+  # lobos na estrada, ao entardecer; o jogador de machadinha
+  - {nome: estrada_lobos, area: estrada, cmds: ["hora 18.4", "dar machadinha", "equipar machadinha", "saude 500", "encontro lobos_estrada", "puxar", "zoom 2"], medir: true}
+  - {nome: estrada_lobos_longe, area: estrada, cmds: ["hora 18.4", "saude 500", "encontro lobos_estrada", "puxar", "zoom 1"], quadros: 240}
+  # o vulto na estrutura, no escuro, com a lamparina na mão esquerda e o cajado na direita
+  - {nome: estrutura_vulto, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "dar cajado", "equipar cajado", "saude 500", "encontro vulto_camara", "puxar", "zoom 2"], medir: true}
+  # derrota: pouca vida contra os lobos; a página de quem acorda
+  - {nome: derrota_acordar, area: estrada, cmds: ["hora 17", "saude 2", "encontro lobos_estrada", "puxar", "zoom 2"], quadros: 1500}

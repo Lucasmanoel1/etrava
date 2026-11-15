@@ -4,8 +4,8 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V2 — Gente** (`docs/visual/V2.md`). V1 aprovado pelo diretor em 2026-11-13 (D-104).
-- **Status:** **PARADO no fim do V2**, à espera da aprovação do diretor (seção "Parada do V2", abaixo).
+- **Marco atual:** **V3 — Criaturas e combate** (`docs/visual/V3.md`). V2 aprovado pelo diretor em 2026-11-15.
+- **Status:** **PARADO no fim do V3**, à espera da aprovação do diretor (seção "Parada do V3", abaixo).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -13,8 +13,8 @@
 |---|---|---|
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
 | V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **concluído** (aprovado, D-104) |
-| V2 | Gente (25 humanos, animações de vida comum) | **concluído** (pedidos da parada aplicados; falta o ok final no aprendiz novo) |
-| V3 | Criaturas e combate | — |
+| V2 | Gente (25 humanos, animações de vida comum) | **concluído** (aprovado) |
+| V3 | Criaturas e combate | **concluído; aguarda aprovação** |
 | V4 | Natureza e terreno | — |
 | V5 | Arquitetura e exteriores | — |
 | V6 | Interiores, objetos e itens | — |
@@ -34,6 +34,70 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## V3 — Criaturas e combate (2026-11-15)
+**Feito:**
+- **Combate humano** (`anim/combate.py`):
+  - os golpes `golpe_corte`, `golpe_estocada` e `golpe_pesado`, de 6 quadros: a primeira metade é o preparo (o aviso do inimigo) e o impacto cai no meio;
+  - `dano` (3 quadros), `cair` (6), `caido` (1) e `levantar` (5).
+- **Jogador:**
+  - as 3 roupas com as 16 animações;
+  - 8 camadas, cada uma numa ficha que roda em paralelo (`aprendiz_c_*.yaml`, `so_camadas`): chapéu, capuz, faca, martelo, cajado, lança curta, machadinha e lamparina (com brilho).
+- **Saqueador:** golpe (machadinha), dano, cair e caído; 3 variações de roupa e cor (`saqueador_b`, `saqueador_c`).
+- **Lobo** (`criaturas/lobo.py`, `tarefas/lobo.py`):
+  - quadrúpede próprio, cinzento, com colar de pelo e dorso escuro;
+  - trote em pares diagonais, galope com a coluna que dobra;
+  - bote: agacha no aviso e salta no impacto, com a boca aberta;
+  - dano, morrer, morto e deitado.
+- **Vulto** (`criaturas/vulto.py`):
+  - sobre o esqueleto humano, com braços até o joelho e curvatura máxima;
+  - massa de terra encaroçada, sem cabeça nem rosto, membros de raiz com veios claros, trapos e fumaça em pontilhado;
+  - golpe com o tempo do pesado; ao morrer, afunda e se desfaz.
+  - Não confirma nada da camada V2/V3.
+- **Cliente** (D-117):
+  - golpe pela arma da mão principal;
+  - recuo ao levar golpe;
+  - corpo que fica no chão; o jogador se levanta depois da derrota;
+  - camadas de cabeça e das duas mãos;
+  - luz da lamparina na mão;
+  - variações do saqueador;
+  - efeitos: impacto, gotas com parcimônia, terra do vulto, poeira, aviso do golpe.
+- **Ferramentas:**
+  - transparência por pontilhado (D-115) e nada de pixel solto em quem anda;
+  - despacho genérico de tarefas e `-Prebase` (D-116);
+  - aviso de desenho cortado na borda do quadro;
+  - `puxar` no console;
+  - roteiro `tools/capturas/v3.yaml`.
+- **Verificação:**
+  - `gradlew build`: 168 testes, validador sem erros (VT-04, VT-05 com os papéis de lobo, vulto, saqueador e jogador, VT-15);
+  - capturas v3: 6/6.
+- **Dreamina:** 3 referências, 90 créditos.
+
+## Parada do V3 — o que olhar
+- `docs/capturas/v3/`:
+  - `posto_saqueadores.png`: o bando, cada um com uma roupa;
+  - `estrada_lobos.png`: entardecer;
+  - `estrutura_vulto.png`: no escuro, com a lamparina;
+  - `derrota_acordar.png`;
+  - as versões `_longe`.
+- `docs/capturas/v3/lobo_contato.png` e `vulto_contato.png`: todas as animações nas 8 direções.
+- `docs/capturas/v3/gifs/`: os três golpes do jogador, dano, cair e levantar; o golpe do saqueador; cada animação do lobo e do vulto.
+- No jogo: `gradlew run`.
+  - F1 → `area estrada`, `dar faca`, `equipar faca`, `encontro saqueadores_posto`, `puxar`;
+  - ou `encontro lobos_estrada`, `puxar`;
+  - para o vulto: `area estrutura`, `dar lamparina`, `equipar lamparina`, `encontro vulto_camara`, `puxar`.
+
+**A aprovar:**
+1. **A aparência do vulto.** É a única criatura sobrenatural do Capítulo I.
+2. O lobo.
+3. Os golpes por arma.
+4. D-115 a D-117.
+
+**Problemas conhecidos do V3:**
+- Visto de frente e de costas, o lobo continua estreito (é o ângulo).
+- A arma do jogador é pequena a zoom 1. A faca quase não aparece; a lança e o cajado, sim.
+- Os golpes de 6 quadros são curtos a 48 px. Se pedir mais força, aumento o arco do braço.
+- O roteiro manual de combate do `TESTES_MANUAIS.md` precisa de alguém jogando.
 
 ## V2 — Gente (em andamento)
 **Feito:**
@@ -248,7 +312,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-Com o ok do diretor no aprendiz novo: V3, Criaturas e combate (`docs/visual/V3.md`).
+Com o ok do diretor no V3: V4, Natureza e terreno (`docs/visual/V4.md`).
 
 ---
 

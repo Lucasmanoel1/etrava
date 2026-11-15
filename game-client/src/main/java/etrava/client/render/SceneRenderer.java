@@ -59,8 +59,18 @@ public final class SceneRenderer implements Disposable {
         public double speed;
         /** O que está fazendo pela agenda ({@code ActorView.activity()}); decide a animação parada (V2). */
         public String activity = "";
-        /** Camada desenhada por cima do corpo, no mesmo quadro (chapéu ou capuz do jogador, V2); null = nenhuma. */
-        public String camada;
+        /** Camadas desenhadas por cima do corpo, no mesmo quadro e nesta ordem: cabeça, mão principal,
+         * mão secundária (jogador, V2/V3). Vazia = nenhuma. */
+        public List<String> camadas = List.of();
+        /** O golpe a usar quando {@link #attack} ≥ 0 (o jogador escolhe pela arma, V3); null = o da folha. */
+        public String golpe;
+        /** Recuo de quem levou o golpe, de 1 (acabou de levar) a 0; 0 = nada (V3). */
+        public float dano;
+        /** Animação de uma vez só que manda sobre as outras (cair, levantar, morrer, desfazer), com o
+         * progresso de 0 a 1; depois de 1 fica no último quadro de {@link #fim}, se houver (V3). */
+        public String unica;
+        public float unicaT;
+        public String fim;
         /** Altura do desenho (m): quem dorme na cama fica sobre o colchão. Posta a cada quadro. */
         double z;
         /** Banco ou cama em que está (desenhado por cima dele, não atrás). */
@@ -113,6 +123,10 @@ public final class SceneRenderer implements Disposable {
     }
     private final Matrix4 screenMatrix = new Matrix4();
     private final Texture lightTexture;
+    /** V3: um pixel branco, para as partículas (pintadas com a cor da paleta). */
+    private final Texture branco;
+    /** V3: efeitos de combate (impacto, gotas, poeira, aviso do golpe). */
+    public final Particulas particulas = new Particulas();
     private final Texture shadowTexture;
     private ShaderProgram postShader, silhouetteShader, paletaShader;
     private final Animacoes animacoes;
@@ -226,6 +240,11 @@ public final class SceneRenderer implements Disposable {
         ground = GroundMasks.create();
         lightTexture = radial(256, false);
         shadowTexture = radial(64, true);
+        Pixmap um = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        um.setColor(1f, 1f, 1f, 1f);
+        um.fill();
+        branco = new Texture(um);
+        um.dispose();
         ShaderProgram.pedantic = false;
         silhouetteShader = new ShaderProgram(Gdx.files.classpath("shaders/post.vert"),
                 Gdx.files.classpath("shaders/silhouette.frag"));
@@ -317,6 +336,9 @@ public final class SceneRenderer implements Disposable {
         for (ActorDraw a : actors) batch.draw(shadowTexture, sx(a.x, a.y) - 26, sy(a.x, a.y, 0) - 13, 52, 26);
         batch.setColor(1f, 1f, 1f, 1f);
         drawSorted(actors, player, bounds, animTime, SCENE);
+        usarShader(null, 0, false);
+        particulas.atualizar(Gdx.graphics.getDeltaTime());
+        particulas.desenhar(batch, branco, bounds);
         batch.end();
         sceneFbo.end();
 
@@ -339,7 +361,10 @@ public final class SceneRenderer implements Disposable {
                 // o raio de luz do personagem (RF-008): um resto de claridade, ou a lamparina na mão
                 if (player != null && (!interior || playerLamp)) {
                     float radius = Double.isInfinite(playerLight) ? 3.2f : (float) playerLight;
-                    if (playerLamp) drawLight(player.x, player.y, 1.0, radius, 1.0f, 0.74f, 0.42f, night, bounds);
+                    // V3: a lamparina vai na mão esquerda; a luz sai de lá (30 cm ao lado, 10 cm à frente)
+                    double lx = player.x + 0.30 * Math.sin(player.facing) + 0.10 * Math.cos(player.facing);
+                    double ly = player.y - 0.30 * Math.cos(player.facing) + 0.10 * Math.sin(player.facing);
+                    if (playerLamp) drawLight(lx, ly, 0.8, radius, 1.0f, 0.74f, 0.42f, night, bounds);
                     else drawLight(player.x, player.y, 1.0, radius, 0.55f, 0.58f, 0.70f, night * 0.6f, bounds);
                 }
                 batch.end();
@@ -663,7 +688,7 @@ public final class SceneRenderer implements Disposable {
         a.z = 0;
         a.assento = null;
         a.animParada = null;
-        if (a.moving || a.attack >= 0 || a.sprite == null) return;
+        if (a.moving || a.attack >= 0 || a.unica != null || a.sprite == null) return;
         Assets.Sheet sheet = assets.sheet(a.sprite);
         if (sheet == null || !sheet.has("parado")) return;
         String anim = animacoes.escolher(a.id, a.activity, animTime, Animacoes.fase(a.id));
@@ -722,8 +747,18 @@ public final class SceneRenderer implements Disposable {
             String name;
             float tempoNela = 0;
             boolean umaVez = false;
-            if (a.attack >= 0 && sheet.has("golpe")) name = "golpe";
-            else if (a.moving) {
+            String golpe = a.attack >= 0 ? golpeDe(a, sheet) : null;
+            if (a.unica != null && sheet.has(a.unica)) {          // V3: cair, levantar, morrer, desfazer
+                name = a.unica;
+                umaVez = true;
+                if (a.unicaT >= 1f && a.fim != null && sheet.has(a.fim)) name = a.fim;
+                tempoNela = Math.min(1f, a.unicaT);
+            } else if (golpe != null) name = golpe;
+            else if (a.dano > 0 && sheet.has("dano")) {
+                name = "dano";
+                umaVez = true;
+                tempoNela = 1f - a.dano;
+            } else if (a.moving) {
                 name = a.speed > RUN_SPEED && sheet.has("correr") ? "correr" : "andar";
                 desde(a, "", animTime);
             } else {
@@ -740,7 +775,9 @@ public final class SceneRenderer implements Disposable {
             }
             var anim = sheet.anim(name);
             int n = Math.max(1, anim.frames());
-            if (name.equals("golpe")) frame = anim.start() + Math.min(n - 1, (int) (a.attack * n));
+            if (name.equals(golpe)) frame = anim.start() + Math.min(n - 1, (int) (a.attack * n));
+            else if (umaVez && (a.unica != null || name.equals("dano"))) // progresso 0..1 → quadro
+                frame = anim.start() + Math.min(n - 1, (int) (tempoNela * n));
             else if (umaVez) frame = anim.start() + Math.min(n - 1, (int) (tempoNela * anim.fps()));
             else if (anim.stride() != null && anim.stride() > 0)
                 frame = anim.start() + Math.floorMod((int) Math.floor(a.travel / anim.stride() * n), n);
@@ -758,22 +795,33 @@ public final class SceneRenderer implements Disposable {
         float y = snap(sy(a.x, a.y, a.z) - (sheet.frameH() - sheet.anchorY()) * px);
         batch.draw(sheet.texture(), x, y, sheet.frameW() * px, sheet.frameH() * px,
                 frame * sheet.frameW(), dir * sheet.frameH(), sheet.frameW(), sheet.frameH(), false, false);
-        if (a.camada != null) { // mesma grade de quadros, a âncora da própria camada (SPEC-visual §6.4)
-            Assets.Sheet c = assets.sheet(a.camada);
-            if (c.directions() == sheet.directions() && c.has("parado")) {
-                int cpx = c.px();
-                float cx = snap(sx(a.x, a.y) - c.anchorX() * cpx);
-                float cy = snap(sy(a.x, a.y, a.z) - (c.frameH() - c.anchorY()) * cpx);
-                batch.draw(c.texture(), cx, cy, c.frameW() * cpx, c.frameH() * cpx,
-                        frame * c.frameW(), dir * c.frameH(), c.frameW(), c.frameH(), false, false);
-            }
+        // camadas (SPEC-visual §6.4): mesma grade de quadros, a âncora da própria camada; cabeça,
+        // mão principal e mão secundária, nesta ordem
+        for (String camada : a.camadas) {
+            Assets.Sheet c = assets.sheet(camada);
+            if (c == null || c.directions() != sheet.directions() || !c.has("parado")) continue;
+            int cpx = c.px();
+            float cx = snap(sx(a.x, a.y) - c.anchorX() * cpx);
+            float cy = snap(sy(a.x, a.y, a.z) - (c.frameH() - c.anchorY()) * cpx);
+            batch.draw(c.texture(), cx, cy, c.frameW() * cpx, c.frameH() * cpx,
+                    frame * c.frameW(), dir * c.frameH(), c.frameW(), c.frameH(), false, false);
         }
     }
+
+    /** O golpe de quem está golpeando: o pedido (jogador, pela arma) ou o primeiro que a folha tem. */
+    private static String golpeDe(ActorDraw a, Assets.Sheet sheet) {
+        if (a.golpe != null && sheet.has(a.golpe)) return a.golpe;
+        for (String g : GOLPES) if (sheet.has(g)) return g;
+        return null;
+    }
+
+    private static final String[] GOLPES = {"golpe_corte", "bote", "golpe", "golpe_estocada", "golpe_pesado"};
 
     @Override
     public void dispose() {
         batch.dispose();
         lightTexture.dispose();
+        branco.dispose();
         shadowTexture.dispose();
         if (postShader != null) postShader.dispose();
         if (ground != null) ground.dispose();

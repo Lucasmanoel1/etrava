@@ -3,13 +3,16 @@ import math
 
 import bpy
 
-from anim import ciclos, vida
+from anim import ciclos, combate, vida
 from kit_humano import roupa as rp
 from kit_humano import corpo, pele
 from nucleo import camera, materiais, render
 
 TODOS = dict(ciclos.CICLOS)
 TODOS.update({n: ciclos._rosto_para_a_camera(f) for n, f in vida.CICLOS.items()})
+# V3: golpes e dano com o rosto erguido como os outros; no chão, o pescoço já vira o rosto para cima
+TODOS.update({n: (f if n in ("cair", "caido", "levantar") else ciclos._rosto_para_a_camera(f))
+              for n, f in combate.CICLOS.items()})
 
 # quadros e qps de cada animação de vida comum (SPEC-visual §6.2)
 VIDA = {"sentar": (3, 6), "sentado": (4, 3), "trabalhar_bancada": (8, 7), "trabalhar_martelo": (8, 8),
@@ -33,6 +36,11 @@ def animacoes(t):
     if papel == "saqueador" or "correr" in extra:
         lista.append({"nome": "correr", "quadros": 8, "fps": jeito.get("fps_correr", 12),
                       "passada": jeito.get("passada_correr", 1.8)})
+    if papel == "saqueador":
+        # V3: um golpe só (o da machadinha), dano e a queda
+        for n in ("golpe_corte", "dano", "cair", "caido"):
+            q, fps = combate.QUADROS[n]
+            lista.append({"nome": n, "quadros": q, "fps": fps})
     if papel == "comum":
         nomes = ["sentar", "sentado"]
         trabalho = t.get("ficha", {}).get("trabalho", "nenhum")
@@ -84,7 +92,9 @@ def executar(t):
                     quadros.append({"anim": a["nome"], "dir": d, "f": f, "arquivo": nome, "pontos": pts})
         return quadros
 
-    folhas = [{"nome": t["id"], "animacoes": anims, "quadros": fotografar("")}]
+    # so_camadas (V3): a ficha só existe para as camadas (armas do jogador); o corpo entra como
+    # holdout e não sai folha dele. Assim as camadas se dividem em fichas que rodam em paralelo.
+    folhas = [] if t.get("so_camadas") else [{"nome": t["id"], "animacoes": anims, "quadros": fotografar("")}]
     # camadas (SPEC-visual §6.4): chapéu, capuz... O corpo vira holdout (recorta o que ele esconde)
     # e a peça é fotografada sozinha na mesma grade; o jogo a desenha por cima do corpo.
     camadas = t.get("camadas", [])
@@ -94,6 +104,8 @@ def executar(t):
             ob.is_holdout = True
         for cam in camadas:
             antes = set(bpy.data.objects)
+            if cam.get("ferramenta"):                      # V3: a arma ou a lamparina na mão
+                rp.ferramenta(c, cam.get("mao", "d"), cam["ferramenta"])
             for r in cam.get("roupa", []):
                 fn, rampa = rp.PECAS[r["peca"]]
                 mat = materiais.material("camada_%s_%s" % (cam["nome"], r["peca"]), r.get("rampa", rampa),

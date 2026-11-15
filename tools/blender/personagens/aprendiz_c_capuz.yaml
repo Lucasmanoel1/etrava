@@ -1,0 +1,43 @@
+# Camada do jogador — cabeça: capuz de lã (capuz_la). Só a camada sai (so_camadas): o corpo do aprendiz entra como
+# holdout, e o que ele esconde já vem recortado. Mesmo corpo e mesmas animações de aprendiz.yaml.
+tipo: personagem
+id: aprendiz_c_capuz
+so_camadas: true
+manifesto:
+  - {id: personagem.aprendiz_capuz, papel: camada, folhas: [aprendiz_c_capuz_capuz]}
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+animacoes:
+  - {nome: parado, quadros: 8, fps: 5}
+  - {nome: andar, quadros: 8, fps: 10, passada: 1.15}
+  - {nome: correr, quadros: 8, fps: 12.5, passada: 1.9}
+  # V2 (SPEC-visual §6.2, jogador): vida comum
+  - {nome: sentar, quadros: 3, fps: 6}
+  - {nome: sentado, quadros: 4, fps: 3}
+  - {nome: trabalhar_bancada, quadros: 8, fps: 7}
+  - {nome: trabalhar_martelo, quadros: 8, fps: 8}
+  - {nome: trabalhar_chao, quadros: 8, fps: 6}
+  - {nome: dormir, quadros: 4, fps: 2}
+  # V3 (SPEC-visual §6.2, jogador): golpes por classe de arma, dano, queda, caído e levantar
+  - {nome: golpe_corte, quadros: 6, fps: 12}
+  - {nome: golpe_estocada, quadros: 6, fps: 12}
+  - {nome: golpe_pesado, quadros: 6, fps: 10}
+  - {nome: dano, quadros: 3, fps: 10}
+  - {nome: cair, quadros: 6, fps: 10}
+  - {nome: caido, quadros: 1, fps: 1}
+  - {nome: levantar, quadros: 5, fps: 8}
+corpo: {altura: 1.68, corpo: magro, cabeca: 1.25}
+cores: {pele: pele_clara}
+roupa:
+  - {peca: camisa, rampa: linho, manga: arregacada, luz_min: 0.55, barra: 0.20}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.17}
+  - {peca: cabelo, rampa: cabelo_castanho, estilo: baguncado}
+  - {peca: cinto, rampa: madeira_escura}
+  - {peca: bolsa, rampa: couro}
+# o jogador lê mais claro que o chão em toda hora (VT-03, D-090): valores mais altos
+pixelizador: {ambiente: 0.42, difusa: 0.62}
+camadas:
+  - {nome: capuz, roupa: [{peca: capuz, rampa: la_crua}]}

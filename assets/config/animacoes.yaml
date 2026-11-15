@@ -20,6 +20,19 @@ lugares:
   sentado: {props: [banco], alcance: 1.6}
   dormir: {props: [cama], alcance: 1.6}
 
+# Golpe do jogador pela arma na mão principal (V3): o item escolhe a animação; sem arma, o punho
+# (corte). O golpe forte (habilidade pesada) é sempre o pesado. Inimigos usam o golpe da folha
+# deles (bote do lobo, golpe do vulto, corte do saqueador).
+golpes:
+  padrao: golpe_corte
+  pesado: golpe_pesado
+  por_item: {faca: golpe_estocada, lanca_curta: golpe_estocada, machadinha: golpe_corte, martelo: golpe_pesado,
+             cajado: golpe_pesado}
+
+# Variações de folha (V3): cada um do bando pega uma, pelo id, para não sair clonado.
+variantes:
+  personagem.saqueador: [personagem.saqueador, personagem.saqueador_b, personagem.saqueador_c]
+
 atividades:
   # trabalho: o tipo sai do ofício (ficha em tools/blender/personagens/<id>.yaml)
   trabalhar:

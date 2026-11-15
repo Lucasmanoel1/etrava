@@ -54,6 +54,11 @@ public final class RenderArt {
 
     /** Quantos Blender ao mesmo tempo (0 = metade dos núcleos). */
     static int processos = 0;
+    /**
+     * --rebase: regrava a chave do cache dos renders que já existem, sem renderizar. Só para uma
+     * mudança de script que não muda imagem nenhuma (ex.: o despacho do entrada.py, D-116).
+     */
+    static boolean rebase = false;
     /** --dispositivo=HIP (sobrepõe blender.dispositivo do local.properties). */
     static String dispositivo = null;
 
@@ -68,11 +73,17 @@ public final class RenderArt {
             } else if (args[i].equals("--force")) force = true;
             else if (args[i].startsWith("--processos=")) processos = Integer.parseInt(args[i].substring(12).trim());
             else if (args[i].startsWith("--dispositivo=")) dispositivo = args[i].substring(14).trim();
+            else if (args[i].equals("--rebase")) rebase = true;
         }
         RenderArt r = new RenderArt(raiz);
         List<Objeto> objetos = r.objetos(so);
         if (objetos.isEmpty()) {
             System.out.println("Nada a fazer (nenhum objeto em tools/blender/**/*.yaml" + (so.isEmpty() ? "" : " com " + so) + ").");
+            return;
+        }
+        if (rebase) {                    // só as chaves: renderiza o que não existe, não pixeliza
+            objetos = objetos.stream().filter(o -> Files.exists(r.renderDir.resolve(o.id()).resolve("render.json"))).toList();
+            r.renderizar(objetos, false);
             return;
         }
         if (modo.equals("render")) r.renderizar(objetos, force);
@@ -262,6 +273,11 @@ public final class RenderArt {
                 && !Files.readString(marca).equals(h) && Files.readString(marca).equals(hashAntigo(o))) {
             Files.writeString(marca, h);  // migração da chave (D-105): o render é o mesmo
             System.out.println("  " + o.id() + ": chave do cache migrada");
+        }
+        if (rebase && Files.exists(pasta.resolve("render.json"))) {
+            Files.writeString(marca, h);
+            System.out.println("  " + o.id() + ": chave do cache regravada (rebase)");
+            return null;
         }
         if (!force && Files.exists(marca) && Files.readString(marca).equals(h) && Files.exists(pasta.resolve("render.json"))) {
             System.out.println("  " + o.id() + ": sem mudança (cache)");

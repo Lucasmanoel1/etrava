@@ -37,12 +37,22 @@ public final class Pixelizador {
      */
     public record Material(int indice, String nome, String rampa, double k, boolean pontilhar, boolean emissivo,
             boolean contorno, double luzMin, double oa, int[] tons, String rampaBrilho, boolean linhas,
-            String pincel, String grupo) {
+            String pincel, String grupo, double opacidade) {
         public Material(int indice, String nome, String rampa, double k, boolean pontilhar, boolean emissivo,
                 boolean contorno, double luzMin, double oa, int[] tons, String rampaBrilho, boolean linhas) {
             this(indice, nome, rampa, k, pontilhar, emissivo, contorno, luzMin, oa, tons, rampaBrilho, linhas, null, null);
         }
+
+        public Material(int indice, String nome, String rampa, double k, boolean pontilhar, boolean emissivo,
+                boolean contorno, double luzMin, double oa, int[] tons, String rampaBrilho, boolean linhas,
+                String pincel, String grupo) {
+            this(indice, nome, rampa, k, pontilhar, emissivo, contorno, luzMin, oa, tons, rampaBrilho, linhas, pincel,
+                    grupo, 1.0);
+        }
     }
+
+    /** Matriz de Bayer 4×4 (0..15): a ordem em que os pixels de um material translúcido somem. */
+    private static final int[] BAYER = {0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5};
 
     /**
      * @param ss            superamostragem do render (4 = cada pixel final vem de 4×4 subpixels)
@@ -144,6 +154,19 @@ public final class Pixelizador {
                 oa[o] = (float) (a / c);
                 det[o] = (float) (d / c);
                 prof[o] = (float) (z / c);
+            }
+        }
+
+        // 1b. translúcido por pontilhado (V3, vulto: fumaça e trapo): com opacidade < 1, o pixel some
+        // onde a matriz de Bayer passa da opacidade. O padrão é fixo no quadro: pixel art legítima,
+        // sem alfa parcial (VT-04)
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int o = y * w + x;
+                if (id[o] == 0 || id[o] == SOMBRA) continue;
+                Material m = material(mats, id[o]);
+                if (m != null && m.opacidade() < 1.0 && (BAYER[(y & 3) * 4 + (x & 3)] + 0.5) / 16.0 >= m.opacidade())
+                    id[o] = 0;
             }
         }
 

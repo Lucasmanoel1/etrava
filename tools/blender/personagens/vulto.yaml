@@ -1,0 +1,18 @@
+# O vulto (V3, content/enemies.yaml: sprite personagem.vulto; Q-07). Mora na estrutura enterrada e
+# só aparece no escuro, dentro do raio da lamparina. Sem rosto, sem forma humana inteira, sem
+# símbolo: nada aqui confirma fato da camada V2/V3. Referência: arte-bruta/referencias/v3/vulto.png.
+tipo: vulto
+id: vulto
+manifesto: {id: personagem.vulto, papel: vulto}
+pixelorama: true
+quadro: [112, 112]
+ancora: [56, 92]
+direcoes: 8
+corpo: {altura: 1.95, corpo: largo, cabeca: 0.6}
+jeito: {curvatura: 2.2}
+animacoes:
+  - {nome: parado, quadros: 8, fps: 4}
+  - {nome: andar, quadros: 8, fps: 6, passada: 0.9}
+  - {nome: golpe, quadros: 6, fps: 8}          # anda pela fase do golpe no cliente (aviso longo: 0,8 s)
+  - {nome: dano, quadros: 3, fps: 8}
+  - {nome: desfazer, quadros: 6, fps: 6}

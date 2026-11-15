@@ -1,0 +1,30 @@
+# Saqueador, variação C (V3): sem capuz, cabelo ruivo preso numa bandana vermelha, lenço escuro no
+# rosto, gibão de couro sem remendo sobre camisa clara, mais magro.
+# Saqueador (inimigo humano do Posto). Corpo e roupa no V2; golpes, dano e queda no V3.
+# Não tem retrato. Gente de estrada sem bandeira: roupa de várias origens, remendada.
+tipo: personagem
+id: saqueador_c
+manifesto: {id: personagem.saqueador_c, papel: saqueador}
+ficha:
+  idade: 30
+  oficio: saqueador
+  traco: lenço escuro tapando a boca + capuz; roupa remendada de cores que não combinam
+  postura: inclinado para a frente, joelho dobrado, pronto para correr
+  trabalho: nenhum
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.15, fps: 9.5, balanco: 0.8, curvatura: 0.7}
+corpo: {altura: 1.70, corpo: magro, cabeca: 1.2}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: la_crua, barra: 0.18}
+  - {peca: gibao, rampa: couro}
+  - {peca: bandana, rampa: tecido_vermelho}
+  - {peca: lenco_rosto, rampa: quase_preto}
+  - {peca: calca, rampa: tecido_marrom}
+  - {peca: botas, rampa: couro, altura: 0.20}
+  - {peca: cabelo, rampa: cabelo_ruivo, estilo: curto}
+  - {peca: cinto, rampa: couro}
+ferramenta: {mao_d: machadinha}

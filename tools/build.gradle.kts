@@ -119,6 +119,7 @@ fun artArgs(modo: String): List<String> {
     val a = mutableListOf(rootDir.absolutePath, modo)
     (project.findProperty("so") as String?)?.let { a.add("--so=$it") }
     if (project.hasProperty("force")) a.add("--force")
+    if (project.hasProperty("rebase")) a.add("--rebase")
     (project.findProperty("processos") as String?)?.let { a.add("--processos=$it") }
     (project.findProperty("dispositivo") as String?)?.let { a.add("--dispositivo=$it") }
     return a

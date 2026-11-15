@@ -34,7 +34,7 @@ final class Montagem {
                     m.path("emissivo").asBoolean(), m.path("contorno").asBoolean(true), m.path("luz_min").asDouble(),
                     m.path("oa").asDouble(1.0), tons, m.hasNonNull("rampa_brilho") ? m.get("rampa_brilho").asText() : null,
                     m.path("linhas").asBoolean(true), m.hasNonNull("pincel") ? m.get("pincel").asText() : null,
-                    m.hasNonNull("grupo") ? m.get("grupo").asText() : null));
+                    m.hasNonNull("grupo") ? m.get("grupo").asText() : null, m.path("opacidade").asDouble(1.0)));
         }
         JsonNode pp = desc.path("pixelizador");
         Pixelizador.Parametros def = Pixelizador.Parametros.padrao();
@@ -98,12 +98,18 @@ final class Montagem {
             x1 = w - 1;
             y1 = h - 1;
         }
+        // V3: o desenho que encosta na borda do quadro de render foi cortado pela câmera (o lobo
+        // vazava para o quadro vizinho no M8). Avisa com o lado, para aumentar o `quadro` da ficha.
+        if (recortar && x1 >= 0 && (x0 == 0 || y0 == 0 || x1 == w - 1 || y1 == h - 1))
+            System.out.printf("  AVISO %s: o desenho encosta na borda do quadro de render (%s%s%s%s): pode estar cortado; aumente `quadro`%n",
+                    o.id(), x0 == 0 ? "esquerda " : "", x1 == w - 1 ? "direita " : "", y0 == 0 ? "cima " : "",
+                    y1 == h - 1 ? "baixo" : "");
         int fw = x1 - x0 + 1, fh = y1 - y0 + 1;
         double ax = rj.path("ancora").get(0).asDouble() - x0, ay = rj.path("ancora").get(1).asDouble() - y0;
 
         String tipo = desc.path("tipo").asText();
         String sub = switch (tipo) {
-            case "personagem" -> "personagens";
+            case "personagem", "lobo", "vulto" -> "personagens";
             case "chao" -> "chao";
             case "decoracao" -> "decoracao";
             case "casa" -> "construcoes";
@@ -142,6 +148,7 @@ final class Montagem {
             for (Quadro q : qs) {
                 int[] ini = inicio.get(q.anim());
                 int cx = (ini[0] + q.f()) * fw, cy = q.dir() * fh;
+                if (GENTE.contains(tipo)) semIsolados(q.r().cor());   // VT-15: nada de pixel solto em quem anda
                 copiar(q.r().cor(), x0, y0, fw, fh, folhaImg, cx, cy);
                 int iw = q.r().cor().getWidth(), ih = q.r().cor().getHeight();
                 for (int y = 0; y < fh; y++)
@@ -202,7 +209,7 @@ final class Montagem {
             if (primeira == null) throw new IllegalStateException(o.id() + ": folha desconhecida no manifesto: " + folhas);
             anims = animsPorFolha.get(folhas.get(0));
             switch (tipo) {
-                case "personagem" -> {
+                case "personagem", "lobo", "vulto" -> {
                     m.put("type", "spritesheet");
                     m.put("file", primeira);
                     m.put("meta", primeira.replace(".png", ".json"));
@@ -262,5 +269,32 @@ final class Montagem {
                 int sx = x0 + x, sy = y0 + y;
                 if (sx < src.getWidth() && sy < src.getHeight()) dst.setRGB(dx + x, dy + y, src.getRGB(sx, sy));
             }
+    }
+
+    /** Folhas de quem anda (gente e criaturas): o pixel solto, sem vizinho, pisca no jogo (VT-15). */
+    static final java.util.Set<String> GENTE = java.util.Set.of("personagem", "lobo", "vulto");
+
+    /**
+     * Apaga o pixel opaco sem nenhum vizinho opaco nas 8 direções (sobra do pontilhado da fumaça,
+     * ponta de alça que a mão encobre). A sombra no chão não conta como vizinho nem é apagada.
+     */
+    static void semIsolados(BufferedImage img) {
+        int w = img.getWidth(), h = img.getHeight();
+        java.util.List<int[]> soltos = new java.util.ArrayList<>();
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++) {
+                int c = img.getRGB(x, y);
+                if ((c >>> 24) == 0 || c == Pixelizador.COR_SOMBRA) continue;
+                boolean viz = false;
+                for (int dy = -1; dy <= 1 && !viz; dy++)
+                    for (int dx = -1; dx <= 1 && !viz; dx++) {
+                        int xx = x + dx, yy = y + dy;
+                        if ((dx == 0 && dy == 0) || xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+                        int v = img.getRGB(xx, yy);
+                        viz = (v >>> 24) != 0 && v != Pixelizador.COR_SOMBRA;
+                    }
+                if (!viz) soltos.add(new int[] {x, y});
+            }
+        for (int[] p : soltos) img.setRGB(p[0], p[1], 0);
     }
 }

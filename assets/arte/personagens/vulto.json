@@ -1,0 +1,34 @@
+{
+  "frame" : [ 102, 103 ],
+  "anchor" : [ 51.0, 83.0 ],
+  "directions" : 8,
+  "animations" : {
+    "parado" : {
+      "start" : 0,
+      "frames" : 8,
+      "fps" : 4.0
+    },
+    "andar" : {
+      "start" : 8,
+      "frames" : 8,
+      "fps" : 6.0,
+      "stride" : 1.0324
+    },
+    "golpe" : {
+      "start" : 16,
+      "frames" : 6,
+      "fps" : 8.0
+    },
+    "dano" : {
+      "start" : 22,
+      "frames" : 3,
+      "fps" : 8.0
+    },
+    "desfazer" : {
+      "start" : 25,
+      "frames" : 6,
+      "fps" : 6.0
+    }
+  },
+  "points" : { }
+}

@@ -41,6 +41,9 @@ public final class Animacoes {
     public record Lugar(java.util.Set<String> props, java.util.Set<String> terrenos, double alcance) {}
 
     private final Map<String, Lugar> lugares = new HashMap<>();
+    private final Map<String, String> golpePorItem = new HashMap<>();
+    private final Map<String, List<String>> variantes = new HashMap<>();
+    private String golpePadrao = "golpe_corte", golpePesado = "golpe_pesado";
     private double alternar = 7.0;
 
     public static Animacoes carregar(Path assetsDir) {
@@ -66,6 +69,11 @@ public final class Animacoes {
 
     private void ler(JsonNode raiz) {
         alternar = raiz.path("alternar").asDouble(alternar);
+        raiz.path("variantes").fields().forEachRemaining(e -> variantes.put(e.getKey(), lista(e.getValue())));
+        JsonNode g = raiz.path("golpes");
+        golpePadrao = g.path("padrao").asText(golpePadrao);
+        golpePesado = g.path("pesado").asText(golpePesado);
+        g.path("por_item").fields().forEachRemaining(e -> golpePorItem.put(e.getKey(), e.getValue().asText()));
         raiz.path("lugares").fields().forEachRemaining(e -> {
             JsonNode v = e.getValue();
             lugares.put(e.getKey(), new Lugar(new java.util.HashSet<>(lista(v.path("props"))),
@@ -107,6 +115,20 @@ public final class Animacoes {
         if (l.size() == 1) return l.get(0);
         int i = (int) Math.floor(tempo / alternar + fase * l.size());
         return l.get(Math.floorMod(i, l.size()));
+    }
+
+    /** A folha deste ator: uma das variações do sprite, sempre a mesma para o mesmo id (V3). */
+    public String variante(String sprite, String id, java.util.function.Predicate<String> existe) {
+        List<String> v = variantes.get(sprite);
+        if (v == null || v.isEmpty() || id == null) return sprite;
+        String escolha = v.get(Math.floorMod(id.hashCode() * 0x9E3779B1 >>> 7, v.size()));
+        return existe.test(escolha) ? escolha : sprite;
+    }
+
+    /** O golpe do jogador pela arma na mão principal (null = punho) e pela força do golpe (V3). */
+    public String golpe(String arma, boolean pesado) {
+        if (pesado) return golpePesado;
+        return arma == null ? golpePadrao : golpePorItem.getOrDefault(arma, golpePadrao);
     }
 
     /** O lugar que a animação exige, ou null se ela vale em qualquer lugar (parado, conversar). */

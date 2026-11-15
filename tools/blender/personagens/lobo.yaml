@@ -1,0 +1,20 @@
+# O lobo magro (V3, content/enemies.yaml: sprite personagem.lobo). Cinzento de inverno, faminto:
+# pernas longas, peito estreito, colar de pelo no pescoço, dorso mais escuro, barriga clara,
+# cauda baixa. Referência: arte-bruta/referencias/v3/lobo.png e lobo_poses.png.
+tipo: lobo
+id: lobo
+manifesto: {id: personagem.lobo, papel: lobo}
+pixelorama: true
+quadro: [104, 88]
+ancora: [52, 62]
+direcoes: 8
+tamanho: 1.0
+animacoes:
+  - {nome: parado, quadros: 8, fps: 5}
+  - {nome: andar, quadros: 8, fps: 9, passada: 1.2}       # trote
+  - {nome: correr, quadros: 8, fps: 13, passada: 2.4}     # galope
+  - {nome: bote, quadros: 6, fps: 12}                     # anda pela fase do golpe no cliente
+  - {nome: dano, quadros: 3, fps: 10}
+  - {nome: morrer, quadros: 6, fps: 10}
+  - {nome: morto, quadros: 1, fps: 1}
+  - {nome: deitado, quadros: 4, fps: 2}

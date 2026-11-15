@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class Vestimenta {
     private static final Logger LOG = LoggerFactory.getLogger(Vestimenta.class);
-    private final Map<String, String> corpo = new HashMap<>(), cabeca = new HashMap<>();
+    private final Map<String, String> corpo = new HashMap<>(), cabeca = new HashMap<>(), maos = new HashMap<>();
 
     public static Vestimenta carregar(Path assetsDir) {
         Vestimenta v = new Vestimenta();
@@ -41,6 +41,7 @@ public final class Vestimenta {
     private void ler(JsonNode raiz) {
         raiz.path("corpo").properties().forEach(e -> corpo.put(e.getKey(), e.getValue().asText()));
         raiz.path("cabeca").properties().forEach(e -> cabeca.put(e.getKey(), e.getValue().asText()));
+        raiz.path("maos").properties().forEach(e -> maos.put(e.getKey(), e.getValue().asText()));
     }
 
     /** A folha do corpo para o que está no slot {@code body}; a base se não houver folha para ele. */
@@ -53,5 +54,21 @@ public final class Vestimenta {
     public String cabeca(Map<String, String> equipamento, Predicate<String> existe) {
         String id = equipamento == null ? null : cabeca.get(equipamento.get("head"));
         return id != null && existe.test(id) ? id : null;
+    }
+
+    /**
+     * As camadas desenhadas por cima do corpo, nesta ordem (V3, SPEC-visual §6.4): cabeça, mão
+     * principal (arma ou ferramenta), mão secundária (lamparina). Só as que têm folha.
+     */
+    public java.util.List<String> camadas(Map<String, String> equipamento, Predicate<String> existe) {
+        java.util.List<String> out = new java.util.ArrayList<>(3);
+        String c = cabeca(equipamento, existe);
+        if (c != null) out.add(c);
+        if (equipamento != null)
+            for (String slot : new String[] {"mainHand", "offHand"}) {
+                String id = maos.get(equipamento.get(slot));
+                if (id != null && existe.test(id)) out.add(id);
+            }
+        return out;
     }
 }

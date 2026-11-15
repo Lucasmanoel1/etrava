@@ -189,6 +189,8 @@ public final class GameUi implements Disposable {
 
     /** A tela de morte está aberta: só sai carregando um jogo (RF-341). */
     public boolean deathOpen() { return deathOpen; }
+    /** Alguma página cheia (epílogo, derrota, morte) está na tela. */
+    public boolean pageOpen() { return epilogueRoot.isVisible(); }
 
     /** Quem trata o pedido de carregar um save da tela de morte (recebe o nome do save). */
     public void onLoad(Consumer<String> handler) { this.onLoad = handler; }

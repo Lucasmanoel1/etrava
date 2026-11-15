@@ -75,6 +75,13 @@ rampas:
   fogo:             ["C86428", "F09A3C", "FFC864", "FFE9A8"]
   # --- noite (azuis de tecido e céu)
   noite:            ["1C2238", "2A3350", "3E4A6E", "5A6890"]
+  # --- criaturas (V3): só cores que já existem
+  pelo_lobo:        ["14101A", "2A2428", "3A3634", "524C46", "6B645A", "857D70"]
+  pelo_lobo_claro:  ["3A3634", "524C46", "6B645A", "857D70", "A39A8A", "C4BBA8"]
+  pelo_lobo_dorso:  ["14101A", "1E1A22", "2A2428", "3A3634", "524C46"]
+  vulto_terra:      ["14101A", "1E1A22", "2E2018", "3D2A1C", "4A3526"]
+  vulto_raiz:       ["2E2018", "5A3F26", "7A5632", "9C7A45", "B8975A"]
+  vulto_trapo:      ["1E1A22", "2A2428", "3A3634", "524C46", "6B645A"]
   # --- olhos e boca (decalques)
   olho:             ["14101A", "1E1A22"]
 

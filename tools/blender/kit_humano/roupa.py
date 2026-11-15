@@ -400,6 +400,33 @@ def ferramenta(c, mao_lado, qual):
               segmentos=12)
     elif qual == "bandeja":
         _tubo("bandeja", 0.03 * k, 0.17 * k, 0.17 * k, madeira, j, prof=1.0, z0=-0.05 * k, sub=1, segmentos=14)
+    # --- V3: o que o jogador leva na mão (camadas, SPEC-visual §6.4). Tudo um pouco maior que o
+    # real, para ler a 48 px: a lâmina da faca tem 3 px, a ponta da lança uns 4.
+    elif qual == "faca":
+        _tubo("faca_cabo", 0.09 * k, 0.026 * k, 0.026 * k, madeira, j, z0=0.03 * k, sub=0, segmentos=8)
+        _caixa("faca_guarda", (0.03 * k, 0.07 * k, 0.02 * k), (0, 0, -0.065 * k), ferro, j, sub=0)
+        _bola("faca_lamina", 0.10 * k, ferro, j, centro=(0.0, 0, -0.16 * k), escala=(0.32, 0.16, 1.0), sub=1, segs=8)
+    elif qual == "martelo":
+        _tubo("martelo_cabo", 0.30 * k, 0.026 * k, 0.026 * k, madeira, j, z0=0.04 * k, sub=0, segmentos=10)
+        _caixa("martelo_cabeca", (0.11 * k, 0.055 * k, 0.055 * k), (0.015 * k, 0, -0.27 * k), ferro, j, sub=0)
+    elif qual == "cajado":
+        _haste("cajado", j, chao, 1.0 * k, 0.034 * k, madeira)
+        _bola("cajado_no", 0.045 * k, madeira, j, centro=(0, 0, 1.0 * k), escala=(1.0, 1.0, 1.2), sub=1, segs=8)
+    elif qual == "lanca_curta":
+        _haste("lanca_curta", j, chao + 0.25 * k, 0.75 * k, 0.030 * k, madeira)
+        _bola("lanca_curta_ponta", 0.05 * k, ferro, j, centro=(0, 0, 0.83 * k), escala=(0.45, 0.25, 1.8),
+              sub=1, segs=8)
+    elif qual == "lamparina":
+        # pendurada pela alça, abaixo da mão; o vidro brilha (imagem de brilho) e o ponto `luz`
+        # diz ao cliente onde fica a luz que segue a mão
+        lata = _mat("ferr_lamparina", "ferro", k=0.05)
+        vidro = materiais.material("lamparina_vidro", "vidro", k=0.1, emissivo=True, contorno=False,
+                                   linhas=False, rampa_brilho="fogo")
+        _tubo("lamparina_alca", 0.06 * k, 0.012 * k, 0.012 * k, lata, j, z0=-0.02 * k, sub=0, segmentos=6)
+        _tubo("lamparina_tampa", 0.035 * k, 0.03 * k, 0.055 * k, lata, j, z0=-0.08 * k, sub=0, segmentos=10)
+        _tubo("lamparina_vidro", 0.09 * k, 0.048 * k, 0.048 * k, vidro, j, z0=-0.115 * k, sub=0, segmentos=10)
+        _tubo("lamparina_base", 0.03 * k, 0.055 * k, 0.055 * k, lata, j, z0=-0.205 * k, sub=0, segmentos=10)
+        ponto("luz", j, (0, 0, -0.16 * k))
     elif qual == "caneca":
         _tubo("caneca", 0.11 * k, 0.045 * k, 0.045 * k, _mat("ferr_caneca", "ferro", k=0.05), j, z0=-0.02 * k, sub=1,
               segmentos=10)

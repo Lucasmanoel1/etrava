@@ -70,6 +70,8 @@ public final class EtravaGame extends ApplicationAdapter {
     private Assets assets;
     /** Roupa e chapéu do jogador → folha e camada (V2, assets/config/jogador.yaml). */
     private etrava.client.render.Vestimenta vestimenta;
+    /** V3: o golpe pela arma (assets/config/animacoes.yaml). */
+    private etrava.client.render.Animacoes animacoesCfg;
     private SceneRenderer scene;
     private DayNight dayNight;
     private CameraRig camera;
@@ -137,6 +139,18 @@ public final class EtravaGame extends ApplicationAdapter {
     private float noticeTime;
     private int autosaveCount;
     private final List<ActorDraw> draws = new ArrayList<>();
+    /** V3: o último golpe de cada um foi o pesado (escolhe a animação do golpe). */
+    private final Map<String, Boolean> pesados = new HashMap<>();
+    /** V3: o último desenho de cada inimigo, para deixar o corpo no chão quando ele é abatido. */
+    private final Map<String, ActorDraw> ultimoInimigo = new HashMap<>();
+    /** V3: corpos no chão (só apresentação): o desenho, o tempo desde a queda e quanto dura. */
+    private final List<Object[]> corpos = new ArrayList<>();
+    private static final float CORPO_DURA = 25f, QUEDA = 0.6f;
+    /** V3: inimigos que estão armando o golpe (o brilho do aviso sai uma vez, no começo). */
+    private final java.util.Set<String> armandoAntes = new java.util.HashSet<>();
+    /** V3: o jogador acabou de perder e vai se levantar quando a página da derrota fechar. */
+    private boolean levantarPendente;
+    private float levantarT = -1f;
     /** Por personagem: última posição desenhada, metros andados e velocidade suavizada. */
     private final java.util.Map<String, double[]> motion = new java.util.HashMap<>();
     /** Plaquinhas de texto já desenhadas neste quadro: {x, y, largura, altura}. */
@@ -160,6 +174,7 @@ public final class EtravaGame extends ApplicationAdapter {
         }
         assets = new Assets(options.assetsDir());
         vestimenta = etrava.client.render.Vestimenta.carregar(options.assetsDir());
+        animacoesCfg = etrava.client.render.Animacoes.carregar(options.assetsDir());
         assets.preloadSprites();
         settings = Settings.load();
         audio = new etrava.client.audio.AudioPlayer(options.assetsDir(), assets.manifest(), settings);
@@ -596,6 +611,8 @@ public final class EtravaGame extends ApplicationAdapter {
             switch (e) {
                 case SimEvent.AreaChanged a -> {
                     rebuildScene();
+                    corpos.clear();
+                    ultimoInimigo.clear();
                     audio.sfx("sfx.porta", 0.7f, 1f);
                     autosave();
                 }
@@ -650,6 +667,14 @@ public final class EtravaGame extends ApplicationAdapter {
                             : String.valueOf(Math.max(1, Math.round(h.damage()))), 1.1f, Combat.PLAYER.equals(who) ? 0 : 1});
                     if (h.damage() > 0) flashes.put(who, 0.25f);
                     strikes.put(h.attacker(), STRIKE_TIME);
+                    pesados.put(h.attacker(), h.heavy());
+                    if (h.damage() > 0 && scene != null) {
+                        double[] pos = posicao(who);
+                        if (pos != null) {
+                            String tipo = tipoInimigo(who);
+                            scene.particulas.impacto(pos[0], pos[1], !"vulto".equals(tipo), "vulto".equals(tipo), h.heavy());
+                        }
+                    }
                     if (h.damage() <= 0) audio.sfx("sfx.combate.golpe");
                     else audio.sfx(Combat.PLAYER.equals(who) ? "sfx.combate.dano" : "sfx.combate.acerto",
                             h.heavy() ? 1f : 0.8f, h.heavy() ? 0.8f : 1f);
@@ -660,6 +685,7 @@ public final class EtravaGame extends ApplicationAdapter {
                     if (a.encounterId().startsWith("vulto")) audio.sfx("sfx.fenomeno.eco");
                 }
                 case SimEvent.EnemyChanged c -> {
+                    if ("morreu".equals(c.what()) || "executado".equals(c.what())) deixarCorpo(c.enemyId());
                     if (c.line() != null) {
                         balloons.removeIf(b -> b[0].equals(c.enemyId()));
                         balloons.add(new Object[] {c.enemyId(), c.line(), 2.2f + c.line().length() * 0.045f});
@@ -675,6 +701,7 @@ public final class EtravaGame extends ApplicationAdapter {
                 case SimEvent.PlayerSurrendered s -> showNotice(texts.get("combate.rendicao", ui.coins(s.moneyLost())));
                 case SimEvent.PlayerDefeated d -> {
                     attacking = false;
+                    levantarPendente = true;
                     audio.sfx("sfx.derrota");
                     previous.clear();
                     capturePrevious(sim.view());
@@ -767,10 +794,86 @@ public final class EtravaGame extends ApplicationAdapter {
         fill(draws.get(0), v.player(), alpha);
         ActorDraw jogador = draws.get(0);
         jogador.sprite = vestimenta.corpo(v.equipment(), jogador.sprite, assets::temEntrada);
-        jogador.camada = vestimenta.cabeca(v.equipment(), assets::temEntrada);
+        jogador.camadas = vestimenta.camadas(v.equipment(), assets::temEntrada);
+        // V3: o golpe pela arma na mão principal; o pesado quando foi o golpe forte
+        jogador.golpe = jogador.attack >= 0 ? animacoesCfg.golpe(v.equipment() == null ? null
+                : v.equipment().get("mainHand"), pesados.getOrDefault(Combat.PLAYER, false)) : null;
+        // V3: depois da derrota, quando a página fecha, ele se levanta do chão
+        if (levantarPendente && !ui.pageOpen()) {
+            levantarPendente = false;
+            levantarT = 0f;
+        }
+        jogador.unica = null;
+        if (levantarT >= 0) {
+            levantarT += Gdx.graphics.getDeltaTime();
+            if (levantarT > 0.9f || jogador.moving) levantarT = -1f;
+            else {
+                jogador.unica = "levantar";
+                jogador.unicaT = levantarT / 0.8f;
+                jogador.fim = null;
+            }
+        }
         for (int i = 0; i < v.actors().size(); i++) fill(draws.get(i + 1), v.actors().get(i), alpha);
         int base = 1 + v.actors().size();
-        for (int i = 0; i < v.enemies().size(); i++) fill(draws.get(base + i), v.enemies().get(i), alpha);
+        for (int i = 0; i < v.enemies().size(); i++) {
+            ActorDraw d = draws.get(base + i);
+            fill(d, v.enemies().get(i), alpha);
+            d.sprite = animacoesCfg.variante(d.sprite, d.id, assets::temEntrada);
+            ActorDraw copia = ultimoInimigo.computeIfAbsent(d.id, k -> new ActorDraw());
+            copia.id = d.id;
+            copia.sprite = d.sprite;
+            copia.x = d.x;
+            copia.y = d.y;
+            copia.facing = d.facing;
+        }
+        // os corpos no chão vão no fim da lista, ordenados com o resto pela profundidade
+        float dt = Gdx.graphics.getDeltaTime();
+        corpos.removeIf(c -> (float) c[1] > (float) c[2]);
+        for (Object[] c : corpos) {
+            c[1] = (float) c[1] + dt;
+            ActorDraw d = (ActorDraw) c[0];
+            d.unicaT = (float) c[1] / QUEDA;
+            draws.add(d);
+        }
+    }
+
+    /** Onde está alguém agora (jogador, NPC ou inimigo), pelo desenho do quadro anterior. */
+    private double[] posicao(String id) {
+        for (ActorDraw d : draws) if (id.equals(d.id)) return new double[] {d.x, d.y};
+        return null;
+    }
+
+    /** O tipo do inimigo pelo id (lobo, saqueador, vulto), ou null se não for inimigo. */
+    private String tipoInimigo(String id) {
+        if (sim == null) return null;
+        for (var e : sim.view().enemies()) if (e.id().equals(id) && e instanceof EnemyState s) return s.type;
+        return null;
+    }
+
+    /** O inimigo abatido fica no chão (V3): cai, morre ou se desfaz, conforme a folha dele. */
+    private void deixarCorpo(String id) {
+        ActorDraw u = ultimoInimigo.remove(id);
+        if (u == null || u.sprite == null) return;
+        var sheet = assets.sheet(u.sprite);
+        ActorDraw d = new ActorDraw();
+        d.id = id + "#corpo";
+        d.sprite = u.sprite;
+        d.x = u.x;
+        d.y = u.y;
+        d.facing = u.facing;
+        float dura = CORPO_DURA;
+        if (sheet != null && sheet.has("morrer")) {
+            d.unica = "morrer";
+            d.fim = "morto";
+        } else if (sheet != null && sheet.has("cair")) {
+            d.unica = "cair";
+            d.fim = "caido";
+        } else if (sheet != null && sheet.has("desfazer")) {
+            d.unica = "desfazer";                 // o vulto não deixa corpo: some ao se desfazer
+            dura = QUEDA * 1.05f;
+        } else return;
+        corpos.add(new Object[] {d, 0f, dura});
+        if (scene != null) scene.particulas.queda(d.x, d.y);
     }
 
     private void fill(ActorDraw d, ActorView a, float alpha) {
@@ -792,14 +895,24 @@ public final class EtravaGame extends ApplicationAdapter {
         m[3] += (step / dt - m[3]) * Math.min(1.0, dt * 6.0);
         m[0] = d.x;
         m[1] = d.y;
+        // poeira da corrida: um punhado a cada ~0,9 m (V3)
+        if (d.moving && m[3] > 2.4 && scene != null && Math.floor(m[2] / 0.9) != Math.floor((m[2] - step) / 0.9))
+            scene.particulas.passo(d.x, d.y, d.facing);
         d.travel = m[2];
         d.speed = d.moving ? m[3] : 0;
         d.flash = Math.min(1f, flashes.getOrDefault(a.id(), 0f) * 4f);
+        d.dano = Math.min(1f, flashes.getOrDefault(a.id(), 0f) / 0.25f);   // o recuo dura o lampejo
+        d.unica = null;
+        d.golpe = null;
         // golpe (D-078): o inimigo ergue o braço enquanto anuncia (primeira metade) e desce quando o golpe sai;
         // o do jogador é imediato, então a animação inteira passa depois do golpe
         Float strike = strikes.get(a.id());
         d.attack = -1f;
         if (a instanceof EnemyState e) {
+            boolean armando = EnemyState.WINDUP.equals(e.state);
+            if (armando && !armandoAntes.contains(e.id) && scene != null) scene.particulas.aviso(d.x, d.y, 1.9);
+            if (armando) armandoAntes.add(e.id);
+            else armandoAntes.remove(e.id);
             if (EnemyState.WINDUP.equals(e.state)) {
                 var def = content.enemies().get(e.type);
                 double total = Math.max(1, (def != null ? def.windupOr() : 0.45) / Simulation.DT);
@@ -1464,6 +1577,20 @@ public final class EtravaGame extends ApplicationAdapter {
                 for (var e : v.enemies())
                     sb.append(String.format(Locale.ROOT, "%s %s vida %.0f (%.1f, %.1f)%n", e.id, e.state, e.health, e.x, e.y));
                 return sb.length() == 0 ? "ninguém" : sb.toString().trim();
+            }
+            case "puxar": { // depuração (V3, capturas): traz os inimigos da área para 4 m do jogador
+                var w = sim.stateWorld();
+                int i = 0;
+                for (var e : w.enemies) {
+                    double a = 2 * Math.PI * i++ / Math.max(1, w.enemies.size()) + 0.6;
+                    e.x = w.player.x + 4 * Math.cos(a);
+                    e.y = w.player.y + 4 * Math.sin(a);
+                    e.homeX = e.x;
+                    e.homeY = e.y;
+                    e.path.clear();
+                }
+                previous.clear();
+                return w.enemies.size() + " inimigo(s) a 4 m";
             }
             case "fome":
                 sim.stateWorld().hunger = Math.max(0, Math.min(100, num(p, 1)));

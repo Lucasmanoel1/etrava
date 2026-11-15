@@ -1,0 +1,30 @@
+# Saqueador, variação B (V3: o bando não sai clonado): capuz pardo, gibão cinza remendado de oliva,
+# barba à mostra (sem lenço no rosto), calça cinza.
+# Saqueador (inimigo humano do Posto). Corpo e roupa no V2; golpes, dano e queda no V3.
+# Não tem retrato. Gente de estrada sem bandeira: roupa de várias origens, remendada.
+tipo: personagem
+id: saqueador_b
+manifesto: {id: personagem.saqueador_b, papel: saqueador}
+ficha:
+  idade: 30
+  oficio: saqueador
+  traco: lenço escuro tapando a boca + capuz; roupa remendada de cores que não combinam
+  postura: inclinado para a frente, joelho dobrado, pronto para correr
+  trabalho: nenhum
+pixelorama: true
+quadro: [64, 80]
+ancora: [32, 72]
+direcoes: 8
+jeito: {passada: 1.15, fps: 9.5, balanco: 0.8, curvatura: 0.7}
+corpo: {altura: 1.74, corpo: medio, cabeca: 1.2}
+cores: {pele: pele_media}
+roupa:
+  - {peca: camisa, rampa: ferrugem, barra: 0.18}
+  - {peca: gibao, rampa: tecido_cinza, remendos: tecido_oliva}
+  - {peca: capuz, rampa: tecido_marrom}
+  - {peca: barba, rampa: cabelo_preto, estilo: cheia}
+  - {peca: calca, rampa: tecido_cinza}
+  - {peca: botas, rampa: couro, altura: 0.20}
+  - {peca: cabelo, rampa: cabelo_castanho, estilo: sob_capuz}
+  - {peca: cinto, rampa: couro}
+ferramenta: {mao_d: machadinha}

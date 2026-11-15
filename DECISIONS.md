@@ -863,3 +863,40 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - **registrador:** sem cartola no retrato e com cartola no sprite. O retrato é de dentro, e na rua a cartola é a silhueta dele;
   - **Bento:** camisa marrom com lenço verde no retrato e camisa verde no sprite. Não atrapalha reconhecer.
 - **Decisão:** nenhum retrato refeito; 0 créditos da Dreamina.
+
+## D-115 — Transparência por pontilhado e nada de pixel solto em quem anda
+- **Data:** 2026-11-15
+- **Decisão:**
+  - o material pode ter `opacidade` < 1. O pixelizador apaga parte dos pixels numa matriz de Bayer 4×4, fixa no quadro: pixel art de verdade, sem alfa parcial (VT-04);
+  - no vulto, isso vale só para a fumaça. Os trapos pontilhados liam como rede e ficaram sólidos;
+  - a opacidade entra pelo registro de materiais da própria tarefa (`criaturas/vulto.py`), sem mexer em `nucleo/materiais.py`. Mexer lá invalidaria o cache de render de todo objeto, árvores inclusive;
+  - nas folhas de quem anda (gente, lobo, vulto), a montagem apaga o pixel sem nenhum vizinho: sobra do pontilhado e ponta de alça que a mão encobre (VT-15).
+- **Alternativa descartada:** alfa parcial no PNG. Sai da paleta e borra.
+
+## D-116 — Despacho genérico de tarefas e `renderArt -Prebase`
+- **Data:** 2026-11-15
+- **Problema:** o lobo e o vulto são tipos novos (`tipo: lobo`, `tipo: vulto`). O `entrada.py` tinha uma lista fixa de tipos e entra na chave do cache de todo objeto: acrescentar um tipo refaria o render de tudo.
+- **Decisão:**
+  - o `entrada.py` passa a carregar `tarefas/<tipo>.py` pelo nome. É a última vez que ele muda por causa de um tipo novo;
+  - `renderArt -Prebase` regrava a chave dos renders que já existem, sem renderizar e sem pixelizar. Serve só para mudanças que não alteram imagem nenhuma, como esta. Usado uma vez: 43 objetos;
+  - a montagem trata `lobo` e `vulto` como folha de personagem (`personagens/`, `spritesheet`), e não como sprite parado;
+  - aviso novo na montagem: o desenho que encosta na borda do quadro de render pode estar cortado. Com ele, o quadro do lobo e o do vulto foram aumentados.
+
+## D-117 — Combate no cliente (V3)
+- **Data:** 2026-11-15
+- **Decisão:** tudo é apresentação; o núcleo não muda.
+  - **Golpe do jogador pela arma da mão principal** (`animacoes.yaml`, `golpes`):
+    - faca e lança curta: estocada;
+    - machadinha e punho: corte;
+    - martelo e cajado: pesado;
+    - o golpe forte é sempre o pesado.
+  - **Inimigos:** usam o golpe da folha (corte do saqueador, bote do lobo, golpe do vulto). O preparo é o aviso, com um brilho curto quando começa a armar.
+  - **Dano:** recuo de 3 quadros enquanto dura o lampejo.
+  - **Inimigo abatido:** fica caído 25 s (`cair` → `caido`, `morrer` → `morto`). O vulto se desfaz e some.
+  - **Depois da derrota:** quando a página fecha, o jogador se levanta (`levantar`).
+  - **Camadas do jogador:** cabeça, mão principal e mão secundária, cada camada numa ficha própria (`aprendiz_c_*.yaml`, `so_camadas`), que renderiza em paralelo.
+  - **A luz da lamparina:** sai 30 cm ao lado do corpo, do lado da mão esquerda. A luz é larga, e ler o ponto da mão em cada quadro não mudaria nada visível.
+  - **Saqueador:** 3 variações de roupa e cor (`variantes`), uma por id: o bando não sai clonado.
+  - **Efeitos** (`Particulas`, só na paleta): lampejo de impacto; gotas `#9C2A2A` (2 a 4 por golpe que acerta, no chão por 0,7 s), ou terra no caso do vulto; poeira de corrida e de queda; brilho do aviso.
+  - **Console de depuração:** `puxar` traz os inimigos da área para 4 m do jogador. Serve para as capturas: o encontro forçado nasce nos pontos da área, longe demais para o inimigo perceber o jogador.
+- **Dreamina:** 3 referências (lobo, poses do lobo, vulto), 90 créditos.
