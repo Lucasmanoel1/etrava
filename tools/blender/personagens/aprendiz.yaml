@@ -26,7 +26,7 @@ corpo: {altura: 1.68, corpo: magro, cabeca: 1.25}
 cores: {pele: pele_clara}
 roupa:
   - {peca: camisa, rampa: linho, manga: arregacada, luz_min: 0.55, barra: 0.20}
-  - {peca: calca, rampa: tecido_marrom}
+  - {peca: calca, rampa: tecido_cinza}
   - {peca: botas, rampa: couro, altura: 0.17}
   - {peca: cabelo, rampa: cabelo_castanho, estilo: baguncado}
   - {peca: cinto, rampa: madeira_escura}

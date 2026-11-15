@@ -839,3 +839,27 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Decisão:** o padrão desta máquina passa a ser `blender.dispositivo=HIP,HIP,HIP,CPU,CPU` e `blender.processos=5`, no `local.properties`, fora do git.
 - **Resultado:** os 19 personagens refeitos em 26 min.
 - **Memória:** 5 Blender de personagem cabem nos 16 GB. Se faltar memória nas árvores, baixar para 4.
+
+## D-113 — Ferramenta só no trabalho; pernas com anatomia
+- **Data:** 2026-11-15
+- **Pedido do diretor:**
+  - os trabalhadores andavam com a ferramenta na mão (o ferreiro bebia na taverna de martelo na mão). Exceção: o cajado de quem precisa dele para andar;
+  - reformular a skin do personagem principal, cujas pernas ainda pareciam cilindros da arte provisória.
+- **Decisão:**
+  - **ferramentas:**
+    - o kit marca cada objeto de ferramenta com o tipo, e a tarefa do personagem o esconde fora das animações `trabalhar_*`;
+    - ficam sempre na mão (`SEMPRE_NA_MAO`) a bengala do Anselmo, o cajado com trouxa do viajante, a lança da Vessa e a machadinha do saqueador. A lança é o papel da Vessa (guarda, a única armada) e a machadinha é a arma dele para o V3;
+    - pasta, livro, carta, cesto, bandeja e caneca seguem a regra das ferramentas: só aparecem trabalhando;
+  - **pernas (kit inteiro, todos os humanos):**
+    - por seções, como o tronco: nádega, coxa que afina, joelho que marca na frente, panturrilha atrás, tornozelo fino, a calça folgando em cima da bota e a dobra no cano da bota;
+    - no parado, os pés ficam um pouco mais abertos que o quadril, e de frente abre-se um V entre as pernas. Antes, as duas pernas encostavam e viravam uma coluna só;
+  - **o jogador:** calça de lã escura (`tecido_cinza`), como no retrato. A calça e a bota marrons usavam os mesmos tons escuros e se fundiam.
+- **Alternativa descartada:** mudar só a perna do jogador. Todos tinham as mesmas pernas de tubo, e a passada de render é a mesma.
+
+## D-114 — Conferência dos retratos (V2, tarefa 8): nenhum refeito
+- **Data:** 2026-11-15
+- **Método:** os 24 retratos numa folha, lado a lado com a prancha "quem é quem".
+- **Resultado:** todos batem no que identifica a pessoa de longe: cabelo, chapéu ou capuz, cor principal da roupa e o traço da ficha. Duas diferenças pequenas, mantidas:
+  - **registrador:** sem cartola no retrato e com cartola no sprite. O retrato é de dentro, e na rua a cartola é a silhueta dele;
+  - **Bento:** camisa marrom com lenço verde no retrato e camisa verde no sprite. Não atrapalha reconhecer.
+- **Decisão:** nenhum retrato refeito; 0 créditos da Dreamina.

@@ -1,6 +1,6 @@
 # PROGRESS — ETRAVA
 
-Última atualização: 2026-11-14
+Última atualização: 2026-11-15
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
@@ -13,7 +13,7 @@
 |---|---|---|
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
 | V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **concluído** (aprovado, D-104) |
-| V2 | Gente (25 humanos, animações de vida comum) | **concluído; aguarda aprovação** |
+| V2 | Gente (25 humanos, animações de vida comum) | **concluído** (pedidos da parada aplicados; falta o ok final no aprendiz novo) |
 | V3 | Criaturas e combate | — |
 | V4 | Natureza e terreno | — |
 | V5 | Arquitetura e exteriores | — |
@@ -91,11 +91,20 @@
 
 **A aprovar:**
 1. A aparência de cada NPC de camada A: Avel, Nália, curandeira, ferreiro, estranho, registrador, agrimensora.
-2. As decisões D-108 (como medir o pé), D-109 (peças do kit, criança sem esqueleto próprio), D-110 (pixelização em paralelo), D-111 (animação só no lugar certo) e D-112 (GPU e CPU juntas).
+2. As decisões D-108 a D-114.
+3. A skin nova do aprendiz: `docs/capturas/v2/gifs/aprendiz_*.gif`.
 
-**Ficou para depois da aprovação:**
-- **Conferência dos retratos** (tarefa 8): comparar cada retrato ao sprite e refazer na Dreamina os que divergirem. Prefiro fazer depois do seu aval na aparência, para não pagar créditos por um retrato de um sprite que ainda pode mudar.
-- **Cache de render:** em dia. Os 27 personagens foram refeitos com o andar final (D-112: 5 Blender, GPU e CPU, 26 min).
+**Pedidos do diretor depois da 1ª parada (2026-11-15), feitos:**
+- **Animação no lugar certo (D-111):** trabalho, assento e cama só perto do objeto ou do terreno; fora disso, parado.
+- **Ferramenta só trabalhando (D-113):** ficam sempre na mão só a bengala, o cajado do viajante, a lança da Vessa e a machadinha do saqueador.
+- **Pernas com anatomia em todos (D-113):** coxa que afina, joelho, panturrilha, tornozelo fino, calça franzida na bota, dobra do cano, V entre as pernas no parado.
+- **O aprendiz:** calça de lã escura, separada da bota de couro.
+- **Retratos conferidos (D-114):** nenhum refeito, 0 créditos.
+- **Render (D-112):** 5 Blender (3 GPU + 2 CPU). Pixelização com 2 de cada vez (`pixel.threads=2`): com 3, as árvores apertaram a memória e o Claude Code derrubou a tarefa.
+- **Verificação:** 168 testes, validador sem erros (VT-04, VT-05, VT-15), vt03 112/112, capturas 9/9.
+
+**Problemas conhecidos do V2:**
+- O cache de render das árvores está em dia, mas a pixelização delas leva ~2 GB cada. Com pouca memória livre, rode `pixelize -Pso=<personagens>`.
 
 ## Portão V1 — vento a 60 qps e atlas indexado (D-103)
 Pedido: árvores com mais fluidez, 96 quadros a 60 qps, e o mesmo no resto que balança; paleta liberada.
@@ -239,7 +248,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-Depois da aprovação das árvores v2: V2, tarefa 1 de `docs/visual/V2.md` (kit humano modular e silhuetas por papel). Se o portão reprovar algo, iterar no V1.
+Com o ok do diretor no aprendiz novo: V3, Criaturas e combate (`docs/visual/V3.md`).
 
 ---
 

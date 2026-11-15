@@ -150,9 +150,9 @@ def parado(c, t, p):
         balanco(c.j["braco_" + lado], math.radians(-3 + 2 * r))
         balanco(c.j["antebraco_" + lado], math.radians(16 + 4 * r))
         c.j["pe_" + lado].rotation_euler.z = s * math.radians(10)     # pés um pouco abertos
-        # pés fixos no chão enquanto o peso passa de um para o outro (antes a coxa abria -3° e o pé
-        # ia com o quadril; agora o alvo já tem os pés um pouco mais juntos que o quadril)
-        y = s * (c.quadris - math.sin(math.radians(3)) * (c.coxa + c.canela))
+        # pés fixos no chão enquanto o peso passa de um para o outro, um pouco mais abertos que o
+        # quadril: de frente, abre-se um V entre as pernas e elas não viram uma coluna só (D-113)
+        y = s * (c.quadris + 0.025 * c.k)
         _planta(c, lado, 0.0, c.tornozelo, y=y)
 
 

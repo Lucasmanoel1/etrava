@@ -298,14 +298,38 @@ def montar(p):
         ponto("mao_" + lado, j["mao_" + lado], (0, 0, -0.04 * c.k))
 
     # --- pernas
+    # Perna por seções (como o tronco): o tubo reto, do quadril ao tornozelo, lia como cilindro.
+    # Agora: nádega atrás, coxa que afina, joelho que marca na frente, panturrilha atrás e
+    # tornozelo fino; a calça folga e franze em cima da bota, e a bota tem a dobra do cano.
+    # aneis: (z, meia largura (lado), meia profundidade (frente-trás), deslocamento para a frente)
+    k = c.k
+    alto_bota = roupa.get("botas", {}).get("altura", 0.16) * k
+    fim_calca = -(c.canela - alto_bota) - 0.015 * k
     for lado in ("e", "d"):
-        c.pele["calca"].append(_tubo("coxa_" + lado, c.coxa + 0.03, 0.082 * c.k * L, 0.060 * c.k, calca,
-                                     j["coxa_" + lado], z0=0.03))
-        alto_bota = roupa.get("botas", {}).get("altura", 0.16) * c.k
-        c.pele["calca"].append(_tubo("canela_" + lado, c.canela - alto_bota + 0.02, 0.058 * c.k, 0.050 * c.k, calca,
-                                     j["canela_" + lado]))
-        c.pele["botas_" + lado].append(_tubo("cano_" + lado, alto_bota, 0.06 * c.k, 0.054 * c.k, bota,
-                                             j["canela_" + lado], z0=-(c.canela - alto_bota), sub=1))
+        coxa = [(0.035 * k, 0.078 * k * L, 0.086 * k, -0.006 * k),        # quadril e nádega
+                (-0.06 * k, 0.072 * k * L, 0.080 * k, -0.008 * k),
+                (-0.17 * k, 0.062 * k * L, 0.067 * k, 0.000),
+                (-0.28 * k, 0.053 * k, 0.058 * k, 0.003 * k),
+                (-c.coxa + 0.035 * k, 0.046 * k, 0.053 * k, 0.006 * k),     # acima do joelho
+                (-c.coxa - 0.010 * k, 0.047 * k, 0.056 * k, 0.010 * k)]     # joelho, para a frente
+        c.pele["calca"].append(_secao("coxa_" + lado, list(reversed(coxa)), calca, j["coxa_" + lado], segs=12))
+        canela = [(0.010 * k, 0.046 * k, 0.054 * k, 0.008 * k),
+                  (-0.07 * k, 0.049 * k, 0.060 * k, -0.012 * k),            # panturrilha, atrás
+                  (-0.15 * k, 0.045 * k, 0.052 * k, -0.008 * k)]
+        z_meio = (-0.15 * k + fim_calca) / 2
+        canela += [(z_meio, 0.040 * k, 0.045 * k, -0.003 * k)] if z_meio < -0.17 * k else []
+        canela += [(fim_calca + 0.03 * k, 0.044 * k, 0.048 * k, 0.000),    # a calça folga em cima da bota
+                   (fim_calca, 0.051 * k, 0.054 * k, 0.002 * k)]
+        canela = [a for a in canela if a[0] >= fim_calca - 1e-6]
+        canela.sort(key=lambda a: a[0])
+        c.pele["calca"].append(_secao("canela_" + lado, canela, calca, j["canela_" + lado], segs=12))
+        topo_bota = -(c.canela - alto_bota)
+        cano = [(-c.canela + 0.01 * k, 0.034 * k, 0.044 * k, 0.004 * k),   # tornozelo fino
+                (topo_bota - 0.035 * k, 0.042 * k, 0.048 * k, 0.000),
+                (topo_bota - 0.012 * k, 0.045 * k, 0.050 * k, 0.000),
+                (topo_bota - 0.010 * k, 0.055 * k, 0.059 * k, 0.000),       # a dobra do cano
+                (topo_bota + 0.012 * k, 0.055 * k, 0.059 * k, 0.000)]
+        c.pele["botas_" + lado].append(_secao("cano_" + lado, cano, bota, j["canela_" + lado], segs=12))
         c.pele["botas_" + lado].append(_caixa("pe_" + lado, (0.20 * c.k, 0.09 * c.k, 0.075 * c.k),
                                               (0.04 * c.k, 0, -0.045 * c.k), bota, j["pe_" + lado], sub=1))
         # meio da sola: o VT-15 mede por ele se o pé de apoio desliza entre quadros
@@ -339,9 +363,13 @@ def montar(p):
         if peca in rp.PECAS:
             fn, rampa = rp.PECAS[peca]
             fn(c, r, mat_peca(peca, rampa))
+    # ferramentas: cada objeto marcado com o tipo, para a tarefa mostrar só no trabalho (D-113)
+    c.ferramentas = []
     for mao in ("mao_d", "mao_e"):
         if p.get("ferramenta", {}).get(mao):
+            antes = set(bpy.data.objects)
             rp.ferramenta(c, mao[-1], p["ferramenta"][mao])
+            c.ferramentas.append((p["ferramenta"][mao], [ob for ob in bpy.data.objects if ob not in antes]))
     if c.organico:
         from kit_humano import pele
         pele.montar(c)

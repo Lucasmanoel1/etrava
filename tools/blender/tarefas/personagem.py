@@ -16,6 +16,10 @@ VIDA = {"sentar": (3, 6), "sentado": (4, 3), "trabalhar_bancada": (8, 7), "traba
         "trabalhar_chao": (8, 6), "conversar": (6, 5), "dormir": (4, 2)}
 
 
+# o que a pessoa leva na mão em qualquer animação (o resto, só trabalhando)
+SEMPRE_NA_MAO = {"bengala", "cajado_trouxa", "lanca", "machadinha"}
+
+
 def animacoes(t):
     """A lista explícita da ficha, ou a do papel (V2): parado, andar (com o jeito do personagem),
     correr se pedir, e a vida comum: sentar, sentado, o trabalho do ofício, conversar, dormir."""
@@ -63,6 +67,12 @@ def executar(t):
         quadros = []
         for a in lista:
             ciclo = TODOS[a["nome"]]
+            # a ferramenta do ofício só aparece trabalhando; o que ajuda a andar ou é o papel da
+            # pessoa (bengala, cajado, lança da guarda, arma do saqueador) fica sempre (D-113)
+            for qual, obs in getattr(c, "ferramentas", []):
+                ver = qual in SEMPRE_NA_MAO or a["nome"].startswith("trabalhar")
+                for ob in obs:
+                    ob.hide_render = not ver
             for d in range(direcoes):
                 for f in range(a["quadros"]):
                     ciclo(c, f / a["quadros"], a)

@@ -140,8 +140,8 @@ def _pesos(c, ob, ossos):
 # pontes em repouso: tubo encostado em tubo só pela ponta arredondada vira ilha no voxel (o
 # joelho virava "contas" na perna esticada); uma esfera na junta une as peças
 PONTES = {
-    "calca": [("coxa_e", 0.074), ("coxa_d", 0.074), ("canela_e", 0.058), ("canela_d", 0.058),
-              ("pe_e", 0.046), ("pe_d", 0.046)],
+    "calca": [("coxa_e", 0.068), ("coxa_d", 0.068), ("canela_e", 0.050), ("canela_d", 0.050),
+              ("pe_e", 0.040), ("pe_d", 0.040)],
     "botas_e": [("pe_e", 0.052)],
     "botas_d": [("pe_d", 0.052)],
 }

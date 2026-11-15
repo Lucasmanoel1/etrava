@@ -63,10 +63,10 @@
   meta: "arte/personagens/agrimensora.json"
   frame:
   - 64
-  - 76
+  - 68
   anchor:
   - 32.0
-  - 68.0
+  - 60.0
   directions: 8
   animations:
     parado:
@@ -502,10 +502,10 @@
   meta: "arte/personagens/bento.json"
   frame:
   - 64
-  - 79
+  - 70
   anchor:
   - 32.0
-  - 71.0
+  - 62.0
   directions: 8
   animations:
     parado:
@@ -669,10 +669,10 @@
   file: "arte/personagens/estranho.png"
   meta: "arte/personagens/estranho.json"
   frame:
-  - 50
+  - 46
   - 65
   anchor:
-  - 25.0
+  - 23.0
   - 61.0
   directions: 8
   animations:
@@ -793,10 +793,10 @@
   meta: "arte/personagens/firmino.json"
   frame:
   - 64
-  - 80
+  - 72
   anchor:
   - 32.0
-  - 72.0
+  - 64.0
   directions: 8
   animations:
     parado:
