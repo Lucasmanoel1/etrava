@@ -1,0 +1,25 @@
+# Arbustos (V4): zimbro, sabugueiro (com as umbelas brancas), um arbusto de folha larga e
+# amora-silvestre (com as amoras). Mesmo gerador e pintor de folhagem das árvores. Decoração:
+# não bloqueiam; ficam nas manchas de mato, longe de caminho e porta (decoracao.yaml).
+tipo: arvore
+id: arbustos
+especie: arbusto
+manifesto:
+  - {id: deco.arbusto, folhas: [sabugueiro_a, arbusto_b, zimbro_a, zimbro_b]}
+  - {id: deco.amora, folhas: [amora_a, amora_b]}
+pixelorama: true
+quadro: [160, 140]
+ancora: [70, 116]
+vento: {quadros: 96, fps: 60}
+distancia_oa: 0.5
+variantes:
+  - {nome: sabugueiro_a, altura: 1.9, copa: 1.8, idade: 0.8, semente: 301,
+     frutos: {rampa: flor_branca, quantos: 12, chao: 0, raio: 0.055}}
+  - {nome: arbusto_b, altura: 1.4, copa: 1.6, idade: 0.7, semente: 307}
+  - {nome: zimbro_a, especie: zimbro, altura: 1.7, copa: 0.8, idade: 0.8, semente: 311}
+  - {nome: zimbro_b, especie: zimbro, altura: 1.1, copa: 1.0, idade: 0.7, semente: 313}
+  - {nome: amora_a, especie: amora, altura: 0.7, copa: 1.6, idade: 0.6, semente: 317,
+     frutos: {rampa: amora, quantos: 18, chao: 0, raio: 0.03}}
+  - {nome: amora_b, especie: amora, altura: 0.6, copa: 1.3, idade: 0.6, semente: 319,
+     frutos: {rampa: amora, quantos: 12, chao: 0, raio: 0.03}}
+pixelizador: {ambiente: 0.34, difusa: 0.78}

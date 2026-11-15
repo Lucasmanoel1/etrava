@@ -1,0 +1,14 @@
+# Freixo (V4): alto e aberto, galhos que sobem, folha miúda e clara, casca cinza.
+tipo: arvore
+id: freixo
+especie: freixo
+manifesto: {id: natureza.freixo}
+pixelorama: true
+quadro: [420, 460]
+ancora: [170, 430]
+vento: {quadros: 192, fps: 60}
+variantes:
+  - {nome: freixo_jovem,  altura: 5.6, copa: 2.6, idade: 0.6, semente: 131}
+  - {nome: freixo_adulto, altura: 7.4, copa: 3.6, idade: 1.0, semente: 139, densidade: 0.9}
+  - {nome: freixo_torto,  altura: 6.6, copa: 3.4, idade: 1.2, semente: 149, inclinacao: 9, densidade: 0.85}
+pixelizador: {ambiente: 0.34, difusa: 0.78}

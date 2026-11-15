@@ -1,0 +1,40 @@
+# Miúdos do chão (V4): capim alto com espiga, juncos, samambaia, flores do campo, cogumelos e
+# folhas caídas. Onde e quanto: assets/config/decoracao.yaml. As moitas balançam (laço de vento).
+tipo: decoracao
+id: miudos
+quadro: [76, 60]
+ancora: [32, 50]
+manifesto:
+  - {id: deco.capim, folhas: [capim_1, capim_2]}
+  - {id: deco.capim_seco, folhas: [capim_seco_1]}
+  - {id: deco.junco, folhas: [junco_1, junco_2]}
+  - {id: deco.samambaia, folhas: [samambaia_1, samambaia_2]}
+  - {id: deco.flor_campo, folhas: [flor_azul, flor_rosa, flor_violeta_b, flor_amarela_b, flor_branca_b]}
+  - {id: deco.cogumelo, folhas: [cogumelos_1, cogumelos_2]}
+  - {id: deco.folhas, folhas: [folhas_1, folhas_2, folhas_3]}
+elementos:
+  - {nome: capim_1, forma: tufo, semente: 21, quadros: 96, fps: 60, folhas: 18, altura: [0.45, 0.75], largura: 0.05,
+     inc: [0.2, 0.7], vento: 0.30, espiga: {rampa: palha, fracao: 0.3, comprimento: 0.07}}
+  - {nome: capim_2, forma: tufo, semente: 22, quadros: 96, fps: 60, folhas: 24, altura: [0.40, 0.65], largura: 0.05,
+     inc: [0.2, 0.8], vento: 0.30, raio: 0.17, espiga: {rampa: palha, fracao: 0.25, comprimento: 0.07}}
+  - {nome: capim_seco_1, forma: tufo, semente: 23, quadros: 96, fps: 60, folhas: 18, altura: [0.40, 0.70], largura: 0.05,
+     inc: [0.2, 0.7], vento: 0.30, rampa: grama_seca, espiga: {rampa: palha, fracao: 0.35, comprimento: 0.07}}
+  - {nome: junco_1, forma: tufo, semente: 24, quadros: 96, fps: 60, folhas: 16, altura: [0.6, 1.0], largura: 0.05,
+     inc: [0.0, 0.15], raio: 0.12, vento: 0.12, rampa: grama,
+     espiga: {rampa: terra, fracao: 0.25, comprimento: 0.13}}
+  - {nome: junco_2, forma: tufo, semente: 25, quadros: 96, fps: 60, folhas: 12, altura: [0.5, 0.85], largura: 0.05,
+     inc: [0.0, 0.2], raio: 0.10, vento: 0.12, rampa: grama}
+  - {nome: samambaia_1, forma: tufo, semente: 26, quadros: 96, fps: 60, folhas: 8, altura: [0.30, 0.45], largura: 0.12,
+     inc: [1.0, 1.5], segmentos: 6, serra: 0.5, arco: 0.6, raio: 0.05, vento: 0.15, rampa: folha_samambaia}
+  - {nome: samambaia_2, forma: tufo, semente: 27, quadros: 96, fps: 60, folhas: 11, altura: [0.35, 0.55], largura: 0.12,
+     inc: [1.0, 1.6], segmentos: 6, serra: 0.5, arco: 0.7, raio: 0.06, vento: 0.15, rampa: folha_samambaia}
+  - {nome: flor_azul, forma: flores, semente: 31, rampa: flor_azul}
+  - {nome: flor_rosa, forma: flores, semente: 32, rampa: flor_rosa}
+  - {nome: flor_violeta_b, forma: flores, semente: 33, rampa: flor_violeta, n: 6}
+  - {nome: flor_amarela_b, forma: flores, semente: 34, rampa: flor_amarela, n: 6}
+  - {nome: flor_branca_b, forma: flores, semente: 35, rampa: flor_branca, n: 6}
+  - {nome: cogumelos_1, forma: cogumelos, semente: 41, n: 3}
+  - {nome: cogumelos_2, forma: cogumelos, semente: 42, n: 2}
+  - {nome: folhas_1, forma: folhas, semente: 51, rampa: folha_carvalho_parda}
+  - {nome: folhas_2, forma: folhas, semente: 52, rampa: terra_seca}
+  - {nome: folhas_3, forma: folhas, semente: 53, rampa: ferrugem, n: 6}

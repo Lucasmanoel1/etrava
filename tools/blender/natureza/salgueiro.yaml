@@ -1,0 +1,14 @@
+# Salgueiro (V4): tronco largo e torto, galhos que caem, folha que pende em cortina.
+# Só perto do moinho (regra de espécie da decoracao.yaml).
+tipo: arvore
+id: salgueiro
+especie: salgueiro
+manifesto: {id: natureza.salgueiro}
+pixelorama: true
+quadro: [500, 400]
+ancora: [210, 370]
+vento: {quadros: 192, fps: 60}
+variantes:
+  - {nome: salgueiro_a, altura: 5.8, copa: 5.0, idade: 1.2, semente: 171, densidade: 0.8}
+  - {nome: salgueiro_b, altura: 5.0, copa: 4.4, idade: 1.0, semente: 179, inclinacao: 10, densidade: 0.8}
+pixelizador: {ambiente: 0.36, difusa: 0.78}

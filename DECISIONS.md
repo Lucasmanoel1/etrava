@@ -900,3 +900,62 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - **Efeitos** (`Particulas`, só na paleta): lampejo de impacto; gotas `#9C2A2A` (2 a 4 por golpe que acerta, no chão por 0,7 s), ou terra no caso do vulto; poeira de corrida e de queda; brilho do aviso.
   - **Console de depuração:** `puxar` traz os inimigos da área para 4 m do jogador. Serve para as capturas: o encontro forçado nasce nos pontos da área, longe demais para o inimigo perceber o jogador.
 - **Dreamina:** 3 referências (lobo, poses do lobo, vulto), 90 créditos.
+
+## D-118 — Árvores do V4: gerador próprio, sem Sapling
+- **Data:** 2026-11-15
+- **Decisão:** o spike da tarefa 1 do V4 fica com o gerador próprio (`natureza/arvore.py`, colonização do espaço, D-100).
+  - Cada espécie nova é só um conjunto de parâmetros: castanheiro, freixo, pinheiro-silvestre e salgueiro.
+  - Dois recursos novos:
+    - o perfil `guarda`: copa que só existe no alto e termina chata (pinheiro);
+    - `pendente`: o tufo desce em cortina mais estreita (salgueiro).
+  - Os arbustos (zimbro, sabugueiro, amora) saem do mesmo gerador, com `rente`: um anel de tufos junto ao chão, senão a moita flutua sobre a sombra.
+  - Pincéis novos no `folhas.pxo`: uma camada por espécie, acrescentada sem tocar nas que já existem.
+- **Motivo:** o pintor de folhagem precisa saber onde está cada tufo (âncora por quadro, D-100), e o Sapling não dá isso. Instalar a extensão também traria uma dependência a mais para um resultado que o gerador próprio já alcança.
+- **Descartado:** Sapling Tree Gen.
+- **Dreamina:** nenhum crédito no V4. A casca sai do ruído por eixo, e a cor de cada espécie sai de rampas montadas só com cores que já estavam na paleta.
+
+## D-119 — Espécie de árvore por área e por região
+- **Data:** 2026-11-15
+- **Decisão:** cada espécie nova tem o seu ID no manifesto (`natureza.castanheiro`, `natureza.freixo`, `natureza.pinheiro`, `natureza.salgueiro`).
+  - O mapa continua dizendo só `prop.arvore` e `prop.arvore_b`.
+  - A seção `especies` da `decoracao.yaml` troca o sprite por área (lista sorteada pelo hash da posição; repetir pesa mais) e por vizinhança (`perto: {de: casa_moinho, raio: 9}` → salgueiro). Quem faz a troca é o `Especies.java`.
+  - Vila: carvalho, castanheiro e freixo, e salgueiro junto ao moinho. Estrada: mais pinheiro.
+  - As árvores além da borda seguem a mesma regra.
+- **Motivo:** dá variedade sem mexer nos mapas nem na simulação. Pegada e colisão são as do prop (regra da Fase V).
+- **Descartado:** pôr todas as espécies como variantes de `prop.arvore`. Assim não haveria como fazer pinheiro só na estrada e salgueiro só no moinho.
+
+## D-120 — A árvore de Nalia é peça única
+- **Data:** 2026-11-15
+- **Decisão:** `natureza/arvore_nalia.yaml`, com três IDs (`prop.arvore_nalia_morta`, `_viva`, `_cortada`) que o `props.yaml` usa nos estados de `arvore_velha`. Antes, os estados apontavam para a árvore genérica, e a "árvore velha" saía igual a qualquer outra.
+  - É o mesmo esqueleto nos três estados (mesma semente): tronco grosso, torto e inclinado, maior que todas as outras árvores (8 m, copa de 6,8 m).
+  - **Morta:** galho nu e cinza. **Viva:** a mesma árvore com folha rala (densidade 0,72). **Cortada:** o toco largo com o corte claro.
+  - Nada brilha, nada é estranho na imagem. O arco revela o resto; a arte não adianta nada.
+- **A aprovar pelo diretor:** os três estados.
+
+## D-121 — Miúdos, arbustos e o sub-bosque além da borda
+- **Data:** 2026-11-15
+- **Decisão:**
+  - **Decoração nova** (`decoracao/miudos.yaml`, `decoracao/pedras.yaml`, `natureza/arbustos.yaml`): capim alto com espiga, capim seco, juncos, samambaia, cinco flores do campo, cogumelos, folhas no chão (decalque), pedregulhos, arbustos e amora.
+  - **`prop.pedras`** foi refeito com a mesma pegada.
+  - **Troncos caídos:** só além da borda. Decoração não bloqueia, e um tronco que se atravessa andando fica errado.
+  - **Distribuição:** vila e estrada, por terreno, em manchas, com distância mínima dos objetos. Nada a 1 m de porta (os pontos `*porta*` da área entram como obstáculo).
+  - **Além da borda:** sub-bosque (`alem_da_borda`), cada vez mais fechado à medida que se afasta do mapa.
+
+## D-122 — Terrenos pedra, plantio e tábuas; os três tons de grama ficam de fora
+- **Data:** 2026-11-15
+- **Decisão:**
+  - `pedra` usa a textura de pedra do funil.
+  - `plantio` (sulcos) e `tabuas` (assoalho) usam texturas feitas por script (`texturas/procedurais.py`), periódicas, em cinza. São geometria pura, e o gerador faz melhor que a Dreamina.
+  - Com isso, nenhum terreno usado nos mapas tem arte do gerador antigo.
+  - **Grama em três tons** (pisada, comum, alta) não entra: os mapas não têm terreno para isso, e criar um mudaria o mapa. A variação fica com a textura, com a decoração (o capim alto em manchas) e com o terreno de terra dos caminhos.
+
+## D-123 — Vida ambiente e "Detalhes do ambiente"
+- **Data:** 2026-11-15
+- **Decisão:**
+  - **Emissores** (`Ambiente.java`), sempre só na parte visível, com teto de 160:
+    - folhas caem das árvores, mais nas rajadas do vento global;
+    - de dia, bandos de 3 a 6 pássaros bem alto e borboletas em volta das flores;
+    - à noite, vaga-lumes (cada um é um pontinho de luz na passada de luz) e mariposas em volta dos lampiões.
+  - Cores só da paleta.
+  - Opção nova: "Detalhes do ambiente: Alto/Baixo". Baixo desliga tudo isto.
+  - A fumaça de chaminé fica para o V5, junto com as chaminés novas.

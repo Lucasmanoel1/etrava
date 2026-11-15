@@ -116,9 +116,9 @@
   height: 4.5
   blocks: true
   states:
-    morta: prop.arvore_morta
-    viva: prop.arvore
-    cortada: prop.toco
+    morta: prop.arvore_nalia_morta
+    viva: prop.arvore_nalia_viva
+    cortada: prop.arvore_nalia_cortada
 
 # ---------- a estrutura enterrada (M6) ----------
 # Fibras petrificadas: parecem raízes grossas saindo da rocha, mas são pedra (PRD 6: "primeira

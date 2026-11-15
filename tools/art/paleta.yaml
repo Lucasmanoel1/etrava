@@ -63,6 +63,18 @@ rampas:
   casca_fruteira:   ["14101A", "1E1A22", "2E2018", "4A3526", "5A4232", "6A4A30"]
   casca_seca:       ["14101A", "2A2428", "3A3634", "524C46", "6B645A", "857D70", "A39A8A"]
   casca_betula:     ["2A2428", "524C46", "857D70", "A39A8A", "C4BBA8", "D8CCB0"]
+  # V4: espécies novas, só com cores que já estavam na paleta
+  folha_castanheiro: ["0F1514", "16211C", "1F2E21", "2B3D25", "3D4F2B", "556333", "707A3E", "8A8C4C"]
+  folha_freixo:     ["0F1514", "1E2A1C", "2E3C24", "44502E", "5A6438", "6B7045", "868C52"]
+  folha_salgueiro:  ["16211C", "2E3C24", "44502E", "5A6438", "6B7045", "868C52", "A4A866"]
+  folha_zimbro:     ["10161A", "182420", "22322C", "34463A", "4A5C48", "5A6438"]
+  folha_samambaia:  ["16211C", "1F2E21", "2E3C24", "44502E", "5A6438", "6B7045"]
+  casca_castanheiro: ["14101A", "1E1A22", "2E2018", "3D2A1C", "4A3526", "5A4232", "6A4A30"]
+  casca_freixo:     ["14101A", "2A2428", "3A3634", "524C46", "6B645A", "857D70"]
+  casca_pinheiro:   ["14101A", "2E2018", "4A3526", "6A4A30", "8A4E2E", "A85F38"]
+  casca_salgueiro:  ["14101A", "1E1A22", "2A2428", "3A3634", "524C46", "6B645A"]
+  cogumelo:         ["3D2A1C", "7A5632", "9C7A45", "B9A888", "D8CCB0"]
+  amora:            ["14101A", "1E1A22", "3E3048", "4A1E1A"]
   # --- flores (dessaturadas)
   flor_violeta:     ["3E3048", "5E4A6A", "82709A"]
   flor_amarela:     ["8A7036", "B89A4E", "D8BC70"]

@@ -1,4 +1,4 @@
-# Terrenos da fatia do V1: grama, terra e lajota. Cada um vira uma textura de 512×256 px de arte
+# Terrenos: grama, terra e lajota (V1); pedra, plantio e tábuas (V4). Cada um vira uma textura de 512×256 px de arte
 # que se repete alinhada ao mundo (sem costura entre tiles). A escala da textura tem de dividir
 # o período de 8 m: 0,125 · 0,25 · 0,375 · 0,5 · 0,625 · 0,75… repetições por metro.
 tipo: chao
@@ -10,7 +10,15 @@ manifesto:
   - {id: tile.grama, folhas: [grama], prioridade: 3}
   - {id: tile.terra, folhas: [terra], prioridade: 2}
   - {id: tile.lajota, folhas: [lajota], prioridade: 4}
+  - {id: tile.pedra, folhas: [pedra], prioridade: 1}
+  - {id: tile.plantio, folhas: [plantio], prioridade: 8}
+  - {id: tile.tabuas, folhas: [tabuas], prioridade: 6}
 terrenos:
   - {nome: grama, rampa: grama, textura: grama.png, escala: 0.75, escala2: 0.125, peso2: 0.16, k: 1.35}
   - {nome: terra, rampa: terra, textura: terra.png, escala: 0.625, escala2: 0.125, peso2: 0.18, k: 1.15}
   - {nome: lajota, rampa: pedra, tons: [0, 4], textura: lajota.png, escala: 0.25, escala2: 0.125, peso2: 0.08, k: 1.25}
+  # V4 — pedra: chão de rocha (a estrutura, as pedras da vila); plantio: sulcos de lavoura
+  # (textura procedural, procedurais.py); tábuas: assoalho dos interiores (idem)
+  - {nome: pedra, rampa: pedra, textura: pedra.png, escala: 0.375, escala2: 0.125, peso2: 0.20, k: 1.2}
+  - {nome: plantio, rampa: terra, textura: plantio.png, escala: 0.25, escala2: 0.125, peso2: 0.12, k: 1.1}
+  - {nome: tabuas, rampa: madeira, textura: tabuas.png, escala: 0.375, escala2: 0.125, peso2: 0.06, k: 1.0, pontilhar: false}

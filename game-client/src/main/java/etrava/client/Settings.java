@@ -28,6 +28,8 @@ public final class Settings {
     public int limiteFps = 60;
     public boolean posProcessamento = true;
     public boolean luzDinamica = true;
+    /** V4: "Detalhes do ambiente" — alto (true) mostra folhas, pássaros, vaga-lumes; baixo desliga. */
+    public boolean detalhesAmbiente = true;
     // ---- texto (RNF-040): 1; 1,25; 1,5
     public float tamanhoTexto = 1f;
     /** Segundos por letra no balão das conversas ambientes (velocidade do texto). */

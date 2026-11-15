@@ -93,6 +93,7 @@ public final class SceneRenderer implements Disposable {
 
     /** Variante do sprite pela posição (SPEC-visual §7.1): o mapa não muda, a vila fica variada. */
     private Assets.Sprite pick(String id, double x, double y) {
+        id = especies.escolher(id, x, y, posHash(x, y) >>> 9);
         Assets.Sprite[] v = assets.variants(id);
         return v[Math.floorMod(posHash(x, y), v.length)];
     }
@@ -109,6 +110,8 @@ public final class SceneRenderer implements Disposable {
     }
 
     private final Assets assets;
+    /** V4: qual espécie de árvore vai em cada lugar (área, vizinhança, posição). */
+    private final Especies especies;
     private final DayNight dayNight;
     private final List<TileDraw> tiles = new ArrayList<>();
     private final List<Static> statics = new ArrayList<>();
@@ -127,6 +130,11 @@ public final class SceneRenderer implements Disposable {
     private final Texture branco;
     /** V3: efeitos de combate (impacto, gotas, poeira, aviso do golpe). */
     public final Particulas particulas = new Particulas();
+    /** V4: folhas, pássaros, borboletas, vaga-lumes e mariposas (só ao ar livre). */
+    private final Ambiente ambiente;
+    /** Opção "Detalhes do ambiente": baixo desliga a vida ambiente. */
+    public boolean ambienteLigado = true;
+    private final List<Ambiente.Ponto> pontosArvore = new ArrayList<>(), pontosFlor = new ArrayList<>();
     private final Texture shadowTexture;
     private ShaderProgram postShader, silhouetteShader, paletaShader;
     private final Animacoes animacoes;
@@ -182,8 +190,11 @@ public final class SceneRenderer implements Disposable {
         this.animacoes = Animacoes.carregar(assets.root());
         this.area = area;
         this.dayNight = dayNight;
+        this.especies = outdoor ? Especies.carregar(assets.root(), area.id(), area.props(), assets::temEntrada)
+                : Especies.vazia();
 
         int margin = outdoor ? MARGIN : 0;
+        List<Decoration.Borda> borda = outdoor ? Decoration.borda(assets.root()) : List.of();
         for (int ty = -margin; ty < area.height() + margin; ty++) {
             for (int tx = -margin; tx < area.width() + margin; tx++) {
                 int cx = Math.max(0, Math.min(area.width() - 1, tx)), cy = Math.max(0, Math.min(area.height() - 1, ty));
@@ -199,8 +210,25 @@ public final class SceneRenderer implements Disposable {
                 if (out > 1 && "grama".equals(terrain) && Math.floorMod(hash >> 4, 100) < 2 + out * 2) {
                     double x = tx + 0.5, y = ty + 0.5;
                     Assets.Sprite tree = pick(Math.floorMod(hash >> 11, 2) == 0 ? "prop.arvore" : "prop.arvore_b", x, y);
+                    if (out < 5) pontosArvore.add(new Ambiente.Ponto(x, y, 4.0));
                     statics.add(new Static(tree, x, y, x - 0.3, y - 0.3, x + 0.3, y + 0.3, x + y, null, null, shade,
                             phaseOf(x, y)));
+                }
+                // V4: sub-bosque além da borda — arbustos, samambaia, capim e troncos caídos
+                if (out >= 1 && "grama".equals(terrain)) {
+                    int k = 0;
+                    for (Decoration.Borda b : borda) {
+                        k++;
+                        if (out < b.desde()) continue;
+                        java.util.SplittableRandom r = new java.util.SplittableRandom(hash * 31L + k * 977L);
+                        double ch = b.chance() * Math.min(1.0, (out - b.desde() + 1) / 5.0);
+                        int n = (int) Math.floor(ch + r.nextDouble());
+                        for (int i = 0; i < n; i++) {
+                            double x = tx + 0.1 + r.nextDouble() * 0.8, y = ty + 0.1 + r.nextDouble() * 0.8;
+                            statics.add(new Static(pick(b.sprite(), x, y), x, y, x - 0.05, y - 0.05, x + 0.05, y + 0.05,
+                                    x + y, null, null, shade, phaseOf(x, y)));
+                        }
+                    }
                 }
             }
         }
@@ -216,6 +244,7 @@ public final class SceneRenderer implements Disposable {
             statics.add(new Static(sprite, p.x(), p.y(), p.x() - hw, p.y() - hd, p.x() + hw, p.y() + hd, p.x() + p.y(),
                     variants ? p.key() : null, def, 1f, phaseOf(p.x(), p.y())));
             if (def == null) continue;
+            if ("vegetacao".equals(def.category())) pontosArvore.add(new Ambiente.Ponto(p.x(), p.y(), 4.0));
             for (PropDef.Light l : def.lightList()) {
                 double[] o = l.offset(), c = l.color();
                 lamps.add(new Lamp(p.x() + o[0], p.y() + o[1], o[2], (float) l.radius(),
@@ -226,13 +255,27 @@ public final class SceneRenderer implements Disposable {
         if (outdoor) {
             List<Decoration.Box> obstacles = new ArrayList<>();
             for (Static st : statics) if (st.def() != null) obstacles.add(new Decoration.Box(st.x0(), st.y0(), st.x1(), st.y1()));
+            // V4: nada a 1 m de porta (o mato não esconde a entrada)
+            for (Map.Entry<String, etrava.sim.nav.Pathfinder.Point> e : area.spots().entrySet()) {
+                if (!e.getKey().contains("porta")) continue;
+                double px = e.getValue().x(), py = e.getValue().y();
+                obstacles.add(new Decoration.Box(px - 0.5, py - 0.5, px + 0.5, py + 0.5));
+            }
             for (Decoration.Piece d : Decoration.place(assets.root(), area.id(), area, obstacles)) {
                 Assets.Sprite sp = pick(d.sprite(), d.x(), d.y());
+                if (d.sprite().startsWith("deco.flor")) pontosFlor.add(new Ambiente.Ponto(d.x(), d.y(), 0));
                 Static st = new Static(sp, d.x(), d.y(), d.x() - 0.05, d.y() - 0.05, d.x() + 0.05, d.y() + 0.05,
                         d.x() + d.y(), null, null, 1f, phaseOf(d.x(), d.y()));
                 if (d.flat()) flats.add(st);
                 else statics.add(st);
             }
+        }
+        if (outdoor) {
+            List<Ambiente.Ponto> luzes = new ArrayList<>();
+            for (Lamp l : lamps) luzes.add(new Ambiente.Ponto(l.x(), l.y(), l.z()));
+            ambiente = new Ambiente(pontosArvore, pontosFlor, luzes);
+        } else {
+            ambiente = null;
         }
         statics.sort(Comparator.comparingDouble(Static::key));
         for (int i = 0; i <= statics.size(); i++) buckets.add(new ArrayList<>());
@@ -339,6 +382,12 @@ public final class SceneRenderer implements Disposable {
         usarShader(null, 0, false);
         particulas.atualizar(Gdx.graphics.getDeltaTime());
         particulas.desenhar(batch, branco, bounds);
+        if (ambiente != null && ambienteLigado) {
+            // vento global: rajadas lentas por soma de senos (o mesmo para a cena toda)
+            double vento = 0.5 + 0.3 * Math.sin(animTime * 0.21) + 0.2 * Math.sin(animTime * 0.53 + 1.3);
+            ambiente.atualizar(Gdx.graphics.getDeltaTime(), darkArea ? 1 : light.night(), Math.max(0, vento), bounds);
+            ambiente.desenhar(batch, branco, bounds, animTime);
+        }
         batch.end();
         sceneFbo.end();
 
@@ -358,6 +407,8 @@ public final class SceneRenderer implements Disposable {
                 batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
                 batch.begin();
                 for (Lamp l : lamps) drawLight(l.x(), l.y(), l.z(), l.radius(), l.r(), l.g(), l.b(), night, bounds);
+                if (ambiente != null && ambienteLigado)
+                    ambiente.luzes(v -> drawLight(v[0], v[1], v[2], 0.35f, 0.85f, 0.80f, 0.45f, night * (float) v[3], bounds));
                 // o raio de luz do personagem (RF-008): um resto de claridade, ou a lamparina na mão
                 if (player != null && (!interior || playerLamp)) {
                     float radius = Double.isInfinite(playerLight) ? 3.2f : (float) playerLight;

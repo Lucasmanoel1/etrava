@@ -1,0 +1,21 @@
+# Pedras e troncos (V4): pedregulhos soltos (decoração), o monte de pedras do mapa
+# (substitui prop.pedras: mesma pegada e colisão) e troncos caídos (só além da borda do mapa,
+# onde não se anda — decoração não bloqueia).
+tipo: decoracao
+id: pedras
+quadro: [160, 110]
+ancora: [80, 72]
+sombra: true
+distancia_oa: 0.4
+manifesto:
+  - {id: deco.pedregulho, folhas: [pedregulho_1, pedregulho_2, pedregulho_3]}
+  - {id: prop.pedras, folhas: [pedras_a, pedras_b]}
+  - {id: deco.tronco, folhas: [tronco_1, tronco_2]}
+elementos:
+  - {nome: pedregulho_1, forma: pedregulhos, semente: 61, n: 1, tamanho: [0.16, 0.22]}
+  - {nome: pedregulho_2, forma: pedregulhos, semente: 62, n: 2, tamanho: [0.12, 0.18]}
+  - {nome: pedregulho_3, forma: pedregulhos, semente: 63, n: 3, tamanho: [0.10, 0.14]}
+  - {nome: pedras_a, forma: pedregulhos, semente: 64, n: 4, tamanho: [0.24, 0.30]}
+  - {nome: pedras_b, forma: pedregulhos, semente: 65, n: 3, tamanho: [0.26, 0.32]}
+  - {nome: tronco_1, forma: tronco, semente: 66, comprimento: 2.2, raio: 0.17}
+  - {nome: tronco_2, forma: tronco, semente: 67, comprimento: 1.6, raio: 0.13}

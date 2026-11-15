@@ -4,8 +4,8 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V3 — Criaturas e combate** (`docs/visual/V3.md`). V2 aprovado pelo diretor em 2026-11-15.
-- **Status:** **PARADO no fim do V3**, à espera da aprovação do diretor (seção "Parada do V3", abaixo).
+- **Marco atual:** **V4 — Natureza e terreno** (`docs/visual/V4.md`). V3 aprovado pelo diretor em 2026-11-15 ("continua").
+- **Status:** **PARADO no fim do V4**, à espera da aprovação do diretor (seção "Parada do V4", abaixo).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -14,8 +14,8 @@
 | V0 | Correções e ferramentas (zoom, rolagem, modo de depuração, visibilidade, `gradlew captures`) | **concluído** |
 | V1 | Pipeline Blender + pixelizador, densidade dobrada, fatia — **portão visual** | **concluído** (aprovado, D-104) |
 | V2 | Gente (25 humanos, animações de vida comum) | **concluído** (aprovado) |
-| V3 | Criaturas e combate | **concluído; aguarda aprovação** |
-| V4 | Natureza e terreno | — |
+| V3 | Criaturas e combate | **concluído** (aprovado) |
+| V4 | Natureza e terreno | **concluído; aguarda aprovação** |
 | V5 | Arquitetura e exteriores | — |
 | V6 | Interiores, objetos e itens | — |
 | V7 | Interfaces | — |
@@ -34,6 +34,60 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## V4 — Natureza e terreno (2026-11-15)
+**Feito:**
+- **Árvores novas** (gerador próprio, sem Sapling — D-118), cada uma com laço de vento de 192 quadros:
+  - castanheiro (3), freixo (3), pinheiro-silvestre (3, copa "guarda-chuva") e salgueiro (2, folha em cortina);
+  - pincéis de folha novos no `folhas.pxo`; rampas novas só com cores que já estavam na paleta.
+- **Espécie por área e região** (D-119, `Especies.java`, seção `especies` da `decoracao.yaml`):
+  - vila: carvalho, castanheiro e freixo, com salgueiro junto ao moinho;
+  - estrada: mais pinheiro;
+  - as árvores além da borda seguem a mesma regra.
+- **A árvore de Nalia** (D-120): peça única, `prop.arvore_nalia_morta/_viva/_cortada`, com o mesmo esqueleto nos três estados; o `props.yaml` aponta para ela.
+- **Arbustos e miúdos** (D-121):
+  - sabugueiro, zimbro, arbusto de folha larga e amora;
+  - capim alto com espiga, capim seco, juncos, samambaia e cinco flores do campo;
+  - cogumelos, folhas no chão, pedregulhos e troncos caídos (só além da borda);
+  - `prop.pedras` refeito com a mesma pegada.
+- **Decoração** na vila e na estrada, nada a 1 m de porta; sub-bosque além da borda (`alem_da_borda`).
+- **Chão** (D-122): `pedra`, `plantio` e `tabuas` novos (sulcos e assoalho por textura procedural, `texturas/procedurais.py`). Nenhum terreno de mapa usa mais a arte antiga.
+- **Vida ambiente** (D-123, `Ambiente.java`):
+  - folhas que caem com as rajadas;
+  - pássaros e borboletas de dia;
+  - vaga-lumes (com luz própria) e mariposas nos lampiões à noite;
+  - opção **Detalhes do ambiente: Alto/Baixo**.
+- **Verificação:**
+  - `gradlew build` verde, validador sem avisos;
+  - capturas v4: 11/11;
+  - `--bench=10` na vila: **708 FPS** de média, 1 % pior 138, 65 chamadas por quadro, com decoração, vento e vida ambiente (era 1.106 no V1; queda de 36 %, dentro do VT-10).
+- **Dreamina:** nenhum crédito.
+
+## Parada do V4 — o que olhar
+- `docs/capturas/v4/`:
+  - `especies.png`: as espécies lado a lado;
+  - `nalia_estados.png`: morta, viva e cortada;
+  - `miudos.png`;
+  - `vila_manha_longe`, `vila_entardecer`, `vila_noite`;
+  - `moinho_nalia_*` (os três estados no lugar);
+  - `pomar`, `borda_vila`, `estrada`, `estrada_perto`, `posto`.
+- No jogo: `gradlew run`.
+  - F1 → `area estrada` para os pinheiros;
+  - `tp 46 47` na vila e `prop arvore_nalia viva` (ou `cortada`) para a árvore de Nalia;
+  - à noite (`hora 22`), vaga-lumes e mariposas.
+- Prancha nova: `python tools/revisao/prancha.py SAIDA ESCALA POR_LINHA natureza/nome …`.
+
+**A aprovar:**
+1. **Os três estados da árvore de Nalia** (D-120).
+2. As espécies e onde cada uma aparece (D-119).
+3. Grama em três tons fora do V4 (D-122).
+4. D-118 a D-123.
+
+**Problemas conhecidos do V4:**
+- Os avisos "encosta na borda" do castanheiro, do pinheiro e da árvore de Nalia são a ponta da sombra projetada, cortada no quadro. Nas capturas não aparece.
+- O capim alto tem espigas que, num quadro ou outro, parecem soltas da haste.
+- O assoalho (`tabuas`) é dos interiores e será revisto no V6.
+- Os GIFs de vento não foram gerados para a parada. Para vê-los: `gradlew sheets` (vão para `build/revisao/`).
 
 ## V3 — Criaturas e combate (2026-11-15)
 **Feito:**

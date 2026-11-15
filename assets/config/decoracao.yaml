@@ -7,14 +7,69 @@
 #   manchas    0 = espalhado por igual; 1 = só em manchas (ruído largo)
 #   plano      true = decalque deitado no chão (desenhado logo depois do chão, sem ordenação)
 #   folga      distância mínima, em metros, de objetos do mapa (casas, árvores, bancos)
-# V1: só a vila (a fatia). As outras áreas entram no V4.
+# V4: vila e estrada (o Posto fica na estrada). Interiores e a estrutura não têm decoração.
 areas:
   vila:
     grama:
-      - {sprite: deco.tufo, densidade: 1.1, manchas: 0.35, folga: 0.35}
-      - {sprite: deco.tufo_seco, densidade: 0.18, manchas: 0.7, folga: 0.35}
-      - {sprite: deco.flor, densidade: 0.16, manchas: 0.85, folga: 0.5}
+      - {sprite: deco.tufo, densidade: 1.0, manchas: 0.35, folga: 0.35}
+      - {sprite: deco.tufo_seco, densidade: 0.15, manchas: 0.7, folga: 0.35}
+      - {sprite: deco.capim, densidade: 0.30, manchas: 0.9, folga: 0.6}
+      - {sprite: deco.flor, densidade: 0.14, manchas: 0.85, folga: 0.5}
+      - {sprite: deco.flor_campo, densidade: 0.12, manchas: 0.9, folga: 0.5}
+      - {sprite: deco.samambaia, densidade: 0.04, manchas: 0.95, folga: 0.8}
+      - {sprite: deco.arbusto, densidade: 0.012, manchas: 0.95, folga: 1.2}
+      - {sprite: deco.amora, densidade: 0.010, manchas: 0.95, folga: 1.2}
+      - {sprite: deco.cogumelo, densidade: 0.02, manchas: 0.95, folga: 0.6}
+      - {sprite: deco.pedregulho, densidade: 0.02, manchas: 0.6, folga: 0.6}
       - {sprite: deco.pedrinhas, densidade: 0.05, plano: true, folga: 0.2}
+      - {sprite: deco.folhas, densidade: 0.10, manchas: 0.8, plano: true, folga: 0.2}
     terra:
-      - {sprite: deco.pedrinhas, densidade: 0.16, manchas: 0.4, plano: true, folga: 0.2}
-      - {sprite: deco.tufo_seco, densidade: 0.05, manchas: 0.9, folga: 0.35}
+      - {sprite: deco.pedrinhas, densidade: 0.14, manchas: 0.4, plano: true, folga: 0.2}
+      - {sprite: deco.folhas, densidade: 0.04, manchas: 0.8, plano: true, folga: 0.2}
+      - {sprite: deco.tufo_seco, densidade: 0.04, manchas: 0.9, folga: 0.35}
+    plantio:
+      - {sprite: deco.tufo, densidade: 0.08, manchas: 0.8, folga: 0.3}
+    pedra:
+      - {sprite: deco.tufo_seco, densidade: 0.05, manchas: 0.8, folga: 0.3}
+  estrada:
+    grama:
+      - {sprite: deco.tufo, densidade: 0.9, manchas: 0.4, folga: 0.35}
+      - {sprite: deco.tufo_seco, densidade: 0.30, manchas: 0.6, folga: 0.35}
+      - {sprite: deco.capim, densidade: 0.40, manchas: 0.85, folga: 0.6}
+      - {sprite: deco.capim_seco, densidade: 0.20, manchas: 0.85, folga: 0.6}
+      - {sprite: deco.flor_campo, densidade: 0.08, manchas: 0.9, folga: 0.5}
+      - {sprite: deco.samambaia, densidade: 0.06, manchas: 0.95, folga: 0.8}
+      - {sprite: deco.junco, densidade: 0.03, manchas: 0.97, folga: 0.8}
+      - {sprite: deco.arbusto, densidade: 0.02, manchas: 0.95, folga: 1.2}
+      - {sprite: deco.amora, densidade: 0.015, manchas: 0.95, folga: 1.2}
+      - {sprite: deco.cogumelo, densidade: 0.02, manchas: 0.95, folga: 0.6}
+      - {sprite: deco.pedregulho, densidade: 0.04, manchas: 0.6, folga: 0.6}
+      - {sprite: deco.pedrinhas, densidade: 0.06, plano: true, folga: 0.2}
+      - {sprite: deco.folhas, densidade: 0.12, manchas: 0.8, plano: true, folga: 0.2}
+    terra:
+      - {sprite: deco.pedrinhas, densidade: 0.18, manchas: 0.4, plano: true, folga: 0.2}
+      - {sprite: deco.tufo_seco, densidade: 0.03, manchas: 0.9, folga: 0.35}
+
+# V4 — sub-bosque além da borda do mapa (D-079), onde não se anda: chance por tile de grama,
+# crescendo até a 5ª faixa depois de `desde`. As árvores de fora seguem a regra de espécies.
+alem_da_borda:
+  - {sprite: deco.capim, chance: 1.2, desde: 1}
+  - {sprite: deco.samambaia, chance: 0.6, desde: 1}
+  - {sprite: deco.arbusto, chance: 0.35, desde: 1}
+  - {sprite: deco.amora, chance: 0.25, desde: 2}
+  - {sprite: deco.tronco, chance: 0.03, desde: 2}
+  - {sprite: deco.pedregulho, chance: 0.08, desde: 1}
+
+# V4 — espécie de árvore por área e por região. O mapa diz só "árvore" (prop.arvore,
+# prop.arvore_b); aqui se diz qual espécie ela é. A lista é sorteada pelo hash da posição
+# (repetir um ID pesa mais). `perto`: dentro do `raio` (m) de um prop do mapa, a lista troca.
+# A pegada e a colisão continuam as do prop; nada aqui muda a simulação.
+especies:
+  vila:
+    prop.arvore: [prop.arvore, prop.arvore, prop.arvore, natureza.castanheiro, natureza.castanheiro, natureza.freixo]
+    prop.arvore_b: [prop.arvore_b, prop.arvore_b, natureza.freixo]
+    perto:
+      - {de: casa_moinho, raio: 9, prop.arvore: [natureza.salgueiro], prop.arvore_b: [natureza.salgueiro]}
+  estrada:
+    prop.arvore: [prop.arvore, natureza.pinheiro, natureza.castanheiro, natureza.pinheiro]
+    prop.arvore_b: [natureza.pinheiro, natureza.pinheiro, prop.arvore_b, natureza.freixo]

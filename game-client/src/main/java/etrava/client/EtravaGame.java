@@ -305,6 +305,7 @@ public final class EtravaGame extends ApplicationAdapter {
         if (scene != null) {
             scene.postEnabled = settings.posProcessamento;
             scene.lightingEnabled = settings.luzDinamica;
+            scene.ambienteLigado = settings.detalhesAmbiente;
         }
     }
 
@@ -598,6 +599,7 @@ public final class EtravaGame extends ApplicationAdapter {
         scene.propState = key -> sim.view().propState(key);
         scene.postEnabled = settings.posProcessamento;
         scene.lightingEnabled = settings.luzDinamica;
+        scene.ambienteLigado = settings.detalhesAmbiente;
         scene.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         WorldView v = sim.view();
         camera.snapTo(v.playerX(), v.playerY());

@@ -1,0 +1,15 @@
+# Pinheiro-silvestre (V4): fuste reto e comprido, casca que avermelha no alto, copa em
+# almofadas deitadas. Mais na estrada (regra de espécie da decoracao.yaml).
+tipo: arvore
+id: pinheiro
+especie: pinheiro
+manifesto: {id: natureza.pinheiro}
+pixelorama: true
+quadro: [400, 520]
+ancora: [160, 490]
+vento: {quadros: 192, fps: 60}
+variantes:
+  - {nome: pinheiro_jovem, altura: 6.0, copa: 2.6, idade: 0.6, semente: 151, base: 0.8}
+  - {nome: pinheiro_alto,  altura: 9.0, copa: 3.4, idade: 1.1, semente: 157}
+  - {nome: pinheiro_torto, altura: 8.0, copa: 3.8, idade: 1.3, semente: 163, inclinacao: 7, assimetria: 0.4}
+pixelizador: {ambiente: 0.30, difusa: 0.74}

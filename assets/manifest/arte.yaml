@@ -2,6 +2,78 @@
 # Arte da Fase V: Blender (tools/blender) + pixelizador, densidade dobrada (D-086):
 # 1 px de arte = 2×2 px de mundo (scale: 2). Tem prioridade sobre provisorio.yaml.
 
+- id: "deco.amora"
+  type: "sprite"
+  file: "arte/natureza/amora_a.png"
+  variants:
+  - "arte/natureza/amora_a.png"
+  - "arte/natureza/amora_b.png"
+  anchor:
+  - 42.0
+  - 62.0
+  frames: 96
+  fps: 60.0
+  meta: "arte/natureza/amora_a.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/arbustos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.arbusto"
+  type: "sprite"
+  file: "arte/natureza/sabugueiro_a.png"
+  variants:
+  - "arte/natureza/sabugueiro_a.png"
+  - "arte/natureza/arbusto_b.png"
+  - "arte/natureza/zimbro_a.png"
+  - "arte/natureza/zimbro_b.png"
+  anchor:
+  - 42.0
+  - 62.0
+  frames: 96
+  fps: 60.0
+  meta: "arte/natureza/sabugueiro_a.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/arbustos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.capim"
+  type: "sprite"
+  file: "arte/decoracao/capim_1.png"
+  variants:
+  - "arte/decoracao/capim_1.png"
+  - "arte/decoracao/capim_2.png"
+  anchor:
+  - 11.0
+  - 32.0
+  frames: 96
+  fps: 60.0
+  meta: "arte/decoracao/capim_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/miudos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.capim_seco"
+  type: "sprite"
+  file: "arte/decoracao/capim_seco_1.png"
+  anchor:
+  - 11.0
+  - 32.0
+  frames: 96
+  fps: 60.0
+  meta: "arte/decoracao/capim_seco_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/miudos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.cogumelo"
+  type: "sprite"
+  file: "arte/decoracao/cogumelos_1.png"
+  variants:
+  - "arte/decoracao/cogumelos_1.png"
+  - "arte/decoracao/cogumelos_2.png"
+  anchor:
+  - 11.0
+  - 32.0
+  meta: "arte/decoracao/cogumelos_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/miudos.yaml) + pixelizador"
+  license: "proprio"
 - id: "deco.flor"
   type: "sprite"
   file: "arte/decoracao/flor_violeta.png"
@@ -16,6 +88,65 @@
   scale: 2
   source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
   license: "proprio"
+- id: "deco.flor_campo"
+  type: "sprite"
+  file: "arte/decoracao/flor_azul.png"
+  variants:
+  - "arte/decoracao/flor_azul.png"
+  - "arte/decoracao/flor_rosa.png"
+  - "arte/decoracao/flor_violeta_b.png"
+  - "arte/decoracao/flor_amarela_b.png"
+  - "arte/decoracao/flor_branca_b.png"
+  anchor:
+  - 11.0
+  - 32.0
+  meta: "arte/decoracao/flor_azul.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/miudos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.folhas"
+  type: "sprite"
+  file: "arte/decoracao/folhas_1.png"
+  variants:
+  - "arte/decoracao/folhas_1.png"
+  - "arte/decoracao/folhas_2.png"
+  - "arte/decoracao/folhas_3.png"
+  anchor:
+  - 11.0
+  - 32.0
+  meta: "arte/decoracao/folhas_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/miudos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.junco"
+  type: "sprite"
+  file: "arte/decoracao/junco_1.png"
+  variants:
+  - "arte/decoracao/junco_1.png"
+  - "arte/decoracao/junco_2.png"
+  anchor:
+  - 11.0
+  - 32.0
+  frames: 96
+  fps: 60.0
+  meta: "arte/decoracao/junco_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/miudos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.pedregulho"
+  type: "sprite"
+  file: "arte/decoracao/pedregulho_1.png"
+  variants:
+  - "arte/decoracao/pedregulho_1.png"
+  - "arte/decoracao/pedregulho_2.png"
+  - "arte/decoracao/pedregulho_3.png"
+  anchor:
+  - 51.0
+  - 19.0
+  meta: "arte/decoracao/pedregulho_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/pedras.yaml) + pixelizador"
+  license: "proprio"
 - id: "deco.pedrinhas"
   type: "sprite"
   file: "arte/decoracao/pedrinhas_1.png"
@@ -28,6 +159,34 @@
   meta: "arte/decoracao/pedrinhas_1.json"
   scale: 2
   source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.samambaia"
+  type: "sprite"
+  file: "arte/decoracao/samambaia_1.png"
+  variants:
+  - "arte/decoracao/samambaia_1.png"
+  - "arte/decoracao/samambaia_2.png"
+  anchor:
+  - 11.0
+  - 32.0
+  frames: 96
+  fps: 60.0
+  meta: "arte/decoracao/samambaia_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/miudos.yaml) + pixelizador"
+  license: "proprio"
+- id: "deco.tronco"
+  type: "sprite"
+  file: "arte/decoracao/tronco_1.png"
+  variants:
+  - "arte/decoracao/tronco_1.png"
+  - "arte/decoracao/tronco_2.png"
+  anchor:
+  - 51.0
+  - 19.0
+  meta: "arte/decoracao/tronco_1.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/pedras.yaml) + pixelizador"
   license: "proprio"
 - id: "deco.tufo"
   type: "sprite"
@@ -56,6 +215,69 @@
   meta: "arte/decoracao/tufo_seco_1.json"
   scale: 2
   source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
+  license: "proprio"
+- id: "natureza.castanheiro"
+  type: "sprite"
+  file: "arte/natureza/castanheiro_jovem.png"
+  variants:
+  - "arte/natureza/castanheiro_jovem.png"
+  - "arte/natureza/castanheiro_adulto.png"
+  - "arte/natureza/castanheiro_largo.png"
+  anchor:
+  - 141.0
+  - 225.0
+  frames: 192
+  fps: 60.0
+  meta: "arte/natureza/castanheiro_jovem.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/castanheiro.yaml) + pixelizador"
+  license: "proprio"
+- id: "natureza.freixo"
+  type: "sprite"
+  file: "arte/natureza/freixo_jovem.png"
+  variants:
+  - "arte/natureza/freixo_jovem.png"
+  - "arte/natureza/freixo_adulto.png"
+  - "arte/natureza/freixo_torto.png"
+  anchor:
+  - 96.0
+  - 239.0
+  frames: 192
+  fps: 60.0
+  meta: "arte/natureza/freixo_jovem.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/freixo.yaml) + pixelizador"
+  license: "proprio"
+- id: "natureza.pinheiro"
+  type: "sprite"
+  file: "arte/natureza/pinheiro_jovem.png"
+  variants:
+  - "arte/natureza/pinheiro_jovem.png"
+  - "arte/natureza/pinheiro_alto.png"
+  - "arte/natureza/pinheiro_torto.png"
+  anchor:
+  - 88.0
+  - 324.0
+  frames: 192
+  fps: 60.0
+  meta: "arte/natureza/pinheiro_jovem.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/pinheiro.yaml) + pixelizador"
+  license: "proprio"
+- id: "natureza.salgueiro"
+  type: "sprite"
+  file: "arte/natureza/salgueiro_a.png"
+  variants:
+  - "arte/natureza/salgueiro_a.png"
+  - "arte/natureza/salgueiro_b.png"
+  anchor:
+  - 116.0
+  - 196.0
+  frames: 192
+  fps: 60.0
+  meta: "arte/natureza/salgueiro_a.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/salgueiro.yaml) + pixelizador"
   license: "proprio"
 - id: "personagem.agrimensora"
   type: "spritesheet"
@@ -2224,6 +2446,38 @@
   scale: 2
   source: "Blender (tools/blender/natureza/seca.yaml) + pixelizador"
   license: "proprio"
+- id: "prop.arvore_nalia_cortada"
+  type: "sprite"
+  file: "arte/natureza/nalia_cortada.png"
+  anchor:
+  - 114.0
+  - 226.0
+  meta: "arte/natureza/nalia_cortada.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/arvore_nalia.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.arvore_nalia_morta"
+  type: "sprite"
+  file: "arte/natureza/nalia_morta.png"
+  anchor:
+  - 114.0
+  - 226.0
+  meta: "arte/natureza/nalia_morta.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/arvore_nalia.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.arvore_nalia_viva"
+  type: "sprite"
+  file: "arte/natureza/nalia_viva.png"
+  anchor:
+  - 114.0
+  - 226.0
+  frames: 192
+  fps: 60.0
+  meta: "arte/natureza/nalia_viva.json"
+  scale: 2
+  source: "Blender (tools/blender/natureza/arvore_nalia.yaml) + pixelizador"
+  license: "proprio"
 - id: "prop.casa_oficina"
   type: "sprite"
   file: "arte/construcoes/casa_oficina.png"
@@ -2234,6 +2488,19 @@
   meta: "arte/construcoes/casa_oficina.json"
   scale: 2
   source: "Blender (tools/blender/construcoes/casa_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.pedras"
+  type: "sprite"
+  file: "arte/decoracao/pedras_a.png"
+  variants:
+  - "arte/decoracao/pedras_a.png"
+  - "arte/decoracao/pedras_b.png"
+  anchor:
+  - 51.0
+  - 19.0
+  meta: "arte/decoracao/pedras_a.json"
+  scale: 2
+  source: "Blender (tools/blender/decoracao/pedras.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.toco"
   type: "sprite"
@@ -2256,6 +2523,27 @@
   type: "tile"
   file: "arte/chao/lajota.png"
   priority: 4
+  scale: 2
+  source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.pedra"
+  type: "tile"
+  file: "arte/chao/pedra.png"
+  priority: 1
+  scale: 2
+  source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.plantio"
+  type: "tile"
+  file: "arte/chao/plantio.png"
+  priority: 8
+  scale: 2
+  source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.tabuas"
+  type: "tile"
+  file: "arte/chao/tabuas.png"
+  priority: 6
   scale: 2
   source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
   license: "proprio"

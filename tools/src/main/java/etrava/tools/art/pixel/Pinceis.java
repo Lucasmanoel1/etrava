@@ -36,15 +36,24 @@ public final class Pinceis {
     private Pinceis() {}
 
     /** Passo da grade e borda (quantos px o cacho pode passar da silhueta) por espécie. */
-    private static final Map<String, int[]> PASSO = Map.of(
-            "carvalho", new int[] {6, 4, 2},
-            "betula", new int[] {3, 3, 2},
-            "macieira", new int[] {3, 3, 1},
-            "pereira", new int[] {3, 3, 1});
+    private static final Map<String, int[]> PASSO = Map.ofEntries(
+            Map.entry("carvalho", new int[] {6, 4, 2}),
+            Map.entry("betula", new int[] {3, 3, 2}),
+            Map.entry("macieira", new int[] {3, 3, 1}),
+            Map.entry("pereira", new int[] {3, 3, 1}),
+            // V4
+            Map.entry("castanheiro", new int[] {5, 4, 2}),
+            Map.entry("freixo", new int[] {3, 3, 2}),
+            Map.entry("pinheiro", new int[] {5, 3, 1}),
+            Map.entry("salgueiro", new int[] {2, 4, 1}),
+            Map.entry("zimbro", new int[] {3, 2, 1}),
+            Map.entry("arbusto", new int[] {3, 3, 1}),
+            Map.entry("amora", new int[] {3, 3, 1}));
 
-    public static Map<String, Conjunto> carregar(Path pxo) throws IOException {
+    public static synchronized Map<String, Conjunto> carregar(Path pxo) throws IOException {
         if (!Files.exists(pxo)) gerarIniciais(pxo);
         Pxo.Projeto p = Pxo.ler(pxo);
+        p = acrescentarFaltantes(pxo, p);
         Map<String, Conjunto> out = new LinkedHashMap<>();
         for (Pxo.Camada c : p.camadas()) {
             int[] px = c.quadros().get(0);
@@ -125,6 +134,98 @@ public final class Pinceis {
                 {".r.", "lbl", "bbs", "bs.", "s.."},
                 {".rl", "lbb", "bbs", ".s."},
         });
+        // ---- V4
+        // castanheiro: folha comprida e serrilhada, cachos grandes e alongados na horizontal
+        INICIAIS.put("castanheiro", new String[][] {
+                {"..rl.....", ".lbbl.ll.", "lbbbbbbbl", "bbbbbbbbs", "sbbbbbbs.", ".sssbss..", "....s...."},
+                {".rl..l..", "lbblbbl.", "bbbbbbbl", "sbbbbbbs", ".sbbbss.", "..ss...."},
+                {"..rll..", ".lbbbl.", "lbbbbbb", "bbbbbbs", ".sbbbs.", "..sss.."},
+                {"rl...rl", "bbl.lbb", "bbbbbbs", "sbbbbs.", ".ssss.."},
+                {".rl.", "lbbl", "bbbs", "sbs.", ".s.."},
+        });
+        // freixo: folha composta, miúda e aberta (deixa ver o céu entre os cachos)
+        INICIAIS.put("freixo", new String[][] {
+                {"r.l", "bbb", "bs.", "s.."},
+                {".rl.", "lb.b", "bbbs", "s.s."},
+                {"l.r", ".b.", "lbl", "bsb", "s.s"},
+                {".r..", "lbl.", ".bbl", ".sbs", "..s."},
+                {"rl", "bb", "sb", ".s"},
+        });
+        // pinheiro-silvestre: almofadas de agulha, deitadas, com a borda de baixo funda
+        INICIAIS.put("pinheiro", new String[][] {
+                {"..r.l...", ".lbllbl.", "lbbbbbbb", "sbbbbbbs", ".ss.ss.."},
+                {".rl..l.", "lbbllbl", "bbbbbbs", ".sssss."},
+                {"r.l.", "bbbl", "sbbs", ".ss."},
+                {"..rl.r..", "llbbllbl", "bbbbbbbs", "ssbbbss.", "..ss...."},
+        });
+        // salgueiro: fios que pendem (cortina), um pixel de largura, longos
+        INICIAIS.put("salgueiro", new String[][] {
+                {"r.", "l.", "bl", "bb", "b.", "bs", "s.", "s."},
+                {".r", "lb", "b.", "bl", ".b", "bs", ".s"},
+                {"rl", "bb", "lb", "b.", "bs", "s."},
+                {"l", "b", "b", "s", "s"},
+                {"r..", "bl.", "bbl", ".bb", ".bs", "..s", "..s"},
+        });
+        // zimbro: escamas miúdas e escuras, cacho denso
+        INICIAIS.put("zimbro", new String[][] {
+                {".r.", "lbb", "bbs", ".s."},
+                {"rl", "bb", "bs"},
+                {".rl", "lbb", "sbs"},
+        });
+        // arbusto de folha larga (sabugueiro, aveleira): cachos médios e redondos
+        INICIAIS.put("arbusto", new String[][] {
+                {".rl.", "lbbl", "bbbs", ".ss."},
+                {"rl..", "bbl.", "bbbl", "sbbs", ".ss."},
+                {".rl", "lbb", "bbs", "s.."},
+        });
+        // amora-silvestre: folha recortada, ramos arqueados e embaraçados
+        INICIAIS.put("amora", new String[][] {
+                {"r.l.", "bbbl", ".bbs", "s.s."},
+                {".rl", "lb.", "bbl", "sbs"},
+                {"l.r", "bbb", "s.b", "..s"},
+        });
+    }
+
+    /**
+     * Espécie nova (nos INICIAIS e ausente do .pxo) ganha a camada dela no arquivo; as camadas que
+     * já existem — talvez redesenhadas no Pixelorama — ficam como estão.
+     */
+    static Pxo.Projeto acrescentarFaltantes(Path pxo, Pxo.Projeto p) throws IOException {
+        java.util.Set<String> tem = new java.util.HashSet<>();
+        for (Pxo.Camada c : p.camadas()) tem.add(c.nome());
+        List<Pxo.Camada> camadas = new ArrayList<>(p.camadas());
+        boolean mudou = false;
+        for (Map.Entry<String, String[][]> e : INICIAIS.entrySet()) {
+            if (tem.contains(e.getKey())) continue;
+            camadas.add(new Pxo.Camada(e.getKey(), true, List.of(desenhar(e.getValue(), p.largura(), p.altura()))));
+            mudou = true;
+        }
+        if (!mudou) return p;
+        Pxo.Projeto novo = new Pxo.Projeto(p.largura(), p.altura(), p.fps(), camadas);
+        Pxo.escrever(pxo, novo, List.of());
+        return novo;
+    }
+
+    private static int[] desenhar(String[][] ps, int w, int h) {
+        int colunas = w / CELULA;
+        int[] px = new int[w * h];
+        for (int k = 0; k < ps.length; k++) {
+            int cx = (k % colunas) * CELULA, cy = (k / colunas) * CELULA;
+            if (cy + CELULA > h) break;
+            for (int y = 0; y < ps[k].length; y++) {
+                for (int x = 0; x < ps[k][y].length(); x++) {
+                    int cor = switch (ps[k][y].charAt(x)) {
+                        case 's' -> 0xFF404040;
+                        case 'b' -> 0xFF808080;
+                        case 'l' -> 0xFFC0C0C0;
+                        case 'r' -> 0xFFFFFFFF;
+                        default -> 0;
+                    };
+                    px[(cy + 1 + y) * w + cx + 1 + x] = cor;
+                }
+            }
+        }
+        return px;
     }
 
     static void gerarIniciais(Path destino) throws IOException {
@@ -133,26 +234,9 @@ public final class Pinceis {
         for (String[][] v : INICIAIS.values()) linhas = Math.max(linhas, (v.length + colunas - 1) / colunas);
         int h = linhas * CELULA;
         List<Pxo.Camada> camadas = new ArrayList<>();
-        for (Map.Entry<String, String[][]> e : INICIAIS.entrySet()) {
-            int[] px = new int[w * h];
-            String[][] ps = e.getValue();
-            for (int k = 0; k < ps.length; k++) {
-                int cx = (k % colunas) * CELULA, cy = (k / colunas) * CELULA;
-                for (int y = 0; y < ps[k].length; y++) {
-                    for (int x = 0; x < ps[k][y].length(); x++) {
-                        int cor = switch (ps[k][y].charAt(x)) {
-                            case 's' -> 0xFF404040;
-                            case 'b' -> 0xFF808080;
-                            case 'l' -> 0xFFC0C0C0;
-                            case 'r' -> 0xFFFFFFFF;
-                            default -> 0;
-                        };
-                        px[(cy + 1 + y) * w + cx + 1 + x] = cor;
-                    }
-                }
-            }
-            camadas.add(new Pxo.Camada(e.getKey(), true, List.of(px)));
-        }
+        for (Map.Entry<String, String[][]> e : INICIAIS.entrySet())
+            camadas.add(new Pxo.Camada(e.getKey(), true, List.of(desenhar(e.getValue(), w, h))));
         Pxo.escrever(destino, new Pxo.Projeto(w, h, 1.0, camadas), java.util.List.of());
     }
+
 }

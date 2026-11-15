@@ -66,6 +66,23 @@ final class Decoration {
         return out;
     }
 
+    /** Elemento do mato além da borda (V4): chance por tile, crescendo com a distância do mapa. */
+    record Borda(String sprite, double chance, int desde) {}
+
+    /** Seção {@code alem_da_borda} da decoracao.yaml (lista vazia se não houver). */
+    static List<Borda> borda(Path assetsDir) {
+        List<Borda> out = new ArrayList<>();
+        Path file = assetsDir.resolve("config/decoracao.yaml");
+        if (!Files.exists(file)) return out;
+        try {
+            for (JsonNode el : new ObjectMapper(new YAMLFactory()).readTree(file.toFile()).path("alem_da_borda"))
+                out.add(new Borda(el.path("sprite").asText(), el.path("chance").asDouble(0.1), el.path("desde").asInt(1)));
+        } catch (Exception e) {
+            LOG.warn("decoracao.yaml ilegível: {} — sem mato além da borda", e.getMessage());
+        }
+        return out;
+    }
+
     private static boolean blocked(List<Box> obs, double x, double y, double m) {
         for (Box b : obs) if (x > b.x0() - m && x < b.x1() + m && y > b.y0() - m && y < b.y1() + m) return true;
         return false;

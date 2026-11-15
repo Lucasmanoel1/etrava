@@ -1,0 +1,15 @@
+# Castanheiro (V4): tronco grosso de casca em sulcos, copa alta e redonda, cachos de folha
+# grandes. Entra na vila ao lado do carvalho, pela regra de espécie da decoracao.yaml.
+tipo: arvore
+id: castanheiro
+especie: castanheiro
+manifesto: {id: natureza.castanheiro}
+pixelorama: true
+quadro: [500, 420]
+ancora: [200, 390]
+vento: {quadros: 192, fps: 60}
+variantes:
+  - {nome: castanheiro_jovem,  altura: 5.0, copa: 3.4, idade: 0.6, semente: 101}
+  - {nome: castanheiro_adulto, altura: 6.4, copa: 4.6, idade: 1.1, semente: 113}
+  - {nome: castanheiro_largo,  altura: 6.0, copa: 5.2, idade: 1.5, semente: 127, assimetria: 0.35, tufo: 1.05}
+pixelizador: {ambiente: 0.34, difusa: 0.78}

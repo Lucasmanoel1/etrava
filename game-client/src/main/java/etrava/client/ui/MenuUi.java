@@ -239,6 +239,8 @@ public final class MenuUi implements Disposable {
                 i -> settings.limiteFps = new int[] {30, 60, 120, 0}[i]);
         toggle(col, "opcoes.pos", () -> settings.posProcessamento, v -> settings.posProcessamento = v);
         toggle(col, "opcoes.luz", () -> settings.luzDinamica, v -> settings.luzDinamica = v);
+        cycle(col, "opcoes.detalhes", new String[] {texts.get("opcoes.detalhes.alto"), texts.get("opcoes.detalhes.baixo")},
+                () -> settings.detalhesAmbiente ? 0 : 1, i -> settings.detalhesAmbiente = i == 0);
         cycle(col, "opcoes.texto", new String[] {texts.get("opcoes.texto.normal"), texts.get("opcoes.texto.grande"),
                 texts.get("opcoes.texto.maior")},
                 () -> settings.tamanhoTexto >= 1.5f ? 2 : settings.tamanhoTexto >= 1.25f ? 1 : 0,

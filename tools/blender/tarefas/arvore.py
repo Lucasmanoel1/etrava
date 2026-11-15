@@ -20,13 +20,13 @@ def executar(t):
     render.montar_luz()
     render.chao_de_sombra(40.0)
     bpy.context.scene.cycles.samples = t.get("amostras", 4)
-    v = t.get("vento", {"quadros": 8, "fps": 5})
     folhas = []
     for var in t["variantes"]:
         for ob in [o for o in bpy.data.objects if o.name.startswith(PREFIXOS)]:
             bpy.data.objects.remove(ob, do_unlink=True)
         especie = var.get("especie", t.get("especie"))
         tufos = arvore.construir(especie, var)
+        v = var.get("vento", t.get("vento", {"quadros": 8, "fps": 5}))
         quadros = []
         for f in range(v["quadros"]):
             arvore.vento(tufos, f / v["quadros"])

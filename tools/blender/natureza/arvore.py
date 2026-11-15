@@ -49,6 +49,40 @@ ESPECIES = {
                     tronco_r=0.14, fuste=0.24, sinuoso=0.25, raizes=3, copa="ogiva", base=0.28, lobos=0.25,
                     luz=0.35, peso=0.0, tufo=(0.40, 0.56), achatar=1.0, pontas=12.0, partida=0.6, espaco=1.0,
                     ruido_casca=(9.0, 9.0, 3.0)),
+    # ---- V4
+    # castanheiro: tronco grosso e curto de casca em sulcos, copa alta e redonda, cachos grandes
+    "castanheiro": dict(rampa_folha="folha_castanheiro", rampa_casca="casca_castanheiro", pincel="castanheiro",
+                        tronco_r=0.28, fuste=0.34, sinuoso=0.22, raizes=5, copa="redonda", base=0.36, lobos=0.30,
+                        luz=0.12, peso=0.04, tufo=(0.55, 0.80), achatar=0.85, pontas=9.0, partida=0.65, espaco=1.4,
+                        galho_min=0.028, ruido_casca=(12.0, 12.0, 2.5)),
+    # freixo: alto e aberto, galhos que sobem, folha miúda e clara, casca cinza
+    "freixo": dict(rampa_folha="folha_freixo", rampa_casca="casca_freixo", pincel="freixo",
+                   tronco_r=0.18, fuste=0.45, sinuoso=0.15, raizes=4, copa="oval", base=0.42, lobos=0.36,
+                   luz=0.30, peso=0.0, tufo=(0.34, 0.50), achatar=0.95, pontas=8.0, partida=0.60, espaco=1.75,
+                   galho_min=0.020, ruido_casca=(9.0, 9.0, 3.0)),
+    # pinheiro-silvestre: fuste reto e comprido, galhos só no alto, copa em almofadas deitadas
+    "pinheiro": dict(rampa_folha="folha_conifera", rampa_casca="casca_pinheiro", pincel="pinheiro",
+                     tronco_r=0.17, fuste=0.66, sinuoso=0.10, raizes=3, copa="guarda", base=0.60, lobos=0.42,
+                     luz=0.0, peso=0.30, tufo=(0.42, 0.66), achatar=0.48, pontas=7.0, partida=0.80, espaco=1.25,
+                     galho_min=0.022, ruido_casca=(7.0, 7.0, 4.0)),
+    # salgueiro: tronco largo e torto, galhos que caem; a folha pende em cortina
+    "salgueiro": dict(rampa_folha="folha_salgueiro", rampa_casca="casca_salgueiro", pincel="salgueiro",
+                      tronco_r=0.26, fuste=0.36, sinuoso=0.40, raizes=4, copa="redonda", base=0.44, lobos=0.34,
+                      luz=0.10, peso=0.85, tufo=(0.34, 0.48), achatar=1.0, pontas=8.0, partida=0.70, espaco=1.35,
+                      pendente=1.0, galho_min=0.025, ruido_casca=(13.0, 13.0, 2.0)),
+    # ---- arbustos (sem fuste: os galhos saem do pé)
+    "zimbro": dict(rente=4, rampa_folha="folha_zimbro", rampa_casca="casca_salgueiro", pincel="zimbro",
+                   tronco_r=0.05, fuste=0.12, sinuoso=0.3, raizes=0, copa="ogiva", base=0.05, lobos=0.30,
+                   luz=0.45, peso=0.0, tufo=(0.20, 0.28), achatar=1.1, pontas=40.0, partida=0.2, espaco=1.0,
+                   galho_min=0.5, ruido_casca=(9.0, 9.0, 3.0)),
+    "arbusto": dict(rente=4, rampa_folha="folha_macieira", rampa_casca="casca_fruteira", pincel="arbusto",
+                    tronco_r=0.05, fuste=0.10, sinuoso=0.4, raizes=0, copa="redonda", base=0.08, lobos=0.35,
+                    luz=0.20, peso=0.10, tufo=(0.22, 0.32), achatar=0.85, pontas=30.0, partida=0.2, espaco=1.1,
+                    galho_min=0.5, ruido_casca=(9.0, 9.0, 3.0)),
+    "amora": dict(rente=3, rampa_folha="folha_pereira", rampa_casca="casca_fruteira", pincel="amora",
+                  tronco_r=0.03, fuste=0.08, sinuoso=0.5, raizes=0, copa="larga", base=0.02, lobos=0.45,
+                  luz=0.0, peso=0.25, tufo=(0.18, 0.26), achatar=0.7, pontas=40.0, partida=0.2, espaco=1.0,
+                  galho_min=0.5, ruido_casca=(9.0, 9.0, 3.0)),
 }
 
 TUFOS_MAX = 64
@@ -61,6 +95,8 @@ def _perfil(forma, t):
         return math.sin(math.pi * min(1.0, 0.15 + 0.85 * t)) ** 0.55
     if forma == "oval":
         return math.sin(math.pi * t) ** 0.8
+    if forma == "guarda":    # pinheiro: cresce até o alto e termina chata (guarda-chuva)
+        return min(1.0, 1.2 * t ** 0.4) * max(0.0, 1.0 - t ** 5) ** 0.5
     if forma == "ogiva":     # pereira: mais larga embaixo, ponta no alto
         return (math.sin(math.pi * t) ** 0.7) * (1.0 - 0.45 * t)
     return math.sin(math.pi * t) ** 0.6   # redonda
@@ -255,6 +291,8 @@ class Arvore:
 
     def _raizes(self, r0, idade):
         e, rng = self.e, self.rng
+        if e["raizes"] <= 0:
+            return
         n = e["raizes"] + (1 if idade > 1.3 else 0)
         giro = rng.uniform(0, 2 * math.pi)
         for i in range(n):
@@ -296,11 +334,21 @@ class Arvore:
                 break
         if dens < 1.0:
             escolhidos = [t for t in escolhidos if rng.random() < 0.55 + 0.45 * dens]
+        # arbusto: um anel de tufos rente ao chão, senão a moita flutua sobre a sombra
+        rente = self.e.get("rente", 0)
+        if rente and escolhidos:
+            giro = rng.uniform(0, 2 * math.pi)
+            for k in range(rente):
+                a = giro + k * 2 * math.pi / rente
+                d = Vector((math.cos(a), math.sin(a), 0)) * rx * rng.uniform(0.35, 0.6)
+                r = rng.uniform(rmin, rmax) * escala
+                escolhidos.append((d + Vector((0, 0, r * 0.75)), r))
         return escolhidos
 
 
-def _tufo(nome, centro, raio, achatar, rng, material):
-    """Massa de folha irregular: esfera deformada por ruído em duas escalas, base achatada."""
+def _tufo(nome, centro, raio, achatar, rng, material, pendente=0.0):
+    """Massa de folha irregular: esfera deformada por ruído em duas escalas, base achatada.
+    Com `pendente` (salgueiro), a metade de baixo desce em cortina, mais estreita."""
     bm = bmesh.new()
     bmesh.ops.create_icosphere(bm, subdivisions=3, radius=1.0)
     sem = Vector((rng.uniform(0, 50), rng.uniform(0, 50), rng.uniform(0, 50)))
@@ -308,7 +356,10 @@ def _tufo(nome, centro, raio, achatar, rng, material):
         n = v.co.normalized()
         f = 1.0 + 0.38 * noise.noise(n * 1.8 + sem) + 0.14 * noise.noise(n * 4.5 + sem * 1.7)
         co = n * f
-        if co.z < -0.45:
+        if pendente > 0 and co.z < 0:
+            queda = 1.0 + pendente * (2.4 + 0.8 * noise.noise(Vector((co.x * 2.5, co.y * 2.5, 0)) + sem))
+            co = Vector((co.x * (1.0 - 0.35 * pendente * -co.z), co.y * (1.0 - 0.35 * pendente * -co.z), co.z * queda))
+        elif co.z < -0.45:
             co.z = -0.45 + (co.z + 0.45) * 0.6
         co.z *= achatar
         v.co = co * raio
@@ -360,16 +411,16 @@ def construir(especie, var):
     for i, (c, r) in enumerate(lista):
         nome = "folha_%s_%02d" % (especie, i)
         # alguns tufos de outra cor (folha mais velha, parda): a copa não é de um verde só
-        rampa = e["rampa_folha"]
+        rampa = var.get("folha", e["rampa_folha"])
         if e.get("rampa_folha2") and Random_tom(var["semente"], i) < var.get("mistura", e.get("mistura", 0.0)):
             rampa = e["rampa_folha2"]
             nome = "folha2_%s_%02d" % (especie, i)
         mat = materiais.material(nome, rampa, k=0.0, oa=0.7,
                                  linhas=False, pincel=e["pincel"], grupo="folha_" + especie)
         materiais.ajustar(nome, normal_copa=nc)
-        ob = _tufo("tufo%03d" % i, c, r, e["achatar"], rng, mat)
+        ob = _tufo("tufo%03d" % i, c, r, e["achatar"], rng, mat, e.get("pendente", 0.0))
         ponto = geo.vazio("ponto.tufo%03d" % i, pai=ob)
-        amp = 0.03 + 0.05 * max(0.0, (c.z - altura * 0.35) / altura)
+        amp = (0.03 + 0.05 * max(0.0, (c.z - altura * 0.35) / altura)) * (1.0 + 0.7 * e.get("pendente", 0.0))
         tufos.append((ob, c.copy(), rng.uniform(0, 0.2), amp, ponto, r))
     if var.get("frutos"):
         _frutos(var, tufos, rng)

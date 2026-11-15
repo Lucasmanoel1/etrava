@@ -1,0 +1,15 @@
+# Capturas do V4 — natureza e terreno (gradlew captures -Proteiro=v4; docs/visual/V4.md, tarefa 7).
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 120}
+
+cenas:
+  - {nome: vila_manha_longe, area: vila, cmds: ["tp 32 36", "hora 9", "zoom 1"]}
+  - {nome: vila_entardecer, area: vila, cmds: ["tp 32 36", "hora 18.3", "zoom 1"]}
+  - {nome: vila_noite, area: vila, cmds: ["tp 32 36", "hora 22.5", "zoom 1"]}
+  - {nome: moinho_nalia_morta, area: vila, cmds: ["tp 46 47", "hora 10", "zoom 2"]}
+  - {nome: moinho_nalia_viva, area: vila, cmds: ["tp 46 47", "hora 10", "prop arvore_nalia viva", "zoom 2"]}
+  - {nome: moinho_nalia_cortada, area: vila, cmds: ["tp 46 47", "hora 10", "prop arvore_nalia cortada", "zoom 2"]}
+  - {nome: pomar, area: vila, cmds: ["tp 25 47", "hora 11", "zoom 2"]}
+  - {nome: borda_vila, area: vila, cmds: ["tp 3 30", "hora 10", "zoom 1"]}
+  - {nome: estrada, area: estrada, cmds: ["tp 30 22", "hora 15", "zoom 1"]}
+  - {nome: estrada_perto, area: estrada, cmds: ["tp 30 22", "hora 15", "zoom 2"]}
+  - {nome: posto, area: estrada, cmds: ["tp 60 22", "hora 10", "zoom 1"]}
