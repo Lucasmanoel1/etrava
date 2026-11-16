@@ -251,7 +251,7 @@ public final class EtravaGame extends ApplicationAdapter {
         float porAltura = fontScale * Math.max(1f, alturaFonte / 720f);
         font = fonts.text(porAltura / escalaK, escalaK);
         menuOverlayFont = fonts.overlay(porAltura / escalaK, escalaK);
-        titleFont = fonts.title(escalaK);
+        titleFont = fonts.title(Math.max(1f, alturaFonte / 720f), escalaK);
         hudFont = fonts.overlay(porAltura);
         if (debug.enabled()) {
             consoleFont = fonts.overlay(1f, escalaK);
@@ -269,7 +269,8 @@ public final class EtravaGame extends ApplicationAdapter {
             showNotice(result);
             if (!sim.view().dead()) ui.closeDeath();
         });
-        menu = new MenuUi(font, menuOverlayFont, titleFont, texts, settings, new MenuActions());
+        menu = new MenuUi(font, menuOverlayFont, titleFont, assets, texts, settings, new MenuActions());
+        if (capture != null) menu.fixedStep(1f / 30f); // camadas do menu em passo fixo nas capturas
 
         menuInput.clear();
         menuInput.addProcessor(new MenuKeys());

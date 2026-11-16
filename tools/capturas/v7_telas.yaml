@@ -14,8 +14,10 @@ cenas:
   - {nome: pausa, tela: pausa, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "pausa"]}
   - {nome: opcoes, tela: opcoes, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "opcoes"]}
   - {nome: salvar, tela: salvar, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "salvar"]}
-  - {nome: carregar, tela: carregar, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "carregar"]}
+  - {nome: carregar, tela: carregar, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "salvar jogo_1", "esperar 600", "salvar jogo_2", "carregar"]}
   - {nome: menu, tela: menu, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["menu"]}
+  # o GIF do menu (docs/capturas/v7/menu.gif): ~3 s a 15 quadros por segundo (as camadas andam em passo fixo de 1/30 s)
+  - {nome: menu_gif, tela: menu_gif, area: vila, tamanho: [1280, 720], quadros: 100, cmds: ["menu"], salvar: false, sequencia: {inicio: 8, passo: 2, quadros: 45}}
   - {nome: novo, tela: novo, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["novo"]}
   - {nome: epilogo, tela: epilogo, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "epilogo"]}
   - {nome: derrota, tela: derrota, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "derrota"]}
