@@ -142,8 +142,11 @@ public final class EtravaGame extends ApplicationAdapter {
     private final List<Object[]> floaters = new ArrayList<>();
     /** Personagem → segundos de lampejo depois de um golpe. */
     private final Map<String, Float> flashes = new HashMap<>();
-    private String notice = "";
-    private float noticeTime;
+    /** V7: o HUD no tema novo (plaquinha, barras, avisos, balões) e o cursor do mouse. */
+    private etrava.client.ui.Hud hud;
+    /** Segundos de ampulheta no cursor depois de salvar, carregar ou deixar o tempo passar. */
+    private float esperaT;
+    private final com.badlogic.gdx.math.Vector2 mouseTmp = new com.badlogic.gdx.math.Vector2();
     private int autosaveCount;
     private final List<ActorDraw> draws = new ArrayList<>();
     /** V3: o último golpe de cada um foi o pesado (escolhe a animação do golpe). */
@@ -160,8 +163,6 @@ public final class EtravaGame extends ApplicationAdapter {
     private float levantarT = -1f;
     /** Por personagem: última posição desenhada, metros andados e velocidade suavizada. */
     private final java.util.Map<String, double[]> motion = new java.util.HashMap<>();
-    /** Plaquinhas de texto já desenhadas neste quadro: {x, y, largura, altura}. */
-    private final List<float[]> labelRects = new ArrayList<>();
 
     public EtravaGame(LaunchOptions options) {
         this.options = options;
@@ -243,6 +244,7 @@ public final class EtravaGame extends ApplicationAdapter {
         if (menuOverlayFont != null) menuOverlayFont.dispose();
         if (titleFont != null) titleFont.dispose();
         if (consoleFont != null) consoleFont.dispose();
+        if (hud != null) hud.dispose();
         fontScale = settings.tamanhoTexto;
         escalaK = etrava.client.ui.Escala.k(Gdx.graphics.getHeight());
         // as telas (Stage) usam fontes geradas em k vezes e reduzidas a 1/k; o HUD no Batch, em pixels, fica no tamanho físico
@@ -253,10 +255,12 @@ public final class EtravaGame extends ApplicationAdapter {
         menuOverlayFont = fonts.overlay(porAltura / escalaK, escalaK);
         titleFont = fonts.title(Math.max(1f, alturaFonte / 720f), escalaK);
         hudFont = fonts.overlay(porAltura);
+        hud = new etrava.client.ui.Hud(assets.root(), assets.manifest(), font, menuOverlayFont);
+        hud.ui().escala(escalaK);
         if (debug.enabled()) {
-            consoleFont = fonts.overlay(1f, escalaK);
+            consoleFont = fonts.text(0.75f, escalaK);
             DebugConsole old = console;
-            console = new DebugConsole(consoleFont, this::runConsoleCommand);
+            console = new DebugConsole(consoleFont, hud.tema(), this::runConsoleCommand);
             if (old != null) old.dispose();
         }
 
@@ -476,6 +480,7 @@ public final class EtravaGame extends ApplicationAdapter {
             batch.draw(bg, (sw - w) / 2, (sh - h) / 2, w, h);
         }
         batch.end();
+        hud.ui().cursor(etrava.client.ui.Ui.Tipo.APONTAR);
         audio.music("musica.menu");
         audio.ambience(null, false);
         audio.update(dt);
@@ -549,11 +554,13 @@ public final class EtravaGame extends ApplicationAdapter {
         if (showCollision) drawCollisionOverlay();
         updateAudio(v, hour, dt);
         updateHover(v);
+        updateCursor(dt);
         drawBalloons(v, dt);
         drawCombatOverlay(v, dt);
         if (showHud) drawHud(v);
         if (massa.ligada()) ui.render(massa.sobre(v), massa.comercio() != null ? massa.comercio() : sim.tradeView(), sim.economy(), dt);
         else ui.render(v, sim.tradeView(), sim.economy(), dt);
+        if (showHud) drawAvisos();
         menu.render(dt);
         if (console != null) console.render(dt);
         if (bench != null) bench.frame();
@@ -580,6 +587,10 @@ public final class EtravaGame extends ApplicationAdapter {
 
         @Override public String console(String command) {
             String out = runConsoleCommand(command);
+            if (console != null && console.isOpen() && out != null) { // capturas: o que se "digitou" aparece no console aberto
+                console.print("> " + command);
+                if (!out.isBlank()) console.print(out);
+            }
             if (out != null && !out.isBlank()) LOG.info("roteiro> {} → {}", command, out.replace('\n', ' '));
             return out;
         }
@@ -670,6 +681,7 @@ public final class EtravaGame extends ApplicationAdapter {
                     }
                 }
                 case SimEvent.TimeSkipped t -> {
+                    esperaT = 0.6f;
                     previous.clear(); // todo mundo mudou de lugar: nada de deslizar pela tela
                     capturePrevious(sim.view());
                     if (t.interrupted()) showNotice("Algo interrompeu " + (t.slept() ? "o sono." : "a espera."));
@@ -967,8 +979,7 @@ public final class EtravaGame extends ApplicationAdapter {
     // ---------------------------------------------------------------- salvar e carregar
 
     private void showNotice(String message) {
-        notice = message;
-        noticeTime = 4f;
+        hud.aviso(message);
         LOG.info(message);
     }
 
@@ -991,6 +1002,7 @@ public final class EtravaGame extends ApplicationAdapter {
 
     /** Carrega um save. Se der errado, o jogo atual continua como estava (RF-365). */
     private String loadGame(String name) {
+        esperaT = 0.6f;
         try {
             SaveGame.Meta meta = SaveGame.readMeta(savePath(name));
             long t0 = System.nanoTime();
@@ -1009,32 +1021,49 @@ public final class EtravaGame extends ApplicationAdapter {
 
     /** Salvamento automático rotativo em 3 arquivos, ao dormir e ao trocar de área (RF-361). */
     private void autosave() {
+        esperaT = 0.6f;
         String name = "auto_" + (autosaveCount++ % 3 + 1);
         String result = saveGame(name);
         LOG.info("Salvamento automático: {}", result);
     }
 
     private void drawHud(WorldView v) {
-        batch.begin();
-        float top = Gdx.graphics.getHeight() - 10, line = hudFont.getLineHeight();
-        hudFont.setColor(0.93f, 0.89f, 0.78f, 1f);
-        String life = texts.get("hud.dinheiro", ui.coins(v.money()))
-                + (v.hunger() >= etrava.sim.economy.Economy.HUNGRY ? "   " + texts.get(v.hunger()
-                        >= etrava.sim.economy.Economy.STARVING ? "fome.faminto" : "fome.com_fome") : "")
-                + (sim.economy().overloaded() ? "   " + texts.get("hud.carga") : "");
-        hudFont.draw(batch, v.clock().format() + "   " + life + (paused ? "   [PAUSADO]" : ""), 14, top);
-        if (noticeTime > 0) {
-            noticeTime -= Gdx.graphics.getDeltaTime();
-            hudFont.draw(batch, notice, 14, top - (debug.panelVisible() ? 2 : 1) * line);
-        }
-        if (debug.panelVisible()) { // só no modo de depuração, e só com F3 (VT-02)
-            hudFont.setColor(0.7f, 0.7f, 0.7f, 1f);
-            hudFont.draw(batch, String.format(Locale.ROOT,
+        float dt = Gdx.graphics.getDeltaTime();
+        // com painel grande aberto (mochila, ficha, caderno...) o HUD de baixo e do canto não aparece: o painel é o foco
+        boolean painel = ui.inventoryOpen() || ui.characterOpen() || ui.notebookOpen() || ui.mapOpen()
+                || ui.epilogueOpen() || ui.deathOpen() || ui.pageOpen() || menu.isOpen();
+        hud.inicio(batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), escalaK);
+        if (!painel) {
+            String estado = (v.hunger() >= etrava.sim.economy.Economy.HUNGRY ? texts.get(v.hunger()
+                    >= etrava.sim.economy.Economy.STARVING ? "fome.faminto" : "fome.com_fome") : "")
+                    + (sim.economy().overloaded() ? (v.hunger() >= etrava.sim.economy.Economy.HUNGRY ? " · " : "") + texts.get("hud.carga") : "")
+                    + (paused ? (estadoVazio(v) ? "" : " · ") + "pausado" : "");
+            String depuracao = !debug.panelVisible() ? null : String.format(Locale.ROOT,
                     "FPS %d   pos (%.1f, %.1f)   semente %d   vel x%.1f   zoom %d   F1 console   F3 esconde",
-                    Gdx.graphics.getFramesPerSecond(), v.playerX(), v.playerY(), v.seed(), timeScale, camera.pixelScale()),
-                    14, top - line);
+                    Gdx.graphics.getFramesPerSecond(), v.playerX(), v.playerY(), v.seed(), timeScale, camera.pixelScale());
+            hud.topo(v.clock().format(), v.clock().minuteOfDay(), Integer.toString(v.money()), estado, depuracao, dt);
+            if (v.dialogue() == null && v.trade() == null) { // a conversa e o comércio ocupam o pé da tela
+                String habilidades = v.enemies().isEmpty() ? null // as teclas de luta só aparecem quando há com quem lutar
+                        : texts.get("hud.habilidades", cooldownText(Combat.HEAVY), cooldownText(Combat.PUSH));
+                hud.barras((float) v.health(), (float) sim.combat().maxHealth(), (float) v.stamina(), (float) sim.combat().maxStamina(),
+                        texts.get("hud.vida", Math.round(v.health()), Math.round(sim.combat().maxHealth())),
+                        texts.get("hud.folego") + " " + Math.round(v.stamina()) + "/" + Math.round(sim.combat().maxStamina()),
+                        habilidades, dt);
+            }
         }
-        batch.end();
+        hud.fim();
+    }
+
+    /** Os bilhetes de aviso ficam por cima de tudo (painéis inclusive), no alto à direita. */
+    private void drawAvisos() {
+        hud.inicio(batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), escalaK);
+        hud.avisos(Gdx.graphics.getDeltaTime());
+        hud.fim();
+    }
+
+    /** Sem fome nem carga pesada a mostrar (o texto de estado do HUD começaria só com "pausado"). */
+    private boolean estadoVazio(WorldView v) {
+        return v.hunger() < etrava.sim.economy.Economy.HUNGRY && !sim.economy().overloaded();
     }
 
     /** Nomes dos itens, separados por vírgula ("nada" se vazio). */
@@ -1058,23 +1087,6 @@ public final class EtravaGame extends ApplicationAdapter {
         strikes.replaceAll((k, t) -> t - dt);
         strikes.values().removeIf(t -> t <= 0);
         batch.begin();
-        // barras do jogador, no canto de baixo
-        if (showHud && v.dialogue() == null && v.trade() == null) { // a conversa e o comércio ocupam o pé da tela
-            float x = 16, y = 18, w = 180, h = 9;
-            float gap = Math.max(22, hudFont.getLineHeight() - 2); // com texto maior, as barras se afastam
-            bar(x, y + gap, w, h, (float) (v.health() / sim.combat().maxHealth()), 0.62f, 0.16f, 0.12f);
-            bar(x, y, w, h, (float) (v.stamina() / sim.combat().maxStamina()), 0.72f, 0.62f, 0.30f);
-            hudFont.setColor(0.93f, 0.89f, 0.78f, 1f);
-            float up = (hudFont.getCapHeight() - h) / 2;
-            hudFont.draw(batch, texts.get("hud.vida", Math.round(v.health()), Math.round(sim.combat().maxHealth())),
-                    x + w + 8, y + gap + h + up);
-            hudFont.draw(batch, texts.get("hud.folego"), x + w + 8, y + h + up);
-            if (!v.enemies().isEmpty()) { // as teclas de luta só aparecem quando há com quem lutar
-                String q = cooldownText(Combat.HEAVY), e = cooldownText(Combat.PUSH);
-                hudFont.setColor(0.75f, 0.72f, 0.64f, 1f);
-                hudFont.draw(batch, texts.get("hud.habilidades", q, e), x, y + gap + 18 + hudFont.getLineHeight());
-            }
-        }
         // inimigos: vida, e o aviso do golpe
         double light = sim.combat().lightRadius();
         ActorDraw me = draws.get(0);
@@ -1132,6 +1144,36 @@ public final class EtravaGame extends ApplicationAdapter {
 
     // ---------------------------------------------------------------- NPCs: apontar, falar, legendas
 
+    /**
+     * O cursor do mouse pelo que o clique faria (V7): atacar, falar, pegar, entrar; ampulheta logo depois de
+     * salvar, carregar ou deixar o tempo passar; apontar sobre a interface e em todo o resto.
+     */
+    private void updateCursor(float dt) {
+        var tipo = etrava.client.ui.Ui.Tipo.APONTAR;
+        if (esperaT > 0) {
+            esperaT -= dt;
+            tipo = etrava.client.ui.Ui.Tipo.ESPERAR;
+        } else if (!overInterface()) {
+            if (hoverEnemy != null) tipo = etrava.client.ui.Ui.Tipo.ATACAR;
+            else if (hoverNpc != null) tipo = etrava.client.ui.Ui.Tipo.FALAR;
+            else if (hoverContainer != null) tipo = etrava.client.ui.Ui.Tipo.PEGAR;
+            else if (hoverExit != null) tipo = etrava.client.ui.Ui.Tipo.ENTRAR;
+        }
+        hud.ui().cursor(tipo);
+    }
+
+    /** O mouse está sobre algum ator tocável da interface (painel, botão, console)? */
+    private boolean overInterface() {
+        int mx = Gdx.input.getX(), my = Gdx.input.getY();
+        return hits(ui.stage(), mx, my) || menu.isOpen() && hits(menu.stage(), mx, my)
+                || console != null && console.isOpen() && hits(console.stage(), mx, my);
+    }
+
+    private boolean hits(com.badlogic.gdx.scenes.scene2d.Stage stage, int mx, int my) {
+        stage.screenToStageCoordinates(mouseTmp.set(mx, my));
+        return stage.hit(mouseTmp.x, mouseTmp.y, true) != null;
+    }
+
     /** Qual NPC está sob o cursor (RF-004). Compara em pixels de mundo com o retângulo do sprite. */
     private void updateHover(WorldView v) {
         hoverNpc = null;
@@ -1179,8 +1221,7 @@ public final class EtravaGame extends ApplicationAdapter {
     }
 
     private void drawBalloons(WorldView v, float dt) {
-        labelRects.clear();
-        batch.begin();
+        hud.inicio(batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), escalaK);
         for (int i = balloons.size() - 1; i >= 0; i--) {
             Object[] b = balloons.get(i);
             b[2] = (float) b[2] - dt;
@@ -1189,11 +1230,11 @@ public final class EtravaGame extends ApplicationAdapter {
                 continue;
             }
             ActorDraw who = drawOf((String) b[0]);
-            if (who != null) drawLabel(who, (String) b[1], 0.80f);
+            if (who != null && headAnchor(who)) hud.balao(px[0], px[1], (String) b[1], Math.min(1f, (float) b[2] / 0.4f));
         }
         if (hoverNpc != null && drawOf(hoverNpc) != null && balloons.stream().noneMatch(b -> b[0].equals(hoverNpc))) {
             var def = content.npcs().get(hoverNpc);
-            drawLabel(drawOf(hoverNpc), def != null ? def.displayName() : hoverNpc, 0.55f);
+            if (headAnchor(drawOf(hoverNpc))) hud.rotulo(px[0], px[1], def != null ? def.displayName() : hoverNpc, 1f);
         }
         if (hoverExit != null) {
             var p = sim.area().spots().get(hoverExit.spot());
@@ -1204,7 +1245,7 @@ public final class EtravaGame extends ApplicationAdapter {
             spot.y = p.y();
             String where = to != null ? to.displayName() : hoverExit.to();
             boolean leaving = entry != null && entry.interior() || to != null && !to.interior() && !"estrutura".equals(hoverExit.to());
-            drawLabel(spot, texts.get(leaving ? "porta.ir" : "porta.entrar", where), 0.55f);
+            if (headAnchor(spot)) hud.rotulo(px[0], px[1], texts.get(leaving ? "porta.ir" : "porta.entrar", where), 1f);
         }
         if (hoverContainer != null) {
             var c = content.containers().get(hoverContainer);
@@ -1213,37 +1254,21 @@ public final class EtravaGame extends ApplicationAdapter {
                 ActorDraw spot = new ActorDraw();
                 spot.x = p[0];
                 spot.y = p[1];
-                drawLabel(spot, c.displayName(), 0.55f);
+                if (headAnchor(spot)) hud.rotulo(px[0], px[1], c.displayName(), 1f);
             }
         }
-        batch.end();
+        hud.fim();
+    }
+
+    /** Põe em {@code px} o ponto da tela logo acima da cabeça de quem está em {@code who}; false se está fora da tela. */
+    private boolean headAnchor(ActorDraw who) {
+        camera.worldPxToScreen(IsoProjection.sx(who.x, who.y), IsoProjection.sy(who.x, who.y, 0) + 122, px);
+        return px[0] > -40 && px[0] < Gdx.graphics.getWidth() + 40 && px[1] > -40 && px[1] < Gdx.graphics.getHeight() + 40;
     }
 
     private ActorDraw drawOf(String id) {
         for (ActorDraw d : draws) if (id.equals(d.id)) return d;
         return null;
-    }
-
-    /** Texto numa plaquinha escura acima da cabeça de um personagem. */
-    private void drawLabel(ActorDraw who, String text, float backgroundAlpha) {
-        camera.worldPxToScreen(IsoProjection.sx(who.x, who.y), IsoProjection.sy(who.x, who.y, 0) + 122, px);
-        layout.setText(hudFont, text, new com.badlogic.gdx.graphics.Color(0.95f, 0.91f, 0.80f, 1f), 280,
-                com.badlogic.gdx.utils.Align.center, true);
-        float w = Math.min(280, layout.width) + 14, h = layout.height + 12;
-        float x = Math.round(px[0] - w / 2), y = Math.round(px[1]);
-        // duas plaquinhas não ficam uma em cima da outra: a de quem veio depois sobe
-        for (int i = 0; i < labelRects.size(); i++) {
-            float[] r = labelRects.get(i);
-            if (x < r[0] + r[2] && x + w > r[0] && y < r[1] + r[3] && y + h > r[1]) {
-                y = r[1] + r[3] + 3;
-                i = -1;
-            }
-        }
-        labelRects.add(new float[] {x, y, w, h});
-        batch.setColor(0.08f, 0.06f, 0.07f, backgroundAlpha);
-        batch.draw(whitePx, x, y, w, h);
-        batch.setColor(1, 1, 1, 1);
-        hudFont.draw(batch, layout, px[0] - 140, y + h - 6);
     }
 
     /** Opção do diálogo: primeiro as escolhas do NPC, depois "perguntar sobre" os fatos marcados. */
@@ -1496,7 +1521,8 @@ public final class EtravaGame extends ApplicationAdapter {
                         + "trabalhar ID | comercio ID | abrir CONTEINER | mochila | ficha | dar ITEM [N] | dinheiro N\n"
                         + "fome N | vida | precos\n"
                         + "encontro ID | saude N | inimigos | equipar ITEM\n"
-                        + "vel FATOR | zoom VALOR | semente | luz on/off | pos-fx on/off | colisao | hud | validar | sair";
+                        + "vel FATOR | zoom VALOR | semente | luz on/off | pos-fx on/off | colisao | hud | validar | sair\n"
+                        + "aviso TEXTO | balao ID TEXTO | cursor (V7: HUD e mouse)";
             case "pos":
                 return String.format(Locale.ROOT, "(%.2f, %.2f) em %s", v.playerX(), v.playerY(), v.areaId());
             case "tp":
@@ -1851,8 +1877,19 @@ public final class EtravaGame extends ApplicationAdapter {
                 for (String w : report.warnings()) out.add("aviso: " + w);
                 return out.isEmpty() ? "conteúdo válido" : String.join("\n", out);
             case "console":
+                if (console == null) return "o console só existe com --debug";
                 console.toggle();
                 return "";
+            case "aviso": // depuração (V7, capturas): um bilhete de aviso com o texto dado
+                hud.aviso(line.trim().substring(Math.min(line.trim().length(), 5)).trim());
+                return "";
+            case "balao": // depuração (V7, capturas): balão de fala: balao ID texto
+                if (p.length < 3) return "use: balao ID TEXTO (jogador para o jogador)";
+                balloons.removeIf(b -> b[0].equals(p[1]));
+                balloons.add(new Object[] {p[1], line.trim().substring(line.trim().indexOf(p[1]) + p[1].length()).trim(), 60f});
+                return "";
+            case "cursor": // depuração (V7): o cursor atual e se o mouse está sobre a interface
+                return hud.ui().cursorAtual() + (overInterface() ? " (sobre a interface)" : "");
             case "sair":
                 Gdx.app.exit();
                 return "";
@@ -2200,6 +2237,7 @@ public final class EtravaGame extends ApplicationAdapter {
         batch.dispose();
         font.dispose();
         hudFont.dispose();
+        if (hud != null) hud.dispose();
         titleFont.dispose();
         if (menuOverlayFont != null) menuOverlayFont.dispose();
         if (consoleFont != null) consoleFont.dispose();
