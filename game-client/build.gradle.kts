@@ -155,6 +155,8 @@ fun captureTask(name: String, script: String, outDir: File, check: Boolean) = ta
     workingDir = rootDir
     jvmArgs("-Detrava.home=${rootDir.absolutePath}", "-Detrava.userdir=${user.absolutePath}",
         "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
+    // -Pso=tela1,tela2: só essas telas do roteiro (campo "tela" da cena)
+    (findProperty("so") as String?)?.let { jvmArgs("-Detrava.capturas.so=$it") }
     args("--hidden", "--roteiro=" + rootProject.file("tools/capturas/$script.yaml").absolutePath,
         "--saida=" + outDir.absolutePath)
     doFirst {
@@ -167,6 +169,13 @@ fun captureTask(name: String, script: String, outDir: File, check: Boolean) = ta
             ?: throw GradleException("o roteiro não chegou ao fim — ver $user/logs/etrava.log")
         val (scenes, saved, measured, fails) = m.destructured
         println("Capturas: $scenes cenas, $saved salvas em $outDir; visibilidade: $measured medidas, $fails falha(s)")
+        // VT-09: checagem de limites da interface; -Pestrito faz a tarefa falhar se houver problema
+        val lim = Regex("""LIMITES terminou: (\d+) cenas, (\d+) problemas""").find(log)
+        if (lim != null) {
+            val (limScenes, limProblems) = lim.destructured
+            println("Limites: $limScenes cenas, $limProblems problemas (ver $outDir/relatorio_limites.csv)")
+            if (findProperty("estrito") != null) check(limProblems.toInt() == 0) { "VT-09: $limProblems problema(s) de limites" }
+        }
         if (check) {
             check(measured.toInt() > 0) { "nenhuma medida de visibilidade" }
             check(fails.toInt() == 0) { "VT-03: $fails medida(s) abaixo do mínimo — ver $outDir/relatorio.csv" }

@@ -51,7 +51,8 @@ class GameUiScrollTest {
 
     private record Screen(GameUi ui, UiStage stage, int w, int h) {
         void mouseAt(float stageX, float stageY) {
-            stage.mousePosition(() -> new GridPoint2(Math.round(stageX), Math.round(h - stageY)));
+            int k = Escala.k(h); // a tela virtual é k vezes menor que a janela
+            stage.mousePosition(() -> new GridPoint2(Math.round(stageX * k), Math.round(h - stageY * k)));
         }
     }
 
@@ -96,7 +97,7 @@ class GameUiScrollTest {
 
     private static void assertOnScreen(Screen s, Actor a, String what) {
         Rectangle r = rect(a);
-        assertTrue(r.x >= -1 && r.y >= -1 && r.x + r.width <= s.w() + 1 && r.y + r.height <= s.h() + 1,
+        assertTrue(r.x >= -1 && r.y >= -1 && r.x + r.width <= s.stage().getWidth() + 1 && r.y + r.height <= s.stage().getHeight() + 1,
                 what + " sai da tela " + s.w() + "x" + s.h() + ": " + r);
     }
 
@@ -124,15 +125,20 @@ class GameUiScrollTest {
         assertTrue(inside, what + ": o clique no último item não chega nele (atingiu " + hit + ")");
     }
 
+    /** A mesma massa do comando de console {@code vt08}: o que o teste confere é o que se vê na captura. */
+    private static etrava.client.debug.MassaVt08 massa(String qual) {
+        var m = new etrava.client.debug.MassaVt08(content);
+        m.ligar(qual);
+        return m;
+    }
+
     @ParameterizedTest(name = "comércio com 80 itens em {0}x{1}")
     @CsvSource({"1280,720", "1366,768", "1920,1080"})
     void comercio(int w, int h) {
         Screen s = screen(w, h);
-        List<TradeView.Offer> offers = IntStream.range(0, 80)
-                .mapToObj(i -> new TradeView.Offer("pao", "Pão de centeio " + (i + 1), 1, 3, true)).toList();
-        List<TradeView.Offer> wants = IntStream.range(0, 30)
-                .mapToObj(i -> new TradeView.Offer("faca", "Faca de ofício " + (i + 1), 1, 5, true)).toList();
-        show(s, world(Map.of()), new TradeView("taberneira", "Taberneira", false, 100, 0, offers, wants, null));
+        var m = massa("comercio");
+        assertEquals(80, m.comercio().offers().size());
+        show(s, world(Map.of()), m.comercio());
         List<ScrollPane> panes = visiblePanes(s.stage().getRoot(), new ArrayList<>());
         assertEquals(2, panes.size(), "o comércio tem duas colunas roláveis");
         for (ScrollPane pane : panes) assertScrollsToLast(s, pane, "comércio");
@@ -142,14 +148,8 @@ class GameUiScrollTest {
     @CsvSource({"1280,720", "1366,768", "1920,1080"})
     void conversa(int w, int h) {
         Screen s = screen(w, h);
-        List<DialogueView.Choice> choices = IntStream.range(0, 12).mapToObj(i -> new DialogueView.Choice(
-                "Uma pergunta comprida o bastante para quebrar em duas linhas na caixa de conversa, número " + (i + 1) + ".",
-                i % 4 == 0 ? "Lábia" : null)).toList();
-        DialogueView d = Headless.fake(DialogueView.class, Map.of("npcId", "avel", "npcName", "Avel", "portrait", "retrato.avel",
-                "speakerName", "Avel", "text", "Fala que você quer saber. Mas pergunta uma coisa de cada vez.",
-                "choices", choices, "history", List.of(new DialogueView.Line("Avel", "Bom dia."),
-                        new DialogueView.Line("Você", "Bom dia, tio."), new DialogueView.Line("Avel", "Hum."))));
-        show(s, world(Map.of("dialogue", d)), null);
+        var m = massa("conversa");
+        show(s, m.sobre(world(Map.of())), null);
         ScrollPane pane = biggestPane(s);
         for (Actor a = pane; a != null && a != s.stage().getRoot(); a = a.getParent()) assertOnScreen(s, a, "conversa");
         assertScrollsToLast(s, pane, "conversa");
@@ -159,11 +159,10 @@ class GameUiScrollTest {
     @CsvSource({"1280,720", "1366,768", "1920,1080"})
     void caderno(int w, int h) {
         Screen s = screen(w, h);
-        List<KnowledgeEntry> known = content.facts().keySet().stream().limit(60).map(id -> new KnowledgeEntry(id,
-                content.facts().get(id).defaultVersion(), "rumor", "taberneira", 3, "vila")).toList();
-        assertEquals(60, known.size());
+        var m = massa("caderno");
+        assertEquals(60, m.sobre(world(Map.of())).knowledge().size());
         s.ui().toggleNotebook();
-        show(s, world(Map.of("knowledge", known)), null);
+        show(s, m.sobre(world(Map.of())), null);
         assertScrollsToLast(s, biggestPane(s), "caderno");
     }
 }

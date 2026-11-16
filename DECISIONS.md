@@ -1046,3 +1046,19 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - Fogo que tremula por ruído suave, determinístico pela posição, preset pelo id do prop (ou prefixo).
   - Feixe de sol identificado pelos props `parede_x_janela`/`parede_y_janela`; sem estado (função da hora), então as capturas se repetem. "Detalhes: Baixo" tira só a poeira.
 - **Limite conhecido:** o feixe não é bloqueado por móveis nem paredes.
+
+## D-134 — V7 por subagentes em ondas, em Sonnet
+- **Data:** 2026-11-16
+- **Decisão:** a pedido do diretor, o V7 é orquestrado: onda 1 (peças do tema; base do cliente; ferramentas de verificação), onda 2 (as telas, cada grupo numa classe própria) e fechamento pelo orquestrador. Subagentes em Sonnet; o orquestrador define o contrato, olha as imagens, corrige, faz commit e mantém `PROGRESS.md`/`DECISIONS.md`. Dois agentes no mesmo módulo nunca rodam juntos (a compilação de um quebra a do outro).
+- **Motivo:** o grosso é código de layout, que não pede o modelo mais caro. **Custo:** cada agente relê o código (~170–220 mil tokens cada na onda 1); o limite de 5 horas derrubou dois no meio e eles foram retomados do próprio histórico.
+
+## D-135 — Tema por código, sem Dreamina
+- **Data:** 2026-11-16
+- **Decisão:** as peças do tema (`assets/ui/`, 43 PNG) saem de `GenerateUi` (`gradlew :tools:generateUi`), pixel a pixel na paleta, com a prancha `docs/capturas/v7/prancha_tema.png`. O manifesto (`assets/manifest/ui.yaml`) segue o formato comum; split, recuo, cores de tinta e ponto dos cursores ficam em `assets/config/ui.yaml`, porque o `AssetManifest` é do núcleo e não muda por causa de arte. A textura do pergaminho é um ladrilho à parte (`ui.papel_trama`, 128×128): dentro de um 9-patch ela esticaria em blocos.
+- **Alternativa descartada:** a tarefa 1 do `V7.md` previa referências e materiais na Dreamina. 9-patches pequenos na paleta saem mais limpos por código; 0 créditos.
+
+## D-136 — Escala da interface e tamanho da letra
+- **Data:** 2026-11-16
+- **Decisão:** `Escala`: k = max(1, ⌊altura/540⌋), Stages com `unitsPerPixel = 1/k` (SPEC-visual §8.2). A letra é gerada no tamanho físico 19 × altura/720 × tamanho de texto e entra no Stage com 1/k; o HUD, em pixels, usa o mesmo tamanho físico. Fontes e telas são refeitas quando a altura da janela muda.
+- **Motivo:** na primeira versão a letra era 19 × k: em 1080p saía 33 % maior que em 720p e o painel tomava a tela.
+- **Captura em resolução verdadeira:** a janela de captura vai sem moldura e sem redimensionar; assim o Windows não a encolhe ao monitor e 3840×2160 sai exato. Testado só nesta máquina.

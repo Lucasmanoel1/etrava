@@ -176,3 +176,14 @@ tasks.register<JavaExec>("importTextures") {
     jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
+
+// ---- V7: tema da interface (9-patches, botões, molduras, cursores) desenhado por código na paleta v3.
+tasks.register<JavaExec>("generateUi") {
+    group = "assets"
+    description = "Gera o tema da interface em assets/ui, os manifestos e a prancha docs/capturas/v7/prancha_tema.png."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.ui.GenerateUi")
+    args(rootProject.file("assets").absolutePath, rootProject.file("docs/capturas/v7/prancha_tema.png").absolutePath)
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}

@@ -1,6 +1,8 @@
 package etrava.client.debug;
 
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import etrava.client.ui.LimitesUi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -15,8 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +31,12 @@ import org.slf4j.LoggerFactory;
  * Cada cena começa de um jogo novo (área e semente), roda comandos de console, espera alguns
  * quadros e salva a tela. Cenas com {@code medir: true} medem também a visibilidade do jogador
  * (VT-03): luminância média dele × a de uma moldura de chão em volta, na imagem final.
- * Saída: as PNGs, {@code relatorio.csv} e {@code contato.png}; no fim, o jogo fecha.
+ * Saída: as PNGs, {@code relatorio.csv}, {@code relatorio_limites.csv} (VT-09: a checagem de limites da
+ * interface em cada cena salva) e {@code contato.png}; no fim, o jogo fecha.
+ *
+ * <p>Uma cena pode ser uma matriz: {@code tamanhos: [[1280,720],[1920,1080]]} e/ou {@code textos: [1, 1.25, 1.5]}
+ * viram uma captura por combinação ({@code nome_1280x720_t125}). {@code tela:} (padrão: o nome) é o que
+ * {@code -Detrava.capturas.so=tela1,tela2} usa para rodar só algumas telas.
  */
 public final class CaptureScript {
     private static final Logger LOG = LoggerFactory.getLogger(CaptureScript.class);
@@ -43,6 +53,8 @@ public final class CaptureScript {
         Pixmap playerMask();
         /** A tela do quadro atual, já com tudo desenhado (linhas de baixo para cima). */
         Pixmap grabScreen();
+        /** Os Stages de interface que estão na tela agora (nome → Stage), para a checagem de limites. */
+        default Map<String, Stage> stages() { return Map.of(); }
         int pixelScale();
         String clock();
         void exit();
@@ -51,6 +63,9 @@ public final class CaptureScript {
     /** {@code fresh}: começa um jogo novo antes desta cena. */
     record Shot(String name, String area, long seed, boolean fresh, List<String> commands, int w, int h, float text,
             int frames, boolean save, boolean measure) {}
+
+    /** Variável de sistema {@code etrava.capturas.so}: telas (campo {@code tela}) a rodar; vazia = todas. */
+    private static final String SO = "etrava.capturas.so";
 
     /**
      * Regra do VT-03 (D-090): pelo menos {@code MIN_STANDOUT} dos pixels do jogador diferem da
@@ -64,13 +79,15 @@ public final class CaptureScript {
     private final Host host;
     private final List<String> report = new ArrayList<>();
     private final List<String> saved = new ArrayList<>();
-    private int index = -1, frame, failures, measured;
+    private final List<String> limitsReport = new ArrayList<>();
+    private int index = -1, frame, failures, measured, limitScenes, limitProblems;
 
     private CaptureScript(List<Shot> shots, Path out, Host host) {
         this.shots = shots;
         this.out = out;
         this.host = host;
         report.add("cena;area;relogio;zoom;tamanho;jogador;entorno;destaque;ok");
+        limitsReport.add("cena;resolucao;texto;stage;problema;ator;texto_do_label;medidas");
     }
 
     public static CaptureScript load(Path script, Path out, Host host) {
@@ -82,11 +99,27 @@ public final class CaptureScript {
             float text = (float) def.path("texto").asDouble(1);
             int frames = def.path("quadros").asInt(45);
             List<Shot> shots = new ArrayList<>();
+            Set<String> only = Set.of(System.getProperty(SO, "").split(","));
             for (JsonNode c : root.path("cenas")) {
-                shots.add(new Shot(c.path("nome").asText(), c.path("area").asText("vila"), c.path("semente").asLong(seed), true,
-                        strings(c.path("cmds")), c.path("tamanho").path(0).asInt(w), c.path("tamanho").path(1).asInt(h),
-                        (float) c.path("texto").asDouble(text), c.path("quadros").asInt(frames), c.path("salvar").asBoolean(true),
-                        c.path("medir").asBoolean(false)));
+                String nome = c.path("nome").asText();
+                if (!System.getProperty(SO, "").isBlank() && !only.contains(c.path("tela").asText(nome))) continue;
+                // matriz: tamanhos × textos (cada lista é opcional; sem nenhuma, é uma cena só)
+                List<int[]> sizes = new ArrayList<>();
+                for (JsonNode t : c.path("tamanhos")) sizes.add(new int[] {t.path(0).asInt(w), t.path(1).asInt(h)});
+                boolean matrixSizes = !sizes.isEmpty(), matrixTexts = c.path("textos").size() > 0;
+                if (!matrixSizes) sizes.add(new int[] {c.path("tamanho").path(0).asInt(w), c.path("tamanho").path(1).asInt(h)});
+                List<Float> texts = new ArrayList<>();
+                for (JsonNode t : c.path("textos")) texts.add((float) t.asDouble(1));
+                if (!matrixTexts) texts.add((float) c.path("texto").asDouble(text));
+                for (float tx : texts) {
+                    for (int[] sz : sizes) {
+                        String name = nome + (matrixSizes ? "_" + sz[0] + "x" + sz[1] : "")
+                                + (matrixTexts ? "_t" + Math.round(tx * 100) : "");
+                        shots.add(new Shot(name, c.path("area").asText("vila"), c.path("semente").asLong(seed), true,
+                                strings(c.path("cmds")), sz[0], sz[1], tx, c.path("quadros").asInt(frames),
+                                c.path("salvar").asBoolean(true), c.path("medir").asBoolean(false)));
+                    }
+                }
             }
             // grade: área × horas × zooms; um jogo novo por hora, os zooms em seguida no mesmo jogo
             for (JsonNode g : root.path("grades")) {
@@ -147,6 +180,7 @@ public final class CaptureScript {
     }
 
     private void capture(Shot s) {
+        if (s.save()) checkLimits(s);
         Pixmap screen = host.grabScreen();
         try {
             String metric = s.measure() ? measure(s, screen) : "";
@@ -162,6 +196,25 @@ public final class CaptureScript {
         } finally {
             screen.dispose();
         }
+    }
+
+    /** VT-09: roda a checagem de limites nos Stages visíveis e acumula o relatório. */
+    private void checkLimits(Shot s) {
+        int found = 0;
+        for (Map.Entry<String, Stage> e : host.stages().entrySet()) {
+            for (LimitesUi.Problema p : LimitesUi.verificar(e.getKey(), e.getValue())) {
+                found++;
+                limitsReport.add(String.join(";", s.name(), s.w() + "x" + s.h(), String.format(Locale.ROOT, "%.2f", s.text()),
+                        e.getKey(), p.tipo(), csv(p.ator()), csv(p.texto()), csv(p.medidas())));
+                LOG.warn("Limites {}: {}", s.name(), p.legivel());
+            }
+        }
+        limitScenes++;
+        limitProblems += found;
+    }
+
+    private static String csv(String text) {
+        return text.replace(';', ',').replace('\n', ' ');
     }
 
     /** Luminância média do jogador × a de uma moldura de 12 px de arte em volta dele (VT-03). */
@@ -236,11 +289,15 @@ public final class CaptureScript {
     private void finish() {
         try {
             Files.write(out.resolve("relatorio.csv"), report, StandardCharsets.UTF_8);
+            Files.write(out.resolve("relatorio_limites.csv"), limitsReport, StandardCharsets.UTF_8);
             if (!saved.isEmpty()) contactSheet();
             String summary = String.format(Locale.ROOT, "CAPTURAS terminou: %d cenas, %d salvas, visibilidade: %d medidas, %d falhas",
                     shots.size(), saved.size(), measured, failures);
             LOG.info(summary);
             System.out.println(summary);
+            String limits = String.format(Locale.ROOT, "LIMITES terminou: %d cenas, %d problemas", limitScenes, limitProblems);
+            LOG.info(limits);
+            System.out.println(limits);
         } catch (IOException e) {
             LOG.warn("Relatório de capturas não salvo: {}", e.getMessage());
         }

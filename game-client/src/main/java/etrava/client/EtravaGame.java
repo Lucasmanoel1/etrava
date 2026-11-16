@@ -84,8 +84,15 @@ public final class EtravaGame extends ApplicationAdapter {
     /** Texto das telas de papel; {@code hudFont} é o mesmo tamanho, com sombra, para o que fica solto sobre o cenário. */
     private BitmapFont font, hudFont, titleFont, consoleFont;
     private float fontScale;
+    private int alturaFonte;
+    /** Escala inteira da interface ({@link etrava.client.ui.Escala}); muda quando a janela cruza um múltiplo de 540 de altura. */
+    private int escalaK = 1;
+    /** Texto claro sobre a ilustração do menu (Stage, na escala da interface). */
+    private BitmapFont menuOverlayFont;
     /** As opções pediram outro tamanho de texto: as telas são refeitas no começo do próximo quadro. */
     private boolean uiDirty;
+    /** Massa de teste do VT-08 (depuração): troca o que a interface vê, sem mexer na simulação. */
+    private etrava.client.debug.MassaVt08 massa;
     /** Tempo real de jogo desta partida, em segundos (vai no cabeçalho do save). */
     private double playedSeconds;
     /** Quem está no meio de um golpe → segundos que faltam da animação. */
@@ -185,16 +192,14 @@ public final class EtravaGame extends ApplicationAdapter {
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
         fonts = new etrava.client.ui.Fonts(options.assetsDir(), assets.manifest());
-        titleFont = fonts.title();
-        consoleFont = fonts.overlay(1f);
         Pixmap white = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         white.setColor(1, 1, 1, 1);
         white.fill();
         whitePx = new Texture(white);
         white.dispose();
         texts = new Texts(options.contentDir());
+        massa = new etrava.client.debug.MassaVt08(content);
         debug = new etrava.client.debug.DebugMode(options.dev());
-        if (debug.enabled()) console = new DebugConsole(consoleFont, this::runConsoleCommand);
         buildUi();
         if (options.bench() > 0) bench = new Bench();
         applySettings();
@@ -235,9 +240,25 @@ public final class EtravaGame extends ApplicationAdapter {
         if (menu != null) menu.dispose();
         if (font != null) font.dispose();
         if (hudFont != null) hudFont.dispose();
+        if (menuOverlayFont != null) menuOverlayFont.dispose();
+        if (titleFont != null) titleFont.dispose();
+        if (consoleFont != null) consoleFont.dispose();
         fontScale = settings.tamanhoTexto;
-        font = fonts.text(fontScale);
-        hudFont = fonts.overlay(fontScale);
+        escalaK = etrava.client.ui.Escala.k(Gdx.graphics.getHeight());
+        // as telas (Stage) usam fontes geradas em k vezes e reduzidas a 1/k; o HUD no Batch, em pixels, fica no tamanho físico
+        // tamanho físico = 19 × altura/720 × tamanho de texto (SPEC-visual §8.2): a letra ocupa a mesma fração da tela em toda resolução
+        alturaFonte = Gdx.graphics.getHeight();
+        float porAltura = fontScale * Math.max(1f, alturaFonte / 720f);
+        font = fonts.text(porAltura / escalaK, escalaK);
+        menuOverlayFont = fonts.overlay(porAltura / escalaK, escalaK);
+        titleFont = fonts.title(escalaK);
+        hudFont = fonts.overlay(porAltura);
+        if (debug.enabled()) {
+            consoleFont = fonts.overlay(1f, escalaK);
+            DebugConsole old = console;
+            console = new DebugConsole(consoleFont, this::runConsoleCommand);
+            if (old != null) old.dispose();
+        }
 
         ui = new GameUi(font, assets, content, texts);
         ui.onChoice(this::chooseDialogue);
@@ -248,7 +269,7 @@ public final class EtravaGame extends ApplicationAdapter {
             showNotice(result);
             if (!sim.view().dead()) ui.closeDeath();
         });
-        menu = new MenuUi(font, hudFont, titleFont, texts, settings, new MenuActions());
+        menu = new MenuUi(font, menuOverlayFont, titleFont, texts, settings, new MenuActions());
 
         menuInput.clear();
         menuInput.addProcessor(new MenuKeys());
@@ -261,6 +282,7 @@ public final class EtravaGame extends ApplicationAdapter {
         gameInput.addProcessor(new GameInput());
         ui.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         menu.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if (console != null) console.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         uiDirty = false;
 
         if (reopen && inGame) {
@@ -474,6 +496,7 @@ public final class EtravaGame extends ApplicationAdapter {
         batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
         if (console != null) console.resize(width, height);
         ui.resize(width, height);
+        if (height != alturaFonte && height > 0) uiDirty = true; // a fonte é gerada para cada altura de tela
     }
 
     @Override
@@ -528,7 +551,8 @@ public final class EtravaGame extends ApplicationAdapter {
         drawBalloons(v, dt);
         drawCombatOverlay(v, dt);
         if (showHud) drawHud(v);
-        ui.render(v, sim.tradeView(), sim.economy(), dt);
+        if (massa.ligada()) ui.render(massa.sobre(v), massa.comercio() != null ? massa.comercio() : sim.tradeView(), sim.economy(), dt);
+        else ui.render(v, sim.tradeView(), sim.economy(), dt);
         menu.render(dt);
         if (console != null) console.render(dt);
         if (bench != null) bench.frame();
@@ -560,6 +584,10 @@ public final class EtravaGame extends ApplicationAdapter {
         }
 
         @Override public void windowSize(int w, int h) {
+            if (Gdx.graphics instanceof com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics g) { // sem moldura nem borda de redimensionar o
+                g.setUndecorated(true);                                                       // sistema não encolhe a janela ao monitor
+                g.setResizable(false);
+            }
             if (Gdx.graphics.getWidth() != w || Gdx.graphics.getHeight() != h) Gdx.graphics.setWindowedMode(w, h);
         }
 
@@ -583,6 +611,13 @@ public final class EtravaGame extends ApplicationAdapter {
 
         @Override public Pixmap grabScreen() {
             return Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
+        }
+
+        @Override public java.util.Map<String, com.badlogic.gdx.scenes.scene2d.Stage> stages() {
+            java.util.Map<String, com.badlogic.gdx.scenes.scene2d.Stage> m = new java.util.LinkedHashMap<>();
+            m.put("jogo", ui.stage());
+            if (menu.isOpen()) m.put("menu", menu.stage());
+            return m;
         }
 
         @Override public int pixelScale() { return camera.pixelScale(); }
@@ -1452,7 +1487,10 @@ public final class EtravaGame extends ApplicationAdapter {
             case "ajuda":
                 return "pos | tp X Y | ir X Y | area ID | hora [H] | avancar HORAS | esperar HORAS | dormir\n"
                         + "salvar [NOME] | carregar [NOME] | saves | npcs | cronica | agendar HORAS TEXTO\n"
-                        + "falar NPC | escolher N | caderno | sabe NPC\n"
+                        + "falar NPC | escolher N | caderno [ABA 0-4] | sabe NPC\n"
+                        + "telas (depuração): mochila | ficha | caderno [ABA] | mapa | comercio ID | conteiner ID | conversa NPC | pausa\n"
+                        + "  opcoes | salvar | carregar (sem nome: abrem a tela) | menu | novo | epilogo | derrota | morte | documento ITEM\n"
+                        + "  fechar | vt08 comercio|caderno|conversa|tudo|off (massa de teste do VT-08, só na tela)\n"
                         + "arcos | arco ID ESTAGIO | prop CHAVE ESTADO | status NPC SITUACAO | ato ID | epilogo\n"
                         + "trabalhar ID | comercio ID | abrir CONTEINER | mochila | ficha | dar ITEM [N] | dinheiro N\n"
                         + "fome N | vida | precos\n"
@@ -1480,10 +1518,15 @@ public final class EtravaGame extends ApplicationAdapter {
             case "escolher":
                 chooseDialogue((int) num(p, 1) - 1);
                 return "";
-            case "caderno":
-                ui.toggleNotebook();
-                if (p.length > 1) ui.notebookTab((int) num(p, 1));
+            case "caderno": {
+                boolean was = ui.notebookOpen();
+                fecharTudo();
+                if (!was || p.length > 1) {
+                    ui.toggleNotebook();
+                    if (p.length > 1) ui.notebookTabTo((int) num(p, 1));
+                }
                 return "";
+            }
             case "arcos": {
                 StringBuilder sb = new StringBuilder();
                 GameClockStamp stamp = new GameClockStamp(v);
@@ -1520,7 +1563,9 @@ public final class EtravaGame extends ApplicationAdapter {
                 sim.applyNow(List.of(new Effect.Deed(p[1])));
                 return v.chronicle().get(v.chronicle().size() - 1).text();
             case "mapa": {
-                ui.toggleMap();
+                boolean was = ui.mapOpen();
+                fecharTudo();
+                if (!was) ui.toggleMap();
                 return "";
             }
             case "epilogo": {
@@ -1542,20 +1587,111 @@ public final class EtravaGame extends ApplicationAdapter {
                 if (p.length < 2) return "trabalhos: " + String.join(", ", content.jobs().keySet());
                 sim.submit(new Command.Work(p[1]));
                 return sim.economy().canWork(content.jobs().get(p[1])) ? "trabalhando" : "agora não dá (hora, quem dá, ou já feito hoje)";
-            case "mochila":
-                ui.toggleInventory();
+            case "mochila": {
+                boolean was = ui.inventoryOpen();
+                fecharTudo();
+                if (!was) ui.toggleInventory();
                 return "";
-            case "ficha":
-                ui.toggleCharacter();
+            }
+            case "ficha": {
+                boolean was = ui.characterOpen();
+                fecharTudo();
+                if (!was) ui.toggleCharacter();
                 return "";
+            }
             case "abrir":
                 if (p.length < 2) return "contêineres: " + String.join(", ", content.containers().keySet());
                 sim.submit(new Command.OpenContainer(p[1]));
                 return "indo até " + p[1];
             case "comercio":
                 if (p.length < 2) return "comércios: " + String.join(", ", content.merchants().keySet());
+                fecharTudo();
                 sim.submit(new Command.OpenTrade(p[1]));
                 return "abrindo " + p[1];
+            case "conteiner": { // como "abrir", mas põe o jogador ao lado (depuração, capturas)
+                if (p.length < 2 || !content.containers().containsKey(p[1]))
+                    return "contêineres: " + String.join(", ", content.containers().keySet());
+                fecharTudo();
+                double[] at = sim.economy().containerPoint(content.containers().get(p[1]));
+                if (at == null) return "esse contêiner não está nesta área (" + v.areaId() + ")";
+                irPerto(at[0], at[1], 0);
+                sim.submit(new Command.OpenContainer(p[1]));
+                return "abrindo " + p[1];
+            }
+            case "conversa": { // como "falar", mas põe o jogador ao lado do NPC (depuração, capturas)
+                if (p.length < 2) return "use: conversa NPC";
+                var npc = sim.stateWorld().npcs.get(p[1]);
+                if (npc == null || !npc.present() || npc.hidden) return p[1] + " não está presente";
+                if (!v.areaId().equals(npc.areaId)) return p[1] + " está em " + npc.areaId + "; use: area " + npc.areaId;
+                fecharTudo();
+                irPerto(npc.x, npc.y, 1);
+                sim.submit(new Command.Talk(p[1]));
+                return "falando com " + p[1];
+            }
+            case "pausa":
+                fecharTudo();
+                openPause();
+                return "";
+            case "opcoes":
+                fecharTudo();
+                menu.showPause();
+                menu.showOptions(menu::showPause);
+                return "";
+            case "menu":
+                fecharTudo();
+                menu.showMain(!saveSlots(false).isEmpty());
+                Gdx.input.setInputProcessor(menuInput);
+                return "";
+            case "novo":
+                fecharTudo();
+                menu.showMain(!saveSlots(false).isEmpty());
+                menu.showNewGame();
+                Gdx.input.setInputProcessor(menuInput);
+                return "";
+            case "derrota": {
+                fecharTudo();
+                List<String> lines = new ArrayList<>();
+                lines.add(texts.get("derrota.acorda", 9L));
+                lines.add(texts.get("derrota.dinheiro", ui.coins(12)));
+                lines.add(texts.get("derrota.itens", itemNames(List.of("pao", "faca"))));
+                lines.add(texts.get("derrota.achou", "Avel"));
+                ui.showWake(lines);
+                return "";
+            }
+            case "morte": {
+                fecharTudo();
+                List<String> lines = new ArrayList<>();
+                lines.add(texts.get("morte.texto"));
+                var chronicle = v.chronicle();
+                for (int i = Math.max(0, chronicle.size() - 4); i < chronicle.size(); i++) lines.add(chronicle.get(i).text());
+                if (chronicle.isEmpty()) lines.add("Avel fechou a oficina e ninguém perguntou por quê.");
+                Map<String, String> saves = new java.util.LinkedHashMap<>();
+                saves.put("rapido", texts.get("morte.save.rapido", 3, "14:20"));
+                saves.put("auto_1", texts.get("morte.save.auto", 2, "08:05"));
+                ui.showDeath(lines, saves);
+                return "";
+            }
+            case "documento": {
+                var docs = content.items().values().stream().filter(i -> i.document()).map(i -> i.id()).toList();
+                if (p.length < 2 || !docs.contains(p[1])) return "documentos: " + String.join(", ", docs);
+                fecharTudo();
+                var item = content.items().get(p[1]);
+                ui.showDocument(item.displayName(), item.text() != null ? item.text() : item.description());
+                return "";
+            }
+            case "fechar":
+                fecharTudo();
+                return "";
+            case "vt08": {
+                String what = p.length > 1 ? p[1] : "tudo";
+                if (!List.of("comercio", "caderno", "conversa", "tudo", "off").contains(what))
+                    return "use: vt08 comercio|caderno|conversa|tudo|off";
+                fecharTudo();
+                if (what.equals("off")) return "massa desligada";
+                massa.ligar(what);
+                if (what.equals("caderno") || what.equals("tudo")) ui.toggleNotebook();
+                return "massa do VT-08: " + what + " (só na tela; o jogo não muda)";
+            }
             case "dar":
                 if (p.length < 2 || !content.items().containsKey(p[1]))
                     return "itens: " + String.join(", ", content.items().keySet());
@@ -1630,9 +1766,21 @@ public final class EtravaGame extends ApplicationAdapter {
                 sim.submit(new Command.EnterArea(p[1], null));
                 return "indo para " + p[1];
             case "salvar":
-                return saveGame(p.length > 1 ? p[1] : "manual");
+                if (p.length < 2) { // sem nome: a tela de salvar
+                    fecharTudo();
+                    openPause();
+                    menu.showSlots(true, menu::showPause);
+                    return "";
+                }
+                return saveGame(p[1]);
             case "carregar":
-                return loadGame(p.length > 1 ? p[1] : "manual");
+                if (p.length < 2) {
+                    fecharTudo();
+                    menu.showPause();
+                    menu.showSlots(false, menu::showPause);
+                    return "";
+                }
+                return loadGame(p[1]);
             case "saves": {
                 StringBuilder sb = new StringBuilder();
                 java.io.File[] files = UserDirs.saves().toFile().listFiles((d, n) -> n.endsWith(SaveGame.EXTENSION));
@@ -1709,6 +1857,38 @@ public final class EtravaGame extends ApplicationAdapter {
                 return "";
             default:
                 return "comando desconhecido: " + p[0] + " (digite 'ajuda')";
+        }
+    }
+
+    /** Fecha toda tela aberta por comando (depuração): janelas, caderno, folhas, comércio, conversa, menu e a massa do VT-08. */
+    private void fecharTudo() {
+        massa.desligar();
+        ui.closeWindows();
+        ui.closeNotebook();
+        ui.closeDeath();
+        if (sim != null) {
+            if (sim.view().trade() != null) sim.submit(new Command.CloseTrade());
+            if (sim.view().dialogue() != null) sim.submit(new Command.LeaveDialogue());
+        }
+        if (menu.isOpen() && menu.inGame()) menu.close();
+    }
+
+    /** Põe o jogador num ponto livre perto de (x, y), a {@code raio} de distância se possível (depuração). */
+    private void irPerto(double x, double y, double raio) {
+        double[][] desvios = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {0.7, 0.7}, {-0.7, 0.7}, {0.7, -0.7}, {-0.7, -0.7},
+                {2, 0}, {-2, 0}, {0, 2}, {0, -2}, {0, 0}};
+        for (double[] d : desvios) {
+            double tx = x + d[0] * Math.max(raio, 0.5), ty = y + d[1] * Math.max(raio, 0.5);
+            sim.submit(new Command.Teleport(tx, ty));
+            List<SimEvent> events = sim.stepPaused();
+            if (!events.isEmpty()) handleEvents(events);
+            WorldView w = sim.view();
+            if (Math.hypot(w.playerX() - tx, w.playerY() - ty) < 0.01) {
+                camera.snapTo(w.playerX(), w.playerY());
+                previous.clear();
+                capturePrevious(w);
+                return;
+            }
         }
     }
 
@@ -2020,7 +2200,8 @@ public final class EtravaGame extends ApplicationAdapter {
         font.dispose();
         hudFont.dispose();
         titleFont.dispose();
-        consoleFont.dispose();
+        if (menuOverlayFont != null) menuOverlayFont.dispose();
+        if (consoleFont != null) consoleFont.dispose();
         if (audio != null) audio.dispose();
         if (menu != null) menu.dispose();
         for (Texture t : thumbs.values()) t.dispose();

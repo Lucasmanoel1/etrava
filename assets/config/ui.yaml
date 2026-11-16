@@ -1,0 +1,60 @@
+# GERADO por `gradlew :tools:generateUi` — não edite à mão.
+# Metadados do tema da interface (V7). split = bordas do 9-patch em px de arte (esq, dir, cima, baixo);
+# pad = recuo do conteúdo (esq, dir, cima, baixo); ponto = ponto ativo do cursor; sem split = imagem simples.
+pecas:
+  ui.painel_madeira: {split: [16, 16, 16, 16], pad: [18, 18, 18, 18]}
+  ui.pergaminho: {split: [9, 9, 9, 9], pad: [10, 10, 10, 10]}
+  ui.pergaminho_escuro: {split: [4, 4, 4, 4], pad: [5, 5, 5, 5]}
+  ui.couro: {split: [8, 8, 8, 8], pad: [8, 8, 8, 8]}
+  ui.bilhete: {split: [7, 7, 7, 7], pad: [8, 8, 8, 8]}
+  ui.balao: {split: [20, 8, 8, 12], pad: [8, 8, 6, 10]}
+  ui.dica: {split: [5, 5, 5, 5], pad: [6, 6, 6, 6]}
+  ui.livro_esq: {split: [14, 8, 12, 12], pad: [17, 10, 14, 14]}
+  ui.livro_dir: {split: [8, 14, 12, 12], pad: [10, 17, 14, 14]}
+  ui.documento: {split: [10, 10, 10, 10], pad: [14, 14, 14, 14]}
+  ui.papel_trama: {}
+  ui.papel_trama_escuro: {}
+  ui.botao: {split: [6, 6, 6, 6], pad: [8, 8, 4, 5]}
+  ui.botao_sobre: {split: [6, 6, 6, 6], pad: [8, 8, 4, 5]}
+  ui.botao_press: {split: [6, 6, 6, 6], pad: [8, 8, 5, 4]}
+  ui.botao_desativado: {split: [6, 6, 6, 6], pad: [8, 8, 4, 5]}
+  ui.aba: {split: [4, 10, 10, 10], pad: [6, 10, 3, 3]}
+  ui.aba_ativa: {split: [4, 10, 10, 10], pad: [6, 10, 3, 3]}
+  ui.rolagem_trilho: {split: [0, 0, 5, 5], pad: [0, 0, 0, 0]}
+  ui.rolagem_pegador: {split: [0, 0, 5, 5], pad: [0, 0, 0, 0]}
+  ui.divisoria: {split: [6, 6, 0, 0], pad: [0, 0, 0, 0]}
+  ui.divisoria_v: {split: [0, 0, 6, 6], pad: [0, 0, 0, 0]}
+  ui.moldura_retrato: {split: [10, 10, 10, 10], pad: [8, 8, 8, 8]}
+  ui.moldura_icone: {split: [5, 5, 5, 5], pad: [4, 4, 4, 4]}
+  ui.moldura_icone_sel: {split: [5, 5, 5, 5], pad: [4, 4, 4, 4]}
+  ui.encaixe: {split: [5, 5, 5, 5], pad: [4, 4, 4, 4]}
+  ui.foco: {split: [3, 3, 3, 3], pad: [0, 0, 0, 0]}
+  ui.barra_fundo: {split: [4, 4, 4, 4], pad: [3, 3, 3, 3]}
+  ui.barra_vida: {split: [2, 2, 2, 2], pad: [0, 0, 0, 0]}
+  ui.barra_folego: {split: [2, 2, 2, 2], pad: [0, 0, 0, 0]}
+  ui.caixa: {}
+  ui.caixa_marcada: {}
+  ui.deslizante_trilho: {split: [3, 3, 0, 0], pad: [0, 0, 0, 0]}
+  ui.deslizante_pino: {}
+  ui.sol: {}
+  ui.lua: {}
+  ui.bolsa: {}
+  ui.cursor_apontar: {}
+  ui.cursor_falar: {}
+  ui.cursor_entrar: {}
+  ui.cursor_pegar: {}
+  ui.cursor_atacar: {}
+  ui.cursor_esperar: {}
+cursores:
+  ui.cursor_apontar: {ponto: [1, 1]}
+  ui.cursor_falar: {ponto: [16, 16]}
+  ui.cursor_entrar: {ponto: [16, 16]}
+  ui.cursor_pegar: {ponto: [16, 16]}
+  ui.cursor_atacar: {ponto: [16, 16]}
+  ui.cursor_esperar: {ponto: [16, 16]}
+cores:
+  tinta: "241C18"
+  tinta_suave: "5A4232"
+  ferrugem: "6E2C22"
+  tinta_clara: "EEE6D2"
+  desativado: "857D70"

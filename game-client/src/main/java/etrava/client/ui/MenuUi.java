@@ -92,7 +92,7 @@ public final class MenuUi implements Disposable {
     public boolean isOpen() { return open; }
     public boolean inGame() { return inGame; }
 
-    public void resize(int w, int h) { stage.getViewport().update(w, h, true); }
+    public void resize(int w, int h) { Escala.aplicar(stage.getViewport(), w, h); }
 
     public void render(float dt) {
         if (!open) return;

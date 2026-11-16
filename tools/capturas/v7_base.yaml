@@ -1,0 +1,9 @@
+# Capturas do V7 — base de interface (tema, escala, foco) e a ficha, a tela piloto.
+# gradlew :game-client:captures -Proteiro=v7_base -Psaida=docs/capturas/v7/base
+padrao: {semente: 7, tamanho: [1280, 720], quadros: 150}
+
+cenas:
+  - {nome: ficha_720, area: vila, cmds: ["tp 30 33", "hora 10", "ficha"]}
+  - {nome: ficha_1080, area: vila, tamanho: [1920, 1080], cmds: ["tp 30 33", "hora 10", "ficha"]}
+  - {nome: ficha_2160, area: vila, tamanho: [3840, 2160], cmds: ["tp 30 33", "hora 10", "ficha"]}
+  - {nome: mochila_antiga_1080, area: vila, tamanho: [1920, 1080], cmds: ["tp 30 33", "hora 10", "dar pao", "dar faca", "dar camisa_linho", "mochila"]}

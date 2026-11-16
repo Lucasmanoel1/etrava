@@ -1,0 +1,27 @@
+# V7 — todas as telas em 1280x720, 1920x1080 e 3840x2160 (texto normal): o roteiro da parada do marco.
+# gradlew :game-client:captures -Proteiro=v7_telas [-Pso=ficha,mapa] [-Psaida=docs/capturas/v7/telas]
+padrao: {semente: 7, tamanho: [1280, 720], quadros: 90}
+
+cenas:
+  - {nome: hud, tela: hud, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10"]}
+  - {nome: conversa, tela: conversa, area: taverna, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 12", "conversa taberneira"]}
+  - {nome: comercio, tela: comercio, area: taverna, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 12", "dinheiro 60", "dar faca", "dar pao 2", "comercio taverna"]}
+  - {nome: mochila, tela: mochila, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "dar pao 2", "dar faca", "dar camisa_linho", "dar papeis_avel", "equipar faca", "mochila"]}
+  - {nome: ficha, tela: ficha, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "ficha"]}
+  - {nome: caderno, tela: caderno, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "caderno 0"]}
+  - {nome: mapa, tela: mapa, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "mapa"]}
+  - {nome: conteiner, tela: conteiner, area: taverna, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 12", "conteiner barris_taverna"]}
+  - {nome: pausa, tela: pausa, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "pausa"]}
+  - {nome: opcoes, tela: opcoes, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "opcoes"]}
+  - {nome: salvar, tela: salvar, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "salvar"]}
+  - {nome: carregar, tela: carregar, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "carregar"]}
+  - {nome: menu, tela: menu, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["menu"]}
+  - {nome: novo, tela: novo, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["novo"]}
+  - {nome: epilogo, tela: epilogo, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "epilogo"]}
+  - {nome: derrota, tela: derrota, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "derrota"]}
+  - {nome: morte, tela: morte, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "morte"]}
+  - {nome: documento, tela: documento, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "documento papeis_avel"]}
+  # massa do VT-08 (80 itens, 60 fatos, 12 opções), só na tela
+  - {nome: vt08_comercio, tela: vt08_comercio, area: taverna, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 12", "vt08 comercio"]}
+  - {nome: vt08_caderno, tela: vt08_caderno, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "vt08 caderno"]}
+  - {nome: vt08_conversa, tela: vt08_conversa, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "vt08 conversa"]}

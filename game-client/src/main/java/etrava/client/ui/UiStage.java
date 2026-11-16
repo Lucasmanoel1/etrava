@@ -20,6 +20,8 @@ import java.util.function.Supplier;
  * "foco de rolagem", e os painéis davam esse foco à sua lista ao abrir e só se escondiam
  * ao fechar: a lista invisível continuava engolindo a roda e o zoom parava, até o painel
  * ser reconstruído por outro motivo.
+ * <p>
+ * Também entrega as teclas ao {@link Foco} visível mais alto (navegação por teclado dos painéis).
  */
 public class UiStage extends Stage {
     private final Vector2 tmp = new Vector2();
@@ -53,6 +55,8 @@ public class UiStage extends Stage {
     @Override
     public boolean keyDown(int keycode) {
         if (super.keyDown(keycode)) return true; // campo de texto com foco (console) tem prioridade
+        Foco foco = Foco.ativo(getRoot()); // navegação por teclado do painel aberto (Tab, setas, Enter, Esc)
+        if (foco != null && foco.tecla(keycode)) return true;
         float line = 40;
         float delta = switch (keycode) {
             case com.badlogic.gdx.Input.Keys.UP -> -line;

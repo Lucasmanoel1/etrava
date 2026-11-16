@@ -1,11 +1,11 @@
 # PROGRESS — ETRAVA
 
-Última atualização: 2026-11-15
+Última atualização: 2026-11-16
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V6 — Interiores, objetos e itens** (`docs/visual/V6.md`). V5 aprovado pelo diretor em 2026-11-15 ("continue").
-- **Status:** **PARADO no fim do V6**, à espera da aprovação do diretor (seção "Parada do V6", abaixo). Feito com 5 subagentes em paralelo e o orquestrador integrando (D-128).
+- **Marco atual:** **V7 — Interfaces** (`docs/visual/V7.md`). V6 aprovado pelo diretor em 2026-11-16 ("continue").
+- **Status:** **V7 em andamento: onda 1 de 3 concluída** (seção "V7 — em andamento", abaixo). Orquestrado com subagentes em Sonnet (D-134).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -17,8 +17,8 @@
 | V3 | Criaturas e combate | **concluído** (aprovado) |
 | V4 | Natureza e terreno | **concluído** (aprovado) |
 | V5 | Arquitetura e exteriores | **concluído** (aprovado) |
-| V6 | Interiores, objetos e itens | **concluído; aguarda aprovação** |
-| V7 | Interfaces | — |
+| V6 | Interiores, objetos e itens | **concluído** (aprovado) |
+| V7 | Interfaces | **em andamento** (onda 1 feita) |
 | V8 | Acabamento e entrega — **portão final** | — |
 
 ## Feito no V1
@@ -34,6 +34,28 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## V7 — em andamento (2026-11-16)
+**Onda 1, feita:**
+- **Tema** (D-135): 43 peças em `assets/ui/` por `gradlew :tools:generateUi`; prancha em `docs/capturas/v7/prancha_tema.png`.
+- **Base do cliente** (D-136), em `game-client/.../ui/`: `Escala`, `Tema`, `Ui`, `Foco`; como usar: `package-info.java`. A **Ficha** é a tela piloto no tema novo.
+- **Verificação:** `LimitesUi` (VT-09 automático), captura em resolução verdadeira, comandos de console para abrir cada tela, `vt08` (80 itens, 60 fatos, 12 opções), roteiros `v7_telas` (parada) e `v7_vt09` (18 telas × 8 resoluções × 3 textos).
+  - Uma tela só: `gradlew :game-client:captures -Proteiro=v7_telas -Pso=ficha` (`-Pestrito` falha se houver problema de limite).
+- `gradlew build` verde, validador sem avisos; Ficha conferida a olho em 1280×720 e 1920×1080.
+
+**Próximo passo — onda 2, as telas** (uma classe por grupo, nunca dois agentes compilando o `game-client` ao mesmo tempo sem combinar):
+1. Tirar as telas de `GameUi`/`MenuUi` para classes próprias (`ui/telas/`) e refazer sobre `Ui`/`Tema`: menu principal, novo jogo, opções, salvar/carregar, pausa; HUD (hoje em pixels no `EtravaGame`), avisos e balões; conversa; comércio e contêiner; mochila com o boneco vestido; caderno em livro aberto e documento; mapa; epílogo, derrota, morte; console.
+2. Foco por teclado em todas; cursores ligados aos alvos do mundo.
+3. `v7_vt09` inteiro com `-Pestrito`; capturas da parada; GIF do menu; `docs/TESTES_MANUAIS.md`.
+
+**Pendências conhecidas da onda 1:**
+- `opcoes` e `novo` (telas antigas) passam da altura em 1080p e 4K: 13 problemas no relatório de limites.
+- O título dos painéis usa a letra do texto; falta uma letra de título.
+- `ui.papel_trama_escuro` tem pontilhado visível demais sob texto; o bilhete está amarelo demais; documento e balão têm o mesmo tom do painel.
+- Em 720p (k=1) a moldura de madeira fica fina; em 1080p (k=2) fica no ponto.
+- O `Foco` consome as setas: num painel com foco elas não rolam a lista (PgUp/PgDn rolam).
+- O título do menu (`fonte.titulo`) ainda não acompanha a altura da tela.
+- A checagem de reticências do `LimitesUi` lê um campo privado do `Label` por reflexão.
 
 ## V6 — Interiores, objetos e itens (2026-11-16)
 **Feito:**
@@ -445,7 +467,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-Com o ok do diretor no V6: V7, Interfaces (`docs/visual/V7.md`).
+V7, onda 2: as telas (seção "V7 — em andamento", acima).
 
 ---
 

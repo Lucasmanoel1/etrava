@@ -99,7 +99,7 @@ public final class DebugConsole implements Disposable {
     public Stage stage() { return stage; }
 
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        etrava.client.ui.Escala.aplicar(stage.getViewport(), width, height);
     }
 
     public void render(float dt) {

@@ -62,6 +62,9 @@ public final class GameUi implements Disposable {
     private final Texts texts;
     private final Drawable paper, paperDark, edge;
     private final Label.LabelStyle ink, inkSoft, rust;
+    /** O tema novo (V7) e os utilitários de tela; as telas já refeitas usam estes, as outras ainda o papel antigo. */
+    private final Tema tema;
+    private final Ui ui;
 
     private final Table dialogueRoot = new Table();
     private final Table notebookRoot = new Table();
@@ -112,20 +115,22 @@ public final class GameUi implements Disposable {
         ink = new Label.LabelStyle(font, INK);
         inkSoft = new Label.LabelStyle(font, INK_SOFT);
         rust = new Label.LabelStyle(font, RUST);
+        tema = new Tema(assets.root(), assets.manifest(), font);
+        ui = new Ui(tema);
 
         dialogueRoot.setFillParent(true);
         dialogueRoot.bottom().pad(16);
-        dialogueRoot.setVisible(false);
+        Ui.esconder(dialogueRoot);
         notebookRoot.setFillParent(true);
         notebookRoot.center();
-        notebookRoot.setVisible(false);
+        Ui.esconder(notebookRoot);
         epilogueRoot.setFillParent(true);
         epilogueRoot.center();
-        epilogueRoot.setVisible(false);
+        Ui.esconder(epilogueRoot);
         for (Table t : List.of(inventoryRoot, characterRoot, tradeRoot)) {
             t.setFillParent(true);
             t.center();
-            t.setVisible(false);
+            Ui.esconder(t);
         }
         stage.addActor(dialogueRoot);
         stage.addActor(notebookRoot);
@@ -134,7 +139,7 @@ public final class GameUi implements Disposable {
         stage.addActor(tradeRoot);
         mapRoot.setFillParent(true);
         mapRoot.center();
-        mapRoot.setVisible(false);
+        Ui.esconder(mapRoot);
         stage.addActor(mapRoot);
         stage.addActor(epilogueRoot);
     }
@@ -201,7 +206,7 @@ public final class GameUi implements Disposable {
     public void closeEpilogue() {
         if (deathOpen) return;
         epilogueOpen = false;
-        epilogueRoot.setVisible(false);
+        Ui.esconder(epilogueRoot);
     }
 
     /** Fecha a tela de morte depois que um jogo foi carregado. */
@@ -319,7 +324,7 @@ public final class GameUi implements Disposable {
     }
 
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        ui.escala(Escala.aplicar(stage.getViewport(), width, height));
         dialogueLines = -1;
         notebookEntries = -1;
         inventoryShown = characterShown = tradeShown = "";
@@ -343,7 +348,7 @@ public final class GameUi implements Disposable {
     /** Monta ou esconde cada tela conforme o estado; não desenha. */
     void update(WorldView view, TradeView trade, Economy eco) {
         if (trade == null) {
-            tradeRoot.setVisible(false);
+            Ui.esconder(tradeRoot);
             tradeShown = "";
         } else {
             String sig = trade.toString() + view.money();
@@ -361,7 +366,7 @@ public final class GameUi implements Disposable {
                 inventoryShown = sig;
             }
         }
-        inventoryRoot.setVisible(showInventory);
+        Ui.mostrar(inventoryRoot, showInventory);
         boolean showCharacter = characterOpen && trade == null && !epilogueOpen;
         if (showCharacter) {
             String sig = view.skills().toString() + Math.round(view.hunger());
@@ -370,7 +375,7 @@ public final class GameUi implements Disposable {
                 characterShown = sig;
             }
         }
-        characterRoot.setVisible(showCharacter);
+        Ui.mostrar(characterRoot, showCharacter);
         boolean showMap = mapOpen && trade == null && !epilogueOpen;
         if (showMap) {
             String sig = view.areaId() + "|" + stage.getWidth() + "x" + stage.getHeight();
@@ -379,10 +384,10 @@ public final class GameUi implements Disposable {
                 mapShown = sig;
             }
         }
-        mapRoot.setVisible(showMap);
+        Ui.mostrar(mapRoot, showMap);
         DialogueView d = view.dialogue();
         if (d == null) {
-            dialogueRoot.setVisible(false);
+            Ui.esconder(dialogueRoot);
             dialogueShown = null;
             dialogueLines = -1;
         } else if (d != dialogueShown || d.history().size() != dialogueLines) {
@@ -396,7 +401,7 @@ public final class GameUi implements Disposable {
             notebookEntries = view.knowledge().size();
             notebookMarks = view.markedFacts().size();
         }
-        notebookRoot.setVisible(showNotebook);
+        Ui.mostrar(notebookRoot, showNotebook);
     }
 
     // ---------------------------------------------------------------- diálogo
@@ -618,22 +623,38 @@ public final class GameUi implements Disposable {
         page.add(new Label(texts.get("mochila.dica"), inkSoft)).right().padTop(8);
     }
 
-    /** Ficha do personagem (PRD 10.2): habilidades com valor e descrição. Sem nível, sem pontos (RF-181). */
+    /**
+     * Ficha do personagem (PRD 10.2): habilidades com valor e descrição. Sem nível, sem pontos (RF-181).
+     * Primeira tela sobre a base do V7: painel de madeira, lista com a rolagem do tema, dica flutuante
+     * em cada habilidade, Esc fecha, setas/Tab andam entre as habilidades.
+     */
     private void buildCharacter(WorldView view) {
-        Table page = sheet(characterRoot, texts.get("ficha.titulo"), 640, 480);
+        characterRoot.clearChildren();
+        Table painel = ui.painel(texts.get("ficha.titulo"));
+        Foco foco = ui.foco().aoFechar(() -> characterOpen = false);
         Table list = new Table();
         list.top().left();
         list.defaults().left().growX();
         for (SkillsDef.Skill skill : content.skills().list()) {
-            int value = (int) Math.floor(view.skills().getOrDefault(skill.id(), 0.0));
-            list.add(new Label(skill.displayName() + "  " + value, ink)).row();
-            Label desc = new Label(skill.description() == null ? "" : skill.description(), inkSoft);
+            double exact = view.skills().getOrDefault(skill.id(), 0.0);
+            Table item = new Table();
+            item.pad(3, 4, 3, 4);
+            item.add(new Label(skill.displayName(), tema.tinta)).left().growX();
+            item.add(new Label(String.valueOf((int) Math.floor(exact)), tema.ferrugem)).right().row();
+            Label desc = new Label(skill.description() == null ? "" : skill.description(), tema.tintaSuave);
             desc.setWrap(true);
-            list.add(desc).padLeft(12).padBottom(8).row();
+            item.add(desc).colspan(2).growX().padLeft(10).row();
+            ui.dica(item, texts.get("ficha.habilidade_dica", skill.displayName(),
+                    String.format(java.util.Locale.forLanguageTag("pt-BR"), "%.1f", exact)));
+            foco.adicionar(item, null);
+            list.add(item).padBottom(4).row();
         }
-        page.add(Scrolls.of(list, white, PAPER_DARK, EDGE)).grow().row();
-        page.add(new Label(hungerText(view.hunger()), view.hunger() >= Economy.HUNGRY ? rust : inkSoft)).left().row();
-        page.add(new Label(texts.get("ficha.dica"), inkSoft)).right().padTop(8);
+        painel.add(ui.rolagem(list)).grow().padRight(2).row();
+        painel.add(new Label(hungerText(view.hunger()), view.hunger() >= Economy.HUNGRY ? tema.ferrugem : tema.tintaSuave))
+                .left().padTop(6).row();
+        painel.add(new Label(texts.get("ficha.dica"), tema.tintaSuave)).right().padTop(4);
+        painel.addActor(foco);
+        characterRoot.add(painel).width(ui.largura(stage, 0.92f, 30)).height(ui.altura(stage, 0.92f, 24));
     }
 
     /** Comércio (PRD 10.2): duas colunas, preço, dinheiro dos dois e o efeito da opinião. Contêiner: só pegar. */
@@ -804,6 +825,12 @@ public final class GameUi implements Disposable {
         return label;
     }
 
+    /** Vai direto a uma aba (0 a 4); para o console de depuração e as capturas. */
+    public void notebookTabTo(int tab) {
+        notebookTab = Math.floorMod(tab, 5);
+        notebookEntries = -1;
+    }
+
     /** Muda de aba com as setas (para quem joga pelo teclado). */
     public void notebookTab(int delta) {
         notebookTab = Math.floorMod(notebookTab + delta, 5);
@@ -897,6 +924,7 @@ public final class GameUi implements Disposable {
     @Override
     public void dispose() {
         stage.dispose();
+        tema.dispose();
         white.dispose();
     }
 }

@@ -34,20 +34,38 @@ public final class Fonts {
 
     /** Texto das telas de papel: sem sombra, para a tinta ficar limpa. */
     public BitmapFont text(float scale) {
-        return make("fonte.texto", Math.round(BASE_SIZE * scale), false, scale);
+        return text(scale, 1);
+    }
+
+    /** Como {@link #text(float)}, para um Stage com escala {@code k} ({@link Escala}): gerada em k vezes e reduzida a 1/k. */
+    public BitmapFont text(float scale, int k) {
+        return make("fonte.texto", Math.round(BASE_SIZE * scale * k), false, scale, k);
     }
 
     /** Texto solto sobre o cenário (relógio, avisos, balões): com uma sombra escura, para ler sobre qualquer fundo. */
     public BitmapFont overlay(float scale) {
-        return make("fonte.texto", Math.round(BASE_SIZE * scale), true, scale);
+        return overlay(scale, 1);
+    }
+
+    public BitmapFont overlay(float scale, int k) {
+        return make("fonte.texto", Math.round(BASE_SIZE * scale * k), true, scale, k);
     }
 
     /** O nome do jogo no menu. */
     public BitmapFont title() {
-        return make("fonte.titulo", 76, true, 4f);
+        return title(1);
     }
 
-    private BitmapFont make(String id, int size, boolean shadow, float fallbackScale) {
+    public BitmapFont title(int k) {
+        return make("fonte.titulo", 76 * k, true, 4f, k);
+    }
+
+    /**
+     * @param size tamanho físico, em pixels de tela (arredondado aqui, e não antes de multiplicar por k,
+     *             para a fonte acompanhar a altura da tela de pixel em pixel)
+     * @param k    escala da interface: a fonte entra no Stage com escala de 1/k e ocupa {@code size / k} unidades
+     */
+    private BitmapFont make(String id, int size, boolean shadow, float fallbackScale, int k) {
         AssetManifest.Entry e = manifest.get(id);
         Path file = e == null || e.file() == null ? null : assetsDir.resolve(e.file());
         if (file != null && Files.exists(file)) {
@@ -65,7 +83,9 @@ public final class Fonts {
                     p.shadowOffsetY = 1;
                     p.shadowColor = new Color(0.05f, 0.04f, 0.05f, 0.85f);
                 }
-                return generator.generateFont(p);
+                BitmapFont font = generator.generateFont(p);
+                if (k > 1) font.getData().setScale(1f / k);
+                return font;
             } catch (RuntimeException | UnsatisfiedLinkError ex) {
                 LOG.warn("Fonte '{}' não carregou ({}); usando a fonte embutida", id, ex.getMessage());
             } finally {
@@ -75,7 +95,7 @@ public final class Fonts {
             LOG.warn("Fonte '{}' ausente; usando a fonte embutida", id);
         }
         BitmapFont fallback = new BitmapFont();
-        fallback.getData().setScale(fallbackScale);
+        fallback.getData().setScale(fallbackScale / k);
         return fallback;
     }
 }

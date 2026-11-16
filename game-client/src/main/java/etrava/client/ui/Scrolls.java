@@ -25,6 +25,11 @@ public final class Scrolls {
         ScrollPane.ScrollPaneStyle style = new ScrollPane.ScrollPaneStyle();
         style.vScroll = sized(new TextureRegionDrawable(white).tint(track), BAR, 1);
         style.vScrollKnob = sized(new TextureRegionDrawable(white).tint(knob), BAR, 24);
+        return of(content, style);
+    }
+
+    /** A rolagem padrão com o visual do tema ({@link Tema#rolagem}); mesmas regras de {@link #of}. */
+    public static ScrollPane of(Actor content, ScrollPane.ScrollPaneStyle style) {
         ScrollPane pane = new ScrollPane(content, style);
         pane.setFadeScrollBars(false);
         pane.setScrollingDisabled(true, false);
