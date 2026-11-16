@@ -30,6 +30,9 @@ public final class Foco extends Actor {
     private final List<Item> itens = new ArrayList<>();
     private int indice = -1;
     private Runnable aoFechar;
+    private java.util.function.IntConsumer aoFocar;
+    /** Grade: os primeiros {@code gradeN} itens formam linhas de {@code gradeCols}; cima e baixo andam uma linha. */
+    private int gradeCols, gradeN;
     private final Vector2 tmp = new Vector2();
 
     /** @param contorno a peça {@code ui.foco} do tema */
@@ -55,6 +58,22 @@ public final class Foco extends Actor {
         return this;
     }
 
+    /** Chamado com o índice do item sempre que o foco passa a ele (teclado ou {@link #focar}). */
+    public Foco aoFocar(java.util.function.IntConsumer acao) {
+        this.aoFocar = acao;
+        return this;
+    }
+
+    /**
+     * Os {@code quantos} primeiros itens adicionados são uma grade de {@code colunas} por linha: as setas
+     * para cima e para baixo andam uma linha (sem volta); esquerda, direita e Tab seguem a ordem das linhas.
+     */
+    public Foco grade(int colunas, int quantos) {
+        this.gradeCols = colunas;
+        this.gradeN = quantos;
+        return this;
+    }
+
     public void limpar() {
         itens.clear();
         indice = -1;
@@ -66,11 +85,30 @@ public final class Foco extends Actor {
 
     public int quantos() { return itens.size(); }
 
+    /** O índice do item focado, ou -1 (ninguém usou o teclado ainda). */
+    public int indice() { return indice; }
+
+    /** Devolve o foco ao item {@code i} depois de a tela ser refeita: sem rolar e sem chamar {@link #aoFocar}. */
+    public void restaurar(int i) {
+        indice = i < 0 || i >= itens.size() ? -1 : i;
+    }
+
     /** Foca o item {@code i} (ou tira o foco com -1) e rola a lista até ele. */
     public void focar(int i) {
         indice = i < 0 || i >= itens.size() ? -1 : i;
         Actor a = focado();
         if (a != null) rolarAte(a);
+        if (aoFocar != null && indice >= 0) aoFocar.accept(indice);
+    }
+
+    /** Cima/baixo numa grade; false se o foco não está nela. */
+    private boolean andarGrade(int linhas) {
+        if (gradeCols <= 0 || indice < 0 || indice >= gradeN) return false;
+        int alvo = indice + linhas * gradeCols;
+        if (alvo >= 0 && alvo < gradeN) focar(alvo);
+        else if (linhas > 0 && indice / gradeCols < (gradeN - 1) / gradeCols) focar(gradeN - 1); // última linha, mais curta
+        else if (linhas > 0 && gradeN < itens.size()) focar(gradeN); // depois da grade: o que vem a seguir
+        return true;
     }
 
     /** Anda {@code passo} itens (com volta ao redor), pulando os escondidos. */
@@ -94,8 +132,14 @@ public final class Foco extends Actor {
     public boolean tecla(int keycode, boolean shift) {
         switch (keycode) {
             case Input.Keys.TAB -> andar(shift ? -1 : 1);
-            case Input.Keys.DOWN, Input.Keys.RIGHT -> andar(1);
-            case Input.Keys.UP, Input.Keys.LEFT -> andar(-1);
+            case Input.Keys.DOWN -> {
+                if (!andarGrade(1)) andar(1);
+            }
+            case Input.Keys.UP -> {
+                if (!andarGrade(-1)) andar(-1);
+            }
+            case Input.Keys.RIGHT -> andar(1);
+            case Input.Keys.LEFT -> andar(-1);
             case Input.Keys.ENTER, Input.Keys.NUMPAD_ENTER, Input.Keys.SPACE -> {
                 if (focado() == null) return false;
                 Runnable r = itens.get(indice).ativar();

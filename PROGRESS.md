@@ -48,6 +48,14 @@
 2. Foco por teclado em todas; cursores ligados aos alvos do mundo.
 3. `v7_vt09` inteiro com `-Pestrito`; capturas da parada; GIF do menu; `docs/TESTES_MANUAIS.md`.
 
+**Onda 2 em curso (lançada em 2026-11-16, 12h50) — para retomar depois de um `/clear`:**
+- Três subagentes em Sonnet. Nenhum faz commit no `main`; o orquestrador junta.
+  - **Telas de jogo, parte 1** (conversa, comércio, contêiner, mochila com boneco): na árvore principal, sem commit; classes novas em `game-client/.../ui/telas/`. Agente `a7c0899d2b096e626`.
+  - **Menus** (`MenuUi`, GIF do menu): cópia `.claude/worktrees/agent-aa355f027c076cabc`, ramo `worktree-agent-aa355f027c076cabc`; faz um commit no próprio ramo ao terminar.
+  - **HUD, avisos, balões, cursores, console** (`Hud.java`, `EtravaGame`): cópia `.claude/worktrees/agent-a3bb8675156f6a01f`, ramo `worktree-agent-a3bb8675156f6a01f`; idem.
+- **Como retomar:** `git status` na árvore principal e `git log -1`/`git status` em cada cópia mostram até onde cada um foi. Se um parou no meio (limite de uso), mande-o continuar por `SendMessage` com o ID acima; se não responder, lance outro com a mesma tarefa, pedindo que comece pelo que já está no disco.
+- **Depois:** (1) conferir e commitar a parte 1; (2) parte 2 das telas de jogo na árvore principal: caderno em livro aberto (`ui.livro_esq/dir`, abas-fita), documento, mapa, epílogo, derrota, morte; (3) `git merge` dos dois ramos (conflito provável só em `EtravaGame.java`) e `git worktree remove`; (4) passe no tema: letra de título, trama escura, tom do bilhete, peças que os agentes pedirem; (5) `v7_vt09` inteiro com `-Pestrito`, capturas da parada em `docs/capturas/v7/`, `docs/TESTES_MANUAIS.md`, parada do marco.
+
 **Pendências conhecidas da onda 1:**
 - `opcoes` e `novo` (telas antigas) passam da altura em 1080p e 4K: 13 problemas no relatório de limites.
 - O título dos painéis usa a letra do texto; falta uma letra de título.

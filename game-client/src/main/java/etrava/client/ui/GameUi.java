@@ -18,6 +18,10 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import etrava.client.assets.Assets;
+import etrava.client.ui.telas.Contexto;
+import etrava.client.ui.telas.TelaComercio;
+import etrava.client.ui.telas.TelaConversa;
+import etrava.client.ui.telas.TelaMochila;
 import etrava.sim.api.Command;
 import etrava.sim.api.DialogueView;
 import etrava.sim.api.TradeView;
@@ -47,12 +51,7 @@ public final class GameUi implements Disposable {
     private static final Color INK = new Color(0x241C18FF), INK_SOFT = new Color(0x5A4636FF);
     private static final Color RUST = new Color(0x6E2C22FF), EDGE = new Color(0x2E2018FF);
     /** Quantos fatos marcados viram opção de "perguntar sobre" numa conversa. */
-    public static final int MAX_ASK = 3;
-    /**
-     * Lado do ícone de item na tela, em pixels. Os ícones do V6 têm 32 px de arte: escala inteira
-     * (1×) para não deformar os pixels; o tamanho na tela é revisto com o tema no V7.
-     */
-    private static final float ICON = 32;
+    public static final int MAX_ASK = TelaConversa.MAX_PERGUNTAS;
 
     private final Stage stage;
     private final Texture white;
@@ -65,32 +64,29 @@ public final class GameUi implements Disposable {
     /** O tema novo (V7) e os utilitários de tela; as telas já refeitas usam estes, as outras ainda o papel antigo. */
     private final Tema tema;
     private final Ui ui;
+    private final Contexto contexto;
 
-    private final Table dialogueRoot = new Table();
     private final Table notebookRoot = new Table();
     private final Table epilogueRoot = new Table();
-    private final Table inventoryRoot = new Table();
     private final Table characterRoot = new Table();
-    private final Table tradeRoot = new Table();
+    /** Conversa, comércio (e contêiner) e mochila: uma classe por tela, em {@code ui/telas/}. */
+    private final TelaConversa conversa;
+    private final TelaComercio comercio;
+    private final TelaMochila mochila;
     private final Table mapRoot = new Table();
     private boolean mapOpen;
     private String mapShown = "";
     private boolean inventoryOpen, characterOpen;
     /** O que estava na tela da última vez, para só remontar quando algo mudar. */
-    private String inventoryShown = "", characterShown = "", tradeShown = "";
+    private String inventoryShown = "", characterShown = "";
     private Consumer<Command> onCommand = c -> { };
     private boolean epilogueOpen, deathOpen;
     private Consumer<String> onLoad = name -> { };
-    private IntConsumer onChoice = i -> { };
     private Consumer<String> onToggleMark = f -> { };
-    private Object dialogueShown;
-    private int dialogueLines = -1;
     private boolean notebookOpen;
     /** Aba do caderno: 0 ouvi dizer, 1 vi e li, 2 pessoas, 3 lugares, 4 documentos (PRD 10.2). */
     private int notebookTab;
     private int notebookEntries = -1, notebookMarks = -1;
-    /** Fatos oferecidos como "perguntar sobre" na conversa aberta, na ordem das opções. */
-    private final List<String> askFacts = new ArrayList<>();
 
     public GameUi(BitmapFont font, Assets assets, ContentDb content, Texts texts) {
         this(font, assets, content, texts, new UiStage(new ScreenViewport()));
@@ -117,26 +113,27 @@ public final class GameUi implements Disposable {
         rust = new Label.LabelStyle(font, RUST);
         tema = new Tema(assets.root(), assets.manifest(), font);
         ui = new Ui(tema);
+        Contexto ctx = new Contexto(stage, tema, ui, assets, content, texts);
+        conversa = new TelaConversa(ctx);
+        comercio = new TelaComercio(ctx);
+        mochila = new TelaMochila(ctx, assets);
+        mochila.aoFechar(() -> inventoryOpen = false);
+        contexto = ctx;
 
-        dialogueRoot.setFillParent(true);
-        dialogueRoot.bottom().pad(16);
-        Ui.esconder(dialogueRoot);
         notebookRoot.setFillParent(true);
         notebookRoot.center();
         Ui.esconder(notebookRoot);
         epilogueRoot.setFillParent(true);
         epilogueRoot.center();
         Ui.esconder(epilogueRoot);
-        for (Table t : List.of(inventoryRoot, characterRoot, tradeRoot)) {
-            t.setFillParent(true);
-            t.center();
-            Ui.esconder(t);
-        }
-        stage.addActor(dialogueRoot);
+        characterRoot.setFillParent(true);
+        characterRoot.center();
+        Ui.esconder(characterRoot);
+        stage.addActor(conversa.raiz());
         stage.addActor(notebookRoot);
-        stage.addActor(inventoryRoot);
+        stage.addActor(mochila.raiz());
         stage.addActor(characterRoot);
-        stage.addActor(tradeRoot);
+        stage.addActor(comercio.raiz());
         mapRoot.setFillParent(true);
         mapRoot.center();
         Ui.esconder(mapRoot);
@@ -145,11 +142,14 @@ public final class GameUi implements Disposable {
     }
 
     public Stage stage() { return stage; }
-    public void onChoice(IntConsumer handler) { this.onChoice = handler; }
+    public void onChoice(IntConsumer handler) { conversa.aoEscolher(handler); }
     public void onToggleMark(Consumer<String> handler) { this.onToggleMark = handler; }
     public boolean notebookOpen() { return notebookOpen; }
     /** Comandos que as telas da mochila e do comércio enviam (comer, vestir, comprar…). */
-    public void onCommand(Consumer<Command> handler) { this.onCommand = handler; }
+    public void onCommand(Consumer<Command> handler) {
+        this.onCommand = handler;
+        contexto.comando = handler;
+    }
     public boolean inventoryOpen() { return inventoryOpen; }
     public boolean characterOpen() { return characterOpen; }
     public boolean mapOpen() { return mapOpen; }
@@ -180,7 +180,7 @@ public final class GameUi implements Disposable {
         inventoryOpen = characterOpen = mapOpen = false;
         return was;
     }
-    public List<String> askFacts() { return askFacts; }
+    public List<String> askFacts() { return conversa.perguntas(); }
 
     public void toggleNotebook() {
         notebookOpen = !notebookOpen;
@@ -325,9 +325,10 @@ public final class GameUi implements Disposable {
 
     public void resize(int width, int height) {
         ui.escala(Escala.aplicar(stage.getViewport(), width, height));
-        dialogueLines = -1;
+        conversa.invalidar();
+        comercio.invalidar();
         notebookEntries = -1;
-        inventoryShown = characterShown = tradeShown = "";
+        inventoryShown = characterShown = "";
     }
 
     /** Atualiza as telas conforme o estado e desenha. */
@@ -347,26 +348,16 @@ public final class GameUi implements Disposable {
 
     /** Monta ou esconde cada tela conforme o estado; não desenha. */
     void update(WorldView view, TradeView trade, Economy eco) {
-        if (trade == null) {
-            Ui.esconder(tradeRoot);
-            tradeShown = "";
-        } else {
-            String sig = trade.toString() + view.money();
-            if (!sig.equals(tradeShown)) {
-                buildTrade(view, trade);
-                tradeShown = sig;
-            }
-            tradeRoot.setVisible(true);
-        }
+        comercio.atualizar(view, trade, eco);
         boolean showInventory = inventoryOpen && eco != null && trade == null && !epilogueOpen;
         if (showInventory) {
             String sig = view.money() + "|" + view.inventory() + "|" + view.equipment() + "|" + Math.round(view.hunger());
             if (!sig.equals(inventoryShown)) {
-                buildInventory(view, eco);
+                mochila.montar(view, eco);
                 inventoryShown = sig;
             }
         }
-        Ui.mostrar(inventoryRoot, showInventory);
+        mochila.mostrar(showInventory);
         boolean showCharacter = characterOpen && trade == null && !epilogueOpen;
         if (showCharacter) {
             String sig = view.skills().toString() + Math.round(view.hunger());
@@ -386,15 +377,7 @@ public final class GameUi implements Disposable {
         }
         Ui.mostrar(mapRoot, showMap);
         DialogueView d = view.dialogue();
-        if (d == null) {
-            Ui.esconder(dialogueRoot);
-            dialogueShown = null;
-            dialogueLines = -1;
-        } else if (d != dialogueShown || d.history().size() != dialogueLines) {
-            buildDialogue(view, d);
-            dialogueShown = d;
-            dialogueLines = d.history().size();
-        }
+        conversa.atualizar(view, d);
         boolean showNotebook = notebookOpen && d == null && !epilogueOpen;
         if (showNotebook && (view.knowledge().size() != notebookEntries || view.markedFacts().size() != notebookMarks)) {
             buildNotebook(view);
@@ -402,119 +385,6 @@ public final class GameUi implements Disposable {
             notebookMarks = view.markedFacts().size();
         }
         Ui.mostrar(notebookRoot, showNotebook);
-    }
-
-    // ---------------------------------------------------------------- diálogo
-
-    private void buildDialogue(WorldView view, DialogueView d) {
-        dialogueRoot.clearChildren();
-        dialogueRoot.setVisible(true);
-        float width = Math.min(stage.getWidth() - 32, 980);
-
-        Table box = new Table(); // papel: lista rolável com a conversa e as opções, e a dica embaixo
-        box.setBackground(paper);
-        box.pad(14).top().left();
-        Table text = new Table();
-        text.top().left();
-        text.defaults().left().growX();
-        // as duas últimas falas anteriores, apagadas, para dar contexto
-        List<DialogueView.Line> history = d.history();
-        for (int i = Math.max(0, history.size() - 3); i < history.size() - 1; i++) {
-            Label old = new Label(history.get(i).speaker() + ": " + history.get(i).text(), inkSoft);
-            old.setWrap(true);
-            text.add(old).padBottom(4).row();
-        }
-        text.add(new Label(d.speakerName(), rust)).padTop(4).row();
-        Label line = new Label(d.text(), ink);
-        line.setWrap(true);
-        text.add(line).padBottom(10).row();
-
-        askFacts.clear();
-        int number = 1;
-        for (DialogueView.Choice c : d.choices()) {
-            String label = (c.tag() != null ? "[" + c.tag() + "] " : "") + c.text();
-            text.add(choice(number, label, number - 1)).padBottom(2).row();
-            number++;
-        }
-        if (d.choices().isEmpty()) {
-            text.add(choice(1, texts.get("dialogo.continuar"), 0)).row();
-        } else {
-            for (String factId : view.markedFacts()) {
-                FactDef fact = content.facts().get(factId);
-                if (fact == null || askFacts.size() >= MAX_ASK) continue;
-                String version = view.knowledge().stream().filter(k -> k.fact().equals(factId)).findFirst()
-                        .map(KnowledgeEntry::version).orElse(fact.defaultVersion());
-                askFacts.add(factId);
-                text.add(choice(number, texts.get("dialogo.perguntar", fact.text(version)), number - 1)).padBottom(2).row();
-                number++;
-            }
-        }
-        // muitas opções (perguntas sobre fatos marcados somam-se às da conversa): a caixa não passa
-        // da altura máxima e rola; o retrato e a dica continuam na tela (VT-08)
-        float maxText = Math.max(140, Math.min(stage.getHeight() * 0.62f, stage.getHeight() - 90));
-        ScrollPane scroll = Scrolls.of(text, white, PAPER_DARK, EDGE);
-        box.add(scroll).growX().maxHeight(maxText).row();
-        Label hint = new Label(texts.get("dialogo.dica"), inkSoft);
-        hint.setAlignment(Align.right);
-        box.add(hint).growX().padTop(8).row();
-
-        Image portrait = new Image(new TextureRegionDrawable(new TextureRegion(assets.portrait(d.portrait()))));
-        Table frame = new Table();
-        frame.setBackground(edge);
-        frame.pad(4);
-        frame.add(portrait).size(192, 256);
-
-        Table border = new Table();
-        border.setBackground(edge);
-        border.pad(3);
-        border.add(box).grow();
-        dialogueRoot.add(frame).bottom().padRight(10);
-        dialogueRoot.add(border).width(width - 220).bottom().minHeight(190);
-    }
-
-    private Label choice(int number, String text, int index) {
-        Label label = new Label(number + ". " + text, ink);
-        label.setWrap(true);
-        label.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                onChoice.accept(index);
-            }
-
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor from) {
-                label.setColor(RUST);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor to) {
-                label.setColor(INK);
-            }
-        });
-        return label;
-    }
-
-    // ---------------------------------------------------------------- mochila, ficha e comércio
-
-    /** Folha de papel com borda escura e título, do tamanho pedido. */
-    private Table sheet(Table root, String title, float width, float height) {
-        root.clearChildren();
-        Table page = new Table();
-        page.setBackground(paper);
-        page.pad(18).top();
-        page.add(new Label(title, rust)).left().padBottom(8).row();
-        Table border = new Table();
-        border.setBackground(edge);
-        border.pad(3);
-        border.add(page).grow();
-        root.add(border).size(Math.min(stage.getWidth() - 60, width), Math.min(stage.getHeight() - 60, height));
-        return page;
-    }
-
-    /** Ícone do item (RF-200): 32 px de arte (V6), em escala inteira; item sem ícone mostra o placeholder. */
-    private Image icon(String itemId) {
-        ItemDef def = content.items().get(itemId);
-        return new Image(assets.sprite(def != null ? def.iconId() : "icone." + itemId).region());
     }
 
     private Label clickable(String text, Command command) {
@@ -543,10 +413,6 @@ public final class GameUi implements Disposable {
         return label;
     }
 
-    private static String kg(double v) {
-        return String.format(Locale.ROOT, "%.1f", v).replace('.', ',');
-    }
-
     private String hungerText(double hunger) {
         if (hunger >= Economy.STARVING) return texts.get("fome.faminto");
         if (hunger >= Economy.HUNGRY) return texts.get("fome.com_fome");
@@ -555,72 +421,7 @@ public final class GameUi implements Disposable {
 
     /** "1 moeda", "12 moedas". */
     public String coins(int n) {
-        return n == 1 ? texts.get("moeda.uma") : texts.get("moeda.varias", Integer.toString(n));
-    }
-
-    /** Mochila e equipamento (PRD 10.2): lista por categoria, peso, encaixes. Clique come, veste ou tira. */
-    private void buildInventory(WorldView view, Economy eco) {
-        Table page = sheet(inventoryRoot, texts.get("mochila.titulo"), 860, 540);
-        Table cols = new Table();
-        cols.top().left();
-
-        Table list = new Table();
-        list.top().left();
-        list.defaults().left().growX();
-        boolean any = false;
-        for (String category : ItemDef.CATEGORIES) {
-            boolean header = false;
-            for (Map.Entry<String, Integer> e : view.inventory().entrySet()) {
-                ItemDef item = content.items().get(e.getKey());
-                if (item == null || !category.equals(item.category())) continue;
-                if (!header) {
-                    list.add(new Label(texts.get("categoria." + category), rust)).padTop(any ? 8 : 0).row();
-                    header = true;
-                }
-                any = true;
-                Command action = item.usable() ? new Command.UseItem(item.id())
-                        : item.slot() != null ? new Command.Equip(item.id()) : null;
-                String verb = item.usable() ? texts.get(item.food() > 0 ? "mochila.comer" : item.document() ? "mochila.ler" : "mochila.usar")
-                        : item.slot() != null ? texts.get("mochila.vestir") : "";
-                String line = item.displayName() + (e.getValue() > 1 ? " x" + e.getValue() : "") + "  ·  "
-                        + kg(item.weight() * e.getValue()) + " kg" + (verb.isEmpty() ? "" : "   [" + verb + "]");
-                Label desc = new Label(item.description() == null ? "" : item.description(), inkSoft);
-                desc.setWrap(true);
-                Table text = new Table();
-                text.left();
-                text.defaults().left().growX();
-                text.add(clickable(line, action)).row();
-                text.add(desc).row();
-                Table row = new Table();
-                row.left();
-                row.add(icon(item.id())).size(ICON).padRight(10).top();
-                row.add(text).growX();
-                list.add(row).padBottom(6).row();
-            }
-        }
-        if (!any) list.add(new Label(texts.get("mochila.vazia"), inkSoft)).row();
-        ScrollPane scroll = Scrolls.of(list, white, PAPER_DARK, EDGE);
-
-        Table slots = new Table();
-        slots.top().left();
-        slots.defaults().left().growX();
-        slots.add(new Label(texts.get("mochila.corpo"), rust)).padBottom(4).row();
-        for (String slot : ItemDef.SLOTS) {
-            String itemId = view.equipment().get(slot);
-            ItemDef item = itemId == null ? null : content.items().get(itemId);
-            String line = texts.get("encaixe." + slot) + ": " + (item == null ? texts.get("encaixe.vazio") : item.displayName());
-            slots.add(clickable(line, item == null ? null : new Command.Unequip(slot))).padBottom(2).row();
-        }
-        slots.add(new Label(texts.get("mochila.peso", kg(eco.weight()), kg(eco.capacity())),
-                eco.overloaded() ? rust : ink)).padTop(14).row();
-        if (eco.overloaded()) slots.add(new Label(texts.get("mochila.pesado"), rust)).row();
-        slots.add(new Label(texts.get("mochila.dinheiro", coins(view.money())), ink)).padTop(6).row();
-        slots.add(new Label(hungerText(view.hunger()), view.hunger() >= Economy.HUNGRY ? rust : ink)).padTop(6).row();
-
-        cols.add(scroll).grow().padRight(16);
-        cols.add(slots).width(250).top();
-        page.add(cols).grow().row();
-        page.add(new Label(texts.get("mochila.dica"), inkSoft)).right().padTop(8);
+        return contexto.moedas(n);
     }
 
     /**
@@ -655,61 +456,6 @@ public final class GameUi implements Disposable {
         painel.add(new Label(texts.get("ficha.dica"), tema.tintaSuave)).right().padTop(4);
         painel.addActor(foco);
         characterRoot.add(painel).width(ui.largura(stage, 0.92f, 30)).height(ui.altura(stage, 0.92f, 24));
-    }
-
-    /** Comércio (PRD 10.2): duas colunas, preço, dinheiro dos dois e o efeito da opinião. Contêiner: só pegar. */
-    private void buildTrade(WorldView view, TradeView t) {
-        Table page = sheet(tradeRoot, t.name(), 860, 520);
-        Table head = new Table();
-        head.left();
-        if (t.container()) {
-            head.add(new Label(t.owner() == null ? texts.get("conteiner.sem_dono")
-                    : texts.get("conteiner.dono", t.owner()), t.owner() == null ? inkSoft : rust)).left();
-        } else {
-            head.add(new Label(texts.get("comercio.caixa", coins(t.partnerCash())), inkSoft)).padRight(20);
-            head.add(new Label(texts.get("comercio.seu_dinheiro", coins(view.money())), ink)).padRight(20);
-            int op = t.opinionPercent();
-            head.add(new Label(op == 0 ? texts.get("comercio.opiniao_neutra")
-                    : texts.get(op < 0 ? "comercio.opiniao_desconto" : "comercio.opiniao_acrescimo", Math.abs(op)), inkSoft));
-        }
-        page.add(head).left().padBottom(10).row();
-
-        Table cols = new Table();
-        cols.top();
-        cols.add(offerColumn(texts.get(t.container() ? "conteiner.tem" : "comercio.vende"), t.offers(),
-                t.container() ? "conteiner.pegar" : "comercio.comprar", t.container())).grow().top().padRight(16);
-        if (!t.container()) cols.add(offerColumn(texts.get("comercio.compra"), t.wants(), "comercio.vender", false)
-                ).grow().top();
-        page.add(cols).grow().row();
-        page.add(new Label(texts.get(t.container() ? "conteiner.dica" : "comercio.dica"), inkSoft)).right().padTop(8);
-    }
-
-    private Table offerColumn(String title, List<TradeView.Offer> offers, String verbKey, boolean container) {
-        Table col = new Table();
-        col.top().left();
-        col.defaults().left().growX();
-        col.add(new Label(title, rust)).padBottom(4).row();
-        Table list = new Table();
-        list.top().left();
-        list.defaults().left().growX();
-        for (TradeView.Offer o : offers) {
-            String price = container ? "" : "  ·  " + (o.price() > 0 ? coins(o.price()) : texts.get("comercio.sem_valor"));
-            Command cmd = !o.possible() ? null : switch (verbKey) {
-                case "comercio.comprar" -> new Command.Buy(o.item());
-                case "comercio.vender" -> new Command.Sell(o.item());
-                default -> new Command.TakeItem(o.item());
-            };
-            String line = o.name() + " x" + o.qty() + price + (cmd == null ? "" : "   [" + texts.get(verbKey) + "]");
-            Table row = new Table();
-            row.left();
-            row.add(icon(o.item())).size(ICON).padRight(8);
-            row.add(clickable(line, cmd)).growX();
-            list.add(row).padBottom(3).row();
-        }
-        if (offers.isEmpty()) list.add(new Label(texts.get("comercio.nada"), inkSoft)).row();
-        ScrollPane scroll = Scrolls.of(list, white, PAPER_DARK, EDGE);
-        col.add(scroll).grow();
-        return col;
     }
 
     // ---------------------------------------------------------------- mapa
