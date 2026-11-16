@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntConsumer;
 
 /**
  * Navegação por teclado de um painel (V7, SPEC-visual §8.1): as setas e o Tab andam entre os
@@ -24,7 +25,7 @@ import java.util.List;
  * só aparece depois da primeira tecla de navegação (quem usa o mouse não vê anel nenhum).
  */
 public final class Foco extends Actor {
-    private record Item(Actor ator, Runnable ativar) {}
+    private record Item(Actor ator, Runnable ativar, IntConsumer lateral) {}
 
     private final Drawable contorno;
     private final List<Item> itens = new ArrayList<>();
@@ -43,7 +44,15 @@ public final class Foco extends Actor {
 
     /** Torna o ator focável; {@code ativar} roda com Enter (pode ser null). */
     public Foco adicionar(Actor ator, Runnable ativar) {
-        itens.add(new Item(ator, ativar));
+        return adicionar(ator, ativar, null);
+    }
+
+    /**
+     * Como {@link #adicionar(Actor, Runnable)}, com ajuste lateral (deslizante, escolha): esquerda e direita
+     * chamam {@code lateral} com -1 e +1 em vez de andar o foco.
+     */
+    public Foco adicionar(Actor ator, Runnable ativar, IntConsumer lateral) {
+        itens.add(new Item(ator, ativar, lateral));
         return this;
     }
 
@@ -138,8 +147,12 @@ public final class Foco extends Actor {
             case Input.Keys.UP -> {
                 if (!andarGrade(-1)) andar(-1);
             }
-            case Input.Keys.RIGHT -> andar(1);
-            case Input.Keys.LEFT -> andar(-1);
+            case Input.Keys.RIGHT, Input.Keys.LEFT -> {
+                int passo = keycode == Input.Keys.RIGHT ? 1 : -1;
+                Item atual = indice >= 0 && indice < itens.size() ? itens.get(indice) : null;
+                if (atual != null && atual.lateral() != null && visivel(atual.ator())) atual.lateral().accept(passo);
+                else andar(passo);
+            }
             case Input.Keys.ENTER, Input.Keys.NUMPAD_ENTER, Input.Keys.SPACE -> {
                 if (focado() == null) return false;
                 Runnable r = itens.get(indice).ativar();

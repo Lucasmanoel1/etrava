@@ -62,7 +62,7 @@ public final class CaptureScript {
 
     /** {@code fresh}: começa um jogo novo antes desta cena. */
     record Shot(String name, String area, long seed, boolean fresh, List<String> commands, int w, int h, float text,
-            int frames, boolean save, boolean measure) {}
+            int frames, boolean save, boolean measure, int[] seq) {}
 
     /** Variável de sistema {@code etrava.capturas.so}: telas (campo {@code tela}) a rodar; vazia = todas. */
     private static final String SO = "etrava.capturas.so";
@@ -117,7 +117,7 @@ public final class CaptureScript {
                                 + (matrixTexts ? "_t" + Math.round(tx * 100) : "");
                         shots.add(new Shot(name, c.path("area").asText("vila"), c.path("semente").asLong(seed), true,
                                 strings(c.path("cmds")), sz[0], sz[1], tx, c.path("quadros").asInt(frames),
-                                c.path("salvar").asBoolean(true), c.path("medir").asBoolean(false)));
+                                c.path("salvar").asBoolean(true), c.path("medir").asBoolean(false), sequence(c.path("sequencia"))));
                     }
                 }
             }
@@ -136,7 +136,7 @@ public final class CaptureScript {
                         String name = g.path("prefixo").asText("grade_" + area) + "_h" + hour.asText().replace('.', '_')
                                 + "_z" + zoom.asInt();
                         shots.add(new Shot(name, area, g.path("semente").asLong(seed), first, cmds, w, h, text,
-                                first ? g.path("quadros").asInt(frames) : 8, g.path("salvar").asBoolean(false), true));
+                                first ? g.path("quadros").asInt(frames) : 8, g.path("salvar").asBoolean(false), true, null));
                         first = false;
                     }
                 }
@@ -147,6 +147,12 @@ public final class CaptureScript {
         } catch (IOException e) {
             throw new UncheckedIOException("roteiro de capturas ilegível: " + script, e);
         }
+    }
+
+    /** {@code sequencia: {inicio, passo, quadros}}: salva uma sequência de quadros (para montar GIF); null se ausente. */
+    private static int[] sequence(JsonNode n) {
+        if (n == null || n.isMissingNode() || n.isNull()) return null;
+        return new int[] {n.path("inicio").asInt(6), Math.max(1, n.path("passo").asInt(2)), n.path("quadros").asInt(30)};
     }
 
     private static List<String> strings(JsonNode n) {
@@ -176,7 +182,24 @@ public final class CaptureScript {
         // comandos dois quadros depois: o tamanho de janela e de texto novos refazem a interface no
         // quadro seguinte, e um painel aberto antes disso se perderia
         if (frame == 2) for (String c : shots.get(index).commands()) host.console(c);
+        saveSequenceFrame(shots.get(index));
         if (shots.get(index).measure() && frame == shots.get(index).frames()) host.requestPlayerMask();
+    }
+
+    /** Quadro de uma sequência (cena com {@code sequencia}): {@code <nome>_seq/fNNN.png}. */
+    private void saveSequenceFrame(Shot s) {
+        int[] q = s.seq();
+        if (q == null || frame < q[0] || (frame - q[0]) % q[1] != 0 || (frame - q[0]) / q[1] >= q[2]) return;
+        Pixmap screen = host.grabScreen();
+        try {
+            Path dir = out.resolve(s.name() + "_seq");
+            Files.createDirectories(dir);
+            ImageIO.write(toImage(screen), "png", dir.resolve(String.format(Locale.ROOT, "f%03d.png", (frame - q[0]) / q[1])).toFile());
+        } catch (IOException e) {
+            LOG.warn("Quadro da sequência {} não salvo: {}", s.name(), e.getMessage());
+        } finally {
+            screen.dispose();
+        }
     }
 
     private void capture(Shot s) {

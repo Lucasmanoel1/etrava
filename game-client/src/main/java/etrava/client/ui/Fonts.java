@@ -57,7 +57,15 @@ public final class Fonts {
     }
 
     public BitmapFont title(int k) {
-        return make("fonte.titulo", 76 * k, true, 4f, k);
+        return title(1f, k);
+    }
+
+    /**
+     * O nome do jogo acompanhando a altura da tela como o texto: tamanho físico = 76 × {@code porAltura}
+     * (altura/720, no mínimo 1); gerado nesse tamanho e reduzido a 1/k ao entrar no Stage.
+     */
+    public BitmapFont title(float porAltura, int k) {
+        return make("fonte.titulo", Math.round(76 * porAltura), true, 4f * porAltura, k);
     }
 
     /**
