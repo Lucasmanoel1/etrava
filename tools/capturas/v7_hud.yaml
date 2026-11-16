@@ -1,0 +1,30 @@
+# V7 onda 2 — HUD, avisos, balões e console no tema novo.
+# gradlew :game-client:captures -Proteiro=v7_hud [-Pso=hud_dia,hud_noite] -Psaida=docs/capturas/v7/hud
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 90}
+
+cenas:
+  # de dia e de noite: plaquinha com sol ou lua, bolsa, vida e fôlego
+  - {nome: hud_dia, tela: hud_dia, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["tp 31 37", "hora 10", "dinheiro 48", "zoom 1"]}
+  - {nome: hud_noite, tela: hud_noite, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["tp 31 37", "hora 22", "dinheiro 48", "zoom 1"]}
+  # avisos: bilhetes empilhados (o último texto é longo, para quebrar a linha)
+  - {nome: hud_avisos, tela: hud_avisos, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]],
+     cmds: ["tp 31 37", "hora 10", "aviso Lugar anotado no caderno: a forja de Doran", "aviso Anotado no caderno.", "aviso Jogo salvo: rapido", "aviso Você terminou o trabalho na forja (2,5 h) e recebeu 12 moedas, que já estão na bolsa.", "zoom 1"]}
+  # balões de fala sobre quem fala (zoom 0, 1 e 2); o nome de quem fala dois balões de uma vez
+  - {nome: hud_baloes_z2, tela: hud_baloes, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]],
+     cmds: ["tp 17 31", "hora 10", "balao ferreiro Esse ferro não se dobra sozinho.", "balao jogador Bom dia, Doran.", "zoom 2"]}
+  - {nome: hud_baloes_z1, tela: hud_baloes, area: vila, tamanho: [1280, 720],
+     cmds: ["tp 17 31", "hora 10", "balao ferreiro Esse ferro não se dobra sozinho.", "balao jogador Bom dia, Doran.", "zoom 1"]}
+  - {nome: hud_baloes_z0, tela: hud_baloes, area: vila, tamanho: [1280, 720],
+     cmds: ["tp 17 31", "hora 10", "balao ferreiro Esse ferro não se dobra sozinho.", "balao jogador Bom dia, Doran.", "zoom 0"]}
+  - {nome: hud_baloes_taverna, tela: hud_baloes, area: taverna, tamanho: [1280, 720],
+     cmds: ["tp 7 6", "hora 20", "balao taberneira Mais uma rodada? A casa não fecha antes que o último saia, e o último nunca sai.", "zoom 2"]}
+  # luta: dica das teclas, vida baixa (mostra o número), lobos
+  - {nome: hud_luta, tela: hud_luta, area: estrada, tamanhos: [[1280, 720], [1920, 1080]], quadros: 150,
+     cmds: ["hora 18.4", "dar machadinha", "equipar machadinha", "saude 45", "encontro lobos_estrada", "puxar", "zoom 2"]}
+  # com a ficha aberta: o HUD de baixo some e não encosta no painel
+  - {nome: hud_ficha, tela: hud_ficha, area: vila, tamanhos: [[1280, 720], [1920, 1080]], cmds: ["tp 31 37", "hora 10", "aviso Anotado no caderno.", "ficha"]}
+  # o console de depuração
+  - {nome: hud_console, tela: hud_console, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["tp 31 37", "hora 10", "console", "ajuda"]}
+  # texto 1,5 numa tela 5:4 com tudo ao mesmo tempo
+  - {nome: hud_texto15, tela: hud_texto15, area: estrada, tamanho: [1280, 1024], textos: [1.5], quadros: 150,
+     cmds: ["hora 18.4", "dar machadinha", "equipar machadinha", "saude 45", "dinheiro 130", "fome 80", "encontro lobos_estrada", "puxar", "zoom 2", "aviso Lugar anotado no caderno: a estrada do Posto", "aviso Jogo salvo: rapido", "balao jogador Lobos. Era só o que faltava."]}
