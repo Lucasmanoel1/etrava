@@ -1,0 +1,56 @@
+# Casca do cômodo (V6): A oficina de Avel: enxaimel com reboco claro, esteios escuros; embasamento de pedra na frente (como o exterior do V5).
+# Peças de 1 m (pegada do content/props.yaml); o cliente troca prop.parede_* pela versão da casa
+# (assets/config/interiores.yaml) e põe as da frente e as pontas (CascaInterior).
+tipo: paredes
+id: paredes_oficina
+quadro: [84, 132]
+ancora: [42, 110]
+corte: 0.4
+estilo: enxaimel
+altura: 2.6
+reboco: reboco
+semente: 13
+pixelizador: {ambiente: 0.42, difusa: 0.40}
+manifesto:
+  - {id: prop.parede_x_lisa_oficina, folhas: [oficina_x_lisa_a, oficina_x_lisa_b, oficina_x_lisa_c]}
+  - {id: prop.parede_x_lisa, folhas: [oficina_x_lisa_a, oficina_x_lisa_b, oficina_x_lisa_c]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_x_janela_oficina, folhas: [oficina_x_janela]}
+  - {id: prop.parede_x_janela, folhas: [oficina_x_janela]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_x_porta_oficina, folhas: [oficina_x_porta]}
+  - {id: prop.parede_x_porta, folhas: [oficina_x_porta]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_x_prateleira_oficina, folhas: [oficina_x_prateleira]}
+  - {id: prop.parede_x_prateleira, folhas: [oficina_x_prateleira]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_frente_x_oficina, folhas: [oficina_frente_x_a, oficina_frente_x_b]}
+  - {id: prop.parede_y_lisa_oficina, folhas: [oficina_y_lisa_a, oficina_y_lisa_b, oficina_y_lisa_c]}
+  - {id: prop.parede_y_lisa, folhas: [oficina_y_lisa_a, oficina_y_lisa_b, oficina_y_lisa_c]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_y_janela_oficina, folhas: [oficina_y_janela]}
+  - {id: prop.parede_y_janela, folhas: [oficina_y_janela]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_y_porta_oficina, folhas: [oficina_y_porta]}
+  - {id: prop.parede_y_porta, folhas: [oficina_y_porta]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_y_prateleira_oficina, folhas: [oficina_y_prateleira]}
+  - {id: prop.parede_y_prateleira, folhas: [oficina_y_prateleira]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_frente_y_oficina, folhas: [oficina_frente_y_a, oficina_frente_y_b]}
+  - {id: prop.parede_canto_oficina, folhas: [oficina_canto]}
+  - {id: prop.parede_canto, folhas: [oficina_canto]}   # padrão (substitui a arte provisória)
+  - {id: prop.parede_ponta_oficina, folhas: [oficina_ponta]}
+  - {id: prop.parede_canto_frente_oficina, folhas: [oficina_canto_frente]}
+pecas:
+  - {nome: oficina_x_lisa_a, tipo: lisa, eixo: x, var: a}
+  - {nome: oficina_x_lisa_b, tipo: lisa, eixo: x, var: b}
+  - {nome: oficina_x_lisa_c, tipo: lisa, eixo: x, var: c}
+  - {nome: oficina_x_janela, tipo: janela, eixo: x, var: a}
+  - {nome: oficina_x_porta, tipo: porta, eixo: x, var: a}
+  - {nome: oficina_x_prateleira, tipo: prateleira, eixo: x, var: a}
+  - {nome: oficina_frente_x_a, tipo: frente, eixo: x, var: a}
+  - {nome: oficina_frente_x_b, tipo: frente, eixo: x, var: b}
+  - {nome: oficina_y_lisa_a, tipo: lisa, eixo: y, var: a}
+  - {nome: oficina_y_lisa_b, tipo: lisa, eixo: y, var: b}
+  - {nome: oficina_y_lisa_c, tipo: lisa, eixo: y, var: c}
+  - {nome: oficina_y_janela, tipo: janela, eixo: y, var: a}
+  - {nome: oficina_y_porta, tipo: porta, eixo: y, var: a}
+  - {nome: oficina_y_prateleira, tipo: prateleira, eixo: y, var: a}
+  - {nome: oficina_frente_y_a, tipo: frente, eixo: y, var: a}
+  - {nome: oficina_frente_y_b, tipo: frente, eixo: y, var: b}
+  - {nome: oficina_canto, tipo: canto, eixo: x, var: a}
+  - {nome: oficina_ponta, tipo: ponta, eixo: x, var: a}
+  - {nome: oficina_canto_frente, tipo: canto_frente, eixo: x, var: a}

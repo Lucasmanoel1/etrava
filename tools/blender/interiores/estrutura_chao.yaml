@@ -1,0 +1,13 @@
+# Estrutura enterrada (V6): o chão próprio — lajes lisas de 2 × 2 m, juntas finas e retas.
+# O mapa continua dizendo "pedra" (passos, simulação); o cliente usa tile.pedra.estrutura nesta
+# área porque o manifesto tem a entrada `tile.<terreno>.<área>` (SceneRenderer).
+tipo: estrutura
+id: estrutura_chao
+chao: true
+recortar: false
+quadro: [512, 256]
+ancora: [0, 0]
+folha: estr_chao
+pixelizador: {ambiente: 0.20, difusa: 0.46}
+manifesto:
+  - {id: tile.pedra.estrutura, folhas: [estr_chao], prioridade: 1, tile: true}

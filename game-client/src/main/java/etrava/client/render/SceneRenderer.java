@@ -85,7 +85,8 @@ public final class SceneRenderer implements Disposable {
     /** {@code shade}: 1 dentro do mapa; cai até 0 na faixa de fora, que some na penumbra. */
     private record TileDraw(int tx, int ty, TextureRegion region, int priority, float shade, int px, Texture world) {}
 
-    private record Lamp(double x, double y, double z, float radius, float r, float g, float b) {}
+    /** {@code fogo}: como a luz tremula (V6, {@code luz_viva.yaml}); null = firme. */
+    private record Lamp(double x, double y, double z, float radius, float r, float g, float b, LuzViva.Preset fogo) {}
 
     /** @param stateKey chave do prop com variantes (null = sempre o mesmo sprite); {@code def} é a definição dele */
     private record Static(Assets.Sprite sprite, double x, double y, double x0, double y0, double x1, double y1,
@@ -118,6 +119,11 @@ public final class SceneRenderer implements Disposable {
     /** Decalques deitados no chão (pedrinhas): desenhados logo depois do chão, sem ordenação. */
     private final List<Static> flats = new ArrayList<>();
     private final List<Lamp> lamps = new ArrayList<>();
+    /** V6: luz que tremula e feixe de sol pelas janelas dos interiores. */
+    private final LuzViva luzViva;
+    private final FeixeJanela feixe;
+    /** V6: casca dos cômodos (paredes da casa, paredes da frente cortadas, piso de borda reta); null fora deles. */
+    private final CascaInterior casca;
     private final SpriteBatch batch = new SpriteBatch();
 
     /** Chamadas de desenho acumuladas desde o início (o benchmark divide pelos quadros). */
@@ -191,8 +197,11 @@ public final class SceneRenderer implements Disposable {
         this.animacoes = Animacoes.carregar(assets.root());
         this.area = area;
         this.dayNight = dayNight;
+        this.luzViva = LuzViva.carregar(assets.root());
+        this.feixe = new FeixeJanela(luzViva.feixe());
         this.especies = outdoor ? Especies.carregar(assets.root(), area.id(), area.props(), assets::temEntrada)
                 : Especies.vazia();
+        this.casca = outdoor ? null : CascaInterior.carregar(assets.root(), area, assets::temEntrada);
 
         int margin = outdoor ? MARGIN : 0;
         List<Decoration.Borda> borda = outdoor ? Decoration.borda(assets.root()) : List.of();
@@ -203,7 +212,9 @@ public final class SceneRenderer implements Disposable {
                 if (AreaDef.NO_TERRAIN.equals(terrain)) continue;
                 int out = Math.max(Math.max(-tx, tx - (area.width() - 1)), Math.max(-ty, ty - (area.height() - 1)));
                 float shade = out <= 0 ? 1f : (float) Math.pow(Math.max(0f, 1f - out / (float) MARGIN), 1.6);
-                Assets.Tiles t = assets.tiles(terrain);
+                // V6: chão próprio da área, se o manifesto tiver tile.<terreno>.<área> (a estrutura)
+                Assets.Tiles t = assets.tiles(assets.temEntrada("tile." + terrain + "." + area.id())
+                        ? terrain + "." + area.id() : casca != null ? casca.piso(terrain) : terrain);
                 int hash = tx * 73856093 ^ ty * 19349663;
                 tiles.add(new TileDraw(tx, ty, t.variants()[Math.floorMod(hash, t.variants().length)], t.priority(), shade,
                         t.px(), t.world()));
@@ -240,11 +251,13 @@ public final class SceneRenderer implements Disposable {
             PropDef def = props.get(p.propId());
             double hw = def != null ? def.width() / 2 : 0.3, hd = def != null ? def.depth() / 2 : 0.3;
             boolean variants = def != null && p.key() != null && !def.stateMap().isEmpty();
-            Assets.Sprite sprite = pick(def == null ? "prop." + p.propId()
-                    : variants ? def.spriteFor(def.initialState()) : def.spriteId(), p.x(), p.y());
+            String spriteId = def == null ? "prop." + p.propId()
+                    : variants ? def.spriteFor(def.initialState()) : def.spriteId();
+            Assets.Sprite sprite = pick(casca != null ? casca.sprite(spriteId) : spriteId, p.x(), p.y());
             statics.add(new Static(sprite, p.x(), p.y(), p.x() - hw, p.y() - hd, p.x() + hw, p.y() + hd, p.x() + p.y(),
                     variants ? p.key() : null, def, 1f, phaseOf(p.x(), p.y())));
             if (def == null) continue;
+            feixe.registrar(def.id(), p.x(), p.y());
             if ("vegetacao".equals(def.category())) pontosArvore.add(new Ambiente.Ponto(p.x(), p.y(), 4.0));
             // V5 (SPEC-visual §7.1): onde ficam as janelas e a chaminé vem do JSON da arte (a variante
             // desta posição); o props.yaml continua dizendo o raio e a cor. Sem pontos, vale o props.yaml.
@@ -256,17 +269,25 @@ public final class SceneRenderer implements Disposable {
                     PropDef.Light l = def.lightList().get(0);
                     double[] c = l.color();
                     lamps.add(new Lamp(p.x() + o[0], p.y() + o[1], o[2], (float) l.radius(),
-                            (float) c[0], (float) c[1], (float) c[2]));
+                            (float) c[0], (float) c[1], (float) c[2], luzViva.para(def.id())));
                     daArte = true;
                 }
             }
             if (!daArte) for (PropDef.Light l : def.lightList()) {
                 double[] o = l.offset(), c = l.color();
                 lamps.add(new Lamp(p.x() + o[0], p.y() + o[1], o[2], (float) l.radius(),
-                        (float) c[0], (float) c[1], (float) c[2]));
+                        (float) c[0], (float) c[1], (float) c[2], luzViva.para(def.id())));
             }
             if ("lampiao".equals(p.propId())) pontosLampiao.add(new Ambiente.Ponto(p.x() + 0.2, p.y() - 0.2, 2.05));
         }
+        // V6: paredes da área cavada na rocha (a estrutura), tiradas da colisão; só desenho
+        for (ParedesEstrutura.Peca w : ParedesEstrutura.pecas(area, assets::temEntrada))
+            statics.add(new Static(pick(w.sprite(), w.x(), w.y()), w.x(), w.y(), w.x0(), w.y0(), w.x1(), w.y1(),
+                    w.x() + w.y(), null, null, 1f, 0f));
+        // V6: paredes da frente cortadas, canto da frente e pontas das paredes de fundo (CascaInterior)
+        if (casca != null) for (CascaInterior.Peca w : casca.frente())
+            statics.add(new Static(pick(w.sprite(), w.x(), w.y()), w.x(), w.y(), w.x0(), w.y0(), w.x1(), w.y1(),
+                    w.x() + w.y(), null, null, 1f, 0f));
         // decoração do chão (Fase V): tufos e flores entram na ordenação; pedrinhas ficam deitadas
         if (outdoor) {
             List<Decoration.Box> obstacles = new ArrayList<>();
@@ -286,6 +307,7 @@ public final class SceneRenderer implements Disposable {
                 else statics.add(st);
             }
         }
+        feixe.fechar(area.props());
         if (outdoor) {
             ambiente = new Ambiente(pontosArvore, pontosFlor, pontosLampiao, pontosFumaca);
         } else {
@@ -420,7 +442,10 @@ public final class SceneRenderer implements Disposable {
             if (night > 0.01f) {
                 batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
                 batch.begin();
-                for (Lamp l : lamps) drawLight(l.x(), l.y(), l.z(), l.radius(), l.r(), l.g(), l.b(), night, bounds);
+                for (Lamp l : lamps) {   // V6: fogo tremula (intensidade e raio), suave e por posição
+                    drawLight(l.x(), l.y(), l.z(), l.radius() * (float) LuzViva.raio(l.fogo(), l.x(), l.y(), animTime),
+                            l.r(), l.g(), l.b(), night * (float) LuzViva.intensidade(l.fogo(), l.x(), l.y(), animTime), bounds);
+                }
                 if (ambiente != null && ambienteLigado)
                     ambiente.luzes(v -> drawLight(v[0], v[1], v[2], 0.35f, 0.85f, 0.80f, 0.45f, night * (float) v[3], bounds));
                 // o raio de luz do personagem (RF-008): um resto de claridade, ou a lamparina na mão
@@ -433,6 +458,13 @@ public final class SceneRenderer implements Disposable {
                     else drawLight(player.x, player.y, 1.0, radius, 0.55f, 0.58f, 0.70f, night * 0.6f, bounds);
                 }
                 batch.end();
+            }
+            if (interior && feixe.janelas() > 0) {   // V6: mancha do sol no chão, de dia
+                batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+                batch.begin();
+                feixe.desenharPiso(batch, branco, hour, bounds);
+                batch.end();
+                batch.setColor(1f, 1f, 1f, 1f);
             }
             if (presence) { // máximo entre a luz que já há e o piso, só nos pixels dos personagens
                 Gdx.gl.glBlendEquation(GL_MAX);
@@ -474,6 +506,14 @@ public final class SceneRenderer implements Disposable {
                 batch.setColor(night, night, night, 1f);
                 batch.begin();
                 drawFlipped(glowFbo.getColorBufferTexture());
+                batch.end();
+                batch.setColor(1f, 1f, 1f, 1f);
+            }
+            if (interior && feixe.janelas() > 0) {   // V6: coluna de luz e poeira no ar, de dia
+                batch.setProjectionMatrix(camera.combined());
+                batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+                batch.begin();
+                feixe.desenharAr(batch, branco, hour, animTime, ambienteLigado, bounds);
                 batch.end();
                 batch.setColor(1f, 1f, 1f, 1f);
             }
@@ -565,7 +605,7 @@ public final class SceneRenderer implements Disposable {
                     for (int k = i; k < j; k++) {
                         TileDraw t = tiles.get(k);
                         float cx = sx(t.tx() + 0.5, t.ty() + 0.5), cy = sy(t.tx() + 0.5, t.ty() + 0.5, 0);
-                        TextureRegion m = ground.mask(t.tx(), t.ty(), pass == 0);
+                        TextureRegion m = casca != null ? casca.mascara() : ground.mask(t.tx(), t.ty(), pass == 0);
                         float w = m.getRegionWidth() * 2f, h = m.getRegionHeight() * 2f;
                         if (cx + w / 2 < b[0] || cx - w / 2 > b[2] || cy + h / 2 < b[1] || cy - h / 2 > b[3]) continue;
                         batch.setColor(t.shade(), t.shade(), t.shade(), 1f);
@@ -890,6 +930,7 @@ public final class SceneRenderer implements Disposable {
         shadowTexture.dispose();
         if (postShader != null) postShader.dispose();
         if (ground != null) ground.dispose();
+        if (casca != null) casca.dispose();
         if (silhouetteShader != null) silhouetteShader.dispose();
         if (paletaShader != null) paletaShader.dispose();
         if (maskFbo != null) maskFbo.dispose();

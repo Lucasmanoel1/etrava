@@ -1,0 +1,19 @@
+# Capturas do V6 — a estrutura enterrada (gradlew captures -Proteiro=v6_estrutura; docs/visual/V6.md, tarefa 5).
+# Cada lugar com e sem lamparina: sem ela, só o resto de claridade (1,5 m, D-062) e a luz do buraco.
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 90}
+
+cenas:
+  # a entrada, sob o buraco: o feixe que vem de cima
+  - {nome: entrada_sem, area: estrutura, cmds: ["tp 6.4 6.6", "zoom 2"]}
+  - {nome: entrada_com, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "tp 6.4 6.6", "zoom 2"]}
+  - {nome: entrada_longe, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "tp 7.5 6.5", "zoom 1"]}
+  # o corredor, com as fibras
+  - {nome: corredor_sem, area: estrutura, cmds: ["tp 13 6", "zoom 2"]}
+  - {nome: corredor_com, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "tp 13 6", "zoom 2"]}
+  - {nome: corredor_sul_com, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "tp 16 11", "zoom 2"]}
+  # o nicho
+  - {nome: nicho_com, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "tp 18.5 6", "zoom 2"]}
+  # a câmara e a laje
+  - {nome: camara_sem, area: estrutura, cmds: ["tp 16.5 20.2", "zoom 2"]}
+  - {nome: camara_com, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "tp 16.5 20.2", "zoom 2"]}
+  - {nome: camara_longe, area: estrutura, cmds: ["dar lamparina", "equipar lamparina", "tp 16 19.8", "zoom 1"]}

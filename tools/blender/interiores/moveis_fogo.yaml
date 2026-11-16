@@ -1,0 +1,19 @@
+# Móveis dos interiores com fogo (V6): velas e lareira em laço de 6 quadros. Mesmo ID, mesma
+# pegada e colisão do content/props.yaml; a luz sai do JSON (`world.luz0`), o raio e a cor do props.yaml.
+tipo: moveis
+id: moveis_fogo
+quadro: [180, 170]
+ancora: [70, 120]
+manifesto:
+  - {id: prop.mesa, folhas: [mesa_a, mesa_b, mesa_c]}
+  - {id: prop.mesa_longa, folhas: [mesa_longa]}
+  - {id: prop.balcao, folhas: [balcao]}
+  - {id: prop.lareira, folhas: [lareira]}
+elementos:
+  - {nome: mesa_a, forma: mesa, variante: a, quadros: 6, fps: 8}
+  - {nome: mesa_b, forma: mesa, variante: b, quadros: 6, fps: 8}
+  - {nome: mesa_c, forma: mesa, variante: c, quadros: 6, fps: 8}
+  - {nome: mesa_longa, forma: mesa_longa, quadros: 6, fps: 8}
+  - {nome: balcao, forma: balcao, quadros: 6, fps: 8}
+  - {nome: lareira, forma: lareira, quadros: 6, fps: 8}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

@@ -1,0 +1,11 @@
+# Estrutura enterrada (V6): embaixo do buraco — escada, terra caída, raízes e o feixe de luz fria
+# pontilhado, com poeira descendo (laço de 8 quadros). Adiado do V5. Pegada do props.yaml (0,4).
+tipo: estrutura
+id: estrutura_luz
+quadro: [200, 240]
+ancora: [100, 190]
+manifesto:
+  - {id: prop.luz_buraco, folhas: [estr_luz_buraco]}
+elementos:
+  - {nome: estr_luz_buraco, forma: luz_buraco, quadros: 8, fps: 5}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

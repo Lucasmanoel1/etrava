@@ -1,0 +1,13 @@
+{
+  "frame" : [ 54, 92 ],
+  "anchor" : [ 27.0, 95.0 ],
+  "directions" : 1,
+  "animations" : {
+    "parado" : {
+      "start" : 0,
+      "frames" : 1,
+      "fps" : 1.0
+    }
+  },
+  "points" : { }
+}

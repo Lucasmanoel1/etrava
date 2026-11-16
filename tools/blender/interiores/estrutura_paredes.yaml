@@ -1,0 +1,33 @@
+# Estrutura enterrada (V6): paredes e cantos. O cliente (ParedesEstrutura.java) põe uma peça em
+# cada borda entre chão e rocha do estrutura.tmj: fundo (norte, oeste) inteira, frente (sul, leste)
+# cortada. Não são props: não colidem (a colisão é a do mapa) e não mudam o mapa.
+tipo: estrutura
+id: estrutura_paredes
+quadro: [120, 150]
+ancora: [60, 116]
+manifesto:
+  - {id: estrutura.parede_x, folhas: [estr_parede_x_a, estr_parede_x_b, estr_parede_x_c, estr_parede_x_d, estr_parede_x_e]}
+  - {id: estrutura.parede_y, folhas: [estr_parede_y_a, estr_parede_y_b, estr_parede_y_c, estr_parede_y_d, estr_parede_y_e]}
+  - {id: estrutura.frente_x, folhas: [estr_frente_x_a, estr_frente_x_b]}
+  - {id: estrutura.frente_y, folhas: [estr_frente_y_a, estr_frente_y_b]}
+  - {id: estrutura.canto, folhas: [estr_canto]}
+  - {id: estrutura.canto_baixo, folhas: [estr_canto_baixo]}
+elementos:
+  # estrago: 0 liso, 1 canto arrancado, 2 racha reta, 3 bloco recuado (o liso domina: 2 em 5)
+  - {nome: estr_parede_x_a, forma: parede, lado: norte, estrago: 0}
+  - {nome: estr_parede_x_b, forma: parede, lado: norte, estrago: 0, semente: 2}
+  - {nome: estr_parede_x_c, forma: parede, lado: norte, estrago: 1, semente: 3}
+  - {nome: estr_parede_x_d, forma: parede, lado: norte, estrago: 2, semente: 4}
+  - {nome: estr_parede_x_e, forma: parede, lado: norte, estrago: 3, semente: 5}
+  - {nome: estr_parede_y_a, forma: parede, lado: oeste, estrago: 0}
+  - {nome: estr_parede_y_b, forma: parede, lado: oeste, estrago: 0, semente: 2}
+  - {nome: estr_parede_y_c, forma: parede, lado: oeste, estrago: 1, semente: 6}
+  - {nome: estr_parede_y_d, forma: parede, lado: oeste, estrago: 2, semente: 7}
+  - {nome: estr_parede_y_e, forma: parede, lado: oeste, estrago: 3, semente: 8}
+  - {nome: estr_frente_x_a, forma: parede, lado: sul, baixa: true}
+  - {nome: estr_frente_x_b, forma: parede, lado: sul, baixa: true, estrago: 3, semente: 9}
+  - {nome: estr_frente_y_a, forma: parede, lado: leste, baixa: true}
+  - {nome: estr_frente_y_b, forma: parede, lado: leste, baixa: true, estrago: 2, semente: 10}
+  - {nome: estr_canto, forma: canto}
+  - {nome: estr_canto_baixo, forma: canto, baixa: true}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

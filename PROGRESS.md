@@ -4,8 +4,8 @@
 
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
-- **Marco atual:** **V5 — Arquitetura e exteriores** (`docs/visual/V5.md`). V4 aprovado pelo diretor em 2026-11-15 ("continua").
-- **Status:** **PARADO no fim do V5**, à espera da aprovação do diretor (seção "Parada do V5", abaixo).
+- **Marco atual:** **V6 — Interiores, objetos e itens** (`docs/visual/V6.md`). V5 aprovado pelo diretor em 2026-11-15 ("continue").
+- **Status:** **PARADO no fim do V6**, à espera da aprovação do diretor (seção "Parada do V6", abaixo). Feito com 5 subagentes em paralelo e o orquestrador integrando (D-128).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -16,8 +16,8 @@
 | V2 | Gente (25 humanos, animações de vida comum) | **concluído** (aprovado) |
 | V3 | Criaturas e combate | **concluído** (aprovado) |
 | V4 | Natureza e terreno | **concluído** (aprovado) |
-| V5 | Arquitetura e exteriores | **concluído; aguarda aprovação** |
-| V6 | Interiores, objetos e itens | — |
+| V5 | Arquitetura e exteriores | **concluído** (aprovado) |
+| V6 | Interiores, objetos e itens | **concluído; aguarda aprovação** |
 | V7 | Interfaces | — |
 | V8 | Acabamento e entrega — **portão final** | — |
 
@@ -34,6 +34,44 @@
 - **Dreamina:** 5 referências (aprendiz, Avel, carvalho, bétula, casa) e 10 texturas, **450 créditos** (saldo 7.850). Originais em `arte-bruta/`; texturas pelo funil em `tools/blender/texturas/`.
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
+
+## V6 — Interiores, objetos e itens (2026-11-16)
+**Feito:**
+- **Casca dos cômodos** (D-129): paredes por casa (oficina, taverna, moinho, curandeira), pisos de interior, parede da frente cortada a 0,4 m e borda reta do piso (`CascaInterior.java`, `assets/config/interiores.yaml`). Fim da pendência do M8.
+- **Móveis** (D-130): mesa (3), mesa longa, balcão, lareira com fogo em laço, bancada, mó, cama (3), baú, ervas; velas nas mesas e no balcão.
+- **Estrutura enterrada** (D-131): ardósia em junta corrida, paredes pela colisão (`ParedesEstrutura.java`), luz do buraco, fibra, entulho, laje.
+- **Itens** (D-132): 43 modelos e ícones de 32×32; nenhum ícone do M8 em uso.
+- **Luz viva** (D-133): fogo que tremula e feixe de sol com poeira (`LuzViva.java`, `FeixeJanela.java`, `assets/config/luz_viva.yaml`).
+- **Verificação:**
+  - `gradlew build` verde: 175 testes, validador sem avisos (VT-04, VT-07);
+  - capturas v6 refeitas e olhadas: paredes 12, luz 13, estrutura 10, itens 6; capturas v5 refeitas (exteriores sem mudança);
+  - `--bench=10 --area=vila`: **417 FPS** de média, 1 % pior 301, 159 chamadas (V5: 398 e 158).
+- **Dreamina:** nenhum crédito.
+
+## Parada do V6 — o que olhar
+- `docs/capturas/v6/`:
+  - `prancha_icones.png`, `prancha_moveis.png`;
+  - `paredes/*_frente.png`, `*_dia.png`, `*_noite.png` (os 4 interiores);
+  - `luz/` (feixe de manhã, meio-dia e tarde; lareira à noite);
+  - `estrutura/entrada_sem.png`, `camara_com.png`, `corredor_*`, `nicho_com.png`, `camara_longe.png`;
+  - `itens/mochila_*.png`, `comercio_*.png`.
+- No jogo: `gradlew run` (IntelliJ: Gradle → ETRAVA → Tasks → application → run). F1 → `area oficina` (ou `taverna`, `moinho`, `curandeira`), `hora 12` para o feixe, `hora 22` para o fogo; `area estrutura`, `dar lamparina`, `equipar lamparina`.
+- Roteiros: `gradlew :game-client:captures -Proteiro=v6_paredes` (ou `v6_luz`, `v6_estrutura`, `v6_itens`) `-Psaida=docs/capturas/v6/<nome>`.
+
+**A aprovar:**
+1. **A estrutura enterrada** (D-131): a ardósia em junta corrida, o feixe pontilhado, a laje e os sulcos, as fibras.
+2. D-128 a D-133.
+
+**Problemas conhecidos do V6:**
+- Com a lamparina, a luz quente deixa a ardósia da estrutura acastanhada; o frio só aparece sem ela ou perto do feixe.
+- O feixe de sol passa por cima de móveis e paredes; no piso de pedra do moinho a mancha puxa para o esverdeado.
+- No interior a lareira ilumina também de dia (escuridão do cômodo fixa, já era assim).
+- Na curandeira, o suporte de ervas fica na frente da boca da lareira (posição do mapa).
+- A brasa da forja, do lado de fora, continua uma mancha clara chapada (pendência do V5).
+- Itens pequenos em cima das mesas (dados, moedas) somem a 1×. Pares de ícone parecidos: cajado × lança curta, gibão × avental, carta × bilhete × lista.
+- `piso_terra_batida` existe e nenhum cômodo usa. Tear/fiandeira, e barril próprio de taverna, não entraram (D-130).
+- Sem teste unitário de `ParedesEstrutura` e de `CascaInterior`.
+- Entrar e sair de cada cômodo jogando, e a oclusão caso a caso, não foram testados por uma pessoa.
 
 ## V5 — Arquitetura e exteriores (2026-11-15)
 **Feito:**
@@ -407,7 +445,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-Com o ok do diretor no V5: V6, Interiores, objetos e itens (`docs/visual/V6.md`).
+Com o ok do diretor no V6: V7, Interfaces (`docs/visual/V7.md`).
 
 ---
 

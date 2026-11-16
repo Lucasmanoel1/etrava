@@ -216,6 +216,514 @@
   scale: 2
   source: "Blender (tools/blender/decoracao/chao_vila.yaml) + pixelizador"
   license: "proprio"
+- id: "estrutura.canto"
+  type: "sprite"
+  file: "arte/interiores/estr_canto.png"
+  anchor:
+  - 26.0
+  - 97.0
+  meta: "arte/interiores/estr_canto.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_paredes.yaml) + pixelizador"
+  license: "proprio"
+- id: "estrutura.canto_baixo"
+  type: "sprite"
+  file: "arte/interiores/estr_canto_baixo.png"
+  anchor:
+  - 26.0
+  - 97.0
+  meta: "arte/interiores/estr_canto_baixo.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_paredes.yaml) + pixelizador"
+  license: "proprio"
+- id: "estrutura.frente_x"
+  type: "sprite"
+  file: "arte/interiores/estr_frente_x_a.png"
+  variants:
+  - "arte/interiores/estr_frente_x_a.png"
+  - "arte/interiores/estr_frente_x_b.png"
+  anchor:
+  - 26.0
+  - 97.0
+  meta: "arte/interiores/estr_frente_x_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_paredes.yaml) + pixelizador"
+  license: "proprio"
+- id: "estrutura.frente_y"
+  type: "sprite"
+  file: "arte/interiores/estr_frente_y_a.png"
+  variants:
+  - "arte/interiores/estr_frente_y_a.png"
+  - "arte/interiores/estr_frente_y_b.png"
+  anchor:
+  - 26.0
+  - 97.0
+  meta: "arte/interiores/estr_frente_y_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_paredes.yaml) + pixelizador"
+  license: "proprio"
+- id: "estrutura.parede_x"
+  type: "sprite"
+  file: "arte/interiores/estr_parede_x_a.png"
+  variants:
+  - "arte/interiores/estr_parede_x_a.png"
+  - "arte/interiores/estr_parede_x_b.png"
+  - "arte/interiores/estr_parede_x_c.png"
+  - "arte/interiores/estr_parede_x_d.png"
+  - "arte/interiores/estr_parede_x_e.png"
+  anchor:
+  - 26.0
+  - 97.0
+  meta: "arte/interiores/estr_parede_x_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_paredes.yaml) + pixelizador"
+  license: "proprio"
+- id: "estrutura.parede_y"
+  type: "sprite"
+  file: "arte/interiores/estr_parede_y_a.png"
+  variants:
+  - "arte/interiores/estr_parede_y_a.png"
+  - "arte/interiores/estr_parede_y_b.png"
+  - "arte/interiores/estr_parede_y_c.png"
+  - "arte/interiores/estr_parede_y_d.png"
+  - "arte/interiores/estr_parede_y_e.png"
+  anchor:
+  - 26.0
+  - 97.0
+  meta: "arte/interiores/estr_parede_y_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_paredes.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.avental_couro"
+  type: "sprite"
+  file: "arte/itens/avental_couro.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/avental_couro.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_roupa.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.bilhete_avel"
+  type: "sprite"
+  file: "arte/itens/bilhete_avel.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/bilhete_avel.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.biscoito"
+  type: "sprite"
+  file: "arte/itens/biscoito.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/biscoito.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.bolsa_cinto"
+  type: "sprite"
+  file: "arte/itens/bolsa_cinto.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/bolsa_cinto.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_equipamento.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.cajado"
+  type: "sprite"
+  file: "arte/itens/cajado.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/cajado.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_equipamento.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.camisa_linho"
+  type: "sprite"
+  file: "arte/itens/camisa_linho.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/camisa_linho.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_roupa.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.canto_carta"
+  type: "sprite"
+  file: "arte/itens/canto_carta.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/canto_carta.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.capuz_la"
+  type: "sprite"
+  file: "arte/itens/capuz_la.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/capuz_la.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_roupa.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.carne_salgada"
+  type: "sprite"
+  file: "arte/itens/carne_salgada.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/carne_salgada.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.carta_iria"
+  type: "sprite"
+  file: "arte/itens/carta_iria.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/carta_iria.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.cerveja"
+  type: "sprite"
+  file: "arte/itens/cerveja.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/cerveja.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.cha_ervas"
+  type: "sprite"
+  file: "arte/itens/cha_ervas.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/cha_ervas.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.chapeu_feltro"
+  type: "sprite"
+  file: "arte/itens/chapeu_feltro.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/chapeu_feltro.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_roupa.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.corda"
+  type: "sprite"
+  file: "arte/itens/corda.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/corda.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.couro"
+  type: "sprite"
+  file: "arte/itens/couro.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/couro.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.edital_caldris"
+  type: "sprite"
+  file: "arte/itens/edital_caldris.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/edital_caldris.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.ervas"
+  type: "sprite"
+  file: "arte/itens/ervas.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/ervas.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.esboco_simbolos"
+  type: "sprite"
+  file: "arte/itens/esboco_simbolos.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/esboco_simbolos.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.faca"
+  type: "sprite"
+  file: "arte/itens/faca.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/faca.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_equipamento.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.farinha"
+  type: "sprite"
+  file: "arte/itens/farinha.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/farinha.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.ferro"
+  type: "sprite"
+  file: "arte/itens/ferro.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/ferro.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.gibao_couro"
+  type: "sprite"
+  file: "arte/itens/gibao_couro.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/gibao_couro.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_roupa.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.lamparina"
+  type: "sprite"
+  file: "arte/itens/lamparina.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/lamparina.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_equipamento.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.lanca_curta"
+  type: "sprite"
+  file: "arte/itens/lanca_curta.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/lanca_curta.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_equipamento.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.lasca_fibra"
+  type: "sprite"
+  file: "arte/itens/lasca_fibra.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/lasca_fibra.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.legumes"
+  type: "sprite"
+  file: "arte/itens/legumes.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/legumes.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.lenha"
+  type: "sprite"
+  file: "arte/itens/lenha.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/lenha.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.lista_oren"
+  type: "sprite"
+  file: "arte/itens/lista_oren.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/lista_oren.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.livro_enterros"
+  type: "sprite"
+  file: "arte/itens/livro_enterros.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/livro_enterros.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.maca"
+  type: "sprite"
+  file: "arte/itens/maca.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/maca.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.machadinha"
+  type: "sprite"
+  file: "arte/itens/machadinha.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/machadinha.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_equipamento.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.martelo"
+  type: "sprite"
+  file: "arte/itens/martelo.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/martelo.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_equipamento.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.oleo"
+  type: "sprite"
+  file: "arte/itens/oleo.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/oleo.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.pao"
+  type: "sprite"
+  file: "arte/itens/pao.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/pao.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.papeis_avel"
+  type: "sprite"
+  file: "arte/itens/papeis_avel.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/papeis_avel.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.pele_lobo"
+  type: "sprite"
+  file: "arte/itens/pele_lobo.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/pele_lobo.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.placa_simbolos"
+  type: "sprite"
+  file: "arte/itens/placa_simbolos.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/placa_simbolos.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.pregos"
+  type: "sprite"
+  file: "arte/itens/pregos.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/pregos.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.queijo"
+  type: "sprite"
+  file: "arte/itens/queijo.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/queijo.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.sal_medicinal"
+  type: "sprite"
+  file: "arte/itens/sal_medicinal.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/sal_medicinal.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_materiais.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.sopa"
+  type: "sprite"
+  file: "arte/itens/sopa.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/sopa.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.tracado_agrimensora"
+  type: "sprite"
+  file: "arte/itens/tracado_agrimensora.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/tracado_agrimensora.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_documentos.yaml) + pixelizador"
+  license: "proprio"
+- id: "icone.unguento_sal"
+  type: "sprite"
+  file: "arte/itens/unguento_sal.png"
+  anchor:
+  - 16.0
+  - 31.0
+  meta: "arte/itens/unguento_sal.json"
+  scale: 2
+  source: "Blender (tools/blender/itens/itens_comida.yaml) + pixelizador"
+  license: "proprio"
 - id: "natureza.castanheiro"
   type: "sprite"
   file: "arte/natureza/castanheiro_jovem.png"
@@ -2478,6 +2986,19 @@
   scale: 2
   source: "Blender (tools/blender/natureza/arvore_nalia.yaml) + pixelizador"
   license: "proprio"
+- id: "prop.balcao"
+  type: "sprite"
+  file: "arte/moveis/balcao.png"
+  anchor:
+  - 61.0
+  - 86.0
+  frames: 6
+  fps: 8.0
+  emissive: "arte/moveis/balcao_brilho.png"
+  meta: "arte/moveis/balcao.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis_fogo.yaml) + pixelizador"
+  license: "proprio"
 - id: "prop.banca"
   type: "sprite"
   file: "arte/objetos/banca_a.png"
@@ -2490,6 +3011,16 @@
   meta: "arte/objetos/banca_a.json"
   scale: 2
   source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.bancada"
+  type: "sprite"
+  file: "arte/moveis/bancada.png"
+  anchor:
+  - 57.0
+  - 71.0
+  meta: "arte/moveis/bancada.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.banco"
   type: "sprite"
@@ -2510,6 +3041,16 @@
   meta: "arte/objetos/barril.json"
   scale: 2
   source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.bau"
+  type: "sprite"
+  file: "arte/moveis/bau.png"
+  anchor:
+  - 57.0
+  - 71.0
+  meta: "arte/moveis/bau.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.bigorna"
   type: "sprite"
@@ -2540,6 +3081,20 @@
   meta: "arte/objetos/caixote.json"
   scale: 2
   source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.cama"
+  type: "sprite"
+  file: "arte/moveis/cama_a.png"
+  variants:
+  - "arte/moveis/cama_a.png"
+  - "arte/moveis/cama_b.png"
+  - "arte/moveis/cama_c.png"
+  anchor:
+  - 57.0
+  - 71.0
+  meta: "arte/moveis/cama_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.carroca"
   type: "sprite"
@@ -2690,13 +3245,26 @@
   license: "proprio"
 - id: "prop.entulho"
   type: "sprite"
-  file: "arte/objetos/entulho.png"
+  file: "arte/interiores/estr_entulho_a.png"
+  variants:
+  - "arte/interiores/estr_entulho_a.png"
+  - "arte/interiores/estr_entulho_b.png"
   anchor:
-  - 36.0
-  - 70.0
-  meta: "arte/objetos/entulho.json"
+  - 44.0
+  - 91.0
+  meta: "arte/interiores/estr_entulho_a.json"
   scale: 2
-  source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  source: "Blender (tools/blender/interiores/estrutura_objetos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.ervas"
+  type: "sprite"
+  file: "arte/moveis/ervas.png"
+  anchor:
+  - 57.0
+  - 71.0
+  meta: "arte/moveis/ervas.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.espantalho"
   type: "sprite"
@@ -2731,6 +3299,20 @@
   scale: 2
   source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
   license: "proprio"
+- id: "prop.fibra"
+  type: "sprite"
+  file: "arte/interiores/estr_fibra_a.png"
+  variants:
+  - "arte/interiores/estr_fibra_a.png"
+  - "arte/interiores/estr_fibra_b.png"
+  - "arte/interiores/estr_fibra_c.png"
+  anchor:
+  - 44.0
+  - 91.0
+  meta: "arte/interiores/estr_fibra_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_objetos.yaml) + pixelizador"
+  license: "proprio"
 - id: "prop.forja"
   type: "sprite"
   file: "arte/objetos/forja.png"
@@ -2746,13 +3328,13 @@
   license: "proprio"
 - id: "prop.laje_simbolos"
   type: "sprite"
-  file: "arte/objetos/laje_simbolos.png"
+  file: "arte/interiores/estr_laje.png"
   anchor:
-  - 81.0
-  - 113.0
-  meta: "arte/objetos/laje_simbolos.json"
+  - 44.0
+  - 91.0
+  meta: "arte/interiores/estr_laje.json"
   scale: 2
-  source: "Blender (tools/blender/objetos/objetos_grandes.yaml) + pixelizador"
+  source: "Blender (tools/blender/interiores/estrutura_objetos.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.lampiao"
   type: "sprite"
@@ -2788,6 +3370,32 @@
   scale: 2
   source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
   license: "proprio"
+- id: "prop.lareira"
+  type: "sprite"
+  file: "arte/moveis/lareira.png"
+  anchor:
+  - 61.0
+  - 86.0
+  frames: 6
+  fps: 8.0
+  emissive: "arte/moveis/lareira_brilho.png"
+  meta: "arte/moveis/lareira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis_fogo.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.luz_buraco"
+  type: "sprite"
+  file: "arte/interiores/estr_luz_buraco.png"
+  anchor:
+  - 36.0
+  - 146.0
+  frames: 8
+  fps: 5.0
+  emissive: "arte/interiores/estr_luz_buraco_brilho.png"
+  meta: "arte/interiores/estr_luz_buraco.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_luz.yaml) + pixelizador"
+  license: "proprio"
 - id: "prop.marco"
   type: "sprite"
   file: "arte/objetos/marco.png"
@@ -2797,6 +3405,720 @@
   meta: "arte/objetos/marco.json"
   scale: 2
   source: "Blender (tools/blender/objetos/objetos_pequenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.mesa"
+  type: "sprite"
+  file: "arte/moveis/mesa_a.png"
+  variants:
+  - "arte/moveis/mesa_a.png"
+  - "arte/moveis/mesa_b.png"
+  - "arte/moveis/mesa_c.png"
+  anchor:
+  - 61.0
+  - 86.0
+  frames: 6
+  fps: 8.0
+  emissive: "arte/moveis/mesa_a_brilho.png"
+  meta: "arte/moveis/mesa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis_fogo.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.mesa_longa"
+  type: "sprite"
+  file: "arte/moveis/mesa_longa.png"
+  anchor:
+  - 61.0
+  - 86.0
+  frames: 6
+  fps: 8.0
+  emissive: "arte/moveis/mesa_longa_brilho.png"
+  meta: "arte/moveis/mesa_longa.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis_fogo.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.mo"
+  type: "sprite"
+  file: "arte/moveis/mo.png"
+  anchor:
+  - 57.0
+  - 71.0
+  meta: "arte/moveis/mo.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/moveis.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto"
+  type: "sprite"
+  file: "arte/interiores/oficina_canto.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_canto.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_canto.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_canto.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_frente_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_canto_frente.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_canto_frente.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_frente_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_canto_frente.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_canto_frente.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_frente_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_canto_frente.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_canto_frente.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_frente_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_canto_frente.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_canto_frente.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_canto.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_canto.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_canto.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_canto.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_canto_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_canto.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_canto.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_x_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_frente_x_a.png"
+  variants:
+  - "arte/interiores/curandeira_frente_x_a.png"
+  - "arte/interiores/curandeira_frente_x_b.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_frente_x_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_x_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_frente_x_a.png"
+  variants:
+  - "arte/interiores/moinho_frente_x_a.png"
+  - "arte/interiores/moinho_frente_x_b.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_frente_x_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_x_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_frente_x_a.png"
+  variants:
+  - "arte/interiores/oficina_frente_x_a.png"
+  - "arte/interiores/oficina_frente_x_b.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_frente_x_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_x_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_frente_x_a.png"
+  variants:
+  - "arte/interiores/taverna_frente_x_a.png"
+  - "arte/interiores/taverna_frente_x_b.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_frente_x_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_y_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_frente_y_a.png"
+  variants:
+  - "arte/interiores/curandeira_frente_y_a.png"
+  - "arte/interiores/curandeira_frente_y_b.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_frente_y_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_y_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_frente_y_a.png"
+  variants:
+  - "arte/interiores/moinho_frente_y_a.png"
+  - "arte/interiores/moinho_frente_y_b.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_frente_y_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_y_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_frente_y_a.png"
+  variants:
+  - "arte/interiores/oficina_frente_y_a.png"
+  - "arte/interiores/oficina_frente_y_b.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_frente_y_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_frente_y_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_frente_y_a.png"
+  variants:
+  - "arte/interiores/taverna_frente_y_a.png"
+  - "arte/interiores/taverna_frente_y_b.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_frente_y_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_ponta_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_ponta.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_ponta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_ponta_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_ponta.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_ponta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_ponta_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_ponta.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_ponta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_ponta_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_ponta.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_ponta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_janela"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_janela.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_janela_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_x_janela.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_x_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_janela_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_x_janela.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_x_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_janela_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_janela.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_janela_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_x_janela.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_x_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_lisa"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_lisa_a.png"
+  variants:
+  - "arte/interiores/oficina_x_lisa_a.png"
+  - "arte/interiores/oficina_x_lisa_b.png"
+  - "arte/interiores/oficina_x_lisa_c.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_lisa_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_x_lisa_a.png"
+  variants:
+  - "arte/interiores/curandeira_x_lisa_a.png"
+  - "arte/interiores/curandeira_x_lisa_b.png"
+  - "arte/interiores/curandeira_x_lisa_c.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_x_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_lisa_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_x_lisa_a.png"
+  variants:
+  - "arte/interiores/moinho_x_lisa_a.png"
+  - "arte/interiores/moinho_x_lisa_b.png"
+  - "arte/interiores/moinho_x_lisa_c.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_x_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_lisa_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_lisa_a.png"
+  variants:
+  - "arte/interiores/oficina_x_lisa_a.png"
+  - "arte/interiores/oficina_x_lisa_b.png"
+  - "arte/interiores/oficina_x_lisa_c.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_lisa_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_x_lisa_a.png"
+  variants:
+  - "arte/interiores/taverna_x_lisa_a.png"
+  - "arte/interiores/taverna_x_lisa_b.png"
+  - "arte/interiores/taverna_x_lisa_c.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_x_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_porta"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_porta.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_porta_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_x_porta.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_x_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_porta_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_x_porta.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_x_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_porta_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_porta.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_porta_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_x_porta.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_x_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_prateleira"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_prateleira.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_prateleira_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_x_prateleira.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_x_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_prateleira_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_x_prateleira.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_x_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_prateleira_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_x_prateleira.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_x_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_x_prateleira_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_x_prateleira.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_x_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_janela"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_janela.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_janela_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_y_janela.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_y_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_janela_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_y_janela.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_y_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_janela_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_janela.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_janela_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_y_janela.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_y_janela.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_lisa"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_lisa_a.png"
+  variants:
+  - "arte/interiores/oficina_y_lisa_a.png"
+  - "arte/interiores/oficina_y_lisa_b.png"
+  - "arte/interiores/oficina_y_lisa_c.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_lisa_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_y_lisa_a.png"
+  variants:
+  - "arte/interiores/curandeira_y_lisa_a.png"
+  - "arte/interiores/curandeira_y_lisa_b.png"
+  - "arte/interiores/curandeira_y_lisa_c.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_y_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_lisa_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_y_lisa_a.png"
+  variants:
+  - "arte/interiores/moinho_y_lisa_a.png"
+  - "arte/interiores/moinho_y_lisa_b.png"
+  - "arte/interiores/moinho_y_lisa_c.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_y_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_lisa_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_lisa_a.png"
+  variants:
+  - "arte/interiores/oficina_y_lisa_a.png"
+  - "arte/interiores/oficina_y_lisa_b.png"
+  - "arte/interiores/oficina_y_lisa_c.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_lisa_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_y_lisa_a.png"
+  variants:
+  - "arte/interiores/taverna_y_lisa_a.png"
+  - "arte/interiores/taverna_y_lisa_b.png"
+  - "arte/interiores/taverna_y_lisa_c.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_y_lisa_a.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_porta"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_porta.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_porta_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_y_porta.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_y_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_porta_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_y_porta.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_y_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_porta_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_porta.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_porta_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_y_porta.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_y_porta.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_prateleira"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_prateleira.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_prateleira_curandeira"
+  type: "sprite"
+  file: "arte/interiores/curandeira_y_prateleira.png"
+  anchor:
+  - 27.0
+  - 95.0
+  meta: "arte/interiores/curandeira_y_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_curandeira.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_prateleira_moinho"
+  type: "sprite"
+  file: "arte/interiores/moinho_y_prateleira.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/moinho_y_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_moinho.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_prateleira_oficina"
+  type: "sprite"
+  file: "arte/interiores/oficina_y_prateleira.png"
+  anchor:
+  - 27.0
+  - 100.0
+  meta: "arte/interiores/oficina_y_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_oficina.yaml) + pixelizador"
+  license: "proprio"
+- id: "prop.parede_y_prateleira_taverna"
+  type: "sprite"
+  file: "arte/interiores/taverna_y_prateleira.png"
+  anchor:
+  - 27.0
+  - 105.0
+  meta: "arte/interiores/taverna_y_prateleira.json"
+  scale: 2
+  source: "Blender (tools/blender/interiores/paredes_taverna.yaml) + pixelizador"
   license: "proprio"
 - id: "prop.pedras"
   type: "sprite"
@@ -2891,6 +4213,48 @@
   priority: 1
   scale: 2
   source: "Blender (tools/blender/chao/terrenos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.pedra.estrutura"
+  type: "tile"
+  file: "arte/interiores/estr_chao.png"
+  priority: 1
+  scale: 2
+  source: "Blender (tools/blender/interiores/estrutura_chao.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.piso_lajota"
+  type: "tile"
+  file: "arte/chao/piso_lajota.png"
+  priority: 4
+  scale: 2
+  source: "Blender (tools/blender/interiores/pisos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.piso_pedra"
+  type: "tile"
+  file: "arte/chao/piso_pedra.png"
+  priority: 4
+  scale: 2
+  source: "Blender (tools/blender/interiores/pisos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.piso_tabua"
+  type: "tile"
+  file: "arte/chao/piso_tabua.png"
+  priority: 6
+  scale: 2
+  source: "Blender (tools/blender/interiores/pisos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.piso_tabua_clara"
+  type: "tile"
+  file: "arte/chao/piso_tabua_clara.png"
+  priority: 6
+  scale: 2
+  source: "Blender (tools/blender/interiores/pisos.yaml) + pixelizador"
+  license: "proprio"
+- id: "tile.piso_terra_batida"
+  type: "tile"
+  file: "arte/chao/piso_terra_batida.png"
+  priority: 2
+  scale: 2
+  source: "Blender (tools/blender/interiores/pisos.yaml) + pixelizador"
   license: "proprio"
 - id: "tile.plantio"
   type: "tile"

@@ -1,0 +1,50 @@
+# Casca do cômodo (V6): A taverna: enxaimel com reboco de lã crua e lambril de tábua até 1,1 m (a parede que mais apanha banco e caneca).
+# Peças de 1 m (pegada do content/props.yaml); o cliente troca prop.parede_* pela versão da casa
+# (assets/config/interiores.yaml) e põe as da frente e as pontas (CascaInterior).
+tipo: paredes
+id: paredes_taverna
+quadro: [84, 132]
+ancora: [42, 110]
+corte: 0.4
+estilo: enxaimel
+altura: 2.8
+reboco: la_crua
+lambril: 1.1
+semente: 11
+janela: {peitoril: 1.25, altura: 0.72}
+prateleiras: [1.35, 1.8]
+pixelizador: {ambiente: 0.42, difusa: 0.40}
+manifesto:
+  - {id: prop.parede_x_lisa_taverna, folhas: [taverna_x_lisa_a, taverna_x_lisa_b, taverna_x_lisa_c]}
+  - {id: prop.parede_x_janela_taverna, folhas: [taverna_x_janela]}
+  - {id: prop.parede_x_porta_taverna, folhas: [taverna_x_porta]}
+  - {id: prop.parede_x_prateleira_taverna, folhas: [taverna_x_prateleira]}
+  - {id: prop.parede_frente_x_taverna, folhas: [taverna_frente_x_a, taverna_frente_x_b]}
+  - {id: prop.parede_y_lisa_taverna, folhas: [taverna_y_lisa_a, taverna_y_lisa_b, taverna_y_lisa_c]}
+  - {id: prop.parede_y_janela_taverna, folhas: [taverna_y_janela]}
+  - {id: prop.parede_y_porta_taverna, folhas: [taverna_y_porta]}
+  - {id: prop.parede_y_prateleira_taverna, folhas: [taverna_y_prateleira]}
+  - {id: prop.parede_frente_y_taverna, folhas: [taverna_frente_y_a, taverna_frente_y_b]}
+  - {id: prop.parede_canto_taverna, folhas: [taverna_canto]}
+  - {id: prop.parede_ponta_taverna, folhas: [taverna_ponta]}
+  - {id: prop.parede_canto_frente_taverna, folhas: [taverna_canto_frente]}
+pecas:
+  - {nome: taverna_x_lisa_a, tipo: lisa, eixo: x, var: a}
+  - {nome: taverna_x_lisa_b, tipo: lisa, eixo: x, var: b}
+  - {nome: taverna_x_lisa_c, tipo: lisa, eixo: x, var: c}
+  - {nome: taverna_x_janela, tipo: janela, eixo: x, var: a}
+  - {nome: taverna_x_porta, tipo: porta, eixo: x, var: a}
+  - {nome: taverna_x_prateleira, tipo: prateleira, eixo: x, var: a}
+  - {nome: taverna_frente_x_a, tipo: frente, eixo: x, var: a}
+  - {nome: taverna_frente_x_b, tipo: frente, eixo: x, var: b}
+  - {nome: taverna_y_lisa_a, tipo: lisa, eixo: y, var: a}
+  - {nome: taverna_y_lisa_b, tipo: lisa, eixo: y, var: b}
+  - {nome: taverna_y_lisa_c, tipo: lisa, eixo: y, var: c}
+  - {nome: taverna_y_janela, tipo: janela, eixo: y, var: a}
+  - {nome: taverna_y_porta, tipo: porta, eixo: y, var: a}
+  - {nome: taverna_y_prateleira, tipo: prateleira, eixo: y, var: a}
+  - {nome: taverna_frente_y_a, tipo: frente, eixo: y, var: a}
+  - {nome: taverna_frente_y_b, tipo: frente, eixo: y, var: b}
+  - {nome: taverna_canto, tipo: canto, eixo: x, var: a}
+  - {nome: taverna_ponta, tipo: ponta, eixo: x, var: a}
+  - {nome: taverna_canto_frente, tipo: canto_frente, eixo: x, var: a}

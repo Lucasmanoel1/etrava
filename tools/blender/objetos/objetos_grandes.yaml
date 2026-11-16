@@ -12,7 +12,7 @@ manifesto:
   - {id: prop.forja, folhas: [forja]}
   - {id: prop.buraco_terra, folhas: [buraco_terra]}
   - {id: prop.terra_remexida, folhas: [terra_remexida]}
-  - {id: prop.laje_simbolos, folhas: [laje_simbolos]}
+  # prop.laje_simbolos: V6, tools/blender/interiores/estrutura_objetos.yaml (só a estrutura a usa)
 elementos:
   - {nome: poco, forma: poco}
   - {nome: feno_a, forma: feno, semente: 2}

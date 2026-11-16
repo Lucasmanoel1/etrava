@@ -1,0 +1,33 @@
+# Ícones dos itens (V6) — Documentos e os achados da estrutura. Um modelo por item (itens/modelos.py, função = id do item);
+# cada elemento vira assets/arte/itens/<id>.png, 32×32 px de arte, e o asset icone.<id>.
+# elev = elevação da câmera do ícone (graus); pose = giro do item [rx, ry, rz] (graus).
+tipo: itens
+id: itens_documentos
+lado: 32
+ancora: [16, 31]
+recortar: false
+manifesto:
+  - {id: icone.lasca_fibra, folhas: [lasca_fibra]}
+  - {id: icone.placa_simbolos, folhas: [placa_simbolos]}
+  - {id: icone.papeis_avel, folhas: [papeis_avel]}
+  - {id: icone.carta_iria, folhas: [carta_iria]}
+  - {id: icone.esboco_simbolos, folhas: [esboco_simbolos]}
+  - {id: icone.bilhete_avel, folhas: [bilhete_avel]}
+  - {id: icone.edital_caldris, folhas: [edital_caldris]}
+  - {id: icone.tracado_agrimensora, folhas: [tracado_agrimensora]}
+  - {id: icone.lista_oren, folhas: [lista_oren]}
+  - {id: icone.canto_carta, folhas: [canto_carta]}
+  - {id: icone.livro_enterros, folhas: [livro_enterros]}
+elementos:
+  - {nome: lasca_fibra, elev: 45, pose: [0, 0, 30]}
+  - {nome: placa_simbolos, elev: 60, pose: [0, 0, 8]}
+  - {nome: papeis_avel, elev: 60, pose: [0, 0, -12]}
+  - {nome: carta_iria, elev: 45, pose: [0, 0, 0]}
+  - {nome: esboco_simbolos, elev: 65, pose: [0, 0, 8]}
+  - {nome: bilhete_avel, elev: 50, pose: [0, 0, 20]}
+  - {nome: edital_caldris, elev: 70, pose: [0, 0, -6]}
+  - {nome: tracado_agrimensora, elev: 60, pose: [0, 0, 0]}
+  - {nome: lista_oren, elev: 60, pose: [0, 0, 25]}
+  - {nome: canto_carta, elev: 65, pose: [0, 0, 0]}
+  - {nome: livro_enterros, elev: 45, pose: [0, 0, 25]}
+pixelizador: {ambiente: 0.40, difusa: 0.55, limiar_profundidade: 0.06}

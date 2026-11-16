@@ -1,0 +1,31 @@
+# Ícones dos itens (V6) — Comida e bebida. Um modelo por item (itens/modelos.py, função = id do item);
+# cada elemento vira assets/arte/itens/<id>.png, 32×32 px de arte, e o asset icone.<id>.
+# elev = elevação da câmera do ícone (graus); pose = giro do item [rx, ry, rz] (graus).
+tipo: itens
+id: itens_comida
+lado: 32
+ancora: [16, 31]
+recortar: false
+manifesto:
+  - {id: icone.pao, folhas: [pao]}
+  - {id: icone.sopa, folhas: [sopa]}
+  - {id: icone.queijo, folhas: [queijo]}
+  - {id: icone.maca, folhas: [maca]}
+  - {id: icone.biscoito, folhas: [biscoito]}
+  - {id: icone.carne_salgada, folhas: [carne_salgada]}
+  - {id: icone.legumes, folhas: [legumes]}
+  - {id: icone.cerveja, folhas: [cerveja]}
+  - {id: icone.cha_ervas, folhas: [cha_ervas]}
+  - {id: icone.unguento_sal, folhas: [unguento_sal]}
+elementos:
+  - {nome: pao, elev: 40, pose: [0, 0, 15]}
+  - {nome: sopa, elev: 45, pose: [0, 0, 0]}
+  - {nome: queijo, elev: 35, pose: [0, 0, 0]}
+  - {nome: maca, elev: 25, pose: [0, 0, 0]}
+  - {nome: biscoito, elev: 45, pose: [0, 0, 20]}
+  - {nome: carne_salgada, elev: 45, pose: [0, 0, -15]}
+  - {nome: legumes, elev: 45, pose: [0, 0, 0]}
+  - {nome: cerveja, elev: 20, pose: [0, 0, 0]}
+  - {nome: cha_ervas, elev: 35, pose: [0, 0, 0]}
+  - {nome: unguento_sal, elev: 30, pose: [0, 0, 0]}
+pixelizador: {ambiente: 0.40, difusa: 0.55, limiar_profundidade: 0.06}

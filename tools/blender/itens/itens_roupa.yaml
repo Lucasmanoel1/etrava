@@ -1,0 +1,21 @@
+# Ícones dos itens (V6) — Roupa. Um modelo por item (itens/modelos.py, função = id do item);
+# cada elemento vira assets/arte/itens/<id>.png, 32×32 px de arte, e o asset icone.<id>.
+# elev = elevação da câmera do ícone (graus); pose = giro do item [rx, ry, rz] (graus).
+tipo: itens
+id: itens_roupa
+lado: 32
+ancora: [16, 31]
+recortar: false
+manifesto:
+  - {id: icone.camisa_linho, folhas: [camisa_linho]}
+  - {id: icone.gibao_couro, folhas: [gibao_couro]}
+  - {id: icone.avental_couro, folhas: [avental_couro]}
+  - {id: icone.chapeu_feltro, folhas: [chapeu_feltro]}
+  - {id: icone.capuz_la, folhas: [capuz_la]}
+elementos:
+  - {nome: camisa_linho, elev: 75, pose: [0, 0, 0]}
+  - {nome: gibao_couro, elev: 75, pose: [0, 0, 0]}
+  - {nome: avental_couro, elev: 75, pose: [0, 0, 0]}
+  - {nome: chapeu_feltro, elev: 30, pose: [0, 0, 0]}
+  - {nome: capuz_la, elev: 10, pose: [0, 0, -25]}
+pixelizador: {ambiente: 0.40, difusa: 0.55, limiar_profundidade: 0.06}

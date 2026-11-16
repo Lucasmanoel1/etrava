@@ -1,0 +1,20 @@
+# Móveis dos interiores sem fogo (V6). Mesmo ID, mesma pegada e colisão do content/props.yaml.
+tipo: moveis
+id: moveis
+quadro: [180, 170]
+ancora: [70, 120]
+manifesto:
+  - {id: prop.bancada, folhas: [bancada]}
+  - {id: prop.mo, folhas: [mo]}
+  - {id: prop.cama, folhas: [cama_a, cama_b, cama_c]}
+  - {id: prop.bau, folhas: [bau]}
+  - {id: prop.ervas, folhas: [ervas]}
+elementos:
+  - {nome: bancada, forma: bancada}
+  - {nome: mo, forma: mo}
+  - {nome: cama_a, forma: cama, pano: la_crua, semente: 3}
+  - {nome: cama_b, forma: cama, pano: tecido_vermelho, semente: 5}
+  - {nome: cama_c, forma: cama, pano: tecido_oliva, semente: 8}
+  - {nome: bau, forma: bau}
+  - {nome: ervas, forma: ervas}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

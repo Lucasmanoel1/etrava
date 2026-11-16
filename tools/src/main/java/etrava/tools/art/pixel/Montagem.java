@@ -110,10 +110,14 @@ final class Montagem {
         String tipo = desc.path("tipo").asText();
         String sub = switch (tipo) {
             case "personagem", "lobo", "vulto" -> "personagens";
-            case "chao" -> "chao";
+            case "chao", "pisos" -> "chao";   // V6: pisos de interior (tarefas/pisos.py)
             case "decoracao" -> "decoracao";
             case "casa" -> "construcoes";
             case "objetos" -> "objetos";
+            case "moveis" -> "moveis";   // V6: móveis dos interiores (tools/blender/interiores)
+            case "paredes" -> "interiores";   // V6: casca dos cômodos (paredes de fundo e de corte)
+            case "itens" -> "itens";   // V6: ícones dos itens (tools/blender/itens)
+            case "estrutura" -> "interiores";   // V6: a estrutura enterrada (paredes, objetos, chão)
             case "spike_mpfb" -> "spike";
             default -> "natureza";
         };
@@ -213,7 +217,8 @@ final class Montagem {
             String primeira = arquivos.get(folhas.get(0));
             if (primeira == null) throw new IllegalStateException(o.id() + ": folha desconhecida no manifesto: " + folhas);
             anims = animsPorFolha.get(folhas.get(0));
-            switch (tipo) {
+            // V6: uma entrada com `tile: true` vira terreno mesmo fora da ficha de chão (estrutura)
+            switch (e.path("tile").asBoolean(false) ? "chao" : tipo) {
                 case "personagem", "lobo", "vulto" -> {
                     m.put("type", "spritesheet");
                     m.put("file", primeira);
@@ -224,7 +229,7 @@ final class Montagem {
                     m.put("animations", new LinkedHashMap<>(anims));
                     if (e.has("papel")) m.put("role", e.get("papel").asText());
                 }
-                case "chao" -> {
+                case "chao", "pisos" -> {
                     m.put("type", "tile");
                     m.put("file", primeira);
                     if (e.has("prioridade")) m.put("priority", e.get("prioridade").asInt());

@@ -18,7 +18,7 @@ manifesto:
   - {id: prop.espantalho, folhas: [espantalho]}
   - {id: prop.banco, folhas: [banco]}
   - {id: prop.bigorna, folhas: [bigorna]}
-  - {id: prop.entulho, folhas: [entulho]}
+  # prop.entulho: V6, tools/blender/interiores/estrutura_objetos.yaml (só a estrutura o usa)
 elementos:
   - {nome: cerca_x_a, forma: cerca, eixo: x, semente: 1}
   - {nome: cerca_x_b, forma: cerca, eixo: x, semente: 2}

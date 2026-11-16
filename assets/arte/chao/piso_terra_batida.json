@@ -1,0 +1,13 @@
+{
+  "frame" : [ 512, 256 ],
+  "anchor" : [ 0.0, 0.0 ],
+  "directions" : 1,
+  "animations" : {
+    "chao" : {
+      "start" : 0,
+      "frames" : 1,
+      "fps" : 1.0
+    }
+  },
+  "points" : { }
+}

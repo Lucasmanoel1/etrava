@@ -48,8 +48,11 @@ public final class GameUi implements Disposable {
     private static final Color RUST = new Color(0x6E2C22FF), EDGE = new Color(0x2E2018FF);
     /** Quantos fatos marcados viram opção de "perguntar sobre" numa conversa. */
     public static final int MAX_ASK = 3;
-    /** Lado do ícone de item na tela, em pixels. */
-    private static final float ICON = 40;
+    /**
+     * Lado do ícone de item na tela, em pixels. Os ícones do V6 têm 32 px de arte: escala inteira
+     * (1×) para não deformar os pixels; o tamanho na tela é revisto com o tema no V7.
+     */
+    private static final float ICON = 32;
 
     private final Stage stage;
     private final Texture white;
@@ -503,7 +506,7 @@ public final class GameUi implements Disposable {
         return page;
     }
 
-    /** Ícone do item (RF-200): 20 px de arte, ampliados sem borrar; item sem ícone mostra o placeholder. */
+    /** Ícone do item (RF-200): 32 px de arte (V6), em escala inteira; item sem ícone mostra o placeholder. */
     private Image icon(String itemId) {
         ItemDef def = content.items().get(itemId);
         return new Image(assets.sprite(def != null ? def.iconId() : "icone." + itemId).region());
@@ -678,7 +681,7 @@ public final class GameUi implements Disposable {
             String line = o.name() + " x" + o.qty() + price + (cmd == null ? "" : "   [" + texts.get(verbKey) + "]");
             Table row = new Table();
             row.left();
-            row.add(icon(o.item())).size(ICON * 0.8f).padRight(8);
+            row.add(icon(o.item())).size(ICON).padRight(8);
             row.add(clickable(line, cmd)).growX();
             list.add(row).padBottom(3).row();
         }

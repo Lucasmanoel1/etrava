@@ -997,3 +997,52 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
   - A laje tem sulcos que não se leem (anel, riscos, pontos): não confirma nada.
   - O atlas passa a empacotar do menor arquivo para o maior: casas, objetos e decoração ficam na primeira página e só as árvores ocupam as outras (276 → 158 chamadas por quadro).
 - **Pendência:** `fibra` e `luz_buraco` (dentro da estrutura) ficam para o V6.
+
+## D-128 — V6 feito por subagentes em paralelo
+- **Data:** 2026-11-16
+- **Decisão:** a pedido do diretor, o V6 foi dividido em 5 subagentes (móveis, paredes/pisos/corte, estrutura enterrada, itens, luz viva), cada um em arquivos próprios, com o orquestrador integrando, conferindo as imagens e fechando o marco. Ninguém além do orquestrador faz commit ou edita `PROGRESS.md`/`DECISIONS.md`.
+- **Motivo:** tempo e atenção a cada parte. **Custo:** o limite de uso da conta acaba mais rápido (os cinco caíram juntos uma vez).
+
+## D-129 — Casca dos cômodos: paredes por casa, frente cortada e piso pelo cliente
+- **Data:** 2026-11-16
+- **Decisão:**
+  - Um conjunto de paredes por casa (`interiores/paredes.py`): oficina em enxaimel, taverna com lambril, moinho em pedra, curandeira caiada. O mapa mantém os IDs; o cliente troca o sprite pelo sufixo `_<casa>` (`assets/config/interiores.yaml`, `CascaInterior.java`).
+  - Paredes da frente (sul e leste), pontas e canto são geradas no cliente a partir do retângulo do piso, cortadas a 0,4 m, na faixa de colisão da borda. Mapas e `core-sim` não mudam.
+  - O piso do cômodo troca por dado, só no desenho (o som dos passos segue o terreno do mapa), com losango exato: borda reta, fim da pendência do M8.
+  - Pisos feitos de geometria, sem PNG de textura novo (um PNG novo invalidaria o cache de render de tudo).
+  - Paredes sem sombra projetada. A variante "reboco caído" saiu: de perto parecia símbolo gravado.
+- **Alternativa descartada:** pôr as paredes da frente no mapa (mudaria colisão e conteúdo).
+
+## D-130 — Móveis de interior
+- **Data:** 2026-11-16
+- **Decisão:**
+  - Tipo `moveis` (`interiores/moveis.py`): mesa (3), mesa longa, balcão, lareira, bancada, mó, cama (3), baú, ervas. Mesmo ID e pegada.
+  - Toda mesa e o balcão têm vela com ponto de luz; por isso ganharam `lights` no `props.yaml` (dado de apresentação).
+  - Lareira sem fumaça (o cômodo é cortado). Fogo: tom claro só no pé da chama e brilho fraco; o laranja vem do sprite, não da soma do brilho.
+  - `barril`, `caixote`, `sacos` e `banco` ficam com a arte do V5 (mesmo ID do lado de fora). Tear/fiandeira não entram: não há prop nem lugar no mapa.
+
+## D-131 — Estrutura enterrada
+- **Data:** 2026-11-16
+- **Decisão:**
+  - Blocos lisos de ardósia de 1 m em junta corrida, lajes de 2 × 2 m, só com rampas que já existiam (nenhuma cor nova).
+  - Paredes desenhadas pelo cliente a partir da colisão (`ParedesEstrutura.java`): altas ao norte e a oeste só quando cobrem rocha; cortadas a 0,45 m no resto.
+  - Chão próprio por área: `tile.<terreno>.<área>` no manifesto; o mapa continua dizendo "pedra".
+  - Sem sombra projetada no subterrâneo. `luz_buraco` é um feixe frio pontilhado com poeira; `fibra` são fios de pedra escura que rompem as lajes.
+  - Laje: arco aberto e cinco linhas paralelas. Nada de grade, painel, figura ou olho; não confirma V2/V3. `prop.entulho` e `prop.laje_simbolos` saem das fichas do V5 (só a estrutura os usa).
+- **Pede aprovação do diretor** (V6.md).
+
+## D-132 — Itens: ícones por modelo, câmera própria
+- **Data:** 2026-11-16
+- **Decisão:**
+  - 43 modelos (`itens/modelos.py`), fichas por família (5 renders em vez de 43), ícone de 32×32 em `assets/arte/itens/`; `icone.<id>` no `arte.yaml` vence o provisório.
+  - Câmera de ícone ortográfica de frente, com elevação por item e sem a correção vertical do mundo (o isométrico achatava papéis e roupas).
+  - Ferramentas e armas copiam as proporções do kit humano sem importar `roupa.py` (não invalida o cache dos personagens).
+  - `GameUi.ICON` de 40 para 32 px (1×, nítido); o tamanho final é do tema, no V7. Nenhum ícone brilha.
+
+## D-133 — Luz viva
+- **Data:** 2026-11-16
+- **Decisão:**
+  - Parâmetros em `assets/config/luz_viva.yaml` (o `daynight.yaml` é lista de horas e o `PropDef` é do núcleo).
+  - Fogo que tremula por ruído suave, determinístico pela posição, preset pelo id do prop (ou prefixo).
+  - Feixe de sol identificado pelos props `parede_x_janela`/`parede_y_janela`; sem estado (função da hora), então as capturas se repetem. "Detalhes: Baixo" tira só a poeira.
+- **Limite conhecido:** o feixe não é bloqueado por móveis nem paredes.

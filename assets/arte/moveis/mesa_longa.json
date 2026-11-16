@@ -1,0 +1,16 @@
+{
+  "frame" : [ 140, 116 ],
+  "anchor" : [ 61.0, 86.0 ],
+  "directions" : 1,
+  "animations" : {
+    "parado" : {
+      "start" : 0,
+      "frames" : 6,
+      "fps" : 8.0
+    }
+  },
+  "points" : { },
+  "world" : {
+    "luz0" : [ 0.0, -0.12, 1.06 ]
+  }
+}

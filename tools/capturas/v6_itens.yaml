@@ -1,0 +1,11 @@
+# Capturas do V6 — ícones de item na interface (ainda no tema antigo; o tema é do V7).
+# gradlew captures -Proteiro=v6_itens -Psaida=docs/capturas/v6/itens
+padrao: {semente: 6, tamanho: [1280, 720], quadros: 120}
+
+cenas:
+  - {nome: mochila_comida, area: vila, cmds: ["tp 30 33", "hora 10", "dar pao", "dar sopa", "dar queijo", "dar maca", "dar biscoito", "dar carne_salgada", "dar legumes", "dar cerveja", "dar cha_ervas", "dar unguento_sal", "mochila"]}
+  - {nome: mochila_equipamento, area: vila, cmds: ["tp 30 33", "hora 10", "dar martelo", "dar faca", "dar machadinha", "dar cajado", "dar lanca_curta", "dar lamparina", "dar bolsa_cinto", "dar camisa_linho", "dar gibao_couro", "dar avental_couro", "dar chapeu_feltro", "dar capuz_la", "mochila"]}
+  - {nome: mochila_documentos, area: vila, cmds: ["tp 30 33", "hora 10", "dar papeis_avel", "dar carta_iria", "dar esboco_simbolos", "dar bilhete_avel", "dar edital_caldris", "dar tracado_agrimensora", "dar lista_oren", "dar canto_carta", "dar livro_enterros", "dar lasca_fibra", "dar placa_simbolos", "mochila"]}
+  - {nome: mochila_materiais_1080, area: vila, tamanho: [1920, 1080], cmds: ["tp 30 33", "hora 10", "dar sal_medicinal", "dar farinha", "dar ferro", "dar pregos", "dar lenha", "dar couro", "dar corda", "dar ervas", "dar oleo", "dar pele_lobo", "mochila"]}
+  - {nome: comercio_720, area: estrada, cmds: ["tp 57 24", "hora 11", "comercio posto"], quadros: 150}
+  - {nome: comercio_1080, area: estrada, tamanho: [1920, 1080], cmds: ["tp 57 24", "hora 11", "comercio posto"], quadros: 150}

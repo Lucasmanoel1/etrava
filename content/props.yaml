@@ -334,11 +334,15 @@
 - {id: parede_y_porta, category: parede, footprint: [0.25, 1.0], height: 2.6, blocks: true}
 - {id: parede_y_prateleira, category: parede, footprint: [0.25, 1.0], height: 2.6, blocks: true}
 - {id: parede_canto, category: parede, footprint: [0.25, 0.25], height: 2.6, blocks: true}
-- {id: mesa, category: mobilia, footprint: [1.1, 0.9], height: 0.8, blocks: true}
-- {id: mesa_longa, category: mobilia, footprint: [2.0, 0.9], height: 0.8, blocks: true}
+# V6: as mesas e o balcão têm vela; o ponto vem da arte (world.luz0), daqui só raio e cor
+- {id: mesa, category: mobilia, footprint: [1.1, 0.9], height: 0.8, blocks: true,
+   lights: [{offset: [0.0, 0.0, 1.0], radius: 2.4, color: [1.0, 0.72, 0.42]}]}
+- {id: mesa_longa, category: mobilia, footprint: [2.0, 0.9], height: 0.8, blocks: true,
+   lights: [{offset: [0.0, 0.0, 1.0], radius: 2.6, color: [1.0, 0.72, 0.42]}]}
 - {id: banco, category: mobilia, footprint: [1.9, 0.4], height: 0.5, blocks: true}
 - {id: cama, category: mobilia, footprint: [2.1, 1.0], height: 0.9, blocks: true}
-- {id: balcao, category: mobilia, footprint: [2.9, 0.8], height: 1.1, blocks: true}
+- {id: balcao, category: mobilia, footprint: [2.9, 0.8], height: 1.1, blocks: true,
+   lights: [{offset: [0.0, 0.0, 1.3], radius: 2.6, color: [1.0, 0.72, 0.42]}]}
 - {id: bau, category: mobilia, footprint: [1.0, 0.7], height: 0.6, blocks: true}
 - {id: sacos, category: mobilia, footprint: [1.0, 0.8], height: 0.8, blocks: true}
 - {id: mo, category: mobilia, footprint: [1.8, 1.8], height: 0.9, blocks: true}

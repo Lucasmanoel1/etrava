@@ -1,0 +1,34 @@
+# Luz viva (V6, SPEC-visual §7.4). Tudo aqui é só apresentação; troca-se sem recompilar.
+#
+# tremula: luzes de fogo que respiram. A chave é o id do prop (ou o começo dele: "vela" vale para
+#   "vela", "velas", "vela_mesa"); a mais específica ganha. Prop que não está aqui tem luz firme.
+#   intensidade: variação de brilho (±fração); raio: variação do tamanho da mancha (±fração);
+#   velocidade: quantas "viradas" do ruído por segundo (maior = fogo mais agitado, ainda suave).
+#   Ruído suave e determinístico pela posição: duas lareiras nunca tremulam juntas.
+tremula:
+  lareira: {intensidade: 0.16, raio: 0.07, velocidade: 1.6}
+  forja:   {intensidade: 0.22, raio: 0.09, velocidade: 2.2}
+  vela:    {intensidade: 0.13, raio: 0.05, velocidade: 2.6}
+  # móveis com vela em cima (V6): mesma respiração da vela
+  mesa:    {intensidade: 0.13, raio: 0.05, velocidade: 2.6}
+  balcao:  {intensidade: 0.13, raio: 0.05, velocidade: 2.6}
+  tocha:   {intensidade: 0.18, raio: 0.08, velocidade: 2.0}
+  fogueira: {intensidade: 0.20, raio: 0.09, velocidade: 2.0}
+  lampiao: {intensidade: 0.04, raio: 0.02, velocidade: 1.1}
+
+# feixe: luz do sol pelas janelas dos interiores, de dia. As janelas são os props abaixo
+#   (valor = eixo da parede: x = parede ao longo de x, a luz entra em y; y = o contrário).
+#   O lado de dentro é o lado do centro do cômodo.
+feixe:
+  janelas: {parede_x_janela: x, parede_y_janela: y}
+  nascer: 6.5            # hora em que o feixe começa
+  por: 18.5              # hora em que acaba (nada à noite)
+  largura: 0.8           # m, largura da janela
+  base: 0.9              # m, altura do peitoril
+  topo: 2.0              # m, altura do topo da janela
+  cor: [1.0, 0.88, 0.58] # cor do sol que entra
+  piso: 0.55             # força da mancha no chão (soma ao buffer de luz)
+  ar: 0.15               # força do feixe visível no ar
+  poeira: 6              # grãos por janela (0 desliga); "Detalhes do ambiente: Baixo" desliga sempre
+  poeira_teto: 24        # grãos no total, na vista
+  deslocamento: 0.9      # m de deslocamento lateral do feixe do nascer ao pôr do sol

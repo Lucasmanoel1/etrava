@@ -1,0 +1,19 @@
+# Estrutura enterrada (V6): fibra, entulho e a laje. Mesmo ID, mesma pegada e colisão do
+# content/props.yaml (só esta área os usa). Substituem as folhas do V5 (objetos_*.yaml) e a
+# fibra provisória do M6.
+tipo: estrutura
+id: estrutura_objetos
+quadro: [190, 180]
+ancora: [95, 132]
+manifesto:
+  - {id: prop.fibra, folhas: [estr_fibra_a, estr_fibra_b, estr_fibra_c]}
+  - {id: prop.entulho, folhas: [estr_entulho_a, estr_entulho_b]}
+  - {id: prop.laje_simbolos, folhas: [estr_laje]}
+elementos:
+  - {nome: estr_fibra_a, forma: fibra, semente: 1, fios: 4}
+  - {nome: estr_fibra_b, forma: fibra, semente: 2, fios: 5, altura: 2.8}
+  - {nome: estr_fibra_c, forma: fibra, semente: 3, fios: 3, altura: 2.6}
+  - {nome: estr_entulho_a, forma: entulho, semente: 1}
+  - {nome: estr_entulho_b, forma: entulho, semente: 4}
+  - {nome: estr_laje, forma: laje}
+pixelizador: {ambiente: 0.30, difusa: 0.52}

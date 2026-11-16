@@ -1,0 +1,17 @@
+# Capturas da luz viva do V6 (gradlew captures -Proteiro=v6_luz): feixe pelas janelas de dia e fogo à noite.
+padrao: {semente: 5, tamanho: [1280, 720], quadros: 150}
+
+cenas:
+  - {nome: oficina_manha, area: oficina, cmds: ["tp 8 8", "hora 8.5", "zoom 2"]}
+  - {nome: oficina_meio_dia, area: oficina, cmds: ["tp 8 8", "hora 12.5", "zoom 2"]}
+  - {nome: oficina_tarde, area: oficina, cmds: ["tp 8 8", "hora 16.5", "zoom 2"]}
+  - {nome: oficina_noite, area: oficina, cmds: ["tp 8 8", "hora 22.5", "zoom 1"]}
+  - {nome: oficina_lareira_noite, area: oficina, cmds: ["tp 6 6", "hora 22.5", "zoom 2"]}
+  - {nome: taverna_dia, area: taverna, cmds: ["hora 11", "zoom 1"]}
+  - {nome: taverna_noite, area: taverna, cmds: ["hora 22.5", "zoom 1"]}
+  - {nome: moinho_dia, area: moinho, cmds: ["hora 11", "zoom 1"]}
+  - {nome: curandeira_dia, area: curandeira, cmds: ["hora 14", "zoom 1"]}
+  - {nome: curandeira_noite, area: curandeira, cmds: ["hora 22.5", "zoom 1"]}
+  - {nome: lareira_t1, area: oficina, quadros: 150, cmds: ["tp 6 6", "hora 22.5", "zoom 2"]}
+  - {nome: lareira_t2, area: oficina, quadros: 190, cmds: ["tp 6 6", "hora 22.5", "zoom 2"]}
+  - {nome: lareira_t3, area: oficina, quadros: 230, cmds: ["tp 6 6", "hora 22.5", "zoom 2"]}

@@ -1,0 +1,25 @@
+# Ícones dos itens (V6) — Ferramentas e armas (as mesmas peças do kit humano). Um modelo por item (itens/modelos.py, função = id do item);
+# cada elemento vira assets/arte/itens/<id>.png, 32×32 px de arte, e o asset icone.<id>.
+# elev = elevação da câmera do ícone (graus); pose = giro do item [rx, ry, rz] (graus).
+tipo: itens
+id: itens_equipamento
+lado: 32
+ancora: [16, 31]
+recortar: false
+manifesto:
+  - {id: icone.martelo, folhas: [martelo]}
+  - {id: icone.faca, folhas: [faca]}
+  - {id: icone.machadinha, folhas: [machadinha]}
+  - {id: icone.cajado, folhas: [cajado]}
+  - {id: icone.lanca_curta, folhas: [lanca_curta]}
+  - {id: icone.lamparina, folhas: [lamparina]}
+  - {id: icone.bolsa_cinto, folhas: [bolsa_cinto]}
+elementos:
+  - {nome: martelo, elev: 55, pose: [0, 0, 40]}
+  - {nome: faca, elev: 55, pose: [0, 0, 40]}
+  - {nome: machadinha, elev: 55, pose: [0, 0, 40]}
+  - {nome: cajado, elev: 50, pose: [0, 0, 40]}
+  - {nome: lanca_curta, elev: 50, pose: [0, 0, 40]}
+  - {nome: lamparina, elev: 20, pose: [0, 0, 0]}
+  - {nome: bolsa_cinto, elev: 20, pose: [0, 0, -20]}
+pixelizador: {ambiente: 0.40, difusa: 0.55, limiar_profundidade: 0.06}

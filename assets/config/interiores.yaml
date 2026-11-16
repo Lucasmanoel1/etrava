@@ -1,0 +1,12 @@
+# Casca dos cômodos (V6, SPEC-visual §7.4) — lida pelo cliente (render/CascaInterior.java).
+# Por área de interior:
+#   paredes  sufixo do conjunto de paredes da casa: prop.parede_x_lisa → prop.parede_x_lisa_<paredes>
+#            (tools/blender/interiores/paredes_<casa>.yaml); o ID do prop no mapa não muda.
+#   piso     terreno do mapa → piso desenhado (tile.<piso>); o som dos passos segue o terreno do mapa.
+# O cliente acrescenta as paredes da frente cortadas, o canto da frente e as pontas das paredes de
+# fundo em volta do piso, e desenha o piso com borda reta (sem a sangria irregular do chão de fora).
+# Área fora desta lista (estrutura, vila, estrada) não muda nada.
+oficina:   {paredes: oficina,    piso: {tabuas: piso_tabua}}
+taverna:   {paredes: taverna,    piso: {lajota: piso_lajota}}
+moinho:    {paredes: moinho,     piso: {lajota: piso_pedra}}
+curandeira: {paredes: curandeira, piso: {tabuas: piso_tabua_clara}}

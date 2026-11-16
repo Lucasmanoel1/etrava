@@ -1,0 +1,31 @@
+# Ícones dos itens (V6) — Materiais e mercadorias. Um modelo por item (itens/modelos.py, função = id do item);
+# cada elemento vira assets/arte/itens/<id>.png, 32×32 px de arte, e o asset icone.<id>.
+# elev = elevação da câmera do ícone (graus); pose = giro do item [rx, ry, rz] (graus).
+tipo: itens
+id: itens_materiais
+lado: 32
+ancora: [16, 31]
+recortar: false
+manifesto:
+  - {id: icone.sal_medicinal, folhas: [sal_medicinal]}
+  - {id: icone.farinha, folhas: [farinha]}
+  - {id: icone.ferro, folhas: [ferro]}
+  - {id: icone.pregos, folhas: [pregos]}
+  - {id: icone.lenha, folhas: [lenha]}
+  - {id: icone.couro, folhas: [couro]}
+  - {id: icone.corda, folhas: [corda]}
+  - {id: icone.ervas, folhas: [ervas]}
+  - {id: icone.oleo, folhas: [oleo]}
+  - {id: icone.pele_lobo, folhas: [pele_lobo]}
+elementos:
+  - {nome: sal_medicinal, elev: 40, pose: [0, 0, 0]}
+  - {nome: farinha, elev: 25, pose: [0, 0, 0]}
+  - {nome: ferro, elev: 40, pose: [0, 0, 20]}
+  - {nome: pregos, elev: 60, pose: [0, 0, 0]}
+  - {nome: lenha, elev: 30, pose: [0, 0, -55]}
+  - {nome: couro, elev: 45, pose: [0, 0, 35]}
+  - {nome: corda, elev: 50, pose: [0, 0, 0]}
+  - {nome: ervas, elev: 60, pose: [0, 0, 35]}
+  - {nome: oleo, elev: 20, pose: [0, 0, 0]}
+  - {nome: pele_lobo, elev: 65, pose: [0, 0, 0]}
+pixelizador: {ambiente: 0.40, difusa: 0.55, limiar_profundidade: 0.06}
