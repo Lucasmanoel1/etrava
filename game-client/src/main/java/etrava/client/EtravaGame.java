@@ -1698,6 +1698,11 @@ public final class EtravaGame extends ApplicationAdapter {
                 ui.showDeath(lines, saves);
                 return "";
             }
+            case "rendido": { // a folha de decidir sobre um rendido (depuração, capturas); nada acontece com ninguém
+                fecharTudo();
+                ui.showResolve("teste", "Salteador", "Chega. Eu me rendo, deixa eu ir.");
+                return "";
+            }
             case "documento": {
                 var docs = content.items().values().stream().filter(i -> i.document()).map(i -> i.id()).toList();
                 if (p.length < 2 || !docs.contains(p[1])) return "documentos: " + String.join(", ", docs);

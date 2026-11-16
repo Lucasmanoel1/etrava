@@ -9,6 +9,10 @@ cenas:
   - {nome: mochila, tela: mochila, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "dar pao 2", "dar faca", "dar camisa_linho", "dar papeis_avel", "equipar faca", "mochila"]}
   - {nome: ficha, tela: ficha, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "ficha"]}
   - {nome: caderno, tela: caderno, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "caderno 0"]}
+  - {nome: caderno_vi, tela: caderno_vi, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "vt08 caderno", "caderno 1"]}
+  - {nome: caderno_pessoas, tela: caderno_pessoas, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "caderno 2"]}
+  - {nome: caderno_lugares, tela: caderno_lugares, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "caderno 3"]}
+  - {nome: caderno_documentos, tela: caderno_documentos, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "dar papeis_avel", "caderno 4"]}
   - {nome: mapa, tela: mapa, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "mapa"]}
   - {nome: conteiner, tela: conteiner, area: taverna, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 12", "conteiner barris_taverna"]}
   - {nome: pausa, tela: pausa, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "pausa"]}
@@ -22,6 +26,7 @@ cenas:
   - {nome: epilogo, tela: epilogo, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "epilogo"]}
   - {nome: derrota, tela: derrota, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "derrota"]}
   - {nome: morte, tela: morte, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "morte"]}
+  - {nome: rendido, tela: rendido, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "rendido"]}
   - {nome: documento, tela: documento, area: vila, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 10", "documento papeis_avel"]}
   # massa do VT-08 (80 itens, 60 fatos, 12 opções), só na tela
   - {nome: vt08_comercio, tela: vt08_comercio, area: taverna, tamanhos: [[1280, 720], [1920, 1080], [3840, 2160]], cmds: ["hora 12", "vt08 comercio"]}
