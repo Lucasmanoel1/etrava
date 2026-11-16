@@ -121,7 +121,7 @@ public final class TelaComercio {
         Table abas = new Table();
         abas.left();
         for (String nome : ABAS) {
-            TextButton b = new TextButton(c.texts.get("comercio.aba." + nome), c.estiloAba);
+            TextButton b = new TextButton(c.texts.get("comercio.aba." + nome), c.tema.aba);
             b.setChecked(nome.equals(aba));
             b.addListener(new ClickListener() {
                 @Override

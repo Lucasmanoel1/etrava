@@ -61,6 +61,7 @@ public final class MenuUi implements Disposable {
     private final Settings settings;
     private final Actions actions;
     private final Tema tema;
+    private final boolean donoDoTema;
     private final Ui ui;
     private final MenuFx fx = new MenuFx(7);
     private final Label.LabelStyle title, subtitle;
@@ -80,6 +81,12 @@ public final class MenuUi implements Disposable {
      */
     public MenuUi(BitmapFont font, BitmapFont overlayFont, BitmapFont titleFont, Assets assets, Texts texts,
             Settings settings, Actions actions) {
+        this(null, font, overlayFont, titleFont, assets, texts, settings, actions);
+    }
+
+    /** Sobre um tema compartilhado (quem o criou o descarta). */
+    public MenuUi(Tema compartilhado, BitmapFont font, BitmapFont overlayFont, BitmapFont titleFont, Assets assets, Texts texts,
+            Settings settings, Actions actions) {
         this.font = font;
         this.texts = texts;
         this.settings = settings;
@@ -89,12 +96,9 @@ public final class MenuUi implements Disposable {
         px.fill();
         white = new Texture(px);
         px.dispose();
-        tema = new Tema(assets.root(), assets.manifest(), font);
+        donoDoTema = compartilhado == null;
+        tema = compartilhado != null ? compartilhado : new Tema(assets.root(), assets.manifest(), font);
         ui = new Ui(tema);
-        Color clara = tema.cor("tinta_clara"); // botão de madeira escura: letra clara
-        tema.botao.fontColor = clara;
-        tema.botao.overFontColor = clara;
-        tema.botao.downFontColor = clara;
         title = new Label.LabelStyle(titleFont, tema.cor("tinta_clara"));
         subtitle = new Label.LabelStyle(overlayFont, tema.cor("tinta_clara"));
         root.setFillParent(true);
@@ -505,7 +509,7 @@ public final class MenuUi implements Disposable {
     public void dispose() {
         stage.dispose();
         fx.dispose();
-        tema.dispose();
+        if (donoDoTema) tema.dispose();
         white.dispose();
     }
 }

@@ -113,7 +113,7 @@ public final class TelaConversa {
 
         Table caixa = c.ui.fundo("ui.pergaminho");
         Table cabeca = new Table();
-        cabeca.add(new Label(d.speakerName(), tema.ferrugem)).left();
+        cabeca.add(new Label(d.speakerName(), tema.titulo)).left();
         cabeca.add().growX();
         caixa.add(cabeca).growX().row();
         caixa.add(c.ui.divisoria()).growX().padTop(1).padBottom(3).row();

@@ -5,7 +5,7 @@
 ## Estado atual
 - **Fase atual:** **V — revisão visual** (D-084). Documentos em `docs/visual/`.
 - **Marco atual:** **V7 — Interfaces** (`docs/visual/V7.md`). V6 aprovado pelo diretor em 2026-11-16 ("continue").
-- **Status:** **V7 em andamento: onda 1 de 3 concluída** (seção "V7 — em andamento", abaixo). Orquestrado com subagentes em Sonnet (D-134).
+- **Status:** **PARADO no fim do V7**, à espera da aprovação do diretor (seção "Parada do V7", abaixo). Feito por subagentes em Sonnet, em ondas, com o orquestrador integrando (D-134).
 - MVP: M0 a M7 concluídos; M8 com o trabalho de máquina concluído e a aprovação humana pendente (seção "Fechamento do M8", abaixo). As pendências do M8 não bloqueiam a Fase V.
 
 ## Fase V — visão rápida
@@ -18,7 +18,7 @@
 | V4 | Natureza e terreno | **concluído** (aprovado) |
 | V5 | Arquitetura e exteriores | **concluído** (aprovado) |
 | V6 | Interiores, objetos e itens | **concluído** (aprovado) |
-| V7 | Interfaces | **em andamento** (onda 1 feita) |
+| V7 | Interfaces | **concluído; aguarda aprovação** |
 | V8 | Acabamento e entrega — **portão final** | — |
 
 ## Feito no V1
@@ -35,35 +35,52 @@
 - **`STYLE.md` v3**, decisões D-091 a D-097, D-086 atualizada.
 - **Testes:** `gradlew build` com **152 testes** (145 + 7 do pixelizador), validador sem erros; `gradlew vt03` **112/112**; **VT-16**: refazer a fatia inteira do zero (`renderArt -Pforce`) dá os mesmos bytes.
 
-## V7 — em andamento (2026-11-16)
-**Onda 1, feita:**
-- **Tema** (D-135): 43 peças em `assets/ui/` por `gradlew :tools:generateUi`; prancha em `docs/capturas/v7/prancha_tema.png`.
-- **Base do cliente** (D-136), em `game-client/.../ui/`: `Escala`, `Tema`, `Ui`, `Foco`; como usar: `package-info.java`. A **Ficha** é a tela piloto no tema novo.
-- **Verificação:** `LimitesUi` (VT-09 automático), captura em resolução verdadeira, comandos de console para abrir cada tela, `vt08` (80 itens, 60 fatos, 12 opções), roteiros `v7_telas` (parada) e `v7_vt09` (18 telas × 8 resoluções × 3 textos).
-  - Uma tela só: `gradlew :game-client:captures -Proteiro=v7_telas -Pso=ficha` (`-Pestrito` falha se houver problema de limite).
-- `gradlew build` verde, validador sem avisos; Ficha conferida a olho em 1280×720 e 1920×1080.
+## V7 — Interfaces (2026-11-16)
+**Feito:**
+- **Tema** (D-135): peças em `assets/ui/` por `gradlew :tools:generateUi`, pixel a pixel na paleta (madeira com cantoneiras de ferro, pergaminho, couro, botões nos 4 estados, abas-fita, rolagem, molduras, barras, livro, documento, bilhete, balões, ícones, 6 cursores). Prancha: `docs/capturas/v7/prancha_tema.png`.
+- **Base** (D-136), em `game-client/.../ui/`: `Escala` (inteira por resolução), `Tema` (um só, criado no `EtravaGame`), `Ui`, `Foco` (teclado), `Hud`; como montar uma tela: `package-info.java`. Letra de título própria nos painéis.
+- **Telas**, todas no tema novo, uma classe por tela em `ui/telas/` (o tema antigo saiu do código):
+  - menu principal com névoa, brasas e fumaça; novo jogo; opções; salvar/carregar em cartões; pausa;
+  - HUD: plaquinha de couro com sol/lua, dia, hora e bolsa; vida e fôlego em barras com ícone; avisos como bilhetes; balões; barras dos inimigos e números de dano;
+  - conversa com retrato emoldurado e opções numeradas; comércio e contêiner com abas por categoria e dica do item; mochila em grade, com o **boneco vestido** e os encaixes de equipamento; ficha;
+  - caderno em livro aberto (lista à esquerda, detalhe à direita, abas-fita); documento; mapa emoldurado; epílogo, derrota, morte, "resolver";
+  - console de depuração no tema.
+- **Teclado** em toda tela (setas, Tab, Enter, Esc; foco visível). **Cursores** ligados aos alvos do mundo (D-137).
+- **Verificação:**
+  - `gradlew build` verde, validador sem avisos (VT-04 inclui `assets/ui/`);
+  - **VT-08:** teste automático com 80 itens no comércio, 60 fatos no caderno e 12 opções na conversa (roda, teclado, último item visível);
+  - **VT-09:** `v7_vt09 -Pestrito`, 18 telas × 8 resoluções × 3 tamanhos de texto = 432 cenas, **0 problemas** de limite; capturas olhadas por amostra (o que não foi aberto está em "Problemas conhecidos");
+  - `--bench=10 --area=vila`: 369 FPS de média, 1 % pior 224, 159 chamadas (antes do passe final, na mesma condição: 363 / 220 / 159).
+- **Dreamina:** nenhum crédito.
 
-**Próximo passo — onda 2, as telas** (uma classe por grupo, nunca dois agentes compilando o `game-client` ao mesmo tempo sem combinar):
-1. Tirar as telas de `GameUi`/`MenuUi` para classes próprias (`ui/telas/`) e refazer sobre `Ui`/`Tema`: menu principal, novo jogo, opções, salvar/carregar, pausa; HUD (hoje em pixels no `EtravaGame`), avisos e balões; conversa; comércio e contêiner; mochila com o boneco vestido; caderno em livro aberto e documento; mapa; epílogo, derrota, morte; console.
-2. Foco por teclado em todas; cursores ligados aos alvos do mundo.
-3. `v7_vt09` inteiro com `-Pestrito`; capturas da parada; GIF do menu; `docs/TESTES_MANUAIS.md`.
+## Parada do V7 — o que olhar
+- `docs/capturas/v7/prancha_tema.png` (as peças), `docs/capturas/v7/menu.gif`.
+- `docs/capturas/v7/telas/`: cada tela em 1280×720, 1920×1080 e 3840×2160 (`menu`, `novo`, `opcoes`, `salvar`, `carregar`, `pausa`, `conversa`, `comercio`, `conteiner`, `mochila`, `ficha`, `caderno*`, `documento`, `mapa`, `epilogo`, `derrota`, `morte`, `rendido`, `vt08_*`).
+- `docs/capturas/v7/hud/`: dia, noite, avisos, balões nos três zooms, luta, console.
+- No jogo: `gradlew run` (IntelliJ: Gradle → ETRAVA → Tasks → application → run). I mochila, C ficha, J caderno, M mapa; fale com alguém; F1 → `comercio posto`, `vt08 tudo`.
+- Roteiros: `gradlew :game-client:captures -Proteiro=v7_telas -Pso=mochila` (uma tela), `-Proteiro=v7_vt09 -Pestrito` (tudo, ~9 min), `-Proteiro=v7_hud`. GIF: `-Pso=menu_gif` e depois `gradlew :tools:menuGif`.
+- Roteiro manual: `docs/TESTES_MANUAIS.md`, seção "Fase V — V7 (interface)".
 
-**Onda 2 em curso (lançada em 2026-11-16, 12h50) — para retomar depois de um `/clear`:**
-- Três subagentes em Sonnet. Nenhum faz commit no `main`; o orquestrador junta.
-  - **Telas de jogo, parte 1** (conversa, comércio, contêiner, mochila com boneco): na árvore principal, sem commit; classes novas em `game-client/.../ui/telas/`. Agente `a7c0899d2b096e626`.
-  - **Menus** (`MenuUi`, GIF do menu): cópia `.claude/worktrees/agent-aa355f027c076cabc`, ramo `worktree-agent-aa355f027c076cabc`; faz um commit no próprio ramo ao terminar.
-  - **HUD, avisos, balões, cursores, console** (`Hud.java`, `EtravaGame`): cópia `.claude/worktrees/agent-a3bb8675156f6a01f`, ramo `worktree-agent-a3bb8675156f6a01f`; idem.
-- **Como retomar:** `git status` na árvore principal e `git log -1`/`git status` em cada cópia mostram até onde cada um foi. Se um parou no meio (limite de uso), mande-o continuar por `SendMessage` com o ID acima; se não responder, lance outro com a mesma tarefa, pedindo que comece pelo que já está no disco.
-- **Depois:** (1) conferir e commitar a parte 1; (2) parte 2 das telas de jogo na árvore principal: caderno em livro aberto (`ui.livro_esq/dir`, abas-fita), documento, mapa, epílogo, derrota, morte; (3) `git merge` dos dois ramos (conflito provável só em `EtravaGame.java`) e `git worktree remove`; (4) passe no tema: letra de título, trama escura, tom do bilhete, peças que os agentes pedirem; (5) `v7_vt09` inteiro com `-Pestrito`, capturas da parada em `docs/capturas/v7/`, `docs/TESTES_MANUAIS.md`, parada do marco.
+**A aprovar:**
+1. **O tema** (é o que o jogador vê em toda tela): madeira, pergaminho com trama, couro, letra de título.
+2. O caderno em livro aberto: um clique escolhe a anotação, o segundo (ou Enter, ou o botão) marca. Antes um clique já marcava.
+3. O HUD sem número permanente de vida (aparece com o mouse em cima e quando a vida muda).
+4. D-134 a D-137.
 
-**Pendências conhecidas da onda 1:**
-- `opcoes` e `novo` (telas antigas) passam da altura em 1080p e 4K: 13 problemas no relatório de limites.
-- O título dos painéis usa a letra do texto; falta uma letra de título.
-- `ui.papel_trama_escuro` tem pontilhado visível demais sob texto; o bilhete está amarelo demais; documento e balão têm o mesmo tom do painel.
-- Em 720p (k=1) a moldura de madeira fica fina; em 1080p (k=2) fica no ponto.
-- O `Foco` consome as setas: num painel com foco elas não rolam a lista (PgUp/PgDn rolam).
-- O título do menu (`fonte.titulo`) ainda não acompanha a altura da tela.
-- A checagem de reticências do `LimitesUi` lê um campo privado do `Label` por reflexão.
+**Problemas conhecidos do V7:**
+- **O critério "eu joguei uma conversa, uma troca longa, a mochila e o caderno em 720p e em 4K" não foi cumprido por jogo de verdade:** foi por captura e por teste automático. Precisa de alguém jogando.
+- **Cursores nunca vistos:** captura de tela não mostra o cursor do sistema. Conferir jogando.
+- **Miniatura dos saves** não vista com imagem real (os saves das capturas não têm miniatura).
+- **Balão com cauda à direita** (`ui.balao_dir`) só conferido pelo código: nenhuma captura tem alguém falando junto à borda direita.
+- Capturas não abertas uma a uma: menu em 4K, console, documento, epílogo, derrota, morte, "rendido"; a aba Pessoas do caderno só foi vista vazia.
+- O bilhete de aviso cobre o canto de cima à direita dos painéis grandes.
+- A trama do pergaminho aparece como manchas pontilhadas nos painéis grandes; discreta, mas visível.
+- No comércio, esquerda/direita andam em linha, sem pular de uma coluna para a outra; com poucos itens, uma coluna fica vazia.
+- Na mochila os encaixes em volta do boneco ficam soltos no quadro; a quantidade do item é pequena em 720p.
+- Em 720p (escala 1) a moldura de madeira fica fina; em 1080p fica no ponto.
+- Não há comando de largar item no núcleo, então a mochila não tem "largar". Não existe aba "diário": o caderno mantém as 5 abas do jogo.
+- A janela de captura sem moldura (para 4K verdadeiro) só foi testada nesta máquina. A checagem de reticências do `LimitesUi` lê um campo privado do `Label`.
+- O GIF do menu tem 6 MB.
 
 ## V6 — Interiores, objetos e itens (2026-11-16)
 **Feito:**
@@ -475,7 +492,7 @@ O que olhar agora: `docs/capturas/v1/mata_perto.png`, `oficina_*`, `vila_*`, `vi
 - A interface não acompanha a resolução (VT-09, V7); barras de rolagem lisas (V7).
 
 ## Próximo passo
-V7, onda 2: as telas (seção "V7 — em andamento", acima).
+Com o ok do diretor no V7: V8, Acabamento e entrega (`docs/visual/V8.md`), o portão final.
 
 ---
 

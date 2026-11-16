@@ -155,6 +155,16 @@ tasks.register<JavaExec>("sheets") {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
+tasks.register<JavaExec>("menuGif") {
+    group = "assets"
+    description = "Refaz docs/capturas/v7/menu.gif da sequência da cena menu_gif (gradlew :game-client:captures -Proteiro=v7_telas -Pso=menu_gif)."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("etrava.tools.art.pixel.MontarGif")
+    args(rootProject.file("docs/capturas/v7/telas/menu_gif_seq").absolutePath, rootProject.file("docs/capturas/v7/menu.gif").absolutePath, "15")
+    jvmArgs("-Dstdout.encoding=UTF-8", "-Djava.awt.headless=true")
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
 tasks.register<Exec>("blenderTeste") {
     group = "verification"
     description = "Teste do pipeline: o cubo de 1 m renderizado cai exatamente no losango de um tile (precisa do Blender)."

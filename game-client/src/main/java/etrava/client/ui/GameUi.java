@@ -41,6 +41,7 @@ public final class GameUi implements Disposable {
     private final Texts texts;
     /** O tema novo (V7) e os utilitários de tela. */
     private final Tema tema;
+    private final boolean donoDoTema;
     private final Ui ui;
     private final Contexto contexto;
 
@@ -63,15 +64,25 @@ public final class GameUi implements Disposable {
     private boolean notebookOpen;
 
     public GameUi(BitmapFont font, Assets assets, ContentDb content, Texts texts) {
-        this(font, assets, content, texts, new UiStage(new ScreenViewport()));
+        this(null, font, assets, content, texts, new UiStage(new ScreenViewport()));
+    }
+
+    /** Sobre um tema compartilhado (quem o criou o descarta). */
+    public GameUi(Tema tema, BitmapFont font, Assets assets, ContentDb content, Texts texts) {
+        this(tema, font, assets, content, texts, new UiStage(new ScreenViewport()));
     }
 
     /** O teste passa um Stage sem SpriteBatch (não há GL de verdade sem janela). */
     GameUi(BitmapFont font, Assets assets, ContentDb content, Texts texts, Stage stage) {
+        this(null, font, assets, content, texts, stage);
+    }
+
+    private GameUi(Tema compartilhado, BitmapFont font, Assets assets, ContentDb content, Texts texts, Stage stage) {
         this.stage = stage;
+        this.donoDoTema = compartilhado == null;
         this.content = content;
         this.texts = texts;
-        tema = new Tema(assets.root(), assets.manifest(), font);
+        tema = compartilhado != null ? compartilhado : new Tema(assets.root(), assets.manifest(), font);
         ui = new Ui(tema);
         Contexto ctx = new Contexto(stage, tema, ui, assets, content, texts);
         conversa = new TelaConversa(ctx);
@@ -337,6 +348,6 @@ public final class GameUi implements Disposable {
     @Override
     public void dispose() {
         stage.dispose();
-        tema.dispose();
+        if (donoDoTema) tema.dispose();
     }
 }

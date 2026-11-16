@@ -42,6 +42,11 @@ public final class Fonts {
         return make("fonte.texto", Math.round(BASE_SIZE * scale * k), false, scale, k);
     }
 
+    /** Título de painel e de tela: a fonte de título do jogo a 1,35 vezes o texto, sem sombra (tinta de ferrugem sobre papel). */
+    public BitmapFont panelTitle(float scale, int k) {
+        return make("fonte.titulo", Math.round(BASE_SIZE * scale * k * 1.35f), false, scale * 1.35f, k);
+    }
+
     /** Texto solto sobre o cenário (relógio, avisos, balões): com uma sombra escura, para ler sobre qualquer fundo. */
     public BitmapFont overlay(float scale) {
         return overlay(scale, 1);

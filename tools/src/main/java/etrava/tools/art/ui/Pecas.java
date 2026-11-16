@@ -24,7 +24,8 @@ final class Pecas {
         l.add(nove("pergaminho_escuro", pergaminhoEscuro(24, 24), 4, 5));
         l.add(nove("couro", couro(32, 32), 8, 8));
         l.add(nove("bilhete", bilhete(40, 28), 7, 8));
-        l.add(new Peca("ui.balao", balao(48, 32), new int[] {20, 8, 8, 12}, new int[] {8, 8, 6, 10}, null));
+        l.add(new Peca("ui.balao", balao(48, 32), new int[] {20, 8, 8, 12}, new int[] {11, 11, 9, 12}, null));
+        l.add(new Peca("ui.balao_dir", espelhar(balao(48, 32)), new int[] {8, 20, 8, 12}, new int[] {11, 11, 9, 12}, null));
         l.add(nove("dica", dica(24, 20), 5, 6));
         l.add(new Peca("ui.livro_esq", livro(56, 56, true), new int[] {14, 8, 12, 12}, new int[] {17, 10, 14, 14}, null));
         l.add(new Peca("ui.livro_dir", livro(56, 56, false), new int[] {8, 14, 12, 12}, new int[] {10, 17, 14, 14}, null));
@@ -37,8 +38,8 @@ final class Pecas {
         l.add(new Peca("ui.botao_press", botao(32, 24, 2), new int[] {6, 6, 6, 6}, new int[] {8, 8, 5, 4}, null));
         l.add(new Peca("ui.botao_desativado", botao(32, 24, 3), new int[] {6, 6, 6, 6}, new int[] {8, 8, 4, 5}, null));
         // abas-fita
-        l.add(new Peca("ui.aba", aba(48, 22, false), new int[] {4, 10, 10, 10}, new int[] {6, 10, 3, 3}, null));
-        l.add(new Peca("ui.aba_ativa", aba(50, 22, true), new int[] {4, 10, 10, 10}, new int[] {6, 10, 3, 3}, null));
+        l.add(new Peca("ui.aba", aba(48, 22, false), new int[] {4, 10, 10, 10}, new int[] {6, 15, 3, 3}, null));
+        l.add(new Peca("ui.aba_ativa", aba(50, 22, true), new int[] {4, 10, 10, 10}, new int[] {6, 15, 3, 3}, null));
         // rolagem
         l.add(new Peca("ui.rolagem_trilho", trilho(10, 20), new int[] {0, 0, 5, 5}, new int[] {0, 0, 0, 0}, null));
         l.add(new Peca("ui.rolagem_pegador", pegador(10, 24), new int[] {0, 0, 5, 5}, new int[] {0, 0, 0, 0}, null));
@@ -64,6 +65,14 @@ final class Pecas {
         l.add(simples("sol", sol(18)));
         l.add(simples("lua", lua(18)));
         l.add(simples("bolsa", bolsa(18)));
+        l.add(simples("vida", vida(12)));
+        l.add(simples("folego", folego(12)));
+        // silhuetas dos encaixes de equipamento vazios (boneco da mochila)
+        l.add(simples("encaixe_cabeca", silhueta(0)));
+        l.add(simples("encaixe_corpo", silhueta(1)));
+        l.add(simples("encaixe_mao", silhueta(2)));
+        l.add(simples("encaixe_mao2", silhueta(3)));
+        l.add(simples("encaixe_acessorio", silhueta(4)));
         // cursores
         l.add(cursor("apontar", cursorApontar(), 1, 1));
         l.add(cursor("falar", cursorFalar(), 16, 16));
@@ -84,6 +93,11 @@ final class Pecas {
 
     private static Peca cursor(String nome, Pix img, int px, int py) {
         return new Peca("ui.cursor_" + nome, img, null, null, new int[] {px, py});
+    }
+
+    /** A mesma imagem espelhada na horizontal (balão com a cauda à direita). */
+    private static Pix espelhar(Pix o) {
+        return Pix.de(o.w, o.h, (x, y) -> o.get(o.w - 1 - x, y));
     }
 
     private static int hash(int x, int y, int s) {
@@ -183,14 +197,14 @@ final class Pecas {
             int dt = y, dl = x, db = h - 1 - y, dr = w - 1 - x, d = Math.min(Math.min(dt, db), Math.min(dl, dr));
             if (dr + dt <= 2) return 0;
             if (dr + dt == 3) return Q2;
-            if (dr + dt <= 6 && dr < 7 && dt < 7) return T5;   // a dobra do canto
-            if (d == 0) return T3;
-            if (d == 1) return (db == 1 || dr == 1) ? PA : PA5;
+            if (dr + dt <= 6 && dr < 7 && dt < 7) return P1;   // a dobra do canto
+            if (d == 0) return G5;
+            if (d == 1) return (db == 1 || dr == 1) ? P1 : PA5;
             boolean canto = (x < 7 || x >= w - 7) && (y < 7 || y >= h - 7);
             int hs = hash(x, y, 13);
-            if (canto && hs % 11 == 0) return T5;     // manchas discretas nos cantos
-            if (canto && hs % 23 == 1) return P2;
-            return PA5;
+            if (canto && hs % 11 == 0) return P2;     // manchas discretas nos cantos
+            if (canto && hs % 23 == 1) return G8;
+            return P3;
         });
     }
 
@@ -339,10 +353,17 @@ final class Pecas {
 
     // ------------------------------------------------------------------ botões e abas
 
-    /** estado: 0 normal, 1 sobre, 2 pressionado, 3 desativado. O pressionado desce 1 px e perde a sombra. */
+    /**
+     * estado: 0 normal, 1 sobre, 2 pressionado, 3 desativado. O pressionado desce 1 px e perde a sombra.
+     * Acabamento: chanfro de 1 px mais claro em cima, dois veios discretos (linhas inteiras, que esticam sem
+     * emenda) na faixa fixa de cima e de baixo e um rebite de ferro em cada canto, dentro do split.
+     */
     private static Pix botao(int w, int h, int estado) {
         int corpo = switch (estado) { case 0 -> M3; case 1 -> L3; case 2 -> T2; default -> G3; };
         int luz = switch (estado) { case 0 -> L3; case 1 -> L4; case 2 -> M3; default -> G4; };
+        int chanfro = switch (estado) { case 0 -> M6; case 1 -> T5; case 2 -> M4; default -> G5; };
+        int veio = switch (estado) { case 0 -> M2; case 1 -> M4; case 2 -> M2; default -> Q2; };
+        int rebite = estado == 3 ? G5 : F4, rebiteSombra = estado == 3 ? G4 : F2;
         int baixo = estado == 3 ? Q2 : Q1;
         int borda = estado == 3 ? Q2 : Q;
         int top = estado == 2 ? 1 : 0;          // linha de cima do corpo
@@ -354,8 +375,10 @@ final class Pecas {
             int cx = Math.min(dl, dr), cy = Math.min(dt, db);
             if (cx + cy == 0) return 0;
             if (d == 0 || cx + cy == 1) return borda;
-            if (d == 1) return dt == 1 ? luz : (db == 1 ? baixo : (dl == 1 ? luz : corpo));
+            if (cx >= 2 && cx <= 3 && cy >= 2 && cy <= 3) return cx == 2 && cy == 2 ? rebite : rebiteSombra;   // rebites
+            if (d == 1) return dt == 1 ? (cx >= 2 ? chanfro : luz) : (db == 1 ? baixo : (dl == 1 ? luz : corpo));
             if (estado == 1 && d == 2 && dt == 2) return luz;
+            if ((dt == 4 || db == 4) && cx >= 5) return veio;
             return corpo;
         });
     }
@@ -561,6 +584,107 @@ final class Pecas {
         p.set(8, 11, LA4);
         p.set(9, 11, LA3);
         return p;
+    }
+
+    /** Coração sóbrio (vida), 12×12, na altura da barra. */
+    private static Pix vida(int n) {
+        Forma f = new Forma(n, n, R3, R1);
+        f.outline = Q;
+        f.ascii(1, 2,
+                ".oo...oo.",
+                "ooooooooo",
+                "ooooooooo",
+                "ooooooooo",
+                ".ooooooo.",
+                "..ooooo..",
+                "...ooo...",
+                "....o....");
+        Pix p = f.renderizar();
+        p.set(2, 3, R4);
+        p.set(3, 3, R4);
+        p.set(2, 4, R4);
+        return p;
+    }
+
+    /** Pulmões e traqueia (fôlego), 12×12. */
+    private static Pix folego(int n) {
+        Forma f = new Forma(n, n, O5, O3);
+        f.outline = Q;
+        f.ascii(1, 1,
+                "....oo....",
+                "....oo....",
+                ".oooooooo.",
+                "oooo..oooo",
+                "oooo..oooo",
+                "oooo..oooo",
+                "oooo..oooo",
+                ".ooo..ooo.",
+                "..oo..oo..");
+        Pix p = f.renderizar();
+        p.set(2, 4, PA5);
+        p.set(2, 5, PA5);
+        p.set(8, 4, PA5);
+        return p;
+    }
+
+    /** Silhueta discreta (um degrau abaixo do encaixe, sem contorno) do que o encaixe do boneco guarda. */
+    private static Pix silhueta(int quem) {
+        Forma f = new Forma(32, 32, P0, P0);
+        f.outline = 0;
+        switch (quem) {
+            case 0 -> {   // cabeça: elmo com a fresta dos olhos
+                f.elipse(15.5, 14, 8.5, 9.5);
+                f.rect(7, 14, 24, 24);
+                f.tira(7, 24, 8, 24);
+                f.tira(23, 24, 24, 24);
+                f.tira(9, 15, 22, 17);
+                f.rect(15, 15, 16, 23);
+                f.tira(14, 25, 17, 31);
+            }
+            case 1 -> {   // corpo: túnica de mangas curtas
+                f.rect(7, 7, 24, 27);
+                f.rect(3, 8, 7, 17);
+                f.rect(24, 8, 28, 17);
+                f.tira(3, 8, 3, 8);
+                f.tira(28, 8, 28, 8);
+                f.tira(12, 7, 19, 10);
+                f.tira(14, 11, 17, 11);
+            }
+            case 2 -> {   // mão principal: espada na diagonal
+                for (int i = 0; i <= 14; i++) {
+                    f.px(23 - i, 4 + i);
+                    f.px(24 - i, 4 + i);
+                    f.px(22 - i, 4 + i);
+                }
+                for (int t = -5; t <= 5; t++) {
+                    f.px(10 + t, 17 + t);
+                    f.px(11 + t, 17 + t);
+                }
+                for (int i = 0; i <= 5; i++) {
+                    f.px(9 - i, 19 + i);
+                    f.px(8 - i, 19 + i);
+                }
+                f.rect(2, 25, 4, 27);
+            }
+            case 3 -> {   // mão secundária: escudo
+                f.rect(6, 5, 25, 16);
+                for (int y = 17; y <= 28; y++) {
+                    int meia = (int) Math.round(10 - (y - 16) * 0.8);
+                    f.rect(16 - meia, y, 15 + meia, y);
+                }
+                f.tira(15, 9, 16, 22);
+                f.tira(10, 13, 21, 14);
+            }
+            default -> {  // acessório: pingente num cordão
+                for (int i = 0; i <= 12; i++) {
+                    f.px(7 + i, 3 + i);
+                    f.px(24 - i, 3 + i);
+                }
+                f.elipse(15.5, 22, 5, 5.5);
+                f.tira(15, 21, 16, 22);
+            }
+        }
+        return f.renderizar();
     }
 
     // ------------------------------------------------------------------ cursores (32×32)

@@ -1,6 +1,8 @@
 package etrava.client.ui;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -12,7 +14,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextTooltip;
 import com.badlogic.gdx.scenes.scene2d.ui.Tooltip;
 import com.badlogic.gdx.scenes.scene2d.ui.TooltipManager;
+import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import java.util.Locale;
 
 /**
@@ -95,15 +100,43 @@ public final class Ui {
      */
     public Table painel(String titulo) {
         Table t = new Table();
-        t.setBackground(tema.peca("ui.painel_madeira"));
+        t.setBackground(painelComTrama());
         int[] p = tema.pad("ui.painel_madeira");
         t.pad(p[2], p[0], p[3], p[1]);
         t.top().left();
         if (titulo != null) {
-            t.add(new Label(titulo, tema.ferrugem)).left().growX().row();
+            t.add(new Label(titulo, tema.titulo)).left().growX().row();
             t.add(divisoria()).growX().padTop(2).padBottom(6).row();
         }
         return t;
+    }
+
+    private Drawable painelTrama;
+
+    /**
+     * O fundo do painel: a moldura de madeira e, por baixo do conteúdo e dentro dela, a trama do pergaminho
+     * ({@code ui.papel_trama}) ladrilhada sem esticar, para o miolo não ser uma cor chapada.
+     */
+    private Drawable painelComTrama() {
+        if (painelTrama != null) return painelTrama;
+        Drawable moldura = tema.peca("ui.painel_madeira");
+        Drawable trama = tema.peca("ui.papel_trama");
+        if (!(trama instanceof TextureRegionDrawable regiao) || regiao.getRegion().getTexture() == null) return painelTrama = moldura;
+        Texture textura = regiao.getRegion().getTexture();
+        textura.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        float larg = regiao.getRegion().getRegionWidth(), alt = regiao.getRegion().getRegionHeight();
+        BaseDrawable d = new BaseDrawable() {
+            @Override
+            public void draw(Batch batch, float x, float y, float w, float h) {
+                moldura.draw(batch, x, y, w, h);
+                // por dentro da madeira e da sombra que ela joga no papel (13 px em cima e à esquerda, 12 embaixo e à direita)
+                float ix = x + 13, iy = y + 12, iw = w - 25, ih = h - 25;
+                if (iw > 0 && ih > 0) batch.draw(textura, ix, iy, iw, ih, 0f, ih / alt, iw / larg, 0f);
+            }
+        };
+        d.setMinWidth(moldura.getMinWidth());
+        d.setMinHeight(moldura.getMinHeight());
+        return painelTrama = d;
     }
 
     /** Tabela com o fundo e o recuo de uma peça do tema (pergaminho, couro, bilhete, balão…). */

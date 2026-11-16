@@ -78,7 +78,7 @@ public final class TelaPagina {
         float alturaMax = c.ui.altura(stage, 0.94f, 40);
         float interno = largura - p[0] - p[1] - 2 * respiro - 12; // 12: a barra de rolagem
 
-        Label cabeca = new Label(titulo, tema.ferrugem);
+        Label cabeca = new Label(titulo, tema.titulo);
         cabeca.setWrap(true);
         pagina.add(cabeca).growX().row();
         pagina.add(c.ui.divisoria()).growX().padTop(2).padBottom(6).row();

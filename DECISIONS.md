@@ -1062,3 +1062,14 @@ Decisões marcadas **[A APROVAR]** ainda dependem do usuário.
 - **Decisão:** `Escala`: k = max(1, ⌊altura/540⌋), Stages com `unitsPerPixel = 1/k` (SPEC-visual §8.2). A letra é gerada no tamanho físico 19 × altura/720 × tamanho de texto e entra no Stage com 1/k; o HUD, em pixels, usa o mesmo tamanho físico. Fontes e telas são refeitas quando a altura da janela muda.
 - **Motivo:** na primeira versão a letra era 19 × k: em 1080p saía 33 % maior que em 720p e o painel tomava a tela.
 - **Captura em resolução verdadeira:** a janela de captura vai sem moldura e sem redimensionar; assim o Windows não a encolhe ao monitor e 3840×2160 sai exato. Testado só nesta máquina.
+
+## D-137 — Telas do V7: uma classe por tela, HUD próprio, um tema só
+- **Data:** 2026-11-16
+- **Decisão:**
+  - Cada tela saiu de `GameUi`/`MenuUi` para `ui/telas/` (`GameUi` só delega; API pública mantida). O HUD saiu do `EtravaGame` para `Hud`, desenhado no Batch na mesma escala inteira das telas. Um `Tema` só, criado no `EtravaGame`.
+  - HUD sem número permanente de vida: aparece com o mouse em cima e por 2,5 s quando muda. Painel grande aberto esconde a plaquinha e as barras.
+  - Caderno: um clique escolhe a anotação e mostra o detalhe na página direita; o segundo clique, Enter ou o botão marca. Antes um clique marcava.
+  - Mantidas as 5 abas que o jogo tem (o `V7.md` falava em "diário", que não existe). Mochila sem "largar": o núcleo não tem o comando e o `core-sim` não muda por causa de interface.
+  - A trama do pergaminho é ladrilhada dentro da moldura dos painéis.
+  - Cursores do tema pelo alvo sob o mouse: falar, entrar, pegar, atacar, esperar (0,6 s ao salvar ou carregar), apontar.
+- **Paralelismo:** menus e HUD foram feitos em cópias isoladas (git worktree) e juntados; as telas de `GameUi`, em sequência na árvore principal. Um conflito só, no `Foco`.

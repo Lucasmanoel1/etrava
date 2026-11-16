@@ -35,12 +35,6 @@ public final class Contexto {
     /** Quem recebe os comandos das telas (comprar, vestir…); o {@code GameUi} o troca. */
     public Consumer<Command> comando = c -> { };
 
-    /**
-     * Botão e aba com letra clara: no tema, as duas peças são escuras (madeira, fita vermelha) e a letra padrão
-     * ({@code tinta}) some nelas. Enquanto o {@link Tema} não troca a cor, as telas daqui usam estes estilos.
-     */
-    public final TextButton.TextButtonStyle estiloBotao, estiloAba;
-
     public Contexto(Stage stage, Tema tema, Ui ui, Assets assets, ContentDb content, Texts texts) {
         this.stage = stage;
         this.tema = tema;
@@ -48,15 +42,10 @@ public final class Contexto {
         this.assets = assets;
         this.content = content;
         this.texts = texts;
-        estiloBotao = new TextButton.TextButtonStyle(tema.botao);
-        estiloBotao.fontColor = estiloBotao.overFontColor = estiloBotao.downFontColor = tema.cor("tinta_clara");
-        estiloAba = new TextButton.TextButtonStyle(tema.aba);
-        estiloAba.fontColor = tema.cor("tinta_clara");
-        estiloAba.checkedFontColor = estiloAba.downFontColor = new com.badlogic.gdx.graphics.Color(1f, 1f, 1f, 1f);
     }
 
     public TextButton botao(String texto, Runnable acao) {
-        TextButton b = new TextButton(texto, estiloBotao);
+        TextButton b = new TextButton(texto, tema.botao);
         b.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

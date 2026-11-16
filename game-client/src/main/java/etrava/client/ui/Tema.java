@@ -118,6 +118,8 @@ public final class Tema implements Disposable {
     private final Set<String> avisados = new HashSet<>();
 
     public final Label.LabelStyle tinta, tintaSuave, ferrugem, tintaClara, desativado;
+    /** Título de painel e de tela: a fonte de título do jogo (Alegreya SC) em ferrugem. */
+    public final Label.LabelStyle titulo;
     /** Botão com os quatro estados (normal, sobre, pressionado, desativado). */
     public final TextButton.TextButtonStyle botao;
     /** Aba: normal e marcada ({@code checked}). */
@@ -134,6 +136,13 @@ public final class Tema implements Disposable {
      * @param fonte     a fonte dos estilos (já na escala do Stage, {@link Fonts})
      */
     public Tema(Path raiz, AssetManifest manifesto, BitmapFont fonte) {
+        this(raiz, manifesto, fonte, null);
+    }
+
+    /**
+     * @param fonteTitulo a fonte dos títulos ({@link Fonts#panelTitle}, já na escala do Stage); null usa {@code fonte}
+     */
+    public Tema(Path raiz, AssetManifest manifesto, BitmapFont fonte, BitmapFont fonteTitulo) {
         this.raiz = raiz;
         this.manifesto = manifesto;
         this.fonte = fonte;
@@ -144,18 +153,20 @@ public final class Tema implements Disposable {
         ferrugem = new Label.LabelStyle(fonte, cor("ferrugem"));
         tintaClara = new Label.LabelStyle(fonte, cor("tinta_clara"));
         desativado = new Label.LabelStyle(fonte, cor("desativado"));
+        titulo = new Label.LabelStyle(fonteTitulo != null ? fonteTitulo : fonte, cor("ferrugem"));
 
         botao = new TextButton.TextButtonStyle(peca("ui.botao"), peca("ui.botao_press"), null, fonte);
         botao.over = peca("ui.botao_sobre");
         botao.disabled = peca("ui.botao_desativado");
-        botao.fontColor = c;
-        botao.overFontColor = c;
-        botao.downFontColor = c;
+        Color clara = cor("tinta_clara"); // botão e aba são de madeira escura e fita vermelha: letra clara
+        botao.fontColor = clara;
+        botao.overFontColor = clara;
+        botao.downFontColor = clara;
         botao.disabledFontColor = cor("desativado");
         aba = new TextButton.TextButtonStyle(peca("ui.aba"), peca("ui.aba_ativa"), peca("ui.aba_ativa"), fonte);
-        aba.fontColor = cor("tinta_suave");
-        aba.checkedFontColor = c;
-        aba.downFontColor = c;
+        aba.fontColor = clara;
+        aba.checkedFontColor = Color.WHITE; // a aba marcada se destaca das outras
+        aba.downFontColor = Color.WHITE;
 
         rolagem = new ScrollPane.ScrollPaneStyle();
         rolagem.vScroll = peca("ui.rolagem_trilho");

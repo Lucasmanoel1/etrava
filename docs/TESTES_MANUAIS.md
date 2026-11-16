@@ -111,3 +111,15 @@ Automáticos: `gradlew vt01` (zoom depois de fechar painéis), `gradlew vt03` (v
 4. `hora 21`: as três janelas da casa nova acendem; o aprendiz continua legível no escuro.
 5. Roda do mouse: zoom 1 a 4. Em 2 e 3, procure pixel sujo, contorno quebrado, cor fora do tom da vila.
 6. Compare com `docs/capturas/v1/antes_depois_*.png` e as folhas/GIFs em `docs/capturas/v1/folhas/`.
+
+## Fase V — V7 (interface)
+Janela de 1280×720 para o roteiro, e de novo em 3840×2160 onde indicado; `gradlew run` com o console (F1) para chegar rápido.
+1. [ ] Uma conversa curta (Marta, na taverna): o nome de quem fala em letra de título, balão acima de quem fala com a cauda apontando para ele (perto da borda direita da tela a cauda passa para o lado direito do balão), opções 1 a 9.
+2. [ ] Uma troca longa: comércio com muitos itens (`dar pao 1` várias vezes). As abas-fita mostram o texto inteiro antes do V; as colunas rolam; a plaquinha de dia e hora do canto some enquanto o painel está aberto.
+3. [ ] Mochila: vista e tire a camisa e a faca; o boneco muda a cada troca, e o encaixe esvaziado mostra a silhueta do que guarda (cabeça, corpo, mão, mão secundária, acessório). A vida e o fôlego aparecem com os ícones de coração e de pulmão.
+4. [ ] Caderno em 1280×720 e em 3840×2160 (`caderno` ou C): livro aberto, abas, lista e detalhe sem texto cortado, nada saindo da tela. Mesma conferência para mapa, ficha, opções, novo jogo, salvar e carregar.
+5. [ ] Cada tela só pelo teclado (sem tocar no mouse): Tab e setas andam, Enter ativa, Esc fecha; o contorno de foco sempre visível. Menu principal, pausa, opções, novo jogo, salvar/carregar, mochila, comércio, caderno, mapa, ficha, documento.
+6. [ ] Os seis cursores: falar sobre um NPC, entrar sobre uma porta, pegar sobre um contêiner, atacar sobre um inimigo, apontar sobre a interface e a ampulheta logo depois de salvar.
+7. [ ] Salve jogando (não por script): a miniatura do save em Carregar é a cena real daquele momento. A dica do documento diz apenas "Esc para fechar".
+8. [ ] Luta (`gradlew run`, perto de um inimigo): barra de vida do inimigo e números de dano no estilo do tema, na fonte da interface; um balão por cima da barra a cobre, nunca o contrário.
+9. [ ] AT-20 continua valendo: nenhum marcador de missão e nenhum imperativo no caderno nem nos avisos.

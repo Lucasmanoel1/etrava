@@ -148,7 +148,7 @@ public final class TelaCaderno {
         // página da esquerda: a lista
         Table esq = c.ui.fundo("ui.livro_esq");
         esq.top();
-        esq.add(new Label(c.texts.get("caderno.aba." + NOMES[aba]), tema.ferrugem)).left().growX().row();
+        esq.add(new Label(c.texts.get("caderno.aba." + NOMES[aba]), tema.titulo)).left().growX().row();
         esq.add(c.ui.divisoria()).growX().padTop(2).padBottom(4).row();
         Table col = new Table();
         col.top().left();
@@ -165,7 +165,7 @@ public final class TelaCaderno {
         // página da direita: o detalhe
         Table dir = c.ui.fundo("ui.livro_dir");
         dir.top();
-        dTitulo = new Label("", tema.ferrugem);
+        dTitulo = new Label("", tema.titulo);
         dTitulo.setWrap(true);
         dSub = new Label("", tema.tintaSuave);
         dSub.setWrap(true);
@@ -211,7 +211,7 @@ public final class TelaCaderno {
         for (int i = 0; i < ABAS; i++) {
             int destino = i;
             final TextButton[] ref = new TextButton[1];
-            TextButton b = new TextButton(c.texts.get("caderno.aba." + NOMES[i]), c.estiloAba);
+            TextButton b = new TextButton(c.texts.get("caderno.aba." + NOMES[i]), c.tema.aba);
             ref[0] = b;
             b.getLabel().setAlignment(Align.left);
             b.setProgrammaticChangeEvents(false);

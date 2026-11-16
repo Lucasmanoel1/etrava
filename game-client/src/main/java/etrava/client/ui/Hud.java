@@ -30,8 +30,11 @@ public final class Hud implements Disposable {
     /** Onde fica a ponta da cauda do balão, a partir da borda esquerda da peça (pixels de arte). */
     private static final float CAUDA_X = 11f;
     private static final int MAX_AVISOS = 4;
+    private static final Color NUMERO_DANO = new Color(0.95f, 0.45f, 0.38f, 1f);
+    private static final String ID_BALAO_DIR = "ui.balao_dir";
 
     private final Tema tema;
+    private final boolean donoDoTema;
     private final Ui ui;
     /** Tinta (sem sombra, na escala das telas) e a mesma fonte com sombra, para texto solto sobre o cenário. */
     private final BitmapFont tinta, claro;
@@ -67,7 +70,17 @@ public final class Hud implements Disposable {
      * @param claro    a mesma fonte com sombra (texto claro sobre o cenário)
      */
     public Hud(Path raiz, AssetManifest manifest, BitmapFont tinta, BitmapFont claro) {
-        this.tema = new Tema(raiz, manifest, tinta);
+        this(new Tema(raiz, manifest, tinta), true, tinta, claro);
+    }
+
+    /** O HUD sobre um tema compartilhado (quem o criou o descarta). */
+    public Hud(Tema tema, BitmapFont tinta, BitmapFont claro) {
+        this(tema, false, tinta, claro);
+    }
+
+    private Hud(Tema tema, boolean dono, BitmapFont tinta, BitmapFont claro) {
+        this.tema = tema;
+        this.donoDoTema = dono;
         this.ui = new Ui(tema);
         this.tinta = tinta;
         this.claro = claro;
@@ -159,11 +172,14 @@ public final class Hud implements Disposable {
         float lh = tinta.getLineHeight();
         int s = escalaTexto();
         float bw = Math.min(220f * s, Math.max(120f, Math.round(lh * 7))), bh = 12 * s, gap = 4 * s;
-        float pw = bw + p[0] + p[1], ph = p[2] + p[3] + 2 * bh + gap;
+        float ico = bh + 3 * s;   // o ícone (12×12 de arte) à esquerda da barra, na mesma altura
+        float pw = ico + bw + p[0] + p[1], ph = p[2] + p[3] + 2 * bh + gap;
         float x = M, y = M;
         peca("ui.couro", x, y, pw, ph, 1f);
-        float bx = x + p[0];
-        barra(bx, y + p[3] + bh + gap, bw, bh, vidaMax <= 0 ? 0 : vida / vidaMax, "ui.barra_vida");
+        float bx = x + p[0] + ico, cima = y + p[3] + bh + gap;
+        peca("ui.vida", x + p[0], cima, bh, bh, 1f);
+        peca("ui.folego", x + p[0], y + p[3], bh, bh, 1f);
+        barra(bx, cima, bw, bh, vidaMax <= 0 ? 0 : vida / vidaMax, "ui.barra_vida");
         barra(bx, y + p[3], bw, bh, folegoMax <= 0 ? 0 : folego / folegoMax, "ui.barra_folego");
 
         int v = Math.round(vida);
@@ -279,6 +295,12 @@ public final class Hud implements Disposable {
         float ax = sx / k, ay = sy / k;
         float x = Math.round(ax - (dx < 0 ? w / 2f : dx));
         float y = Math.round(ay);
+        if (dx >= 0 && x + w > largura - M) {
+            // perto da borda direita: a cauda passa para o lado direito da peça e continua apontando para quem fala
+            id = ID_BALAO_DIR;
+            p = tema.pad(id);
+            x = Math.round(ax - (w - dx));
+        }
         x = Math.max(M, Math.min(x, largura - M - w));
         // dois balões não ficam um em cima do outro: o que veio depois sobe
         for (int i = 0; i < ocupados.size(); i++) {
@@ -292,6 +314,34 @@ public final class Hud implements Disposable {
         ocupados.add(new float[] {x, y, w, h});
         peca(id, x, y, w, h, alfa);
         tinta.draw(b, lay, x + p[0], y + h - p[2]);
+    }
+
+    // ---------------------------------------------------------------- combate: barra de vida e número de dano
+
+    /**
+     * Barra de vida de um inimigo, centrada em ({@code sx}, {@code sy}) (pixels de tela, y para cima), com as
+     * peças do tema na escala k. {@code estado}: 0 comum, 1 golpe a caminho (moldura avermelhada), 2 inimigo manso
+     * (barra verde). Entra nos ocupados: um balão desenhado depois sobe em vez de cobri-la.
+     */
+    public void barraInimigo(float sx, float sy, float frac, int estado) {
+        float w = 40, h = 8;
+        float x = Math.round(sx / k - w / 2f), y = Math.round(sy / k);
+        x = Math.max(M, Math.min(x, largura - M - w));
+        y = Math.max(M, Math.min(y, altura - M - h));
+        if (estado == 1) b.setColor(1f, 0.55f, 0.45f, 1f);
+        tema.peca("ui.barra_fundo").draw(b, x, y, w, h);
+        b.setColor(1, 1, 1, 1);
+        frac = Math.max(0f, Math.min(1f, frac));
+        if (frac > 0f) peca(estado == 2 ? "ui.barra_folego" : "ui.barra_vida", x + 2, y + 2, Math.max(2f, (w - 4) * frac), h - 4, 1f);
+        ocupados.add(new float[] {x, y, w, h});
+    }
+
+    /** Número flutuante de dano em ({@code sx}, {@code sy}) (pixels de tela): rosado para dano em quem apanha, claro nos demais. */
+    public void numero(float sx, float sy, String texto, boolean dano, float alfa) {
+        Color c = dano ? NUMERO_DANO : cClara;
+        tmp.set(c.r, c.g, c.b, alfa);
+        lay.setText(claro, texto, tmp, 0, Align.left, false);
+        claro.draw(b, lay, Math.round(sx / k - lay.width / 2f), Math.round(sy / k));
     }
 
     // ---------------------------------------------------------------- baixo nível
@@ -311,6 +361,6 @@ public final class Hud implements Disposable {
 
     @Override
     public void dispose() {
-        tema.dispose();
+        if (donoDoTema) tema.dispose();
     }
 }

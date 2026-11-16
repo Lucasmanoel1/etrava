@@ -48,7 +48,7 @@ public final class TelaMochila {
     private String escolha;
     private Foco foco;
     private ScrollPane lista;
-    private Table gradeTabela;
+    private Table gradeTabela, zonaBoneco;
     private int gradeColunas, gradeCelulas;
 
     // o que o detalhe mostra, atualizado no lugar quando a escolha muda
@@ -81,6 +81,11 @@ public final class TelaMochila {
 
     /** Refaz a tela (a assinatura mudou: item usado, vestido, dinheiro…). */
     public void montar(WorldView view, Economy eco) {
+        montar(view, eco, 0);
+    }
+
+    /** {@code ampForcada} &gt; 0: a ampliação do boneco já medida (a segunda passada, depois de ver o tamanho do quadro). */
+    private void montar(WorldView view, Economy eco, int ampForcada) {
         var tema = c.tema;
         ultimaView = view;
         ultimaEco = eco;
@@ -101,7 +106,7 @@ public final class TelaMochila {
 
         // tamanho do boneco: inteiro, e a coluna dele não passa de pouco mais de um terço da largura
         var corpo = assets.sheet(view.player() == null ? null : view.player().sprite());
-        int ampliacao = Math.max(1, Math.min((int) (c.stage.getHeight() * 0.40f / corpo.frameH()),
+        int ampliacao = ampForcada > 0 ? ampForcada : Math.max(1, Math.min((int) (c.stage.getHeight() * 0.40f / corpo.frameH()),
                 (int) ((interno * 0.36f - 110) / corpo.frameW())));
         float larguraEsq = 2 * 40 + 2 * 8 + corpo.frameW() * ampliacao + 10 + 10;
 
@@ -144,6 +149,14 @@ public final class TelaMochila {
         raiz.validate();
         encherGrade();
         Contexto.rolarPara(raiz, lista, rolado);
+        if (ampForcada == 0) {
+            // o boneco usa a maior ampliação inteira que cabe no quadro dele (a altura só se sabe depois do layout)
+            float livre = zonaBoneco.getHeight() - zonaBoneco.getPadTop() - zonaBoneco.getPadBottom() - 8;
+            int maxAlt = (int) (livre / corpo.frameH());
+            int maxLarg = (int) ((interno * 0.42f - 110) / corpo.frameW());
+            int melhor = Math.min(maxAlt, maxLarg);
+            if (melhor > ampliacao) montar(view, eco, melhor);
+        }
     }
 
     /** Completa a grade com encaixes vazios até a lista ficar cheia (a altura só se sabe depois do layout). */
@@ -217,6 +230,7 @@ public final class TelaMochila {
         var tema = c.tema;
         Table base = c.ui.fundo("ui.encaixe");
         if (itemId != null) base.add(c.icone(itemId));
+        else if (encaixeDeCorpo) base.add(new Image(tema.peca(silhueta(chave.substring(2))))).size(32); // encaixe vazio: a silhueta do que ele guarda
         else base.add().size(32);
         Stack pilha = new Stack();
         pilha.add(base);
@@ -250,6 +264,17 @@ public final class TelaMochila {
         return pilha;
     }
 
+    /** A silhueta discreta do tema para o encaixe de equipamento vazio. */
+    private static String silhueta(String slot) {
+        return switch (slot) {
+            case "head" -> "ui.encaixe_cabeca";
+            case "body" -> "ui.encaixe_corpo";
+            case "mainHand" -> "ui.encaixe_mao";
+            case "offHand" -> "ui.encaixe_mao2";
+            default -> "ui.encaixe_acessorio";
+        };
+    }
+
     private Table celulaVazia() {
         Table vazia = c.ui.fundo("ui.encaixe");
         vazia.add().size(32);
@@ -266,6 +291,7 @@ public final class TelaMochila {
         for (String id : vestimenta.camadas(equip, assets::temEntrada)) camadas.add(assets.sheet(id));
 
         Table zona = c.ui.fundo("ui.pergaminho_escuro");
+        zonaBoneco = zona;
         Table esq = new Table(), dir = new Table();
         for (String slot : ESQUERDA) esq.add(encaixe(slot, view)).expand().top().padBottom(2).row();
         dir.add().expandY().row();

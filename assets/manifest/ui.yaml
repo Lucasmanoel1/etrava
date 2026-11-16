@@ -38,6 +38,12 @@
   scale: 2
   source: "gerado por código (GenerateUi)"
   license: "proprio"
+- id: "ui.balao_dir"
+  type: "ui"
+  file: "ui/balao_dir.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
 - id: "ui.dica"
   type: "ui"
   file: "ui/dica.png"
@@ -221,6 +227,48 @@
 - id: "ui.bolsa"
   type: "ui"
   file: "ui/bolsa.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
+- id: "ui.vida"
+  type: "ui"
+  file: "ui/vida.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
+- id: "ui.folego"
+  type: "ui"
+  file: "ui/folego.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
+- id: "ui.encaixe_cabeca"
+  type: "ui"
+  file: "ui/encaixe_cabeca.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
+- id: "ui.encaixe_corpo"
+  type: "ui"
+  file: "ui/encaixe_corpo.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
+- id: "ui.encaixe_mao"
+  type: "ui"
+  file: "ui/encaixe_mao.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
+- id: "ui.encaixe_mao2"
+  type: "ui"
+  file: "ui/encaixe_mao2.png"
+  scale: 2
+  source: "gerado por código (GenerateUi)"
+  license: "proprio"
+- id: "ui.encaixe_acessorio"
+  type: "ui"
+  file: "ui/encaixe_acessorio.png"
   scale: 2
   source: "gerado por código (GenerateUi)"
   license: "proprio"
